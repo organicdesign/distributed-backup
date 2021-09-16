@@ -1,67 +1,51 @@
-#include <netdb.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/socket.h>
-#include <unistd.h>
+#include <netinet/in.h>
+#include <string.h>
 #include <arpa/inet.h>
+#include <errno.h>
+#include <unistd.h>
 
-#define MAX 80
-#define PORT 8080
-#define SA struct sockaddr
+int main(){
+	int clientSocket;
+	char buffer[1024];
+	struct sockaddr_in serverAddr;
+	socklen_t addr_size;
 
-void func (int sockfd) {
-	char buff[MAX];
-	int n;
-	for (;;) {
-		bzero(buff, sizeof(buff));
-		printf("Enter the string : ");
-		n = 0;
+	/*---- Create the socket. The three arguments are: ----*/
+	/* 1) Internet domain 2) Stream socket 3) Default protocol (TCP in this case) */
+	clientSocket = socket(PF_INET, SOCK_STREAM, 0);
 
-		while ((buff[n++] = getchar()) != '\n')
-			;
+	/*---- Configure settings of the server address struct ----*/
+	/* Address family = Internet */
+	serverAddr.sin_family = AF_INET;
+	/* Set port number, using htons function to use proper byte order */
+	serverAddr.sin_port = htons(7891);
+	/* Set IP address to localhost */
+	serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	/* Set all bits of the padding field to 0 */
+	memset(serverAddr.sin_zero, '\0', sizeof serverAddr.sin_zero);
 
-		write(sockfd, buff, sizeof(buff));
-		bzero(buff, sizeof(buff));
-		read(sockfd, buff, sizeof(buff));
-		printf("From Server : %s", buff);
+	/*---- Connect the socket to the server using the address struct ----*/
+	addr_size = sizeof serverAddr;
 
-		if ((strncmp(buff, "exit", 4)) == 0) {
-			printf("Client Exit...\n");
-			break;
-		}
+	if (connect(clientSocket, (struct sockaddr *) &serverAddr, addr_size) < 0) {
+		printf("Connection error! (%i)\n", errno);
+		return errno;
 	}
-}
 
-int main () {
-	int sockfd, connfd;
-	struct sockaddr_in servaddr, cli;
+	strcpy(buffer,"Hello World\n");
+	send(clientSocket,buffer,13,0);
 
-	// socket create and varification
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	if (sockfd == -1) {
-		printf("socket creation failed...\n");
-		exit(0);
-	} else
-		printf("Socket successfully created..\n");
+	bzero(buffer, sizeof(buffer));
+	/*---- Read the message from the server into the buffer ----*/
+	recv(clientSocket, buffer, 1024, 0);
 
-	bzero(&servaddr, sizeof(servaddr));
+	/*---- Print the received message ----*/
+	printf("Data received: %s",buffer);
 
-	// assign IP, PORT
-	servaddr.sin_family = AF_INET;
-	servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
-	servaddr.sin_port = htons(PORT);
 
-	// connect the client socket to server socket
-	if (connect(sockfd, (SA*)&servaddr, sizeof(servaddr)) != 0) {
-		printf("connection with the server failed...\n");
-		exit(0);
-	} else
-		printf("connected to the server..\n");
+	close(clientSocket);
 
-	// function for chat
-	func(sockfd);
-
-	// close the socket
-	close(sockfd);
+	return 0;
 }
