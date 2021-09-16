@@ -6,10 +6,12 @@
 #include <errno.h>
 #include <unistd.h>
 
+#include "./read.c"
+
 #define PORT 8080
 #define HOST "127.0.0.1"
-#define CHUNK_SIZE 64
-#define STORAGE_DIR "./storage"
+#define CHUNK_SIZE 32
+#define FILE_PATH "./client.c"
 
 int main(){
 	int welcomeSocket, newSocket;
@@ -59,29 +61,36 @@ int main(){
 	}
 
 	// Receive data
-	if(recv(newSocket, buffer, sizeof(buffer), 0) < 0) {
+	bzero(buffer, sizeof(buffer));
+
+	if (recv(newSocket, buffer, sizeof(buffer), 0) < 0) {
 		printf("Failed to receive data! (%i)\n", errno);
 		return errno;
 	}
 
 	printf("Data received: %s",buffer);
 
-	// Send data
+	// Read data
 	bzero(buffer, sizeof(buffer));
-	strcpy(buffer,"Hello World\n");
 
-	if(send(newSocket, buffer, 13, 0) < 0) {
+	if (readSection(buffer, FILE_PATH, sizeof(buffer), 0) < 0) {
+		printf("Failed to read section! (%i)\n", errno);
+		return errno;
+	}
+
+	// Send data
+	if (send(newSocket, buffer, sizeof(buffer), 0) < 0) {
 		printf("Failed to send data! (%i)\n", errno);
 		return errno;
 	}
 
 	// Close the sockets
-	if(close(welcomeSocket) < 0) {
+	if (close(welcomeSocket) < 0) {
 		printf("Failed to close welcomeSocket! (%i)\n", errno);
 		return errno;
 	}
 
-	if(close(newSocket) < 0) {
+	if (close(newSocket) < 0) {
 		printf("Failed to close newSocket! (%i)\n", errno);
 		return errno;
 	}
