@@ -12,8 +12,7 @@
 #define SA struct sockaddr
 
 // Function designed for chat between client and server.
-void func(int sockfd)
-{
+void func (int sockfd) {
 	char buff[MAX];
 	int n;
 	// infinite loop for chat
@@ -42,8 +41,7 @@ void func(int sockfd)
 }
 
 // Driver function
-int main()
-{
+int main () {
 	int sockfd, connfd, len;
 	struct sockaddr_in servaddr, cli;
 
@@ -66,17 +64,16 @@ int main()
 	if ((bind(sockfd, (SA*)&servaddr, sizeof(servaddr))) != 0) {
 		printf("socket bind failed...\n");
 		exit(0);
-	}
-	else
+	} else
 		printf("Socket successfully binded..\n");
 
 	// Now server is ready to listen and verification
 	if ((listen(sockfd, 5)) != 0) {
 		printf("Listen failed...\n");
 		exit(0);
-	}
-	else
+	} else
 		printf("Server listening..\n");
+
 	len = sizeof(cli);
 
 	// Accept the data packet from client and verification
@@ -84,8 +81,7 @@ int main()
 	if (connfd < 0) {
 		printf("server acccept failed...\n");
 		exit(0);
-	}
-	else
+	} else
 		printf("server acccept the client...\n");
 
 	// Function for chatting between client and server
