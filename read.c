@@ -16,6 +16,9 @@ int main(int argc, char *argv[]) {
 	unsigned char buffer[blockSize];
 	FILE *ptr = fopen(argv[1], "rb");
 
+	if (ptr == NULL)
+		return 1;
+
 	// Seek through file
 	fseek(ptr, position, SEEK_SET);
 
