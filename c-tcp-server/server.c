@@ -16,42 +16,48 @@ int main(){
 	struct sockaddr_storage serverStorage;
 	socklen_t addr_size;
 
-	/*---- Create the socket. The three arguments are: ----*/
-	/* 1) Internet domain 2) Stream socket 3) Default protocol (TCP in this case) */
+	// Create the socket with: internet domain, stream socket and TCP
 	welcomeSocket = socket(PF_INET, SOCK_STREAM, 0);
 
 	/*---- Configure settings of the server address struct ----*/
-	/* Address family = Internet */
+	// Address family = Internet
 	serverAddr.sin_family = AF_INET;
-	/* Set port number, using htons function to use proper byte order */
+	// Set port number
 	serverAddr.sin_port = htons(PORT);
-	/* Set IP address to localhost */
+	// Set IP address
 	serverAddr.sin_addr.s_addr = inet_addr(HOST);
-	/* Set all bits of the padding field to 0 */
+	// Set padding to 0
 	memset(serverAddr.sin_zero, '\0', sizeof serverAddr.sin_zero);
 
-	/*---- Bind the address struct to the socket ----*/
+	// Configure socket options
 	const int trueFlag = 1;
 	if (setsockopt(welcomeSocket, SOL_SOCKET, SO_REUSEADDR, &trueFlag, sizeof(int)) < 0) {
 		printf("Socket option error! (%i)\n", errno);
 		return errno;
 	}
 
+	// Bind settings to socket
 	if (bind(welcomeSocket, (struct sockaddr *) &serverAddr, sizeof(serverAddr)) < 0) {
 		printf("Bind error! (%i)\n", errno);
 		return errno;
 	}
 
-	/*---- Listen on the socket, with 5 max connection requests queued ----*/
+	// Listen for connections with a backlog of 5
 	if(listen(welcomeSocket, 5) < 0) {
 		printf("Listen error! (%i)\n", errno);
 		return errno;
 	}
 
-	/*---- Accept call creates a new socket for the incoming connection ----*/
+	// Accept new socket connections
 	addr_size = sizeof serverStorage;
 	newSocket = accept(welcomeSocket, (struct sockaddr *) &serverStorage, &addr_size);
 
+	if (newSocket < 0) {
+		printf("Failed accept socket! (%i)\n", errno);
+		return errno;
+	}
+
+	// Receive data
 	if(recv(newSocket, buffer, 1024, 0) < 0) {
 		printf("Failed to receive data! (%i)\n", errno);
 		return errno;
@@ -59,7 +65,7 @@ int main(){
 
 	printf("Data received: %s",buffer);
 
-	/*---- Send message to the socket of the incoming connection ----*/
+	// Send data
 	bzero(buffer, sizeof(buffer));
 	strcpy(buffer,"Hello World\n");
 
@@ -68,8 +74,16 @@ int main(){
 		return errno;
 	}
 
-	close(welcomeSocket);
-	close(newSocket);
+	// Close the sockets
+	if(close(welcomeSocket) < 0) {
+		printf("Failed to close welcomeSocket! (%i)\n", errno);
+		return errno;
+	}
+
+	if(close(newSocket) < 0) {
+		printf("Failed to close newSocket! (%i)\n", errno);
+		return errno;
+	}
 
 	return 0;
 }
