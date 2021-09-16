@@ -5,15 +5,17 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <unistd.h>
+#include <openssl/sha.h>
 
 #define PORT 8080
 #define HOST "127.0.0.1"
 #define CHUNK_SIZE 64
 #define STORAGE_DIR "./storage"
 
-int main(){
+int main () {
 	int clientSocket, bytesReceived;
 	char buffer[CHUNK_SIZE];
+	unsigned char hash[SHA_DIGEST_LENGTH];
 	struct sockaddr_in serverAddr;
 	socklen_t addr_size;
 
@@ -57,8 +59,20 @@ int main(){
 		return errno;
 	}
 
+	// Calculate hash
+	SHA1(buffer, bytesReceived, hash);
+
+	// Output
 	printf("Data received: %s\n", buffer);
 	printf("Bytes received: %i\n", bytesReceived);
+	printf("Hash: ");
+
+	// Display hash
+	for(int i=0; i < SHA_DIGEST_LENGTH;i++) {
+		printf("%02x", hash[i]);
+	}
+
+	printf("\n");
 
 	// Close the socket
 	if (close(clientSocket) < 0) {

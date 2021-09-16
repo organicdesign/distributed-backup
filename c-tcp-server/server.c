@@ -10,7 +10,7 @@
 
 #define PORT 8080
 #define HOST "127.0.0.1"
-#define CHUNK_SIZE 32
+#define CHUNK_SIZE 64
 #define FILE_PATH "./client.c"
 
 int main(){
@@ -68,7 +68,7 @@ int main(){
 		return errno;
 	}
 
-	printf("Data received: %s",buffer);
+	printf("Data received: %s", buffer);
 
 	// Read data
 	bzero(buffer, sizeof(buffer));
