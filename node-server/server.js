@@ -11,7 +11,7 @@ server.listen(port, function() {
 
 server.on("connection", socket => {
 	socket.on("data", chunk => {
-		console.log(`Data received from client: ${chunk.toString()}.`);
+		process.stdout.write(chunk.toString());
 
 		const shasum = crypto.createHash("sha1");
 		shasum.update(chunk.toString());
