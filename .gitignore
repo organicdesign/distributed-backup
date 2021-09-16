@@ -3,4 +3,6 @@ read
 hash
 c-udp-server/client
 c-udp-server/server
+c-tcp-server/client
+c-tcp-server/server
 node-server/node-modules
