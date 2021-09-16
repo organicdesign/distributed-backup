@@ -16,8 +16,10 @@ int main(int argc, char *argv[]) {
 	unsigned char buffer[blockSize];
 	FILE *ptr = fopen(argv[1], "rb");
 
-	if (ptr == NULL)
-		return 1;
+	if (ptr == NULL) {
+		printf("Failed to open file. (%i)\n", errno);
+		return errno;
+	}
 
 	// Seek through file
 	fseek(ptr, position * blockSize, SEEK_SET);
