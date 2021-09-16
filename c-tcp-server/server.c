@@ -8,10 +8,12 @@
 
 #define PORT 8080
 #define HOST "127.0.0.1"
+#define CHUNK_SIZE 64
+#define STORAGE_DIR "./storage"
 
 int main(){
 	int welcomeSocket, newSocket;
-	char buffer[1024];
+	char buffer[CHUNK_SIZE];
 	struct sockaddr_in serverAddr;
 	struct sockaddr_storage serverStorage;
 	socklen_t addr_size;
@@ -19,7 +21,6 @@ int main(){
 	// Create the socket with: internet domain, stream socket and TCP
 	welcomeSocket = socket(PF_INET, SOCK_STREAM, 0);
 
-	/*---- Configure settings of the server address struct ----*/
 	// Address family = Internet
 	serverAddr.sin_family = AF_INET;
 	// Set port number
@@ -58,7 +59,7 @@ int main(){
 	}
 
 	// Receive data
-	if(recv(newSocket, buffer, 1024, 0) < 0) {
+	if(recv(newSocket, buffer, sizeof(buffer), 0) < 0) {
 		printf("Failed to receive data! (%i)\n", errno);
 		return errno;
 	}

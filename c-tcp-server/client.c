@@ -6,12 +6,16 @@
 #include <errno.h>
 #include <unistd.h>
 
+#include "./read.c"
+
 #define PORT 8080
 #define HOST "127.0.0.1"
+#define CHUNK_SIZE 64
+#define FILE_PATH "./client.c"
 
 int main(){
 	int clientSocket;
-	char buffer[1024];
+	char buffer[CHUNK_SIZE];
 	struct sockaddr_in serverAddr;
 	socklen_t addr_size;
 
@@ -39,9 +43,14 @@ int main(){
 	}
 
 	// Send data
-	strcpy(buffer, "Hello World\n");
+	//strcpy(buffer, "Hello World\n");
+	bzero(buffer, sizeof(buffer));
+	if (readSection(buffer, FILE_PATH, sizeof(buffer), 0) < 0) {
+		printf("Failed to read section! (%i)\n", errno);
+		return errno;
+	}
 
-	if(send(clientSocket, buffer, 13, 0) < 0) {
+	if (send(clientSocket, buffer, 13, 0) < 0) {
 		printf("Failed to send data! (%i)\n", errno);
 		return errno;
 	}
@@ -49,7 +58,7 @@ int main(){
 	// Receive data
 	bzero(buffer, sizeof(buffer));
 
-	if(recv(clientSocket, buffer, 1024, 0) < 0) {
+	if (recv(clientSocket, buffer, sizeof(buffer), 0) < 0) {
 		printf("Failed to receive data! (%i)\n", errno);
 		return errno;
 	}
@@ -57,7 +66,7 @@ int main(){
 	printf("Data received: %s", buffer);
 
 	// Close the socket
-	if(close(clientSocket) < 0) {
+	if (close(clientSocket) < 0) {
 		printf("Failed to close socket! (%i)\n", errno);
 		return errno;
 	}
