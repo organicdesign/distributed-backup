@@ -37,6 +37,13 @@ int main(int argc, char *argv[]) {
 
 	printf("\n");
 
+	// Display the bytes read as well.
+	printf("\nREAD:\n");
+
+	for(int i = 0; i < readBytes; i++)
+		printf("%c", buffer[i]); // prints a series of bytes
+
+	printf("\n");
 
 	return 0;
 }
