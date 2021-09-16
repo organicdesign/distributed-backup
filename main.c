@@ -4,9 +4,17 @@
 #include <string.h>
 
 int main(int argc, char *argv[]) {
-	int blockSize = 100;
-	int position = 0;
+	// Validate command line args
+	if (argc < 3 || atoi(argv[1]) <= 0 || atoi(argv[2]) < 0) {
+		printf("Usage: %s <BLOCK SIZE> <POSITION>\n", argv[0]);
+		return 1;
+	}
 
+	// Convert command line args to integers.
+	int blockSize = atoi(argv[1]);
+	int position = atoi(argv[2]);
+
+	// Prepare a buffer and open the file.
 	unsigned char buffer[blockSize];
 	FILE *ptr = fopen("./main.c", "rb");
 
