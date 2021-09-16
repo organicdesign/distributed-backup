@@ -6,6 +6,9 @@
 #include <errno.h>
 #include <unistd.h>
 
+#define PORT 8080
+#define HOST "127.0.0.1"
+
 int main(){
 	int clientSocket;
 	char buffer[1024];
@@ -20,9 +23,9 @@ int main(){
 	/* Address family = Internet */
 	serverAddr.sin_family = AF_INET;
 	/* Set port number, using htons function to use proper byte order */
-	serverAddr.sin_port = htons(7891);
+	serverAddr.sin_port = htons(PORT);
 	/* Set IP address to localhost */
-	serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	serverAddr.sin_addr.s_addr = inet_addr(HOST);
 	/* Set all bits of the padding field to 0 */
 	memset(serverAddr.sin_zero, '\0', sizeof serverAddr.sin_zero);
 
@@ -34,15 +37,24 @@ int main(){
 		return errno;
 	}
 
-	strcpy(buffer,"Hello World\n");
-	send(clientSocket,buffer,13,0);
+	// Send data
+	strcpy(buffer, "Hello World\n");
 
-	bzero(buffer, sizeof(buffer));
+	if(send(clientSocket, buffer, 13, 0) < 0) {
+		printf("Failed to send data! (%i)\n", errno);
+		return errno;
+	}
+
 	/*---- Read the message from the server into the buffer ----*/
-	recv(clientSocket, buffer, 1024, 0);
+	bzero(buffer, sizeof(buffer));
+
+	if(recv(clientSocket, buffer, 1024, 0) < 0) {
+		printf("Failed to receive data! (%i)\n", errno);
+		return errno;
+	}
 
 	/*---- Print the received message ----*/
-	printf("Data received: %s",buffer);
+	printf("Data received: %s", buffer);
 
 
 	close(clientSocket);

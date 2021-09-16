@@ -6,6 +6,9 @@
 #include <errno.h>
 #include <unistd.h>
 
+#define PORT 8080
+#define HOST "127.0.0.1"
+
 int main(){
 	int welcomeSocket, newSocket;
 	char buffer[1024];
@@ -21,9 +24,9 @@ int main(){
 	/* Address family = Internet */
 	serverAddr.sin_family = AF_INET;
 	/* Set port number, using htons function to use proper byte order */
-	serverAddr.sin_port = htons(7891);
+	serverAddr.sin_port = htons(PORT);
 	/* Set IP address to localhost */
-	serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	serverAddr.sin_addr.s_addr = inet_addr(HOST);
 	/* Set all bits of the padding field to 0 */
 	memset(serverAddr.sin_zero, '\0', sizeof serverAddr.sin_zero);
 
@@ -40,21 +43,30 @@ int main(){
 	}
 
 	/*---- Listen on the socket, with 5 max connection requests queued ----*/
-	if(listen(welcomeSocket,5)==0)
-		printf("Listening\n");
-	else
-		printf("Error\n");
+	if(listen(welcomeSocket, 5) < 0) {
+		printf("Listen error! (%i)\n", errno);
+		return errno;
+	}
 
 	/*---- Accept call creates a new socket for the incoming connection ----*/
 	addr_size = sizeof serverStorage;
 	newSocket = accept(welcomeSocket, (struct sockaddr *) &serverStorage, &addr_size);
 
-	recv(newSocket, buffer, 1024, 0);
+	if(recv(newSocket, buffer, 1024, 0) < 0) {
+		printf("Failed to receive data! (%i)\n", errno);
+		return errno;
+	}
+
 	printf("Data received: %s",buffer);
-	bzero(buffer, sizeof(buffer));
+
 	/*---- Send message to the socket of the incoming connection ----*/
+	bzero(buffer, sizeof(buffer));
 	strcpy(buffer,"Hello World\n");
-	send(newSocket,buffer,13,0);
+
+	if(send(newSocket, buffer, 13, 0) < 0) {
+		printf("Failed to send data! (%i)\n", errno);
+		return errno;
+	}
 
 	close(welcomeSocket);
 	close(newSocket);
