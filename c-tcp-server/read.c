@@ -5,7 +5,7 @@
 #ifndef READ_C
 #define READ_C
 
-int readSection (unsigned char* buffer, char* filename, int blockSize, int position) {
+int readSection (unsigned char* buffer, char* filename, int chunkSize, int position) {
 	FILE *ptr = fopen(filename, "rb");
 	size_t readBytes;
 	int i;
@@ -16,13 +16,13 @@ int readSection (unsigned char* buffer, char* filename, int blockSize, int posit
 	}
 
 	// Seek through file
-	if (fseek(ptr, position * blockSize, SEEK_SET) < 0 ) {
+	if (fseek(ptr, position * chunkSize, SEEK_SET) < 0 ) {
 		printf("Failed to seek file. (%i)\n", errno);
 		return -1;
 	}
 
 	// Read file
-	readBytes = fread(buffer, 1, blockSize, ptr);
+	readBytes = fread(buffer, 1, chunkSize, ptr);
 
 	if (ferror(ptr)) {
 		printf("Failed to read file. (%i)\n", errno);
