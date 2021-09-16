@@ -23,12 +23,8 @@ int main(int argc, char *argv[]) {
 	size_t readBytes = fread(buffer, 1, blockSize, ptr); // Read 'blockSize' amounts of 1 byte
 
 	// Display the bytes.
-	printf("\nREAD:\n");
-
 	for (int i = 0; i < readBytes; i++)
 		printf("%c", buffer[i]); // prints a series of bytes
-
-	printf("\n");
 
 	return 0;
 }
