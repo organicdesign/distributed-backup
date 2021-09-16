@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 
 	// Seek through file
-	fseek(ptr, position, SEEK_SET);
+	fseek(ptr, position * blockSize, SEEK_SET);
 
 	// Read file
 	size_t readBytes = fread(buffer, 1, blockSize, ptr); // Read 'blockSize' amounts of 1 byte
