@@ -1,4 +1,6 @@
 main
 read
 hash
+c-udp-server/client
+c-udp-server/server
 node-server/node-modules
