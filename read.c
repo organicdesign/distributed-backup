@@ -3,18 +3,18 @@
 
 int main(int argc, char *argv[]) {
 	// Validate command line args
-	if (argc < 3 || atoi(argv[1]) <= 0 || atoi(argv[2]) < 0) {
-		printf("Usage: %s <BLOCK SIZE> <POSITION>\n", argv[0]);
+	if (argc < 4 || atoi(argv[2]) <= 0 || atoi(argv[3]) < 0) {
+		printf("Usage: %s <FILENAME> <BLOCK SIZE> <POSITION>\n", argv[0]);
 		return 1;
 	}
 
 	// Convert command line args to integers.
-	int blockSize = atoi(argv[1]);
-	int position = atoi(argv[2]);
+	int blockSize = atoi(argv[2]);
+	int position = atoi(argv[3]);
 
 	// Prepare a buffer and open the file.
 	unsigned char buffer[blockSize];
-	FILE *ptr = fopen("./main.c", "rb");
+	FILE *ptr = fopen(argv[1], "rb");
 
 	// Seek through file
 	fseek(ptr, position, SEEK_SET);
