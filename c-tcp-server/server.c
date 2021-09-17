@@ -45,7 +45,7 @@ int readSection (unsigned char* buffer, FILE* ptr, int chunkSize, int position) 
 }
 
 int main () {
-	int welcomeSocket, newSocket, bytesRead, i, position = 0;
+	int welcomeSocket, newSocket, bytesRead, i, fileSize, position = 0;
 	unsigned char buffer[CHUNK_SIZE];
 	unsigned char hash[SHA_DIGEST_LENGTH];
 	FILE* filePtr;
@@ -101,7 +101,17 @@ int main () {
 		return -1;
 	}
 
+	// Get filesize
+	fseek(filePtr, 0L, SEEK_END);
+	fileSize = ftell(filePtr);
+	fseek(filePtr, 0L, SEEK_SET);
+
 	for (;;) {
+		// Display progress
+		printf("\rSent: %i%%", (int)((double)position * 100 / fileSize));
+		fflush(stdout);
+		sleep(1);
+
 		// Read data
 		bzero(buffer, sizeof(buffer));
 
@@ -117,18 +127,8 @@ int main () {
 
 		position += bytesRead;
 
-		printf ("Bytes read %i\n", bytesRead);
-
 		// Calculate hash
 		SHA1(buffer, bytesRead, hash);
-
-		// Display hash
-		printf("Hash: ");
-
-		for(i = 0; i < SHA_DIGEST_LENGTH;i++)
-			printf("%02x", hash[i]);
-
-		printf("\n");
 
 		// Send data
 		if (send(newSocket, buffer, bytesRead, 0) < 0) {
@@ -142,19 +142,13 @@ int main () {
 			return errno;
 		}
 
-		// Display received hash
-		printf("Hash received: ");
-
-		for(i = 0; i < SHA_DIGEST_LENGTH;i++)
-			printf("%02x", buffer[i]);
-
-		printf("\n");
-
 		if (memcmp(hash, buffer, SHA_DIGEST_LENGTH) != 0) {
 			printf("Hashes do not match!\n");
 			return 1;
 		}
 	}
+
+	printf("\n");
 
 	// Flush and close file
 	if (fflush(filePtr) != 0) {

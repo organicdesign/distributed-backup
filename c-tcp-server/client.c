@@ -145,30 +145,26 @@ int main () {
 	}
 
 	for (;;) {
+		// Give some indication of progress
+		printf("\rWritten %i bytes.", position);
+		fflush(stdout);
+
 		// Receive data
 		bzero(buffer, sizeof(buffer));
 		bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
 
+		// Something went wrong revieving the data.
 		if (bytesReceived < 0) {
 			printf("Failed to receive data! (%i)\n", errno);
 			return errno;
 		}
 
+		// If we didn't receive anything break the loop.
 		if (bytesReceived == 0)
 			break;
 
 		// Calculate hash
 		SHA1(buffer, bytesReceived, hash);
-
-		// Output
-		printf("Bytes received: %i\n", bytesReceived);
-		printf("Hash: ");
-
-		// Display hash
-		for(int i = 0; i < SHA_DIGEST_LENGTH; i++)
-			printf("%02x", hash[i]);
-
-		printf("\n");
 
 		// Write to file
 		if (writeSection(buffer, filePtr, bytesReceived, position) < 0) {
@@ -184,6 +180,8 @@ int main () {
 			return errno;
 		}
 	}
+
+	printf("\n");
 
 	// Close the file
 	if (closeFile(filePtr, position) < 0) {
