@@ -7,12 +7,41 @@
 #include <unistd.h>
 #include <openssl/sha.h>
 
-#include "./write.c"
-
 #define PORT 8080
 #define HOST "127.0.0.1"
 #define CHUNK_SIZE 64
 #define STORAGE_FILE "./storage/test"
+
+/**
+ * Write to a section of a file.
+ * @param[in]	buffer		The buffer in which to write bytes to the file from.
+ * @param[in]	ptr			The pointer to the file to write to.
+ * @param[in]	chunkSize	The number of bytes to write.
+ * @param[in]	position	The number of bytes to skip before writing.
+ *
+ * @return The number of bytes written to the file, this should almost always
+ * match chunkSize.
+ */
+int writeSection (unsigned char* buffer, FILE* ptr, int chunkSize, int position) {
+	size_t writtenBytes;
+	int i;
+
+	// Seek through file
+	if (fseek(ptr, position, SEEK_SET) < 0 ) {
+		printf("Failed to seek file. (%i)\n", errno);
+		return -1;
+	}
+
+	// Read file
+	writtenBytes = fwrite(buffer, 1, chunkSize, ptr);
+
+	if (ferror(ptr)) {
+		printf("Failed to read file. (%i)\n", errno);
+		return -1;
+	}
+
+	return writtenBytes;
+}
 
 int main () {
 	int clientSocket, bytesReceived, position = 0;

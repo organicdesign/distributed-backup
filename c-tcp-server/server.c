@@ -7,14 +7,44 @@
 #include <unistd.h>
 #include <openssl/sha.h>
 
-#include "./read.c"
-
 #define PORT 8080
 #define HOST "127.0.0.1"
 #define CHUNK_SIZE 64
-#define FILE_PATH "./read.c"
+#define FILE_PATH "./server.c"
 
-int main(){
+/**
+ * Read a section of a file.
+ * @param[out]	buffer		The buffer to write the bytes that will be read from
+ * the file.
+ * @param[in]	ptr			The pointer to the file to read from.
+ * @param[in]	chunkSize	The number of bytes to read.
+ * @param[in]	position	The number of bytes to skip before reading.
+ *
+ * @return The number of bytes read from the file, this should always match
+ * chunkSize with the exception of the last part of the file.
+ */
+int readSection (unsigned char* buffer, FILE* ptr, int chunkSize, int position) {
+	size_t readBytes;
+	int i;
+
+	// Seek through file
+	if (fseek(ptr, position, SEEK_SET) < 0 ) {
+		printf("Failed to seek file. (%i)\n", errno);
+		return -1;
+	}
+
+	// Read file
+	readBytes = fread(buffer, 1, chunkSize, ptr);
+
+	if (ferror(ptr)) {
+		printf("Failed to read file. (%i)\n", errno);
+		return -1;
+	}
+
+	return readBytes;
+}
+
+int main () {
 	int welcomeSocket, newSocket, bytesRead, i, position = 0;
 	unsigned char buffer[CHUNK_SIZE];
 	unsigned char hash[SHA_DIGEST_LENGTH];
