@@ -15,7 +15,7 @@
 /**
  * Write to a section of a file.
  * @param[in]	buffer		The buffer in which to write bytes to the file from.
- * @param[in]	ptr			The pointer to the file to write to.
+ * @param[in]	ptr 		The pointer to the file to write to.
  * @param[in]	chunkSize	The number of bytes to write.
  * @param[in]	position	The number of bytes to skip before writing.
  *
@@ -41,6 +41,68 @@ int writeSection (unsigned char* buffer, FILE* ptr, int chunkSize, int position)
 	}
 
 	return writtenBytes;
+}
+
+/**
+ * Flush buffers to, truncate and close file.
+ * @param[in]	ptr 	The pointer to the file to close.
+ * @param[in]	length	The size in bytes the file should be truncated to. Set
+ * to -1 if it should not be truncated.
+ *
+ * @return If success returns 0, otherwise -1.
+ */
+int closeFile (FILE *ptr, int length) {
+	int state = 0;
+
+	if (fflush(ptr) != 0) {
+		printf("Failed to flush file. (%i)\n", errno);
+		state = -1;
+	}
+
+	if (length >= 0) {
+		if (ftruncate(fileno(ptr), length) != 0) {
+			printf("Failed to truncate file. (%i)\n", errno);
+			state = -1;
+		}
+	}
+
+	if (fclose(ptr) != 0) {
+		printf("Failed to close file. (%i)\n", errno);
+		state = -1;
+	}
+
+	return state;
+}
+
+/**
+ * Open a file for reading and writing, creating it if it doesn't exist.
+ * @param[in]	path 	The path to the file to open.
+ *
+ * @return The file pointer if successful, otherwise NULL.
+ */
+FILE *openFile (char* path) {
+	FILE *ptr = fopen(path, "r+b");
+
+	if (ptr == NULL && errno != 2)
+		return NULL;
+
+	if (ptr == NULL) {
+		ptr = fopen(path, "w");
+
+		if (fclose(ptr) != 0) {
+			printf("Failed to close file. (%i)\n", errno);
+			return NULL;
+		}
+
+		ptr = fopen(path, "r+b");
+
+		if (ptr == NULL) {
+			printf("Failed to open file. (%i)\n", errno);
+			return NULL;
+		}
+	}
+
+	return ptr;
 }
 
 int main () {
@@ -75,7 +137,7 @@ int main () {
 	}
 
 	// Open file
-	filePtr = fopen(STORAGE_FILE, "r+b");
+	filePtr = openFile(STORAGE_FILE);
 
 	if (filePtr == NULL) {
 		printf("Failed to open file. (%i)\n", errno);
@@ -123,19 +185,9 @@ int main () {
 		}
 	}
 
-	// Flush and close file
-	if (fflush(filePtr) != 0) {
-		printf("Failed to flush file. (%i)\n", errno);
-		return errno;
-	}
-
-	if (ftruncate(fileno(filePtr), position) != 0) {
-		printf("Failed to truncate file. (%i)\n", errno);
-		return errno;
-	}
-
-	if (fclose(filePtr) != 0) {
-		printf("Failed to close file. (%i)\n", errno);
+	// Close the file
+	if (closeFile(filePtr, position) < 0) {
+		printf("Failed to close file! (%i)\n", errno);
 		return errno;
 	}
 

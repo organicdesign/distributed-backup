@@ -16,7 +16,7 @@
  * Read a section of a file.
  * @param[out]	buffer		The buffer to write the bytes that will be read from
  * the file.
- * @param[in]	ptr			The pointer to the file to read from.
+ * @param[in]	ptr 		The pointer to the file to read from.
  * @param[in]	chunkSize	The number of bytes to read.
  * @param[in]	position	The number of bytes to skip before reading.
  *
