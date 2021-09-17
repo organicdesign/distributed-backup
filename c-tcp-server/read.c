@@ -6,9 +6,12 @@
 #define READ_C
 
 int readSection (unsigned char* buffer, char* filename, int chunkSize, int position) {
-	FILE *ptr = fopen(filename, "rb");
 	size_t readBytes;
 	int i;
+	FILE *ptr;
+
+	// Open file
+	ptr = fopen(filename, "rb");
 
 	if (ptr == NULL) {
 		printf("Failed to open file. (%i)\n", errno);
@@ -28,12 +31,6 @@ int readSection (unsigned char* buffer, char* filename, int chunkSize, int posit
 		printf("Failed to read file. (%i)\n", errno);
 		return -1;
 	}
-
-	// Display the bytes.
-	for (i = 0; i < readBytes; i++)
-		printf("%c", buffer[i]); // prints a series of bytes
-
-	printf("\n");
 
 	return readBytes;
 }

@@ -14,7 +14,7 @@
 
 int main () {
 	int clientSocket, bytesReceived;
-	char buffer[CHUNK_SIZE];
+	unsigned char buffer[CHUNK_SIZE];
 	unsigned char hash[SHA_DIGEST_LENGTH];
 	struct sockaddr_in serverAddr;
 	socklen_t addr_size;
@@ -59,20 +59,26 @@ int main () {
 		return errno;
 	}
 
+	//buffer[0] = 'a';
+
 	// Calculate hash
 	SHA1(buffer, bytesReceived, hash);
 
 	// Output
-	printf("Data received: %s\n", buffer);
 	printf("Bytes received: %i\n", bytesReceived);
 	printf("Hash: ");
 
 	// Display hash
-	for(int i=0; i < SHA_DIGEST_LENGTH;i++) {
+	for(int i = 0; i < SHA_DIGEST_LENGTH; i++)
 		printf("%02x", hash[i]);
-	}
 
 	printf("\n");
+
+	// Respond with hash
+	if (send(clientSocket, hash, SHA_DIGEST_LENGTH, 0) < 0) {
+		printf("Failed to send hash! (%i)\n", errno);
+		return errno;
+	}
 
 	// Close the socket
 	if (close(clientSocket) < 0) {

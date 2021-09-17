@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <unistd.h>
+#include <openssl/sha.h>
 
 #include "./read.c"
 
@@ -14,8 +15,9 @@
 #define FILE_PATH "./client.c"
 
 int main(){
-	int welcomeSocket, newSocket;
-	char buffer[CHUNK_SIZE];
+	int welcomeSocket, newSocket, bytesRead, i;
+	unsigned char buffer[CHUNK_SIZE];
+	unsigned char hash[SHA_DIGEST_LENGTH];
 	struct sockaddr_in serverAddr;
 	struct sockaddr_storage serverStorage;
 	socklen_t addr_size;
@@ -73,15 +75,47 @@ int main(){
 	// Read data
 	bzero(buffer, sizeof(buffer));
 
-	if (readSection(buffer, FILE_PATH, sizeof(buffer), 0) < 0) {
+	bytesRead = readSection(buffer, FILE_PATH, sizeof(buffer), 0);
+
+	if (bytesRead < 0) {
 		printf("Failed to read section! (%i)\n", errno);
 		return errno;
 	}
+
+	// Calculate hash
+	SHA1(buffer, bytesRead, hash);
+
+	// Display hash
+	printf("Hash: ");
+	
+	for(i = 0; i < SHA_DIGEST_LENGTH;i++)
+		printf("%02x", hash[i]);
+
+	printf("\n");
 
 	// Send data
 	if (send(newSocket, buffer, sizeof(buffer), 0) < 0) {
 		printf("Failed to send data! (%i)\n", errno);
 		return errno;
+	}
+
+	// Receive hash
+	if (recv(newSocket, buffer, SHA_DIGEST_LENGTH, 0) < 0) {
+		printf("Failed to receive data! (%i)\n", errno);
+		return errno;
+	}
+
+	// Display received hash
+	printf("Hash received: ");
+
+	for(i = 0; i < SHA_DIGEST_LENGTH;i++)
+		printf("%02x", buffer[i]);
+
+	printf("\n");
+
+	if (memcmp(hash, buffer, SHA_DIGEST_LENGTH) != 0) {
+		printf("Hashes do not match!\n");
+		return 1;
 	}
 
 	// Close the sockets
