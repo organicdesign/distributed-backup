@@ -20,6 +20,7 @@ int main () {
 	unsigned char hash[SHA_DIGEST_LENGTH];
 	struct sockaddr_in serverAddr;
 	socklen_t addr_size;
+	FILE *filePtr;
 
 	// Create the socket with: internet domain, stream socket and TCP
 	clientSocket = socket(PF_INET, SOCK_STREAM, 0);
@@ -41,6 +42,14 @@ int main () {
 
 	if (connect(clientSocket, (struct sockaddr *) &serverAddr, addr_size) < 0) {
 		printf("Connection error! (%i)\n", errno);
+		return errno;
+	}
+
+	// Open file
+	filePtr = fopen(STORAGE_FILE, "r+b");
+
+	if (filePtr == NULL) {
+		printf("Failed to open file. (%i)\n", errno);
 		return errno;
 	}
 
@@ -71,7 +80,7 @@ int main () {
 		printf("\n");
 
 		// Write to file
-		if (writeSection(buffer, STORAGE_FILE, bytesReceived, position) < 0) {
+		if (writeSection(buffer, filePtr, bytesReceived, position) < 0) {
 			printf("Failed to write to file! (%i)\n", errno);
 			return errno;
 		}
@@ -83,6 +92,22 @@ int main () {
 			printf("Failed to send hash! (%i)\n", errno);
 			return errno;
 		}
+	}
+
+	// Flush and close file
+	if (fflush(filePtr) != 0) {
+		printf("Failed to flush file. (%i)\n", errno);
+		return errno;
+	}
+
+	if (ftruncate(fileno(filePtr), position) != 0) {
+		printf("Failed to truncate file. (%i)\n", errno);
+		return errno;
+	}
+
+	if (fclose(filePtr) != 0) {
+		printf("Failed to close file. (%i)\n", errno);
+		return errno;
 	}
 
 	// Close the socket

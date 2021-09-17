@@ -5,18 +5,9 @@
 #ifndef WRITE_C
 #define WRITE_C
 
-int writeSection (unsigned char* buffer, char* filename, int chunkSize, int position) {
+int writeSection (unsigned char* buffer, FILE* ptr, int chunkSize, int position) {
 	size_t writtenBytes;
 	int i;
-	FILE *ptr;
-
-	// Open file
-	ptr = fopen(filename, "r+b");
-
-	if (ptr == NULL) {
-		printf("Failed to open file. (%i)\n", errno);
-		return -1;
-	}
 
 	// Seek through file
 	if (fseek(ptr, position, SEEK_SET) < 0 ) {
@@ -29,11 +20,6 @@ int writeSection (unsigned char* buffer, char* filename, int chunkSize, int posi
 
 	if (ferror(ptr)) {
 		printf("Failed to read file. (%i)\n", errno);
-		return -1;
-	}
-
-	if (fclose(ptr) != 0) {
-		printf("Failed to close file. (%i)\n", errno);
 		return -1;
 	}
 
