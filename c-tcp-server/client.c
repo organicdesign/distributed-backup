@@ -71,10 +71,12 @@ int main () {
 		printf("\n");
 
 		// Write to file
-		if (writeSection(buffer, STORAGE_FILE, bytesReceived, position++) < 0) {
+		if (writeSection(buffer, STORAGE_FILE, bytesReceived, position) < 0) {
 			printf("Failed to write to file! (%i)\n", errno);
 			return errno;
 		}
+
+		position += bytesReceived;
 
 		// Respond with hash
 		if (send(clientSocket, hash, SHA_DIGEST_LENGTH, 0) < 0) {

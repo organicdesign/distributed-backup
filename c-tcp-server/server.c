@@ -66,7 +66,9 @@ int main(){
 		// Read data
 		bzero(buffer, sizeof(buffer));
 
-		bytesRead = readSection(buffer, FILE_PATH, sizeof(buffer), position++);
+		bytesRead = readSection(buffer, FILE_PATH, sizeof(buffer), position);
+
+		position += bytesRead;
 
 		printf ("Bytes read %i\n", bytesRead);
 

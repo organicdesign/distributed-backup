@@ -19,7 +19,7 @@ int writeSection (unsigned char* buffer, char* filename, int chunkSize, int posi
 	}
 
 	// Seek through file
-	if (fseek(ptr, position * chunkSize, SEEK_SET) < 0 ) {
+	if (fseek(ptr, position, SEEK_SET) < 0 ) {
 		printf("Failed to seek file. (%i)\n", errno);
 		return -1;
 	}
