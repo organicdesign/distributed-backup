@@ -18,6 +18,7 @@ int main(){
 	int welcomeSocket, newSocket, bytesRead, i, position = 0;
 	unsigned char buffer[CHUNK_SIZE];
 	unsigned char hash[SHA_DIGEST_LENGTH];
+	FILE* filePtr;
 	struct sockaddr_in serverAddr;
 	struct sockaddr_storage serverStorage;
 	socklen_t addr_size;
@@ -62,15 +63,19 @@ int main(){
 		return errno;
 	}
 
+	// Open file
+	filePtr = fopen(FILE_PATH, "rb");
+
+	if (filePtr == NULL) {
+		printf("Failed to open file. (%i)\n", errno);
+		return -1;
+	}
+
 	for (;;) {
 		// Read data
 		bzero(buffer, sizeof(buffer));
 
-		bytesRead = readSection(buffer, FILE_PATH, sizeof(buffer), position);
-
-		position += bytesRead;
-
-		printf ("Bytes read %i\n", bytesRead);
+		bytesRead = readSection(buffer, filePtr, sizeof(buffer), position);
 
 		if (bytesRead < 0) {
 			printf("Failed to read section! (%i)\n", errno);
@@ -79,6 +84,10 @@ int main(){
 
 		if (bytesRead == 0)
 			break;
+
+		position += bytesRead;
+
+		printf ("Bytes read %i\n", bytesRead);
 
 		// Calculate hash
 		SHA1(buffer, bytesRead, hash);
@@ -115,6 +124,17 @@ int main(){
 			printf("Hashes do not match!\n");
 			return 1;
 		}
+	}
+
+	// Flush and close file
+	if (fflush(filePtr) != 0) {
+		printf("Failed to flush file. (%i)\n", errno);
+		return errno;
+	}
+
+	if (fclose(filePtr) != 0) {
+		printf("Failed to close file. (%i)\n", errno);
+		return -1;
 	}
 
 	// Close the sockets

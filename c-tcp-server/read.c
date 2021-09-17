@@ -5,18 +5,9 @@
 #ifndef READ_C
 #define READ_C
 
-int readSection (unsigned char* buffer, char* filename, int chunkSize, int position) {
+int readSection (unsigned char* buffer, FILE* ptr, int chunkSize, int position) {
 	size_t readBytes;
 	int i;
-	FILE *ptr;
-
-	// Open file
-	ptr = fopen(filename, "rb");
-
-	if (ptr == NULL) {
-		printf("Failed to open file. (%i)\n", errno);
-		return -1;
-	}
 
 	// Seek through file
 	if (fseek(ptr, position, SEEK_SET) < 0 ) {
@@ -29,11 +20,6 @@ int readSection (unsigned char* buffer, char* filename, int chunkSize, int posit
 
 	if (ferror(ptr)) {
 		printf("Failed to read file. (%i)\n", errno);
-		return -1;
-	}
-
-	if (fclose(ptr) != 0) {
-		printf("Failed to close file. (%i)\n", errno);
 		return -1;
 	}
 
