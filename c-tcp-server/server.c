@@ -62,16 +62,6 @@ int main(){
 		return errno;
 	}
 
-	// Receive data
-	bzero(buffer, sizeof(buffer));
-
-	if (recv(newSocket, buffer, sizeof(buffer), 0) < 0) {
-		printf("Failed to receive data! (%i)\n", errno);
-		return errno;
-	}
-
-	printf("Data received: %s", buffer);
-
 	// Read data
 	bzero(buffer, sizeof(buffer));
 
@@ -87,7 +77,7 @@ int main(){
 
 	// Display hash
 	printf("Hash: ");
-	
+
 	for(i = 0; i < SHA_DIGEST_LENGTH;i++)
 		printf("%02x", hash[i]);
 

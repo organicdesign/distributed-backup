@@ -7,10 +7,12 @@
 #include <unistd.h>
 #include <openssl/sha.h>
 
+#include "./write.c"
+
 #define PORT 8080
 #define HOST "127.0.0.1"
 #define CHUNK_SIZE 64
-#define STORAGE_DIR "./storage"
+#define STORAGE_FILE "./storage/test"
 
 int main () {
 	int clientSocket, bytesReceived;
@@ -42,14 +44,6 @@ int main () {
 		return errno;
 	}
 
-	// Send data
-	strcpy(buffer, "Hello World\n");
-
-	if (send(clientSocket, buffer, 13, 0) < 0) {
-		printf("Failed to send data! (%i)\n", errno);
-		return errno;
-	}
-
 	// Receive data
 	bzero(buffer, sizeof(buffer));
 	bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
@@ -58,8 +52,6 @@ int main () {
 		printf("Failed to receive data! (%i)\n", errno);
 		return errno;
 	}
-
-	//buffer[0] = 'a';
 
 	// Calculate hash
 	SHA1(buffer, bytesReceived, hash);
@@ -73,6 +65,12 @@ int main () {
 		printf("%02x", hash[i]);
 
 	printf("\n");
+
+	// Write to file
+	if (writeSection(buffer, STORAGE_FILE, bytesReceived, 0) < 0) {
+		printf("Failed to write to file! (%i)\n", errno);
+		return errno;
+	}
 
 	// Respond with hash
 	if (send(clientSocket, hash, SHA_DIGEST_LENGTH, 0) < 0) {
