@@ -11,7 +11,7 @@ int writeSection (unsigned char* buffer, char* filename, int chunkSize, int posi
 	FILE *ptr;
 
 	// Open file
-	ptr = fopen(filename, "wb");
+	ptr = fopen(filename, "r+b");
 
 	if (ptr == NULL) {
 		printf("Failed to open file. (%i)\n", errno);
@@ -29,6 +29,11 @@ int writeSection (unsigned char* buffer, char* filename, int chunkSize, int posi
 
 	if (ferror(ptr)) {
 		printf("Failed to read file. (%i)\n", errno);
+		return -1;
+	}
+
+	if (fclose(ptr) != 0) {
+		printf("Failed to close file. (%i)\n", errno);
 		return -1;
 	}
 

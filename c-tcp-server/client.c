@@ -15,7 +15,7 @@
 #define STORAGE_FILE "./storage/test"
 
 int main () {
-	int clientSocket, bytesReceived;
+	int clientSocket, bytesReceived, position = 0;
 	unsigned char buffer[CHUNK_SIZE];
 	unsigned char hash[SHA_DIGEST_LENGTH];
 	struct sockaddr_in serverAddr;
@@ -44,38 +44,43 @@ int main () {
 		return errno;
 	}
 
-	// Receive data
-	bzero(buffer, sizeof(buffer));
-	bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
+	for (;;) {
+		// Receive data
+		bzero(buffer, sizeof(buffer));
+		bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
 
-	if (bytesReceived < 0) {
-		printf("Failed to receive data! (%i)\n", errno);
-		return errno;
-	}
+		if (bytesReceived < 0) {
+			printf("Failed to receive data! (%i)\n", errno);
+			return errno;
+		}
 
-	// Calculate hash
-	SHA1(buffer, bytesReceived, hash);
+		if (bytesReceived == 0)
+			break;
 
-	// Output
-	printf("Bytes received: %i\n", bytesReceived);
-	printf("Hash: ");
+		// Calculate hash
+		SHA1(buffer, bytesReceived, hash);
 
-	// Display hash
-	for(int i = 0; i < SHA_DIGEST_LENGTH; i++)
-		printf("%02x", hash[i]);
+		// Output
+		printf("Bytes received: %i\n", bytesReceived);
+		printf("Hash: ");
 
-	printf("\n");
+		// Display hash
+		for(int i = 0; i < SHA_DIGEST_LENGTH; i++)
+			printf("%02x", hash[i]);
 
-	// Write to file
-	if (writeSection(buffer, STORAGE_FILE, bytesReceived, 0) < 0) {
-		printf("Failed to write to file! (%i)\n", errno);
-		return errno;
-	}
+		printf("\n");
 
-	// Respond with hash
-	if (send(clientSocket, hash, SHA_DIGEST_LENGTH, 0) < 0) {
-		printf("Failed to send hash! (%i)\n", errno);
-		return errno;
+		// Write to file
+		if (writeSection(buffer, STORAGE_FILE, bytesReceived, position++) < 0) {
+			printf("Failed to write to file! (%i)\n", errno);
+			return errno;
+		}
+
+		// Respond with hash
+		if (send(clientSocket, hash, SHA_DIGEST_LENGTH, 0) < 0) {
+			printf("Failed to send hash! (%i)\n", errno);
+			return errno;
+		}
 	}
 
 	// Close the socket

@@ -12,10 +12,10 @@
 #define PORT 8080
 #define HOST "127.0.0.1"
 #define CHUNK_SIZE 64
-#define FILE_PATH "./client.c"
+#define FILE_PATH "./read.c"
 
 int main(){
-	int welcomeSocket, newSocket, bytesRead, i;
+	int welcomeSocket, newSocket, bytesRead, i, position = 0;
 	unsigned char buffer[CHUNK_SIZE];
 	unsigned char hash[SHA_DIGEST_LENGTH];
 	struct sockaddr_in serverAddr;
@@ -62,50 +62,57 @@ int main(){
 		return errno;
 	}
 
-	// Read data
-	bzero(buffer, sizeof(buffer));
+	for (;;) {
+		// Read data
+		bzero(buffer, sizeof(buffer));
 
-	bytesRead = readSection(buffer, FILE_PATH, sizeof(buffer), 0);
+		bytesRead = readSection(buffer, FILE_PATH, sizeof(buffer), position++);
 
-	if (bytesRead < 0) {
-		printf("Failed to read section! (%i)\n", errno);
-		return errno;
-	}
+		printf ("Bytes read %i\n", bytesRead);
 
-	// Calculate hash
-	SHA1(buffer, bytesRead, hash);
+		if (bytesRead < 0) {
+			printf("Failed to read section! (%i)\n", errno);
+			return errno;
+		}
 
-	// Display hash
-	printf("Hash: ");
+		if (bytesRead == 0)
+			break;
 
-	for(i = 0; i < SHA_DIGEST_LENGTH;i++)
-		printf("%02x", hash[i]);
+		// Calculate hash
+		SHA1(buffer, bytesRead, hash);
 
-	printf("\n");
+		// Display hash
+		printf("Hash: ");
 
-	// Send data
-	if (send(newSocket, buffer, sizeof(buffer), 0) < 0) {
-		printf("Failed to send data! (%i)\n", errno);
-		return errno;
-	}
+		for(i = 0; i < SHA_DIGEST_LENGTH;i++)
+			printf("%02x", hash[i]);
 
-	// Receive hash
-	if (recv(newSocket, buffer, SHA_DIGEST_LENGTH, 0) < 0) {
-		printf("Failed to receive data! (%i)\n", errno);
-		return errno;
-	}
+		printf("\n");
 
-	// Display received hash
-	printf("Hash received: ");
+		// Send data
+		if (send(newSocket, buffer, bytesRead, 0) < 0) {
+			printf("Failed to send data! (%i)\n", errno);
+			return errno;
+		}
 
-	for(i = 0; i < SHA_DIGEST_LENGTH;i++)
-		printf("%02x", buffer[i]);
+		// Receive hash
+		if (recv(newSocket, buffer, SHA_DIGEST_LENGTH, 0) < 0) {
+			printf("Failed to receive data! (%i)\n", errno);
+			return errno;
+		}
 
-	printf("\n");
+		// Display received hash
+		printf("Hash received: ");
 
-	if (memcmp(hash, buffer, SHA_DIGEST_LENGTH) != 0) {
-		printf("Hashes do not match!\n");
-		return 1;
+		for(i = 0; i < SHA_DIGEST_LENGTH;i++)
+			printf("%02x", buffer[i]);
+
+		printf("\n");
+
+		if (memcmp(hash, buffer, SHA_DIGEST_LENGTH) != 0) {
+			printf("Hashes do not match!\n");
+			return 1;
+		}
 	}
 
 	// Close the sockets

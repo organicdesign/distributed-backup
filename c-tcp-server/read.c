@@ -32,6 +32,11 @@ int readSection (unsigned char* buffer, char* filename, int chunkSize, int posit
 		return -1;
 	}
 
+	if (fclose(ptr) != 0) {
+		printf("Failed to close file. (%i)\n", errno);
+		return -1;
+	}
+
 	return readBytes;
 }
 
