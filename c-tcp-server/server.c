@@ -4,8 +4,13 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <errno.h>
-#include <unistd.h>
 #include <openssl/sha.h>
+
+// lseek64 needs this defined.
+#define __USE_LARGEFILE64
+
+#include <unistd.h>
+#include <sys/types.h>
 
 #define PORT 8080
 #define HOST "127.0.0.1"
@@ -57,7 +62,7 @@ off64_t getFileSize (FILE* ptr) {
 	int fileDes = fileno(ptr);
 
 	// Save the current position.
-	currPos = lseek(fileDes, 0, SEEK_CUR);
+	currPos = lseek64(fileDes, 0, SEEK_CUR);
 
 	if (currPos < 0) {
 		printf("Failed to get current position of file. (%i)\n", errno);
@@ -65,7 +70,7 @@ off64_t getFileSize (FILE* ptr) {
 	}
 
 	// Seek to the end of the file and get size.
-	fileSize = lseek(fileDes, 0, SEEK_END);
+	fileSize = lseek64(fileDes, 0, SEEK_END);
 
 	if (fileSize < 0) {
 		printf("Failed to get seek to end of file. (%i)\n", errno);
@@ -73,7 +78,7 @@ off64_t getFileSize (FILE* ptr) {
 	}
 
 	// Reset the seek position to where it was.
-	currPos = lseek(fileDes, currPos, SEEK_SET);
+	currPos = lseek64(fileDes, currPos, SEEK_SET);
 
 	if (currPos < 0) {
 		printf("Failed to reset seek position. (%i)\n", errno);
