@@ -14,6 +14,7 @@
 
 /**
  * Read a section of a file.
+ *
  * @param[out]	buffer		The buffer to write the bytes that will be read from
  * the file.
  * @param[in]	ptr 		The pointer to the file to read from.
@@ -42,6 +43,44 @@ int readSection (unsigned char* buffer, FILE* ptr, int chunkSize, int position) 
 	}
 
 	return readBytes;
+}
+
+/**
+ * Get the size of a file.
+ *
+ * @param[in]	ptr 	The pointer to the file to get the size of.
+ *
+ * @return The size of the file in bytes.
+ */
+off64_t getFileSize (FILE* ptr) {
+	off64_t fileSize, currPos;
+	int fileDes = fileno(ptr);
+
+	// Save the current position.
+	currPos = lseek(fileDes, 0, SEEK_CUR);
+
+	if (currPos < 0) {
+		printf("Failed to get current position of file. (%i)\n", errno);
+		return -1;
+	}
+
+	// Seek to the end of the file and get size.
+	fileSize = lseek(fileDes, 0, SEEK_END);
+
+	if (fileSize < 0) {
+		printf("Failed to get seek to end of file. (%i)\n", errno);
+		return -1;
+	}
+
+	// Reset the seek position to where it was.
+	currPos = lseek(fileDes, currPos, SEEK_SET);
+
+	if (currPos < 0) {
+		printf("Failed to reset seek position. (%i)\n", errno);
+		return -1;
+	}
+
+	return fileSize;
 }
 
 int main () {
@@ -102,15 +141,17 @@ int main () {
 	}
 
 	// Get filesize
-	fseek(filePtr, 0L, SEEK_END);
-	fileSize = ftell(filePtr);
-	fseek(filePtr, 0L, SEEK_SET);
+	fileSize = getFileSize(filePtr);
+
+	if (fileSize < 0) {
+		printf("Failed to get file size. (%i)\n", errno);
+		return 1;
+	}
 
 	for (;;) {
 		// Display progress
 		printf("\rSent: %i%%", (int)((double)position * 100 / fileSize));
 		fflush(stdout);
-		sleep(1);
 
 		// Read data
 		bzero(buffer, sizeof(buffer));
@@ -151,11 +192,6 @@ int main () {
 	printf("\n");
 
 	// Flush and close file
-	if (fflush(filePtr) != 0) {
-		printf("Failed to flush file. (%i)\n", errno);
-		return errno;
-	}
-
 	if (fclose(filePtr) != 0) {
 		printf("Failed to close file. (%i)\n", errno);
 		return -1;

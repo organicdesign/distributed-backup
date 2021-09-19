@@ -14,6 +14,7 @@
 
 /**
  * Write to a section of a file.
+ *
  * @param[in]	buffer		The buffer in which to write bytes to the file from.
  * @param[in]	ptr 		The pointer to the file to write to.
  * @param[in]	chunkSize	The number of bytes to write.
@@ -45,6 +46,7 @@ int writeSection (unsigned char* buffer, FILE* ptr, int chunkSize, int position)
 
 /**
  * Flush buffers to, truncate and close file.
+ *
  * @param[in]	ptr 	The pointer to the file to close.
  * @param[in]	length	The size in bytes the file should be truncated to. Set
  * to -1 if it should not be truncated.
@@ -76,6 +78,7 @@ int closeFile (FILE *ptr, int length) {
 
 /**
  * Open a file for reading and writing, creating it if it doesn't exist.
+ *
  * @param[in]	path 	The path to the file to open.
  *
  * @return The file pointer if successful, otherwise NULL.
@@ -163,9 +166,6 @@ int main () {
 		if (bytesReceived == 0)
 			break;
 
-		// Calculate hash
-		SHA1(buffer, bytesReceived, hash);
-
 		// Write to file
 		if (writeSection(buffer, filePtr, bytesReceived, position) < 0) {
 			printf("Failed to write to file! (%i)\n", errno);
@@ -173,6 +173,9 @@ int main () {
 		}
 
 		position += bytesReceived;
+
+		// Calculate hash
+		SHA1(buffer, bytesReceived, hash);
 
 		// Respond with hash
 		if (send(clientSocket, hash, SHA_DIGEST_LENGTH, 0) < 0) {
