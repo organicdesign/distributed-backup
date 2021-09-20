@@ -102,6 +102,7 @@ int convertPacketToBuffer (unsigned char* buffer, struct Packet* packet, unsigne
 	for (i = 0; i < 4; i++)
 		buffer[1 + i] = packet->key >> 24 - i * 8;
 
+	// Handle the different data types.
 	if (packet->type == QUERY)
 		return 0;
 
@@ -146,18 +147,13 @@ struct Packet* convertBufferToPacket(unsigned char* buffer, unsigned int bufferS
 	for (i = 0; i < 4; i++)
 		p->key += buffer[1 + i] << 24 - i * 8;
 
+	// Handle the different types.
 	if (p->type == QUERY)
 		return p;
 
 	if (p->type == KEY) {
-		// Assign the data memory
-		offset = 5;
-
-		p->data = (unsigned char*)malloc( sizeof( unsigned char ) * (bufferSize - offset) );
-
-		// Unload the data
-		for (i = 0; i < bufferSize - offset; i++)
-			p->data[i] = buffer[offset + i];
+		// Assign the data to be the rest of the buffer
+		p->data = buffer + 5;
 
 		return p;
 	}
@@ -170,12 +166,7 @@ struct Packet* convertBufferToPacket(unsigned char* buffer, unsigned int bufferS
 			p->position += buffer[5 + i] << 56 - i * 8;
 
 		// Unload the data
-		offset = 13;
-
-		p->data = (unsigned char*)malloc( sizeof( unsigned char ) * (bufferSize - offset) );
-
-		for (i = 0; i < bufferSize - offset; i++)
-			p->data[i] = buffer[offset + i];
+		p->data = buffer + 13;
 
 		return p;
 	}
