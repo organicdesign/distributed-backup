@@ -169,7 +169,7 @@ int main () {
 			break;
 
 		// Convert the data into a packet.
-		packet = convertBufferToPacket(buffer);
+		packet = convertBufferToPacket(buffer, bytesReceived);
 
 		if (packet == NULL) {
 			printf("Failed to convert buffer into a packet!");

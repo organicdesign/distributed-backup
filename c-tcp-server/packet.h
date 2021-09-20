@@ -249,7 +249,7 @@ int convertPacketToBuffer (unsigned char* buffer, struct Packet* packet, unsigne
  *
  * @return The packet if successful, otherwise NULL.
  */
-struct Packet* convertBufferToPacket(unsigned char* buffer) {
+struct Packet* convertBufferToPacket(unsigned char* buffer, int bufferSize) {
 	int i, offset;
 	struct Packet* packet = (struct Packet*)malloc( sizeof( struct Packet ) );
 
@@ -270,8 +270,14 @@ struct Packet* convertBufferToPacket(unsigned char* buffer) {
 		return packet;
 
 	if (packet->type == KEY) {
-		// Assign the data to be the rest of the buffer
-		packet->data = buffer + 5;
+		// Assign the data memory
+		offset = 5;
+
+		packet->data = (unsigned char*)malloc( sizeof( unsigned char ) * (bufferSize - offset) );
+
+		// Unload the data
+		for (i = 0; i < bufferSize - offset; i++)
+			packet->data[i] = buffer[offset + i];
 
 		return packet;
 	}
@@ -284,7 +290,12 @@ struct Packet* convertBufferToPacket(unsigned char* buffer) {
 			packet->position += buffer[5 + i] << 56 - i * 8;
 
 		// Unload the data
-		packet->data = buffer + 13;
+		offset = 13;
+
+		packet->data = (unsigned char*)malloc( sizeof( unsigned char ) * (bufferSize - offset) );
+
+		for (i = 0; i < bufferSize - offset; i++)
+			packet->data[i] = buffer[offset + i];
 
 		return packet;
 	}
