@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <openssl/sha.h>
+#include "./packet.h"
 
 // lseek64 needs this defined.
 #define __USE_LARGEFILE64
@@ -14,7 +15,7 @@
 
 #define PORT 8080
 #define HOST "127.0.0.1"
-#define CHUNK_SIZE 64
+#define PACKET_SIZE 64
 #define FILE_PATH "./server.c"
 
 /**
@@ -90,7 +91,8 @@ off64_t getFileSize (FILE* ptr) {
 
 int main () {
 	int welcomeSocket, newSocket, bytesRead, i, fileSize, position = 0;
-	unsigned char buffer[CHUNK_SIZE];
+	struct Packet* packet;
+	unsigned char buffer[PACKET_SIZE];
 	unsigned char hash[SHA_DIGEST_LENGTH];
 	FILE* filePtr;
 	struct sockaddr_in serverAddr;
@@ -161,7 +163,13 @@ int main () {
 		// Read data
 		bzero(buffer, sizeof(buffer));
 
-		bytesRead = readSection(buffer, filePtr, sizeof(buffer), position);
+		// Read the amount of bytes minus the packet overhead into the buffer.
+		bytesRead = readSection(
+			buffer,
+			filePtr,
+			sizeof(buffer) - calculatePacketOverhead(DATA),
+			position
+		);
 
 		if (bytesRead < 0) {
 			printf("Failed to read section! (%i)\n", errno);
@@ -171,13 +179,21 @@ int main () {
 		if (bytesRead == 0)
 			break;
 
+		// Create the packet from the data.
+		packet = createDataPacket(1234, position, buffer);
+
 		position += bytesRead;
 
 		// Calculate hash
-		SHA1(buffer, bytesRead, hash);
+		SHA1(packet->data, strlen(packet->data), hash);
+
+		if (convertPacketToBuffer(buffer, packet, sizeof(buffer)) < 0) {
+			printf("Failed to convert packet to buffer!\n");
+			return 1;
+		}
 
 		// Send data
-		if (send(newSocket, buffer, bytesRead, 0) < 0) {
+		if (send(newSocket, buffer, calculatePacketSize(packet), 0) < 0) {
 			printf("Failed to send data! (%i)\n", errno);
 			return errno;
 		}

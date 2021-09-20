@@ -6,10 +6,11 @@
 #include <errno.h>
 #include <unistd.h>
 #include <openssl/sha.h>
+#include "./packet.h"
 
 #define PORT 8080
 #define HOST "127.0.0.1"
-#define CHUNK_SIZE 64
+#define PACKET_SIZE 64
 #define STORAGE_FILE "./storage/test"
 
 /**
@@ -110,7 +111,8 @@ FILE *openFile (char* path) {
 
 int main () {
 	int clientSocket, bytesReceived, position = 0;
-	unsigned char buffer[CHUNK_SIZE];
+	struct Packet* packet;
+	unsigned char buffer[PACKET_SIZE];
 	unsigned char hash[SHA_DIGEST_LENGTH];
 	struct sockaddr_in serverAddr;
 	socklen_t addr_size;
@@ -166,16 +168,24 @@ int main () {
 		if (bytesReceived == 0)
 			break;
 
+		// Convert the data into a packet.
+		packet = convertBufferToPacket(buffer);
+
+		if (packet == NULL) {
+			printf("Failed to convert buffer into a packet!");
+			return 1;
+		}
+
 		// Write to file
-		if (writeSection(buffer, filePtr, bytesReceived, position) < 0) {
+		if (writeSection(packet->data, filePtr, strlen(packet->data), packet->position) < 0) {
 			printf("Failed to write to file! (%i)\n", errno);
 			return errno;
 		}
 
-		position += bytesReceived;
+		position += strlen(packet->data);
 
 		// Calculate hash
-		SHA1(buffer, bytesReceived, hash);
+		SHA1(packet->data, strlen(packet->data), hash);
 
 		// Respond with hash
 		if (send(clientSocket, hash, SHA_DIGEST_LENGTH, 0) < 0) {
