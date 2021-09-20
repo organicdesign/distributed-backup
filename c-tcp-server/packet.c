@@ -79,6 +79,8 @@ int getPacketSize (struct Packet* packet) {
 }
 
 int convertPacketToBuffer (unsigned char* buffer, struct Packet* packet, unsigned int bufferSize) {
+	int i;
+
 	if (bufferSize < getPacketSize(packet)) {
 		printf(
 			"Buffer is too small:\n"
@@ -90,6 +92,42 @@ int convertPacketToBuffer (unsigned char* buffer, struct Packet* packet, unsigne
 
 		return -1;
 	}
+
+	bzero(buffer, bufferSize);
+
+	// The first byte is the type
+	buffer[0] = packet->type;
+
+	// Load the 4 bytes that represent the key
+	for (i = 0; i < 4; i++)
+		buffer[1 + i] = packet->key >> 24 - i * 8;
+
+	if (packet->type == QUERY)
+		return 0;
+
+	if (packet->type == KEY) {
+		// Load the data
+		for (i = 0; i < strlen(packet->data); i++)
+			buffer[5 + i] = packet->data[i];
+
+		return 0;
+	}
+
+	if (packet->type == DATA) {
+		// Load the 8 bytes that represents position
+		for (i = 0; i < 8; i++)
+			buffer[5 + i] = packet->key >> 56 - i * 8;
+
+		// Load the data
+		for (i = 0; i < strlen(packet->data); i++)
+			buffer[13 + i] = packet->data[i];
+
+		return 0;
+	}
+
+
+	printf("Packet did not match any known types. Type: #%i", packet->type);
+	return 1;
 }
 
 void printPacket (struct Packet* packet) {
