@@ -116,7 +116,7 @@ int convertPacketToBuffer (unsigned char* buffer, struct Packet* packet, unsigne
 	if (packet->type == DATA) {
 		// Load the 8 bytes that represents position
 		for (i = 0; i < 8; i++)
-			buffer[5 + i] = packet->key >> 56 - i * 8;
+			buffer[5 + i] = packet->position >> 56 - i * 8;
 
 		// Load the data
 		for (i = 0; i < strlen(packet->data); i++)
@@ -128,6 +128,59 @@ int convertPacketToBuffer (unsigned char* buffer, struct Packet* packet, unsigne
 
 	printf("Packet did not match any known types. Type: #%i", packet->type);
 	return 1;
+}
+
+struct Packet* convertBufferToPacket(unsigned char* buffer, unsigned int bufferSize) {
+	struct Packet* p = (struct Packet*)malloc( sizeof( struct Packet ) );
+	int i, offset;
+
+	if (!p)
+		return p;
+
+	// Get the type:
+	p->type = buffer[0];
+
+	// Get the key
+	p->key = 0;
+
+	for (i = 0; i < 4; i++)
+		p->key += buffer[1 + i] << 24 - i * 8;
+
+	if (p->type == QUERY)
+		return p;
+
+	if (p->type == KEY) {
+		// Assign the data memory
+		offset = 5;
+
+		p->data = (unsigned char*)malloc( sizeof( unsigned char ) * (bufferSize - offset) );
+
+		// Unload the data
+		for (i = 0; i < bufferSize - offset; i++)
+			p->data[i] = buffer[offset + i];
+
+		return p;
+	}
+
+	if (p->type == DATA) {
+		// Unload the 8 bytes that represents position
+		p->position = 0;
+
+		for (i = 0; i < 8; i++)
+			p->position += buffer[5 + i] << 56 - i * 8;
+
+		// Unload the data
+		offset = 13;
+
+		p->data = (unsigned char*)malloc( sizeof( unsigned char ) * (bufferSize - offset) );
+
+		for (i = 0; i < bufferSize - offset; i++)
+			p->data[i] = buffer[offset + i];
+
+		return p;
+	}
+
+	return p;
 }
 
 void printPacket (struct Packet* packet) {
