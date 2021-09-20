@@ -58,7 +58,9 @@ struct Packet* createKeyPacket (unsigned int key, unsigned char* data) {
 	if (p) {
 		p->type = KEY;
 		p->key = key;
-		p->data = data;
+		p->data = (char*)malloc( sizeof(char) * strlen(data) );
+
+		memcpy(p->data, data, strlen(data));
 	}
 
 	return p;
@@ -77,12 +79,15 @@ struct Packet* createKeyPacket (unsigned int key, unsigned char* data) {
  */
 struct Packet* createDataPacket (unsigned int key, off64_t position, unsigned char* data) {
 	struct Packet* p = (struct Packet*)malloc( sizeof( struct Packet ) );
+	int i;
 
 	if (p) {
 		p->type = DATA;
 		p->key = key;
 		p->position = position;
-		p->data = data;
+		p->data = (char*)malloc( sizeof(char) * strlen(data) );
+
+		memcpy(p->data, data, strlen(data));
 	}
 
 	return p;
@@ -118,26 +123,22 @@ struct Packet* createQueryPacket (unsigned int key) {
  *
  * @return The size in bytes of the packet's overhead.
  */
-int calculatePacketOverhead (struct Packet* packet) {
-	switch(packet->type) {
+int calculatePacketOverhead (int type) {
+	switch(type) {
 		case KEY:
-			return
-				sizeof(packet->type) +
-				sizeof(packet->key);
+			// Type + Key
+			return 1 + 4;
 
 		case DATA:
-			return
-				sizeof(packet->type) +
-				sizeof(packet->key) +
-				sizeof(packet->position);
+			// Type + Key + Position
+			return 1 + 4 + 8;
 
 		case QUERY:
-			return
-				sizeof(packet->type) +
-				sizeof(packet->key);
+			// Type + Key
+			return 1 + 4;
 
 		default:
-			printf("Packet did not match any known types. Type: #%i", packet->type);
+			printf("Packet did not match any known types. Type: #%i", type);
 			return -1;
 	}
 }
@@ -153,7 +154,7 @@ int calculatePacketOverhead (struct Packet* packet) {
  * @return The size in bytes of the packet.
  */
 int calculatePacketSize (struct Packet* packet) {
-	int overhead = calculatePacketOverhead(packet);
+	int overhead = calculatePacketOverhead(packet->type);
 
 	switch(packet->type) {
 		case KEY:
@@ -235,7 +236,7 @@ int convertPacketToBuffer (unsigned char* buffer, struct Packet* packet, unsigne
 	}
 
 	printf("Packet did not match any known types. Type: #%i", packet->type);
-	return 1;
+	return -1;
 }
 
 /**
