@@ -6,4 +6,6 @@ c-udp-server/server
 c-tcp-server/client
 c-tcp-server/server
 c-tcp-server/storage
+c-tcp-server/test
+c-tcp-server/test.c
 node-server/node-modules
