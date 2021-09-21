@@ -13,7 +13,6 @@
 #define HOST "127.0.0.1"
 #define PACKET_SIZE 64
 #define STORAGE_FILE "./storage/test"
-#define STORAGE_FOLDER "./storage"
 
 int main () {
 	int clientSocket, bytesReceived, position = 0;

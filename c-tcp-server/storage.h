@@ -11,6 +11,10 @@
 #ifndef STORAGE_H
 #define STORAGE_H
 
+#ifndef STORAGE_FOLDER
+#define STORAGE_FOLDER "./storage"
+#endif
+
 /**
  * Write to a section of a file.
  *
