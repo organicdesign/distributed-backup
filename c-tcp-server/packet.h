@@ -36,7 +36,7 @@ struct Packet {
 	unsigned int key;
 
 	/// 8 bytes that represent the position in the file represented by key.
-	off64_t position;
+	unsigned long position;
 
 	/// The byte array that holds the data contained in this packet.
 	unsigned char* data;
@@ -77,7 +77,7 @@ struct Packet* createKeyPacket (unsigned int key, unsigned char* data) {
  *
  * @return A Packet in the DATA format.
  */
-struct Packet* createDataPacket (unsigned int key, off64_t position, unsigned char* data) {
+struct Packet* createDataPacket (unsigned int key, unsigned long position, unsigned char* data) {
 	struct Packet* p = (struct Packet*)malloc( sizeof( struct Packet ) );
 	int i;
 

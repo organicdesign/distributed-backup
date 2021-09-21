@@ -14,7 +14,8 @@
 #define FILE_PATH "./server.c"
 
 int main () {
-	int welcomeSocket, newSocket, bytesRead, i, fileSize, position = 0;
+	int welcomeSocket, newSocket, bytesRead, i;
+	unsigned long fileSize, position = 0;
 	struct Packet* packet;
 	unsigned char buffer[PACKET_SIZE];
 	unsigned char hash[SHA_DIGEST_LENGTH];
@@ -79,6 +80,9 @@ int main () {
 		return 1;
 	}
 
+	printf("fileSize: %lu\n", fileSize);
+
+	// Send the key packet
 	packet = createKeyPacket(1234, FILE_PATH);
 
 	if (convertPacketToBuffer(buffer, packet, sizeof(buffer)) < 0) {
@@ -93,7 +97,7 @@ int main () {
 
 	for (;;) {
 		// Display progress
-		printf("\rSent: %i%%", (int)((double)position * 100 / fileSize));
+		printf("\rSent: %u%%", (int)((double)position * 100 / fileSize));
 		fflush(stdout);
 
 		// Read data
@@ -117,8 +121,6 @@ int main () {
 
 		// Create the packet from the data.
 		packet = createDataPacket(1234, position, buffer);
-
-		position += bytesRead;
 
 		// Calculate hash
 		SHA1(packet->data, strlen(packet->data), hash);
@@ -144,6 +146,8 @@ int main () {
 			printf("Hashes do not match!\n");
 			return 1;
 		}
+
+		position += bytesRead;
 	}
 
 	printf("\n");

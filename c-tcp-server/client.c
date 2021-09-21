@@ -124,7 +124,7 @@ int main () {
 			return errno;
 		}
 
-		position += strlen(packet->data);
+		position = packet->position + strlen(packet->data);
 
 		// Calculate hash
 		SHA1(packet->data, strlen(packet->data), hash);

@@ -4,7 +4,6 @@
 */
 #include <sys/stat.h>
 #include <errno.h>
-#define __USE_LARGEFILE64
 #include <unistd.h>
 #include <sys/types.h>
 
@@ -26,9 +25,8 @@
  * @return The number of bytes written to the file, this should almost always
  * match chunkSize.
  */
-int writeSection (unsigned char* buffer, FILE* ptr, int chunkSize, int position) {
+int writeSection (unsigned char* buffer, FILE* ptr, int chunkSize, long position) {
 	size_t writtenBytes;
-	int i;
 
 	// Seek through file
 	if (fseek(ptr, position, SEEK_SET) < 0 ) {
@@ -59,9 +57,8 @@ int writeSection (unsigned char* buffer, FILE* ptr, int chunkSize, int position)
  * @return The number of bytes read from the file, this should always match
  * chunkSize with the exception of the last part of the file.
  */
-int readSection (unsigned char* buffer, FILE* ptr, int chunkSize, int position) {
+int readSection (unsigned char* buffer, FILE* ptr, int chunkSize, long position) {
 	size_t readBytes;
-	int i;
 
 	// Seek through file
 	if (fseek(ptr, position, SEEK_SET) < 0 ) {
@@ -87,30 +84,32 @@ int readSection (unsigned char* buffer, FILE* ptr, int chunkSize, int position) 
  *
  * @return The size of the file in bytes.
  */
-off64_t getFileSize (FILE* ptr) {
-	off64_t fileSize, currPos;
-	int fileDes = fileno(ptr);
+unsigned long getFileSize (FILE* ptr) {
+	unsigned long fileSize, currPos;
 
 	// Save the current position.
-	currPos = lseek64(fileDes, 0, SEEK_CUR);
+	currPos = ftell(ptr);
 
 	if (currPos < 0) {
 		printf("Failed to get current position of file. (%i)\n", errno);
 		return -1;
 	}
 
-	// Seek to the end of the file and get size.
-	fileSize = lseek64(fileDes, 0, SEEK_END);
-
-	if (fileSize < 0) {
+	if (fseek(ptr, 0, SEEK_END) < 0) {
 		printf("Failed to get seek to end of file. (%i)\n", errno);
 		return -1;
 	}
 
-	// Reset the seek position to where it was.
-	currPos = lseek64(fileDes, currPos, SEEK_SET);
+	// Get the last position:
+	fileSize = ftell(ptr);
 
-	if (currPos < 0) {
+	if (fileSize < 0) {
+		printf("Failed to get size of the file. (%i)\n", errno);
+		return -1;
+	}
+
+	// Reset the seek position to where it was.
+	if (fseek(ptr, currPos, SEEK_SET) < 0) {
 		printf("Failed to reset seek position. (%i)\n", errno);
 		return -1;
 	}
