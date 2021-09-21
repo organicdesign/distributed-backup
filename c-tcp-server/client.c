@@ -4,139 +4,16 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <errno.h>
-#include <unistd.h>
 #include <openssl/sha.h>
 #include <sys/stat.h>
 #include "./packet.h"
+#include "./storage.h"
 
 #define PORT 8080
 #define HOST "127.0.0.1"
 #define PACKET_SIZE 64
 #define STORAGE_FILE "./storage/test"
 #define STORAGE_FOLDER "./storage"
-
-/**
- * Write to a section of a file.
- *
- * @param[in]	buffer		The buffer in which to write bytes to the file from.
- * @param[in]	ptr 		The pointer to the file to write to.
- * @param[in]	chunkSize	The number of bytes to write.
- * @param[in]	position	The number of bytes to skip before writing.
- *
- * @return The number of bytes written to the file, this should almost always
- * match chunkSize.
- */
-int writeSection (unsigned char* buffer, FILE* ptr, int chunkSize, int position) {
-	size_t writtenBytes;
-	int i;
-
-	// Seek through file
-	if (fseek(ptr, position, SEEK_SET) < 0 ) {
-		printf("Failed to seek file. (%i)\n", errno);
-		return -1;
-	}
-
-	// Read file
-	writtenBytes = fwrite(buffer, 1, chunkSize, ptr);
-
-	if (ferror(ptr)) {
-		printf("Failed to read file. (%i)\n", errno);
-		return -1;
-	}
-
-	return writtenBytes;
-}
-
-/**
- * Flush buffers to, truncate and close file.
- *
- * @param[in]	ptr 	The pointer to the file to close.
- * @param[in]	length	The size in bytes the file should be truncated to. Set
- * to -1 if it should not be truncated.
- *
- * @return If success returns 0, otherwise -1.
- */
-int closeFile (FILE *ptr, int length) {
-	int state = 0;
-
-	if (fflush(ptr) != 0) {
-		printf("Failed to flush file. (%i)\n", errno);
-		state = -1;
-	}
-
-	if (length >= 0) {
-		if (ftruncate(fileno(ptr), length) != 0) {
-			printf("Failed to truncate file. (%i)\n", errno);
-			state = -1;
-		}
-	}
-
-	if (fclose(ptr) != 0) {
-		printf("Failed to close file. (%i)\n", errno);
-		state = -1;
-	}
-
-	return state;
-}
-
-/**
- * Open a file for reading and writing, creating it if it doesn't exist.
- *
- * @param[in]	path 	The path to the file to open.
- *
- * @return The file pointer if successful, otherwise NULL.
- */
-FILE *openFile (char* path) {
-	FILE *ptr = fopen(path, "r+b");
-
-	if (ptr == NULL && errno != 2)
-		return NULL;
-
-	if (ptr == NULL) {
-		ptr = fopen(path, "w");
-
-		if (fclose(ptr) != 0) {
-			printf("Failed to close file. (%i)\n", errno);
-			return NULL;
-		}
-
-		ptr = fopen(path, "r+b");
-
-		if (ptr == NULL) {
-			printf("Failed to open file. (%i)\n", errno);
-			return NULL;
-		}
-	}
-
-	return ptr;
-}
-
-/**
- * Open a file for reading and writing at the end of a path, creating it and all
- * folders if they don't exist.
- *
- * @param[in]	path	The array of strings that form the path.
- * @param[in]	depth	The depth of the path.
- *
- * @return The file pointer if successful, otherwise NULL.
- */
-FILE *openPath (char path[][FILENAME_MAX], int depth) {
-	int i, check;
-	char dynamicPath[depth * FILENAME_MAX];
-
-	for (i = 0; i < depth; i++) {
-		// Don't add a '/' to the start.
-		if (i != 0)
-			strcat(dynamicPath, "/");
-		strcat(dynamicPath, path[i]);
-
-		// Don't make the last string a directory.
-		if (i != depth - 1)
-			mkdir(dynamicPath, 0777);
-	}
-
-	return openFile(dynamicPath);
-}
 
 int main () {
 	int clientSocket, bytesReceived, position = 0;

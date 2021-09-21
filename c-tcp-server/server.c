@@ -6,88 +6,12 @@
 #include <errno.h>
 #include <openssl/sha.h>
 #include "./packet.h"
-
-// lseek64 needs this defined.
-#define __USE_LARGEFILE64
-
-#include <unistd.h>
-#include <sys/types.h>
+#include "./storage.h"
 
 #define PORT 8080
 #define HOST "127.0.0.1"
 #define PACKET_SIZE 64
 #define FILE_PATH "./server.c"
-
-/**
- * Read a section of a file.
- *
- * @param[out]	buffer		The buffer to write the bytes that will be read from
- * the file.
- * @param[in]	ptr 		The pointer to the file to read from.
- * @param[in]	chunkSize	The number of bytes to read.
- * @param[in]	position	The number of bytes to skip before reading.
- *
- * @return The number of bytes read from the file, this should always match
- * chunkSize with the exception of the last part of the file.
- */
-int readSection (unsigned char* buffer, FILE* ptr, int chunkSize, int position) {
-	size_t readBytes;
-	int i;
-
-	// Seek through file
-	if (fseek(ptr, position, SEEK_SET) < 0 ) {
-		printf("Failed to seek file. (%i)\n", errno);
-		return -1;
-	}
-
-	// Read file
-	readBytes = fread(buffer, 1, chunkSize, ptr);
-
-	if (ferror(ptr)) {
-		printf("Failed to read file. (%i)\n", errno);
-		return -1;
-	}
-
-	return readBytes;
-}
-
-/**
- * Get the size of a file.
- *
- * @param[in]	ptr 	The pointer to the file to get the size of.
- *
- * @return The size of the file in bytes.
- */
-off64_t getFileSize (FILE* ptr) {
-	off64_t fileSize, currPos;
-	int fileDes = fileno(ptr);
-
-	// Save the current position.
-	currPos = lseek64(fileDes, 0, SEEK_CUR);
-
-	if (currPos < 0) {
-		printf("Failed to get current position of file. (%i)\n", errno);
-		return -1;
-	}
-
-	// Seek to the end of the file and get size.
-	fileSize = lseek64(fileDes, 0, SEEK_END);
-
-	if (fileSize < 0) {
-		printf("Failed to get seek to end of file. (%i)\n", errno);
-		return -1;
-	}
-
-	// Reset the seek position to where it was.
-	currPos = lseek64(fileDes, currPos, SEEK_SET);
-
-	if (currPos < 0) {
-		printf("Failed to reset seek position. (%i)\n", errno);
-		return -1;
-	}
-
-	return fileSize;
-}
 
 int main () {
 	int welcomeSocket, newSocket, bytesRead, i, fileSize, position = 0;
