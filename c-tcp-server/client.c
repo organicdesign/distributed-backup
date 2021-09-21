@@ -24,7 +24,7 @@ int main () {
 	socklen_t addr_size;
 	FILE *filePtr;
 	// Keyfile is a path.
-	char keyfile[4][FILENAME_MAX];
+	char* keyfile, append[10];
 
 	// Create the socket with: internet domain, stream socket and TCP
 	clientSocket = socket(PF_INET, SOCK_STREAM, 0);
@@ -69,10 +69,14 @@ int main () {
 
 	printPacket(packet);
 
-	snprintf(keyfile[0], sizeof(STORAGE_FOLDER), "%s", STORAGE_FOLDER);
-	snprintf(keyfile[1], 4, "key");
-	snprintf(keyfile[2], sizeof(keyfile[2]), "%i", packet->key);
-	filePtr = openPath(keyfile, 3);
+	// Reserve enough bytes for 'STORAGE_FOLDER/key/<SOME_INT>'.
+	keyfile = (char*)malloc(sizeof(char) * (strlen(STORAGE_FOLDER) + strlen("/key/") + sizeof(append)));
+	snprintf(append, sizeof(append), "%i", packet->key);
+	strcat(keyfile, STORAGE_FOLDER);
+	strcat(keyfile, "/key/");
+	strcat(keyfile, append);
+
+	filePtr = openFileCreatingPath(keyfile);
 
 	// Write to file
 	if (writeSection(packet->data, filePtr, strlen(packet->data), 0) < 0) {

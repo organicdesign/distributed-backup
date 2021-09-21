@@ -179,30 +179,30 @@ FILE *openFile (char* path) {
 }
 
 /**
- * Open a file for reading and writing at the end of a path, creating it and all
- * folders if they don't exist.
+ * Open a file for reading and writing, creating it and all folders if needed.
  *
- * @param[in]	path	The array of strings that form the path.
- * @param[in]	depth	The depth of the path.
+ * @param[in]	path	The path to the file.
  *
  * @return The file pointer if successful, otherwise NULL.
  */
-FILE *openPath (char path[][FILENAME_MAX], int depth) {
-	int i, check;
-	char dynamicPath[depth * FILENAME_MAX];
+FILE *openFileCreatingPath (char* path) {
+	int i;
+	char* partPath = (char*)malloc(sizeof(char) * strlen(path));
 
-	for (i = 0; i < depth; i++) {
-		// Don't add a '/' to the start.
-		if (i != 0)
-			strcat(dynamicPath, "/");
-		strcat(dynamicPath, path[i]);
+	for (i = 0; i < strlen(path); i++) {
+		// Ignore the "./" path.
+		if (path[i] == '/' && !(partPath[i-1] == '.' && i == 1)) {
+			// Create folder
+			if (mkdir(partPath, 0777) < 0 && errno != EEXIST) {
+				printf("Failed to create folder. (%i)", errno);
+				return NULL;
+			}
+		}
 
-		// Don't make the last string a directory.
-		if (i != depth - 1)
-			mkdir(dynamicPath, 0777);
+		partPath[i] = path[i];
 	}
 
-	return openFile(dynamicPath);
+	return openFile(partPath);
 }
 
 #endif
