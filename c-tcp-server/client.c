@@ -22,8 +22,6 @@ int main () {
 	struct sockaddr_in serverAddr;
 	socklen_t addr_size;
 	FILE *filePtr;
-	// Keyfile is a path.
-	char* keyfile, append[10];
 
 	// Create the socket with: internet domain, stream socket and TCP
 	clientSocket = socket(PF_INET, SOCK_STREAM, 0);
@@ -68,20 +66,14 @@ int main () {
 
 	printPacket(packet);
 
-	// Reserve enough bytes for 'STORAGE_FOLDER/key/<SOME_INT>'.
-	keyfile = (char*)malloc(sizeof(char) * (strlen(STORAGE_FOLDER) + strlen("/key/") + sizeof(append)));
-	snprintf(append, sizeof(append), "%i", packet->key);
-	strcat(keyfile, STORAGE_FOLDER);
-	strcat(keyfile, "/key/");
-	strcat(keyfile, append);
-
-	filePtr = openFileCreatingPath(keyfile);
-
 	// Write to file
-	if (writeSection(packet->data, filePtr, strlen(packet->data), 0) < 0) {
+	/*if (writeSection(packet->data, filePtr, strlen(packet->data), 0) < 0) {
 		printf("Failed to write to file! (%i)\n", errno);
 		return errno;
-	}
+	}*/
+
+	// Free memory.
+	destroyPacket(packet);
 
 	// Open file
 	filePtr = openFile(STORAGE_FILE);
@@ -134,6 +126,9 @@ int main () {
 			printf("Failed to send hash! (%i)\n", errno);
 			return errno;
 		}
+
+		// Free memory.
+		destroyPacket(packet);
 	}
 
 	printf("\n");

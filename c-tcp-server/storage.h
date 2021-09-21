@@ -5,7 +5,6 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <unistd.h>
-#include <sys/types.h>
 
 #ifndef STORAGE_H
 #define STORAGE_H

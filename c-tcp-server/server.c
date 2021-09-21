@@ -95,6 +95,9 @@ int main () {
 		return errno;
 	}
 
+	// Free memory.
+	destroyPacket(packet);
+
 	for (;;) {
 		// Display progress
 		printf("\rSent: %u%%", (int)((double)position * 100 / fileSize));
@@ -148,6 +151,9 @@ int main () {
 		}
 
 		position += bytesRead;
+
+		// Free memory.
+		destroyPacket(packet);
 	}
 
 	printf("\n");

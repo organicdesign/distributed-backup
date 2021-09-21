@@ -113,6 +113,11 @@ struct Packet* createQueryPacket (unsigned int key) {
 	return p;
 }
 
+int destroyPacket (struct Packet* packet) {
+	free(packet->data);
+	free(packet);
+}
+
 /**
  * Create the overhead size of a packet. This overhead is the size of the packet
  * without the byte array.
