@@ -155,6 +155,18 @@ int main () {
 		return 1;
 	}
 
+	packet = createKeyPacket(1234, FILE_PATH);
+
+	if (convertPacketToBuffer(buffer, packet, sizeof(buffer)) < 0) {
+		printf("Failed to convert packet to buffer!\n");
+		return 1;
+	}
+
+	if (send(newSocket, buffer, calculatePacketSize(packet), 0) < 0) {
+		printf("Failed to send key! (%i)\n", errno);
+		return errno;
+	}
+
 	for (;;) {
 		// Display progress
 		printf("\rSent: %i%%", (int)((double)position * 100 / fileSize));
