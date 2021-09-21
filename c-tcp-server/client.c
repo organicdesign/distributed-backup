@@ -6,12 +6,14 @@
 #include <errno.h>
 #include <unistd.h>
 #include <openssl/sha.h>
+#include <sys/stat.h>
 #include "./packet.h"
 
 #define PORT 8080
 #define HOST "127.0.0.1"
 #define PACKET_SIZE 64
 #define STORAGE_FILE "./storage/test"
+#define STORAGE_FOLDER "./storage"
 
 /**
  * Write to a section of a file.
@@ -109,6 +111,33 @@ FILE *openFile (char* path) {
 	return ptr;
 }
 
+/**
+ * Open a file for reading and writing at the end of a path, creating it and all
+ * folders if they don't exist.
+ *
+ * @param[in]	path	The array of strings that form the path.
+ * @param[in]	depth	The depth of the path.
+ *
+ * @return The file pointer if successful, otherwise NULL.
+ */
+FILE *openPath (char path[][FILENAME_MAX], int depth) {
+	int i, check;
+	char dynamicPath[depth * FILENAME_MAX];
+
+	for (i = 0; i < depth; i++) {
+		// Don't add a '/' to the start.
+		if (i != 0)
+			strcat(dynamicPath, "/");
+		strcat(dynamicPath, path[i]);
+
+		// Don't make the last string a directory.
+		if (i != depth - 1)
+			mkdir(dynamicPath, 0777);
+	}
+
+	return openFile(dynamicPath);
+}
+
 int main () {
 	int clientSocket, bytesReceived, position = 0;
 	struct Packet* packet;
@@ -117,6 +146,8 @@ int main () {
 	struct sockaddr_in serverAddr;
 	socklen_t addr_size;
 	FILE *filePtr;
+	// Keyfile is a path.
+	char keyfile[4][FILENAME_MAX];
 
 	// Create the socket with: internet domain, stream socket and TCP
 	clientSocket = socket(PF_INET, SOCK_STREAM, 0);
@@ -138,6 +169,37 @@ int main () {
 
 	if (connect(clientSocket, (struct sockaddr *) &serverAddr, addr_size) < 0) {
 		printf("Connection error! (%i)\n", errno);
+		return errno;
+	}
+
+	// Receive data
+	bzero(buffer, sizeof(buffer));
+	bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
+
+	// Something went wrong revieving the data.
+	if (bytesReceived < 0) {
+		printf("Failed to receive data! (%i)\n", errno);
+		return errno;
+	}
+
+	// Convert the data into a packet.
+	packet = convertBufferToPacket(buffer, bytesReceived);
+
+	if (packet == NULL) {
+		printf("Failed to convert buffer into a packet!");
+		return 1;
+	}
+
+	printPacket(packet);
+
+	snprintf(keyfile[0], sizeof(STORAGE_FOLDER), "%s", STORAGE_FOLDER);
+	snprintf(keyfile[1], 4, "key");
+	snprintf(keyfile[2], sizeof(keyfile[2]), "%i", packet->key);
+	filePtr = openPath(keyfile, 3);
+
+	// Write to file
+	if (writeSection(packet->data, filePtr, strlen(packet->data), 0) < 0) {
+		printf("Failed to write to file! (%i)\n", errno);
 		return errno;
 	}
 
