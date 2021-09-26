@@ -18,7 +18,13 @@ gcc \
 gcc \
 	-o server \
 	server.c \
-	-lcrypto \
-	-D_FILE_OFFSET_BITS=64 \
-	-Doff64_t=__off64_t
+	-lcrypto
+```
+
+Test:
+```bash
+gcc \
+	-o test \
+	test.c \
+	-lcrypto
 ```
