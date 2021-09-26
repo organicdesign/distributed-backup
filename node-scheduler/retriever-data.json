@@ -1,0 +1,22 @@
+[
+	{
+		"server": "cool-project.com",
+		"priority": 0.3
+	},
+	{
+		"server": "organicdesign.co.nz",
+		"priority": 0.5
+	},
+	{
+		"server": "example.com",
+		"priority": 0.1
+	},
+	{
+		"server": "ipfs.io",
+		"priority": 0.8
+	},
+	{
+		"server": "silly-project.com",
+		"priority": 0.02
+	}
+]
