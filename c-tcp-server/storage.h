@@ -190,6 +190,7 @@ FILE *openFile (char* path) {
 FILE *openFileCreatingPath (char* path) {
 	int i;
 	char* partPath = (char*)malloc(sizeof(char) * strlen(path));
+	FILE *filePtr;
 
 	for (i = 0; i < strlen(path); i++) {
 		// Ignore the "./" path.
@@ -204,7 +205,54 @@ FILE *openFileCreatingPath (char* path) {
 		partPath[i] = path[i];
 	}
 
-	return openFile(partPath);
+	filePtr = openFile(partPath);
+
+	// Free up the memory.
+	free(partPath);
+	partPath = NULL;
+
+	return filePtr;
+}
+
+FILE *getKeyFile (int key) {
+	// 'append' has enough bytes to display an int as a series of characters.
+	char* keyfile, append[10];
+	const int strLen = strlen(STORAGE_FOLDER) + strlen("/key/") + sizeof(append);
+	FILE *filePtr;
+
+	// Reserve enough bytes for 'STORAGE_FOLDER/key/<SOME_INT>'.
+	keyfile = (char*)malloc(sizeof(char) * strLen);
+
+	snprintf(append, sizeof(append), "%i",   key);
+
+	strcat(keyfile, STORAGE_FOLDER);
+	strcat(keyfile, "/key/");
+	strcat(keyfile, append);
+
+	filePtr = openFileCreatingPath(keyfile);
+
+	// Free up the memory.
+	free(keyfile);
+	keyfile = NULL;
+
+	return filePtr;
+}
+
+FILE* getFileByKey (int key) {
+	FILE *keyfile = getKeyFile(key);
+	char path[FILENAME_MAX];
+
+	if (keyfile == NULL) {
+		printf("Failed to get keyfile!");
+		return NULL;
+	}
+
+	if (readSection(path, keyfile, FILENAME_MAX, 0) < 0) {
+		printf("Failed to read keyfile!");
+		return NULL;
+	}
+
+	printf("File by key: %s", path);
 }
 
 #endif
