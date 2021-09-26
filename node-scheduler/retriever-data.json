@@ -13,7 +13,7 @@
 	},
 	{
 		"server": "ipfs.io",
-		"priority": 0.8
+		"priority": 0.08
 	},
 	{
 		"server": "silly-project.com",
