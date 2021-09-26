@@ -1,0 +1,22 @@
+[
+	{
+		"path": "./index.js",
+		"priority": 10
+	},
+	{
+		"path": "./database.json",
+		"priority": 15
+	},
+	{
+		"path": "./package.json",
+		"priority": 5
+	},
+	{
+		"path": "../LICENSE",
+		"priority": 1
+	},
+	{
+		"path": "../README",
+		"priority": 3
+	}
+]
