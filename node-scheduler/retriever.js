@@ -15,3 +15,12 @@ for (const server of data) {
 
 	server.slots = count;
 }
+
+let counter = 0;
+ setInterval(() => {
+	if (counter % Math.round(1 / maxBandwidth) == 0) {
+		console.log("Do Something.");
+	} else
+		console.log("Do nothing.");
+	counter++;
+}, 1000);
