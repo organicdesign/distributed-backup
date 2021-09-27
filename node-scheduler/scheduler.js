@@ -6,12 +6,12 @@ class Scheduler {
 		this._targets = {};
 		this._onTarget = console.log;
 		this._interval = null;
-		this._intervals = this._calculateIntervals();
 		this._action = action;
 		this._nonAction = nonAction;
-		this._bandwidth = 100000; // 100kps
-		this._packetSize = 262158; // Default IPFS block size.
-		this._bandwidthUse = 0.5;
+
+		this.setPacketSize(262158); // Default IPFS block size.
+		this.setBandwidth(100000); // 100kps
+		this.setBandwidthUsage(0.5); // Use 50% of the bandwidth
 	}
 
 	setBandwidthUsage (usage) {
@@ -22,6 +22,7 @@ class Scheduler {
 			usage = 1;
 
 		this._bandwidthUse = usage;
+		this._intervals = this._calculateIntervals();
 	}
 
 	setPacketSize (size) {
