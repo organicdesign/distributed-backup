@@ -1,9 +1,4 @@
 const SIZE = 100;
-const MIN_PERCENTAGE = 1 / SIZE;
-const PACKET_SIZE = 262158;
-const BANDWIDTH = 10000000;
-const INTERVAL = PACKET_SIZE * 1000 / BANDWIDTH;
-const BANDWIDTH_USE = 0.31;
 
 class Scheduler {
 	constructor (action, nonAction = () => {}) {
@@ -14,6 +9,33 @@ class Scheduler {
 		this._intervals = this._calculateIntervals();
 		this._action = action;
 		this._nonAction = nonAction;
+		this._bandwidth = 100000; // 100kps
+		this._packetSize = 262158; // Default IPFS block size.
+		this._bandwidthUse = 0.5;
+	}
+
+	setBandwidthUsage (usage) {
+		if (usage <= 0)
+			usage = _calcMinPercentage();
+
+		if (usage > 1)
+			usage = 1;
+
+		this._bandwidthUse = usage;
+	}
+
+	setPacketSize (size) {
+		if (size <= 0)
+			return;
+
+		this._packetSize = size;
+	}
+
+	setBandwidth (speed) {
+		if (speed <= 0)
+			return;
+
+		this._bandwidth = speed;
 	}
 
 	setTargetFunc (func) {
@@ -82,7 +104,7 @@ class Scheduler {
 
 			// Increment counter
 			counter = (counter + 1) % this._intervals.total;
-		}, INTERVAL);
+		}, this._calcInterval());
 	}
 
 	stop () {
@@ -105,7 +127,7 @@ class Scheduler {
 		// We need to calculate the total the second time to do the same
 		// calculations without the items that will not get a slot.
 		const filteredTotal = Object.values(this._targets)
-			.filter(value => value / total >= MIN_PERCENTAGE)
+			.filter(value => value / total >= this._calcMinPercentage())
 			.reduce((acc, value) => acc + value, 0);
 
 		// Create a copy of targets with percentages
@@ -114,7 +136,7 @@ class Scheduler {
 		for (const key of Object.keys(this._targets)) {
 			const priorityAsPercent = this._targets[key] / total;
 
-			if (priorityAsPercent < MIN_PERCENTAGE)
+			if (priorityAsPercent < this._calcMinPercentage())
 				continue;
 
 			modifiedTargets[key] = this._targets[key] / filteredTotal;
@@ -151,6 +173,14 @@ class Scheduler {
 		}
 	}
 
+	_calcMinPercentage () {
+		return 1 / SIZE;
+	}
+
+	_calcInterval () {
+		return this._packetSize * 1000 / this._bandwidth;
+	}
+
 	/**
 	 * Calculates the greatest common divider of two numbers.
 	 *
@@ -184,7 +214,7 @@ class Scheduler {
 	 */
 	_calculateIntervals () {
 		// Convert the bandwidth into slots out of 100
-		const bandwidthAsSlots = BANDWIDTH_USE * SIZE;
+		const bandwidthAsSlots = this._bandwidthUse * SIZE;
 
 		// Work out what number we need to divide by to reduce the slots value.
 		const gcdWork = this._gcd(bandwidthAsSlots, 100 - bandwidthAsSlots);

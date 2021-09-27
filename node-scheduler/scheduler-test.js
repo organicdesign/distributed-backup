@@ -15,4 +15,7 @@ scheduler.setTarget("test-3", 31);
 
 scheduler.start();
 scheduler.stop();
+
 scheduler.start();
+
+scheduler.setTarget("test-4", 100);
