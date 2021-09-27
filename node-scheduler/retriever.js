@@ -136,7 +136,7 @@ module.exports = (action, maxBandwidth = 0.5, nonAction = () => {}) => {
 
 	// Set interval.
 	let counter = 0, currItrCounter = 0, serverCounter = 0, currentServer = 0;
-	setInterval(() => {
+	return setInterval(() => {
 		const doWork = () => {
 			action(buffer[serverCounter]);
 
