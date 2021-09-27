@@ -21,7 +21,7 @@ for (const file of data) {
 let sum = 0, err = 0;
 for (const file of buffer) {
 	const exactCount = file.priority * size / priorityCounter + err;
-	const count = Math.round(exactCount);
+	const count = Math.ceil(exactCount);
 
 	sum += count;
 	err = exactCount - count;

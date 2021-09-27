@@ -1,8 +1,9 @@
 module.exports = action => {
-	const maxBandwidth = 0.5; // 50% bandwidth use by this scheduler.
+	const maxBandwidth = .5; // 50% bandwidth use by this scheduler.
 
 	// Obtain and sort the data.
 	const data = require("./retriever-data.json")
+		.map(file => ({...file, priority: file.priority * maxBandwidth}))
 		.filter(file => file.priority >= 0.01)
 		.sort((a,  b) => b.priority - a.priority);
 
@@ -12,12 +13,13 @@ module.exports = action => {
 	// Fill buffer with the data distributed.
 	let err = 0;
 	for (const server of data) {
-		const itemCount = server.priority * 100 * maxBandwidth;
-		const distance = buffer.length / itemCount + err;
-		const roundedDistance = Math.round(distance);
+		const itemCount = server.priority * 100 + err;
+		const roundedItemCount = Math.ceil(itemCount);
+
+		const roundedDistance = Math.round(buffer.length / roundedItemCount);
 
 		let pos = 0;
-		for (let i = 0; i < itemCount; i++) {
+		for (let i = 0; i < roundedItemCount; i++) {
 			pos += roundedDistance % buffer.length;
 
 			for (let y = 0; true; y++) {
@@ -30,7 +32,7 @@ module.exports = action => {
 			}
 		}
 
-		err += roundedDistance - distance;
+		err = itemCount - roundedItemCount;
 	}
 
 	const calculateIntervals = () => {
@@ -69,7 +71,13 @@ module.exports = action => {
 		let work = 1, sleep = 1, rWork = 0, rSleep = 0;
 
 		// We need to check if we will have a remainder of work or sleep.
-		if (slotsOfWork > slotsOfSleep) {
+		if (slotsOfSleep === 0) {
+			// All work and no sleep...
+			sleep = 0;
+		} else if (slotsOfWork === 0) {
+			// All sleep and no work...
+			work = 0;
+		} else if (slotsOfWork > slotsOfSleep) {
 			// Calculate the remainder of work.
 			rWork = slotsOfWork % slotsOfSleep;
 
@@ -100,6 +108,8 @@ module.exports = action => {
 
 	const times = calculateIntervals();
 
+	console.log(times);
+
 	// Set interval.
 	let counter = 0, currItrCounter = 0, serverCounter = 0, currentServer = 0;
 	setInterval(() => {
@@ -129,5 +139,5 @@ module.exports = action => {
 
 		// Increment counter
 		counter = (counter + 1) % times.total;
-	}, 100);
+	}, 1000);
 };
