@@ -3,11 +3,34 @@ const maxBandwidth = 0.5; // 50% bandwidth use by this scheduler.
 // Obtain and sort the data.
 const data = require("./retriever-data.json")
 	.filter(file => file.priority >= 0.01)
-	.map(file => {
-		file.priority *= maxBandwidth;
-		return file;
-	})
 	.sort((a,  b) => b.priority - a.priority);
+
+// We want to distribute the data into an array.
+const buffer = new Array(maxBandwidth * 100).fill(null);
+
+// Fill buffer with the data distributed.
+let err = 0;
+for (const server of data) {
+	const itemCount = server.priority * 100 * maxBandwidth;
+	const distance = buffer.length / itemCount + err;
+	const roundedDistance = Math.round(distance);
+
+	let pos = 0;
+	for (let i = 0; i < itemCount; i++) {
+		pos += roundedDistance % buffer.length;
+
+		for (let y = 0; true; y++) {
+			let insertAt = (pos + y) % buffer.length;
+
+			if (buffer[insertAt] === null) {
+				buffer[insertAt] = server.server;
+				break;
+			}
+		}
+	}
+
+	err += roundedDistance - distance;
+}
 
 const calculateIntervals = () => {
 	// We need a greatest common denominator function for the next calculations.
@@ -76,22 +99,14 @@ const calculateIntervals = () => {
 
 const times = calculateIntervals();
 
-console.log(times);
-
 // Set interval.
 let counter = 0, currItrCounter = 0, serverCounter = 0, currentServer = 0;
 setInterval(() => {
 	const doWork = () => {
-		console.log(data[currentServer].server);
+		console.log(buffer[serverCounter]);
 
 		// Increment serverCounter every time we do a server call.
-		serverCounter++;
-
-		// Change server we are doing work for.
-		if (serverCounter >= data[currentServer].priority * 100) {
-			currentServer = (currentServer + 1) % data.length;
-			serverCounter = 0;
-		}
+		serverCounter = (serverCounter + 1) % buffer.length;
 	};
 
 	if (counter < times.rWork) {
@@ -113,7 +128,4 @@ setInterval(() => {
 
 	// Increment counter
 	counter = (counter + 1) % times.total;
-
-	if (counter == 0)
-		console.log("_____________________________________")
 }, 1000);
