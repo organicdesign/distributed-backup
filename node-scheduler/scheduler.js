@@ -1,11 +1,19 @@
 const SIZE = 100;
 const MIN_PERCENTAGE = 1 / SIZE;
+const PACKET_SIZE = 262158;
+const BANDWIDTH = 10000000;
+const INTERVAL = PACKET_SIZE * 1000 / BANDWIDTH;
+const BANDWIDTH_USE = 0.31;
 
 class Scheduler {
-	constructor () {
-		this._buffer = new Array(SIZE);
+	constructor (action, nonAction = () => {}) {
+		this._buffer = [];
 		this._targets = {};
 		this._onTarget = console.log;
+		this._interval = null;
+		this._intervals = this._calculateIntervals();
+		this._action = action;
+		this._nonAction = nonAction;
 	}
 
 	setTargetFunc (func) {
@@ -40,14 +48,49 @@ class Scheduler {
 		if (this._interval)
 			return
 
+		let counter = 0, currItrCounter = 0, serverCounter = 0;
+
 		this._interval = setInterval(() => {
-			console.log("Doing something")
-		}, 1000);
+			const doWork = () => {
+				this._action(this._buffer[serverCounter]);
+
+				// Increment serverCounter every time we do a server call.
+				serverCounter = (serverCounter + 1) % SIZE;
+			};
+
+			if (counter < this._intervals.rWork) {
+				// Do the remainder work.
+				doWork();
+			} else if (counter < this._intervals.rSleep) {
+				// Do the remainder sleep.
+				this._nonAction();
+			} else {
+				if (currItrCounter < this._intervals.work) {
+					// Do work
+					doWork();
+				} else {
+					// Sleep
+					this._nonAction();
+				}
+
+				// Keep the current iteration ticking over.
+				currItrCounter++;
+
+				if (currItrCounter >= this._intervals.work + this._intervals.sleep)
+					currItrCounter = 0;
+			}
+
+			// Increment counter
+			counter = (counter + 1) % this._intervals.total;
+		}, INTERVAL);
 	}
 
 	stop () {
-		if (this._interval)
-			clearInterval(this._interval);
+		if (!this._interval)
+			return;
+
+		clearInterval(this._interval);
+		this._interval = null;
 	}
 
 	debug () {
@@ -107,6 +150,87 @@ class Scheduler {
 			err = itemCount - roundedItemCount;
 		}
 	}
+
+	/**
+	 * Calculates the greatest common divider of two numbers.
+	 *
+	 * @param a The first number to calculate from.
+	 * @param b The second number to calculate from.
+	 */
+	_gcd (a, b) {
+		a = Math.abs(a);
+		b = Math.abs(b);
+
+		// Ensure the greatest number is 'a'.
+		[a, b] = b > a ? [b, a] : [a, b];
+
+		while (true) {
+			if (b == 0)
+				return a;
+
+			a %= b;
+
+			if (a == 0)
+				return b;
+
+			b %= a;
+		}
+	};
+
+	/**
+	 * Calculates the intervals needed to distribute timing of work and sleep.
+	 *
+	 * @param size The count of slots of work out of 100.
+	 */
+	_calculateIntervals () {
+		// Convert the bandwidth into slots out of 100
+		const bandwidthAsSlots = BANDWIDTH_USE * SIZE;
+
+		// Work out what number we need to divide by to reduce the slots value.
+		const gcdWork = this._gcd(bandwidthAsSlots, 100 - bandwidthAsSlots);
+
+		// Calculate the number of slots of work and sleep.
+		const slotsOfWork = bandwidthAsSlots / gcdWork;
+		const slotsOfSleep = (100 - bandwidthAsSlots) / gcdWork;
+
+		// Predefine the return values so if left unchanged they have the default.
+		let work = 1, sleep = 1, rWork = 0, rSleep = 0;
+
+		// We need to check if we will have a remainder of work or sleep.
+		if (slotsOfSleep === 0) {
+			// All work and no sleep...
+			sleep = 0;
+		} else if (slotsOfWork === 0) {
+			// All sleep and no work...
+			work = 0;
+		} else if (slotsOfWork > slotsOfSleep) {
+			// Calculate the remainder of work.
+			rWork = slotsOfWork % slotsOfSleep;
+
+			// Use the remainder to reduce the work value as low as possible.
+			const rGcdWork = this._gcd(slotsOfWork - rWork, slotsOfSleep);
+
+			// We only need to work out how much work needs to be done for 1 sleep.
+			work = (slotsOfWork - rWork) / rGcdWork;
+		} else {
+			// Calculate the remainder of sleep.
+			rSleep = slotsOfSleep % slotsOfWork;
+
+			// Use the remainder to reduce the sleep value as low as possible.
+			const rGcdWork = this._gcd(slotsOfWork, slotsOfSleep - rSleep);
+
+			// We only need to work out how much sleep needs to be done for 1 work.
+			sleep = (slotsOfSleep - rSleep) / rGcdWork;
+		}
+
+		return {
+			work,
+			sleep,
+			rWork,
+			rSleep,
+			total: slotsOfWork + slotsOfSleep,
+		};
+	};
 };
 
 module.exports = Scheduler;
