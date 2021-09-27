@@ -1,4 +1,4 @@
-const maxBandwidth = 0.12; // 50% bandwidth use by this scheduler.
+const maxBandwidth = 0.5; // 50% bandwidth use by this scheduler.
 
 // Obtain and sort the data.
 const data = require("./retriever-data.json")
@@ -69,16 +69,19 @@ const calculateIntervals = () => {
 		work,
 		sleep,
 		rWork,
-		rSleep
+		rSleep,
+		total: slotsOfWork + slotsOfSleep,
 	};
 };
 
-console.log(calculateIntervals());
+const times = calculateIntervals();
+
+console.log(times);
 
 // Set interval.
-let counter = 0, serverCounter = 0, currentServer = 0;
+let counter = 0, currItrCounter = 0, serverCounter = 0, currentServer = 0;
 setInterval(() => {
-	if (counter < slotsOfWork) {
+	const doWork = () => {
 		console.log(data[currentServer].server);
 
 		// Increment serverCounter every time we do a server call.
@@ -89,11 +92,27 @@ setInterval(() => {
 			currentServer = (currentServer + 1) % data.length;
 			serverCounter = 0;
 		}
-	} else
-		console.log("Do nothing.");
+	};
+
+	if (counter < times.rWork) {
+		doWork();
+	} else if (counter < times.rSleep) {
+		console.log("Remainder sleep");
+	} else {
+		if (currItrCounter < times.work) {
+			doWork();
+		} else {
+			console.log("Do nothing.");
+		}
+
+		currItrCounter++;
+
+		if (currItrCounter >= times.work + times.sleep)
+			currItrCounter = 0;
+	}
 
 	// Increment counter
-	counter = (counter + 1) % (slotsOfWork + slotsOfSleep);
+	counter = (counter + 1) % times.total;
 
 	if (counter == 0)
 		console.log("_____________________________________")
