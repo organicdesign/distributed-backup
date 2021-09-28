@@ -27,3 +27,7 @@ console.log(
 		]
 	))
 )
+
+console.log(
+	Calc.calculateSlots(30)
+)
