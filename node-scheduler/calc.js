@@ -49,6 +49,19 @@ class Calc {
 		// Conver back to decimals.
 		return rp.map(v => v / 100);
 	}
+
+	/**
+	 * Convert a list of intergers into percentages. The integers will be
+	 * considered to be a value out of the total.
+	 *
+	 * @param integers The integers to convert to percentages.
+	 *
+	 * @return The list of percentages.
+	 */
+	static convertToPercentages (integers) {
+		const total = integers.reduce((a, v) => a + v, 0);
+		return integers.map(v => v / total);
+	}
 };
 
 module.exports = Calc;

@@ -11,3 +11,19 @@ console.log(
 		]
 	)
 )
+
+console.log(
+	Calc.roundPercentages(
+	Calc.convertToPercentages(
+		[
+			31,
+			54,
+			0,
+			1,
+			140,
+			10,
+			43,
+			94
+		]
+	))
+)
