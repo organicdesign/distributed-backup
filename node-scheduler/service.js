@@ -9,7 +9,7 @@ const BLOCKSIZE = 262158; // Default ipfs block size.
 
 const connections = [];
 
-server.listen("/tmp/unixSocket", () => {
+server.listen("/tmp/upload", () => {
 	console.log("now listening");
 });
 
@@ -39,7 +39,7 @@ setInterval(() => {
 	// Increment id first beause it could be out of bound otherwise.
 	id = (id + 1) % connections.length;
 
-	connections[id].write("test");
+	connections[id].write("\n");
 	connections[id].needCount--;
 
 	if (connections[id].needCount <= 0) {
