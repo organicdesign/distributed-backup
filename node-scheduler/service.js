@@ -14,12 +14,20 @@ server.listen("/tmp/unixSocket", () => {
 });
 
 server.on("connection", s => {
-	connections.push(s);
-
 	s.on("close", () => {
 		// Remove from connections when it closes.
 		connections.splice(connections.indexOf(s), 1);
 		s.end();
+	});
+
+	s.on("data", data => {
+		const index = connections.indexOf(s);
+
+		if (index < 0) {
+			connections.push(s);
+			s.needCount = 1;
+		} else
+			s.needCount++;
 	});
 });
 
@@ -32,4 +40,9 @@ setInterval(() => {
 	id = (id + 1) % connections.length;
 
 	connections[id].write("test");
+	connections[id].needCount--;
+
+	if (connections[id].needCount <= 0) {
+		connections.splice(id, 1);
+	}
 }, BLOCKSIZE * 1000 / BANDWIDTH);
