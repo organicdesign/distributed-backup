@@ -1,30 +1,26 @@
-const data = require("./data.json").sort((a,  b) => b.priority - a.priority);
+const readline = require("readline").createInterface({
+	input: process.stdin,
+	output: process.stdout
+});
 
-const buffer = [];
-const size = 60;
+const data = require("./data.json");
+const Scheduler = require("./scheduler");
 
-let priorityCounter = 0;
-for (const file of data) {
-	if (buffer.length > size)
-		break;
+const scheduler = new Scheduler(target => {
+	console.log("Doing work.", target);
+});
 
-	const slots = file.priority * size / priorityCounter;
+// Load the scheduler
+for (const file of data)
+	scheduler.setTarget(file.path, file.priority);
 
-	if (slots < 1)
-		break;
+//scheduler.start();
 
-	buffer.push(file);
+const x = () => {
+	readline.question("", () => {
+		scheduler.work.next();
+		x();
+	});
+};
 
-	priorityCounter += file.priority;
-}
-
-let sum = 0, err = 0;
-for (const file of buffer) {
-	const exactCount = file.priority * size / priorityCounter + err;
-	const count = Math.ceil(exactCount);
-
-	sum += count;
-	err = exactCount - count;
-
-	console.log(`${file.path}: ${count}`);
-}
+x();

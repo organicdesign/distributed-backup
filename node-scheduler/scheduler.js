@@ -9,16 +9,18 @@ class Scheduler {
 		this._action = action;
 		this._nonAction = nonAction;
 
-		this.work = (function*(getBuffer) {
+		// Work is a generator function so it can be called manually or by the
+		// interval.
+		this.work = (function*(getBuffer, getAction) {
 			let serverCounter = 0;
 
 			for (;;) {
-				yield getBuffer()[serverCounter];
+				yield getAction()(getBuffer()[serverCounter]);
 
 				// Increment serverCounter every time we do a server call.
 				serverCounter = (serverCounter + 1) % SIZE;
 			}
-		})(() => this._buffer);
+		})(() => this._buffer, () => this._action);
 
 		this.setPacketSize(262158); // Default IPFS block size.
 		this.setBandwidth(100000); // 100kps
@@ -87,14 +89,14 @@ class Scheduler {
 		this._interval = setInterval(() => {
 			if (counter < this._intervals.rWork) {
 				// Do the remainder work.
-				this._action(this.work.next().value);
+				this.work.next();
 			} else if (counter < this._intervals.rSleep) {
 				// Do the remainder sleep.
 				this._nonAction();
 			} else {
 				if (currItrCounter < this._intervals.work) {
 					// Do work
-					this._action(this.work.next().value);
+					this.work.next();
 				} else {
 					// Sleep
 					this._nonAction();
@@ -153,7 +155,7 @@ class Scheduler {
 		let err = 0;
 		for (const key of Object.keys(modifiedTargets)) {
 			const itemCount = modifiedTargets[key] * SIZE + err;
-			const roundedItemCount = Math.ceil(itemCount);
+			const roundedItemCount = Math.round(itemCount);
 
 			const roundedDistance = Math.round(SIZE / roundedItemCount);
 
