@@ -35,17 +35,19 @@ class Calc {
 	 * @return The list of percentages that have been rounded.
 	 */
 	static roundPercentages (percentages) {
-		const roundedPercentages = percentages.map(v => Math.floor(v * 100) / 100);
-		const total = roundedPercentages.reduce((a, v) => a + v, 0);
+		// Convert the decimals to percentages.
+		let rp = percentages.map(v => v * 100);
 
-		// Don't really care how these remainders get distributed - just as long
-		// as they do.
-		const numberCut = (1 - total) * 100;
+		// Round the percentages factoring in error.
+		let e = 0;
+		for (let i = 0; i < rp.length; i++) {
+			const old = rp[i];
+			rp[i] = Math.round(rp[i]);
+			e = old - rp[i];
+		}
 
-		for (let i = 0; i < numberCut; i++)
-			roundedPercentages[i % percentages.length] += 0.01;
-
-		return roundedPercentages;
+		// Conver back to decimals.
+		return rp.map(v => v / 100);
 	}
 };
 
