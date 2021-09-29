@@ -7,6 +7,9 @@ const SLEEP = "sleep";
 // The constand for identifying work in the pattern.
 const WORK = "work";
 
+/**
+ * The SlotTimes class is responsible for grouping information about slot times.
+ */
 class SlotTimes {
 	/**
 	 * Create a new set of slot times.
@@ -26,7 +29,17 @@ class SlotTimes {
 	}
 }
 
+/**
+ * The SlotIterator class is responsible for iterating between work and sleep
+ * slots.
+ */
 class SlotIterator {
+	/**
+	 * Create a slot iterator to interate between work and sleep.
+	 *
+	 * @param {number} workSlotCount The number of working slots to be
+	 * calculated for.
+	 */
 	constructor (workSlotCount = 50) {
 		this._slotTimes = this._calculateSlots(workSlotCount);
 
@@ -73,8 +86,8 @@ class SlotIterator {
 	 *
 	 * @param {number} size The number of working slots.
 	 *
-	 * @return {Slots} The slots that are needed to fill in order to distribute
-	 * load.
+	 * @return {SlotTimes} The slots that are needed to fill in order to
+	 * distribute load.
 	 */
 	_calculateSlots (slots) {
 		// Work out what number we need to divide by to reduce the slots value.
