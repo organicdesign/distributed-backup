@@ -1,4 +1,17 @@
+// Define the slot count to calculate for.
+const SIZE = 100;
+
+/**
+ * The PriorityListItem class is responsible for holding the useful values of a
+ * PriorityList item.
+ */
 class PriorityListItem {
+	/**
+	 * Create a PriorityListItem with a value and weight.
+	 *
+	 * @param {*} value The value of this item.
+	 * @param {number} weight The weight of this item.
+	 */
 	constructor (value, weight) {
 		this.value = value;
 		this.weight = weight;
@@ -7,12 +20,35 @@ class PriorityListItem {
 	}
 }
 
+/**
+ * The PriorityList class is responsible for keeping track of weighted items and
+ * providing useful data for them.
+ */
 class PriorityList {
+	/**
+	 * Create a new PriorityList.
+	 *
+	 * @param {number} [minWeight=0.01] The minimum weight of an item expressed
+	 * as a decimal percentage.
+	 */
 	constructor (minWeight = 0.01) {
 		this._data = [];
 		this._minWeight = minWeight;
 	}
 
+	/**
+	 * Log the class internals onto the console.
+	 */
+	debug () {
+		console.log(this._data);
+	}
+
+	/**
+	 * Add a value to the list.
+	 *
+	 * @param {*} value The value to add to the list.
+	 * @param {number} weight The weight of this value.
+	 */
 	add (value, weight) {
 		// Items with no weight have no value.
 		if (weight <= 0)
@@ -32,6 +68,11 @@ class PriorityList {
 		this._data.splice(i, 0, item);
 	}
 
+	/**
+	 * Remove a value from the list.
+	 *
+	 * @param {*} value The value to remove.
+	 */
 	remove (value) {
 		let i = 0;
 		for (; i < this._data.length; i++) {
@@ -42,6 +83,11 @@ class PriorityList {
 		this._data.splice(i, 1);
 	}
 
+	/**
+	 * Get the relevant, ordered list data with additional properties.
+	 *
+	 * @return {Array.PriorityListItem} The list data.
+	 */
 	getData () {
 		let i = 0, a = 0;
 		for (; i < this._data.length; i++) {
@@ -52,10 +98,6 @@ class PriorityList {
 		}
 
 		return this._calculateSlots(this._data.slice(0, i));
-	}
-
-	debug () {
-		console.log(this.getData());
 	}
 
 	/**
@@ -87,15 +129,15 @@ class PriorityList {
 
 		// Convert the decimals to percentages.
 		items = items.map(v => {
-			v.slots = v.percentage * 100;
+			v.slots = v.percentage * SIZE;
 			return v;
 		});
 
 		// Round the percentages factoring in error.
 		let e = 0;
 		for (let i = 0; i < items.length; i++) {
-			const old = items[i].slots;
-			items[i].slots = Math.round(items[i].slots);
+			const old = items[i].slots + e;
+			items[i].slots = Math.round(old);
 			e = old - items[i].slots;
 		}
 
