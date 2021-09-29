@@ -31,7 +31,7 @@ class Scheduler {
 
 	setBandwidthUsage (usage) {
 		if (usage <= 0)
-			usage = _calcMinPercentage();
+			usage = 1 / SIZE;
 
 		if (usage > 1)
 			usage = 1;
@@ -160,10 +160,6 @@ class Scheduler {
 				}
 			}
 		}
-	}
-
-	_calcMinPercentage () {
-		return 1 / SIZE;
 	}
 
 	_calcInterval () {

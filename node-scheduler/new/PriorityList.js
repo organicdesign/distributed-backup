@@ -61,7 +61,7 @@ class PriorityList {
 	/**
 	 * Calculate the percentage values for the items.
 	 *
-	 * @param {Array.<PriorityListItem>} integers The list of items with weight.
+	 * @param {Array.<PriorityListItem>} items The list of items with weight.
 	 *
 	 * @return {Array.<PriorityListItem>} The list of items with percentages.
 	 */
@@ -76,7 +76,7 @@ class PriorityList {
 	/**
 	 * Calculate the slot values for the items.
 	 *
-	 * @param {Array.<PriorityListItem>} percentages The list of items with percentages.
+	 * @param {Array.<PriorityListItem>} items The list of items with percentages.
 	 * to round.
 	 *
 	 * @return {Array.<PriorityListItem>} The list of items with slots.
