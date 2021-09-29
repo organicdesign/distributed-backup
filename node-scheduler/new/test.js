@@ -25,6 +25,11 @@ console.log (
 	scheduler.next()
 );
 
-const slotTimer = new SlotTimer(() => console.log("do something"));
+const slotTimer = new SlotTimer(
+	() => console.log("do something"),
+	() => console.log("sleep")
+);
+
+slotTimer.setSlots(10);
 
 slotTimer.start();
