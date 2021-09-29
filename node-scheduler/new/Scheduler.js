@@ -1,31 +1,34 @@
-const Calc = require("../calc");
-
+// Define the slot count to calculate for.
 const SIZE = 100;
 
+/**
+ * The scheduler class creates a iterable based of a priority list.
+ */
 class Scheduler {
-	constructor (priorityList, action, nonAction = () => {}) {
+	/**
+	 * Create a new schedule from a priority list.
+	 *
+	 * @param {PriorityList} priorityList The priority list to create the
+	 * schedule from.
+	 */
+	constructor (priorityList) {
 		this._buffer = [];
-		this._targets = [];
-		this._action = action;
-		this._nonAction = nonAction;
 		this._priorityList = priorityList;
 
-		// Work is a generator function so it can be called manually or by the
-		// interval.
-		const generator = this._createGenerator();
-		this.next = () => generator.next();
+		this._serverCounter = 0;
 	}
 
-	[Symbol.iterator]() {
-		return { // return the next method, need for iterator
-			next: this.next
-		};
-	}
-
+	/**
+	 * Log the internals onto the console.
+	 */
 	debug () {
 		console.log(this._buffer);
 	}
 
+	/**
+	 * Update the internal buffer. This should be called everytime that the list
+	 * this was constructed from changes.
+	 */
 	update () {
 		// Load the buffer with the data.
 		this._buffer = new Array(SIZE);
@@ -51,15 +54,24 @@ class Scheduler {
 		}
 	}
 
-	* _createGenerator () {
-		let serverCounter = 0;
+	/**
+	 * Get the next value in the sequence. This method allows you to tread this
+	 * class similar to a generator function.
+	 *
+	 * @return {*} The next value in the sequence.
+	 */
+	next () {
+		const value = this._buffer[this._serverCounter];
 
-		for (;;) {
-			yield this._action(this._buffer[serverCounter]);
+		this._serverCounter = (this._serverCounter + 1) % SIZE;
 
-			// Increment serverCounter every time we do a server call.
-			serverCounter = (serverCounter + 1) % SIZE;
-		}
+		return value;
+	}
+
+	// Define the iterator method.
+	*[Symbol.iterator] () {
+		for (;;)
+			yield this.next();
 	}
 };
 

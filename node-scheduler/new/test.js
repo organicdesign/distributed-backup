@@ -14,9 +14,10 @@ const scheduler = new Scheduler(priorityList, console.log);
 
 scheduler.update();
 scheduler.debug();
-scheduler.next();
-scheduler.next();
-scheduler.next();
 
-for (const item of scheduler)
-	console.log(item);
+
+console.log (
+	scheduler.next(),
+	scheduler.next(),
+	scheduler.next()
+);
