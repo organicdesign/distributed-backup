@@ -33,7 +33,7 @@ class Calc {
 	 * @param {Array.<number>} percentages The list of percentages (as decimals)
 	 * to round.
 	 *
-	 * @return The list of percentages that have been rounded.
+	 * @return {Array.<number>} The list of percentages that have been rounded.
 	 */
 	static roundPercentages (percentages) {
 		// Convert the decimals to percentages.
@@ -52,12 +52,44 @@ class Calc {
 	}
 
 	/**
+	 * Removes all values lower than the minimum and recalculates.
+	 *
+	 * @param {Array.<number>} percentages The values to trim.
+	 * @param {number} minimum Values under this number will be trimmed.
+	 *
+	 * @return {Array.<number>} The percentages after trimming.
+	 */
+	static trimPercenatages (percentages, minimum = 0.01) {
+		const p = [...percentages];
+
+		// Locate the lowest value
+		let minIndex = -1;
+		for (let i = 0; i < percentages.length; i++) {
+			if (percentages[i] < minimum)
+				minIndex = i;
+		}
+
+		// If all values are good return.
+		if (minIndex < 0)
+			return p;
+
+		// Remove the worst value.
+		p.splice(minIndex, 1);
+
+		// Recalculate the percentages.
+		const rp = this.convertToPercentages(p);
+
+		// Find additional bad values.
+		return this.trimPercenatages(rp);
+	}
+
+	/**
 	 * Convert a list of intergers into percentages. The integers will be
 	 * considered to be a value out of the total.
 	 *
 	 * @param {Array.<number>} integers The integers to convert to percentages.
 	 *
-	 * @return The list of percentages (as decimals).
+	 * @return {Array.<number>} The list of percentages (as decimals).
 	 */
 	static convertToPercentages (integers) {
 		const total = integers.reduce((a, v) => a + v, 0);
