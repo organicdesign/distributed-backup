@@ -1,3 +1,5 @@
+const Calc = require("./calc");
+
 const SIZE = 100;
 
 class Scheduler {
@@ -35,7 +37,7 @@ class Scheduler {
 			usage = 1;
 
 		this._bandwidthUse = usage;
-		this._intervals = this._calculateIntervals();
+		this._intervals = Calc.calculateSlots(this._bandwidthUse, SIZE);
 	}
 
 	setPacketSize (size) {
@@ -187,87 +189,6 @@ class Scheduler {
 	_calcInterval () {
 		return this._packetSize * 1000 / this._bandwidth;
 	}
-
-	/**
-	 * Calculates the greatest common divider of two numbers.
-	 *
-	 * @param a The first number to calculate from.
-	 * @param b The second number to calculate from.
-	 */
-	_gcd (a, b) {
-		a = Math.abs(a);
-		b = Math.abs(b);
-
-		// Ensure the greatest number is 'a'.
-		[a, b] = b > a ? [b, a] : [a, b];
-
-		while (true) {
-			if (b == 0)
-				return a;
-
-			a %= b;
-
-			if (a == 0)
-				return b;
-
-			b %= a;
-		}
-	};
-
-	/**
-	 * Calculates the intervals needed to distribute timing of work and sleep.
-	 *
-	 * @param size The count of slots of work out of 100.
-	 */
-	_calculateIntervals () {
-		// Convert the bandwidth into slots out of 100
-		const bandwidthAsSlots = this._bandwidthUse * SIZE;
-
-		// Work out what number we need to divide by to reduce the slots value.
-		const gcdWork = this._gcd(bandwidthAsSlots, 100 - bandwidthAsSlots);
-
-		// Calculate the number of slots of work and sleep.
-		const slotsOfWork = bandwidthAsSlots / gcdWork;
-		const slotsOfSleep = (100 - bandwidthAsSlots) / gcdWork;
-
-		// Predefine the return values so if left unchanged they have the default.
-		let work = 1, sleep = 1, rWork = 0, rSleep = 0;
-
-		// We need to check if we will have a remainder of work or sleep.
-		if (slotsOfSleep === 0) {
-			// All work and no sleep...
-			sleep = 0;
-		} else if (slotsOfWork === 0) {
-			// All sleep and no work...
-			work = 0;
-		} else if (slotsOfWork > slotsOfSleep) {
-			// Calculate the remainder of work.
-			rWork = slotsOfWork % slotsOfSleep;
-
-			// Use the remainder to reduce the work value as low as possible.
-			const rGcdWork = this._gcd(slotsOfWork - rWork, slotsOfSleep);
-
-			// We only need to work out how much work needs to be done for 1 sleep.
-			work = (slotsOfWork - rWork) / rGcdWork;
-		} else {
-			// Calculate the remainder of sleep.
-			rSleep = slotsOfSleep % slotsOfWork;
-
-			// Use the remainder to reduce the sleep value as low as possible.
-			const rGcdWork = this._gcd(slotsOfWork, slotsOfSleep - rSleep);
-
-			// We only need to work out how much sleep needs to be done for 1 work.
-			sleep = (slotsOfSleep - rSleep) / rGcdWork;
-		}
-
-		return {
-			work,
-			sleep,
-			rWork,
-			rSleep,
-			total: slotsOfWork + slotsOfSleep,
-		};
-	};
 };
 
 module.exports = Scheduler;
