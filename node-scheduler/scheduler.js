@@ -5,7 +5,7 @@ const SIZE = 100;
 class Scheduler {
 	constructor (action, nonAction = () => {}) {
 		this._buffer = [];
-		this._targets = {};
+		this._targets = [];
 		this._onTarget = console.log;
 		this._interval = null;
 		this._action = action;
@@ -63,18 +63,21 @@ class Scheduler {
 		if (priority <= 0)
 			return;
 
-		if (this._targets[target] === priority)
-			return;
+		const foundTarget = this._targets.find(t => t[0] === target);
+		if (foundTarget)
+			return foundTarget[1] = priority;
 
-		this._targets[target] = priority;
+		this._targets.push([target, priority]);
 		this.update();
 	}
 
 	removeTarget (target) {
-		if (!this._targets[target])
+		const foundIndex = this._targets.findIndex(t => t[0] === target);
+
+		if (foundIndex < 0)
 			return;
 
-		delete this._targets[target];
+		this._targets.splice(foundIndex, 1);
 		this.update();
 	}
 
@@ -129,36 +132,16 @@ class Scheduler {
 	}
 
 	update () {
-		// We need the total to convert the priority values to percentages.
-		let total = Object.values(this._targets)
-			.reduce((acc, value) => acc + value, 0);
+		let modifiedTargets = Calc.trim(this._targets);
 
-		// We need to calculate the total the second time to do the same
-		// calculations without the items that will not get a slot.
-		const filteredTotal = Object.values(this._targets)
-			.filter(value => value / total >= this._calcMinPercentage())
-			.reduce((acc, value) => acc + value, 0);
-
-		// Create a copy of targets with percentages
-		const modifiedTargets = {};
-
-		for (const key of Object.keys(this._targets)) {
-			const priorityAsPercent = this._targets[key] / total;
-
-			if (priorityAsPercent < this._calcMinPercentage())
-				continue;
-
-			modifiedTargets[key] = this._targets[key] / filteredTotal;
-		}
+		modifiedTargets = Calc.convertToPercentages(modifiedTargets);
+		modifiedTargets = Calc.roundPercentages(modifiedTargets);
 
 		// Load the buffer with the data.
 		this._buffer = new Array(SIZE);
 
-		let err = 0;
-		for (const key of Object.keys(modifiedTargets)) {
-			const itemCount = modifiedTargets[key] * SIZE + err;
-			const roundedItemCount = Math.round(itemCount);
-
+		for (const [key, value] of Object.keys(modifiedTargets)) {
+			const roundedItemCount = value * SIZE;
 			const roundedDistance = Math.round(SIZE / roundedItemCount);
 
 			let pos = 0;
@@ -176,9 +159,6 @@ class Scheduler {
 					}
 				}
 			}
-
-			// Update error.
-			err = itemCount - roundedItemCount;
 		}
 	}
 

@@ -33,5 +33,5 @@ console.log(
 )
 
 console.log(
-	Calc.calculateSlots(["key15", 30])
+	Calc.calculateSlots(30)
 )
