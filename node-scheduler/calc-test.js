@@ -17,17 +17,19 @@ console.log(
 console.log(
 	Calc.roundPercentages(
 	Calc.convertToPercentages(
+	Calc.trim(
 		[
 			31,
 			54,
 			0,
+			3,
 			1,
 			140,
 			10,
 			43,
 			94
 		]
-	))
+	)))
 )
 
 console.log(

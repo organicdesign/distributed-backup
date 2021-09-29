@@ -84,6 +84,31 @@ class Calc {
 	}
 
 	/**
+	 * Removes all numbers that won't meet the minimum percentage requirement.
+	 * This has much better performance than doing this after percentage
+	 * conversion.
+	 *
+	 * @param {Array.number} integers The integers to inspect.
+	 *
+	 * @return {Array.number} The sorted array of integers that meet this
+	 * minimum requirement.
+	 */
+	static trim (integers, minimum = 0.01) {
+		const ti = integers.sort((a, b) => b - a);
+
+		let i = 0, a = 0;
+		for (; i < ti.length; i++) {
+			a += integers[i];
+
+			if (ti[i] / a < minimum)
+				break;
+		}
+
+		// Return the valid values.
+		return ti.slice(0, i);
+	}
+
+	/**
 	 * Convert a list of intergers into percentages. The integers will be
 	 * considered to be a value out of the total.
 	 *
