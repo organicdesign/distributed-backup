@@ -1,5 +1,6 @@
 const PriorityList = require("./PriorityList");
 const Scheduler = require("./Scheduler");
+const SlotTimer = require("./SlotTimer");
 
 const priorityList = new PriorityList();
 
@@ -23,3 +24,7 @@ console.log (
 	scheduler.next(),
 	scheduler.next()
 );
+
+const slotTimer = new SlotTimer(() => console.log("do something"));
+
+slotTimer.start();
