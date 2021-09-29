@@ -1,10 +1,22 @@
 const PriorityList = require("./PriorityList");
+const Scheduler = require("./Scheduler");
 
 const priorityList = new PriorityList();
 
-priorityList.add("a", 1);
-priorityList.add("b", 100);
-priorityList.add("c", 10);
-priorityList.add("d", 31);
+priorityList.add("w", 1);
+priorityList.add("x", 100);
+priorityList.add("y", 10);
+priorityList.add("z", 31);
 
 priorityList.debug();
+
+const scheduler = new Scheduler(priorityList, console.log);
+
+scheduler.update();
+scheduler.debug();
+scheduler.next();
+scheduler.next();
+scheduler.next();
+
+for (const item of scheduler)
+	console.log(item);
