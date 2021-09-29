@@ -37,18 +37,18 @@ class Calc {
 	 */
 	static roundPercentages (percentages) {
 		// Convert the decimals to percentages.
-		let rp = percentages.map(v => v * 100);
+		let rp = percentages.map(v => [v[0], v[1] * 100]);
 
 		// Round the percentages factoring in error.
 		let e = 0;
 		for (let i = 0; i < rp.length; i++) {
-			const old = rp[i];
-			rp[i] = Math.round(rp[i]);
-			e = old - rp[i];
+			const old = rp[i][1];
+			rp[i][1] = Math.round(rp[i][1]);
+			e = old - rp[i][1];
 		}
 
 		// Conver back to decimals.
-		return rp.map(v => v / 100);
+		return rp.map(v => [v[0], v[1] / 100]);
 	}
 
 	/**
@@ -64,8 +64,8 @@ class Calc {
 
 		// Locate the lowest value
 		let minIndex = -1;
-		for (let i = 0; i < percentages.length; i++) {
-			if (percentages[i] < minimum)
+		for (let i = 0; i < p.length; i++) {
+			if (p[i][1] < minimum)
 				minIndex = i;
 		}
 
@@ -94,13 +94,13 @@ class Calc {
 	 * minimum requirement.
 	 */
 	static trim (integers, minimum = 0.01) {
-		const ti = integers.sort((a, b) => b - a);
+		const ti = integers.sort((a, b) => b[1] - a[1]);
 
 		let i = 0, a = 0;
 		for (; i < ti.length; i++) {
-			a += integers[i];
+			a += integers[i][1];
 
-			if (ti[i] / a < minimum)
+			if (ti[i][1] / a < minimum)
 				break;
 		}
 
@@ -117,8 +117,8 @@ class Calc {
 	 * @return {Array.<number>} The list of percentages (as decimals).
 	 */
 	static convertToPercentages (integers) {
-		const total = integers.reduce((a, v) => a + v, 0);
-		return integers.map(v => v / total);
+		const total = integers.reduce((a, v) => a + v[1], 0);
+		return integers.map(v => [v[0], v[1] / total]);
 	}
 
 	/**
