@@ -29,9 +29,9 @@ slotTimer.setSlots(50);
 
 const fileIterator = new FileIterator("/home/saul/Projects/go-ipfs_v0.9.1_linux-amd64.tar.gz");
 
-fileIterator.chunkify().then(() => {
-	for (const hash of fileIterator) {
-		if (!hash.done)
-			console.log(hash.value);
+fileIterator.chunkify().then(async () => {
+	for await (const chunk of fileIterator) {
+		if (!chunk.done)
+			console.log(chunk.value);
 	}
 });

@@ -2,6 +2,26 @@ const ipfsAsync = require("./ipfs");
 const fs = require("fs");
 const { CID } = require("multiformats/cid");
 
+/**
+ * The Chunk class is responsible for holding information about a chunk.
+ */
+class Chunk {
+	/**
+	 * Construct a new chunk.
+	 *
+	 * @param {CID} cid The CID for this chunk.
+	 * @param {Buffer} content The content for this chunk.
+	 */
+	constructor (cid, content) {
+		this.cid = cid;
+		this.content = content;
+	}
+}
+
+/**
+ * The FileIterator class is responsible for splitting a file into chunks and
+ * iterating over those chunks.
+ */
 class FileIterator {
 	/**
 	 * Create a new file iterator.
@@ -58,7 +78,7 @@ class FileIterator {
 		const links = dag.value.Links.map(obj => obj.Hash);
 
 		for (const link of links)
-			await this.getAllLinks(link, linkSet);
+			await this._getAllLinks(link, linkSet);
 
 		return linkSet;
 	}
@@ -67,16 +87,27 @@ class FileIterator {
 	 * Get the next chunk of this file. The method 'chunkify' must be called
 	 * first.
 	 *
-	 * @return {CID} The CID of the next chunk.
+	 * @return {Chunk} The next chunk.
 	 */
-	next () {
-		return this._iterator.next();
+	async next () {
+		const nextCid = this._iterator.next();
+
+		if (nextCid.done)
+			return nextCid;
+
+		const ipfs = await ipfsAsync;
+		const content = await ipfs.block.get(nextCid.value);
+
+		return {
+			done: nextCid.done,
+			value: new Chunk(nextCid.value, content)
+		};
 	}
 
 	// Define the iterator method.
-	*[Symbol.iterator] () {
+	async *[Symbol.asyncIterator] () {
 		for (;;) {
-			const next = this.next();
+			const next = await this.next();
 			yield next;
 
 			if (next.done)
