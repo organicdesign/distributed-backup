@@ -1,5 +1,4 @@
-// Define the slot count to calculate for.
-const SIZE = 100;
+const { SIZE } = require("./constants");
 
 /**
  * The scheduler class creates a iterable based of a priority list.

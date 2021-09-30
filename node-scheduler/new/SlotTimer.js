@@ -1,10 +1,5 @@
 const SlotIterator = require("./SlotIterator");
-
-// The constant for identifying sleep in the pattern.
-const SLEEP = "sleep";
-
-// The constand for identifying work in the pattern.
-const WORK = "work";
+const { SLEEP, WORK } = require("./constants");
 
 /**
  * The slot timer class is responsible for calling actions at specific times

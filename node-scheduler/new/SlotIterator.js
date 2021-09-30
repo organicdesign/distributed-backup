@@ -1,11 +1,4 @@
-// Define the slot count to calculate for.
-const SIZE = 100;
-
-// The constant for identifying sleep in the pattern.
-const SLEEP = "sleep";
-
-// The constand for identifying work in the pattern.
-const WORK = "work";
+const { SIZE, SLEEP, WORK } = require("./constants");
 
 /**
  * The SlotTimes class is responsible for grouping information about slot times.

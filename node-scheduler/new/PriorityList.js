@@ -1,5 +1,4 @@
-// Define the slot count to calculate for.
-const SIZE = 100;
+const { SIZE } = require("./constants");
 
 /**
  * The PriorityListItem class is responsible for holding the useful values of a
