@@ -1,6 +1,7 @@
 const PriorityList = require("./PriorityList");
 const Scheduler = require("./Scheduler");
 const SlotTimer = require("./SlotTimer");
+const FileIterator = require("./FileIterator");
 
 const priorityList = new PriorityList();
 
@@ -9,21 +10,14 @@ priorityList.add("x", 100);
 priorityList.add("y", 10);
 priorityList.add("z", 31);
 
-priorityList.debug();
+//priorityList.debug();
 
-console.log(priorityList.getData());
+//console.log(priorityList.getData());
 
 const scheduler = new Scheduler(priorityList, console.log);
 
 scheduler.update();
-scheduler.debug();
-
-
-console.log (
-	scheduler.next(),
-	scheduler.next(),
-	scheduler.next()
-);
+//scheduler.debug();
 
 const slotTimer = new SlotTimer(
 	() => console.log(scheduler.next())
@@ -31,4 +25,13 @@ const slotTimer = new SlotTimer(
 
 slotTimer.setSlots(50);
 
-slotTimer.start();
+//slotTimer.start();
+
+const fileIterator = new FileIterator("/home/saul/Projects/go-ipfs_v0.9.1_linux-amd64.tar.gz");
+
+fileIterator.chunkify().then(() => {
+	for (const hash of fileIterator) {
+		if (!hash.done)
+			console.log(hash.value);
+	}
+});
