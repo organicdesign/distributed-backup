@@ -41,6 +41,15 @@ class FileIterator {
 	}
 
 	/**
+	 * Get the path for this iterator.
+	 *
+	 * @return {string} The path of this iterator.
+	 */
+	getPath () {
+		return this._path;
+	}
+
+	/**
 	 * Read and convert the file into chunks.
 	 *
 	 * @return {Promise<Set.CID>} The set of CID's pointing to the chunks.

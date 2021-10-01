@@ -14,7 +14,7 @@ priorityList.add("z", 31);
 
 //console.log(priorityList.getData());
 
-const scheduler = new Scheduler(priorityList, console.log);
+const scheduler = new Scheduler(priorityList);
 
 scheduler.update();
 //scheduler.debug();
