@@ -75,7 +75,7 @@ class PriorityList {
 	remove (value) {
 		let i = 0;
 		for (; i < this._data.length; i++) {
-			if (value > this._data[i].value)
+			if (value === this._data[i].value)
 				break;
 		}
 
