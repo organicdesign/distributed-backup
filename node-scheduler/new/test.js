@@ -19,13 +19,22 @@ const scheduler = new Scheduler(priorityList, console.log);
 scheduler.update();
 //scheduler.debug();
 
-const slotTimer = new SlotTimer(
-	() => console.log(scheduler.next())
-);
+const slotTimer = new SlotTimer();
 
 slotTimer.setSlots(50);
 
-//slotTimer.start();
+(async () => {
+	for await (const a of slotTimer) {
+		//console.log("Work");
+	}
+})();
+
+(async () => {
+	for (;;) {
+		await slotTimer.nextSleep();
+		//console.log("Sleep");
+	}
+})();
 
 const fileIterator = new FileIterator("/home/saul/Projects/go-ipfs_v0.9.1_linux-amd64.tar.gz");
 

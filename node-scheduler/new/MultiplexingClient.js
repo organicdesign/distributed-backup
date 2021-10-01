@@ -28,7 +28,7 @@ class MultiplexingClient {
 	 * been granted.
 	 */
 	async next () {
-		return new Promise((resolve, reject) => {
+		return new Promise(resolve => {
 			this._resolve = resolve;
 			this._client.write("\n");
 		});
