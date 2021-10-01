@@ -1,5 +1,6 @@
 {
 	"SIZE": 100,
 	"WORK": "work",
-	"SLEEP": "sleep"
+	"SLEEP": "sleep",
+	"SERVICE_DIRECTORY": "/tmp/"
 }

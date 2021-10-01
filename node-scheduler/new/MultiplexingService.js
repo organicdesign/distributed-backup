@@ -1,4 +1,5 @@
 const net = require("net");
+const { SERVICE_DIRECTORY } = require("./constants");
 
 /**
  * The MultiplexingService class is responsible for creating a unix domain
@@ -66,7 +67,7 @@ class MultiplexingService {
 	_setupServer (name) {
 		this._server = net.createServer();
 
-		this._server.listen(`/tmp/${name}`);
+		this._server.listen(`${SERVICE_DIRECTORY}${name}`);
 
 		this._server.on("connection", s => this._setupSocket(s));
 	}
