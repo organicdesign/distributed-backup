@@ -9,7 +9,7 @@ const scheduler = new Scheduler(priorityList);
 
 const chunkPromises = [];
 
-// Load the interators into the scheduler.
+// Load the iterators into the scheduler.
 for (const file of [
 	{
 		path: "/home/saul/Projects/go-ipfs_v0.9.1_linux-amd64.tar.gz",
@@ -26,6 +26,7 @@ for (const file of [
 ]) {
 		const fileIterator = new FileIterator(file.path);
 
+		// Add each chunk promise to a list to ensure completion later.
 		chunkPromises.push(fileIterator.chunkify());
 
 		priorityList.add(fileIterator, file.weight);
@@ -35,6 +36,7 @@ for (const file of [
 	// Update the scheduler.
 	scheduler.update();
 
+	// Ensure all chunks are processed.
 	console.log("Proccessing chunks.");
 	await Promise.all(chunkPromises);
 
@@ -45,11 +47,14 @@ for (const file of [
 		const chunk = await fileIterator.next();
 
 		if (chunk.done) {
+			// Remove the file from the list if it completes.
 			console.log(`Completed ${fileIterator.getPath()}`);
 			priorityList.remove(fileIterator);
 			scheduler.update();
 			continue;
 		}
+
+		// Transfer the chunk.
 		console.log(`${fileIterator.getPath()}:`, chunk);
 	}
 })();
