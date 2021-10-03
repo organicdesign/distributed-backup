@@ -1,7 +1,7 @@
-const PriorityList = require("./PriorityList");
-const Scheduler = require("./Scheduler");
-const SlotTimer = require("./SlotTimer");
-const FileIterator = require("./FileIterator");
+const PriorityList = require("./classes/PriorityList");
+const Scheduler = require("./classes/Scheduler");
+const SlotTimer = require("./classes/SlotTimer");
+const FileIterator = require("./classes/FileIterator");
 
 const priorityList = new PriorityList();
 

@@ -1,7 +1,7 @@
-const MultiplexingClient = require("./MultiplexingClient");
-const PriorityList = require("./PriorityList");
-const Scheduler = require("./Scheduler");
-const FileIterator = require("./FileIterator");
+const MultiplexingClient = require("./classes/MultiplexingClient");
+const PriorityList = require("./classes/PriorityList");
+const Scheduler = require("./classes/Scheduler");
+const FileIterator = require("./classes/FileIterator");
 
 const multiplexingClient = new MultiplexingClient("unixSocket");
 const priorityList = new PriorityList();

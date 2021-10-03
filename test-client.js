@@ -1,4 +1,4 @@
-const MultiplexingClient = require("./MultiplexingClient");
+const MultiplexingClient = require("./classes/MultiplexingClient");
 
 const multiplexingClient = new MultiplexingClient("unixSocket");
 
