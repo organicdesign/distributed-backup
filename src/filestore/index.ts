@@ -1,5 +1,6 @@
 import { DataObj } from './pb/dataobj.js'
 import { readChunk, cidToKey, keyToCid } from './utils.js'
+import * as dagPb from '@ipld/dag-pb'
 import type { Blockstore, Pair } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { AbortOptions, AwaitIterable, Await } from 'interface-store'
@@ -17,7 +18,6 @@ export class Filestore implements Blockstore {
   async get (key: CID, options?: AbortOptions): Promise<Uint8Array> {
     if (await this.blockstore.has(key, options)) {
       const block = await this.blockstore.get(key, options)
-
       return block
     }
 
@@ -26,7 +26,12 @@ export class Filestore implements Blockstore {
     const dataObj = DataObj.decode(index)
     const chunk = await readChunk(dataObj.FilePath, dataObj.Offset, dataObj.Size)
 
-    return chunk
+    const block = dagPb.encode({
+      Links: [],
+      Data: chunk
+    });
+
+    return block
   }
 
   async * getMany (source: AwaitIterable<CID>, options?: AbortOptions): AsyncGenerator<Pair, void, undefined> {
