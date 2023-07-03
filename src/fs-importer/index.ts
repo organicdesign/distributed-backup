@@ -7,7 +7,7 @@ import { UnixFS } from "ipfs-unixfs";
 import { PBLink, prepare, encode } from "@ipld/dag-pb";
 import type { Filestore } from "../filestore/index.js";
 
-const DEFAULT_CHUNK_SIZE = 262144;
+const DEFAULT_CHUNK_SIZE = 1000;//262144;
 
 export class FsImporter {
 	private readonly blockstore: Filestore;
@@ -18,46 +18,49 @@ export class FsImporter {
 
 	async addFile (path: string) {
 		const stream = fs.createReadStream(path, { highWaterMark: 16 * 1024 });
-		const chunker = fixedSize({ chunkSize: 30000 });
+		const chunker = fixedSize({ chunkSize: DEFAULT_CHUNK_SIZE });
 		const stat = await fs.promises.stat(path);
 		const links: PBLink[] = [];
 
 		if (stat.size <= DEFAULT_CHUNK_SIZE) {
 			const chunk = await fs.promises.readFile(path);
-			const multihash = await sha256.digest(chunk);
-			const cid = CID.create(1, 0x55, multihash);
-
-			await this.blockstore.putLink(cid, path, 0n, BigInt(stat.size));
+			const cid = await this.addChunk(chunk, path, 0n);
 
 			return cid;
 		}
 
 		let offset = 0n;
+		const blockSizes: bigint[] = [];
 
 		for await (const chunk of chunker(stream)) {
 			// If encryption is required - add it here.
-			const block = encode({ Data: new UnixFS({ type: "raw", data: chunk }).marshal(), Links: [] });
-			const multihash = await sha256.digest(block);
-			const cid = CID.create(1, dagPb.code, multihash);
-			const size = BigInt(block.length);
+			const size = BigInt(chunk.length);
+			const cid = await this.addChunk(chunk, path, offset);
 
-			await this.blockstore.putLink(cid, path, offset, size);
-
-			links.push({ Hash: cid });
-
+			links.push({ Hash: cid, Tsize: chunk.length });
+			blockSizes.push(size);
 			offset += size;
 		}
 
-		const node = {
-			Data: new UnixFS({ type: "file" }).marshal(),
+		const block = encode(prepare({
+			Data: new UnixFS({ type: "file", blockSizes }).marshal(),
 			Links: links
-		};
+		}));
 
-		const block = encode(prepare(node));
 		const multihash = await sha256.digest(block);
 		const cid = CID.create(1, dagPb.code, multihash);
 
 		await this.blockstore.put(cid, block);
+
+		return cid;
+	}
+
+	private async addChunk (data: Uint8Array, path: string, offset: bigint) {
+		const multihash = await sha256.digest(data);
+		const cid = CID.create(1, 0x55, multihash);
+		const size = BigInt(data.length);
+
+		await this.blockstore.putLink(cid, path, offset, size);
 
 		return cid;
 	}

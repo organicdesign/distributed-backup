@@ -1,7 +1,5 @@
 import { DataObj } from './pb/dataobj.js'
 import { readChunk, cidToKey, keyToCid } from './utils.js'
-import * as dagPb from '@ipld/dag-pb'
-import { UnixFS } from "ipfs-unixfs";
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import type { Blockstore, Pair } from 'interface-blockstore'
