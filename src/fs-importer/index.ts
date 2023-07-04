@@ -3,6 +3,7 @@ import Path from "path";
 import * as dagPb from '@ipld/dag-pb'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
+import raw from 'multiformats/codecs/raw'
 import { fixedSize } from "ipfs-unixfs-importer/chunker";
 import { UnixFS } from "ipfs-unixfs";
 import { PBLink, prepare, encode } from "@ipld/dag-pb";
@@ -49,7 +50,7 @@ export class FsImporter {
 		}));
 
 		const multihash = await sha256.digest(block);
-		const cid = CID.create(1, dagPb.code, multihash);
+		const cid = CID.createV1(dagPb.code, multihash);
 
 		await this.blockstore.put(cid, block);
 
@@ -80,7 +81,7 @@ export class FsImporter {
 		});
 
 		const hash = await sha256.digest(block);
-		const cid = CID.create(1, dagPb.code, hash);
+		const cid = CID.createV1(dagPb.code, hash);
 
 		await this.blockstore.put(cid, block);
 
@@ -89,7 +90,7 @@ export class FsImporter {
 
 	private async addChunk (data: Uint8Array, path: string, offset: bigint) {
 		const multihash = await sha256.digest(data);
-		const cid = CID.create(1, 0x55, multihash);
+		const cid = CID.createV1(raw.code, multihash);
 		const size = BigInt(data.length);
 
 		await this.blockstore.putLink(cid, path, offset, size);
