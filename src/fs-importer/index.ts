@@ -9,7 +9,7 @@ import { UnixFS } from "ipfs-unixfs";
 import { PBLink, prepare, encode } from "@ipld/dag-pb";
 import type { Filestore } from "../filestore/index.js";
 
-const DEFAULT_CHUNK_SIZE = 1000;//262144;
+const DEFAULT_CHUNK_SIZE = 262144;
 
 export class FsImporter {
 	private readonly blockstore: Filestore;
