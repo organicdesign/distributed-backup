@@ -1,4 +1,5 @@
 import fs from "fs";
+import Path from "path";
 import * as dagPb from '@ipld/dag-pb'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
@@ -49,6 +50,37 @@ export class FsImporter {
 
 		const multihash = await sha256.digest(block);
 		const cid = CID.create(1, dagPb.code, multihash);
+
+		await this.blockstore.put(cid, block);
+
+		return cid;
+	}
+
+	async addDir (path: string) {
+		const dirents = await fs.promises.readdir(path, { withFileTypes: true });
+		const links: PBLink[] = [];
+
+		for (const dirent of dirents) {
+			const subPath = Path.join(path, dirent.name);
+
+			const cid = dirent.isDirectory() ?
+				await this.addDir(subPath) :
+				await this.addFile(subPath);
+
+			links.push({ Hash: cid, Name: dirent.name });
+		}
+
+		const metadata = new UnixFS({
+			type: 'directory'
+		});
+
+		const block = dagPb.encode({
+			Data: metadata.marshal(),
+			Links: links
+		});
+
+		const hash = await sha256.digest(block);
+		const cid = CID.create(1, dagPb.code, hash);
 
 		await this.blockstore.put(cid, block);
 
