@@ -12,7 +12,7 @@ export interface DataObj {
   FilePath: string
   Offset: bigint
   Size: bigint
-  IV: Uint8Array
+  IV?: Uint8Array
 }
 
 export namespace DataObj {
@@ -40,7 +40,7 @@ export namespace DataObj {
           w.uint64(obj.Size)
         }
 
-        if ((obj.IV != null && obj.IV.byteLength > 0)) {
+        if (obj.IV != null) {
           w.uint32(34)
           w.bytes(obj.IV)
         }
@@ -52,8 +52,7 @@ export namespace DataObj {
         const obj: any = {
           FilePath: '',
           Offset: 0n,
-          Size: 0n,
-          IV: new Uint8Array(0)
+          Size: 0n
         }
 
         const end = length == null ? reader.len : reader.pos + length
