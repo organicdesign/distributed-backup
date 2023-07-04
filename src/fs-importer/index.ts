@@ -3,7 +3,7 @@ import Path from "path";
 import * as dagPb from '@ipld/dag-pb'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
-import raw from 'multiformats/codecs/raw'
+import * as raw from 'multiformats/codecs/raw'
 import { fixedSize } from "ipfs-unixfs-importer/chunker";
 import { UnixFS } from "ipfs-unixfs";
 import { PBLink, prepare, encode } from "@ipld/dag-pb";
@@ -28,7 +28,7 @@ export class FsImporter {
 			const chunk = await fs.promises.readFile(path);
 			const cid = await this.addChunk(chunk, path, 0n);
 
-			return cid;
+			return { cid, size: chunk.length };
 		}
 
 		let offset = 0n;
@@ -51,10 +51,11 @@ export class FsImporter {
 
 		const multihash = await sha256.digest(block);
 		const cid = CID.createV1(dagPb.code, multihash);
+		const size = links.reduce((p, c) => p + (c.Tsize ?? 0), 0);
 
 		await this.blockstore.put(cid, block);
 
-		return cid;
+		return { cid, size };
 	}
 
 	async addDir (path: string) {
@@ -64,11 +65,11 @@ export class FsImporter {
 		for (const dirent of dirents) {
 			const subPath = Path.join(path, dirent.name);
 
-			const cid = dirent.isDirectory() ?
+			const { cid, size } = dirent.isDirectory() ?
 				await this.addDir(subPath) :
 				await this.addFile(subPath);
 
-			links.push({ Hash: cid, Name: dirent.name });
+			links.push({ Hash: cid, Name: dirent.name, Tsize: size });
 		}
 
 		const metadata = new UnixFS({
@@ -82,10 +83,11 @@ export class FsImporter {
 
 		const hash = await sha256.digest(block);
 		const cid = CID.createV1(dagPb.code, hash);
+		const size = links.reduce((p, c) => p + (c.Tsize ?? 0), 0);
 
 		await this.blockstore.put(cid, block);
 
-		return cid;
+		return { cid, size };
 	}
 
 	private async addChunk (data: Uint8Array, path: string, offset: bigint) {
