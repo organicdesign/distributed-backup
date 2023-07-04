@@ -1,7 +1,8 @@
+import { CID } from 'multiformats/cid'
+import * as raw from 'multiformats/codecs/raw'
+import { sha256 } from 'multiformats/hashes/sha2'
 import { DataObj } from './pb/dataobj.js'
 import { readChunk, cidToKey, keyToCid } from './utils.js'
-import { CID } from 'multiformats/cid'
-import { sha256 } from 'multiformats/hashes/sha2'
 import type { Blockstore, Pair } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { AbortOptions, AwaitIterable, Await } from 'interface-store'
@@ -18,6 +19,7 @@ export class Filestore implements Blockstore {
   async get (key: CID, options?: AbortOptions): Promise<Uint8Array> {
     if (await this.blockstore.has(key, options)) {
       const block = await this.blockstore.get(key, options)
+
       return block
     }
 
@@ -25,11 +27,11 @@ export class Filestore implements Blockstore {
     const index = await this.datastore.get(dKey, options)
     const dataObj = DataObj.decode(index)
     const chunk = await readChunk(dataObj.FilePath, dataObj.Offset, dataObj.Size)
-		const hash = await sha256.digest(chunk)
-    const cid = CID.create(1, 0x55, hash)
+    const hash = await sha256.digest(chunk)
+    const cid = CID.createV1(raw.code, hash)
 
     if (!cid.equals(key)) {
-      throw new Error("CID does not match.");
+      throw new Error('CID does not match.')
     }
 
     return chunk
@@ -112,6 +114,3 @@ export class Filestore implements Blockstore {
     return key
   }
 }
-
-// Export your files here.
-export default {}
