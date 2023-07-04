@@ -12,6 +12,7 @@ export interface DataObj {
   FilePath: string
   Offset: bigint
   Size: bigint
+  IV: Uint8Array
 }
 
 export namespace DataObj {
@@ -39,6 +40,11 @@ export namespace DataObj {
           w.uint64(obj.Size)
         }
 
+        if ((obj.IV != null && obj.IV.byteLength > 0)) {
+          w.uint32(34)
+          w.bytes(obj.IV)
+        }
+
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
@@ -46,7 +52,8 @@ export namespace DataObj {
         const obj: any = {
           FilePath: '',
           Offset: 0n,
-          Size: 0n
+          Size: 0n,
+          IV: new Uint8Array(0)
         }
 
         const end = length == null ? reader.len : reader.pos + length
@@ -63,6 +70,9 @@ export namespace DataObj {
               break
             case 3:
               obj.Size = reader.uint64()
+              break
+            case 4:
+              obj.IV = reader.bytes()
               break
             default:
               reader.skipType(tag & 7)
