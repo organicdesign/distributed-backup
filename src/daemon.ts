@@ -33,3 +33,5 @@ process.on("SIGINT", async () => {
 	await close();
 	process.exit();
 });
+
+console.log("ready");
