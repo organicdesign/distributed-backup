@@ -51,33 +51,40 @@ export const importFile = async (path: string, blockstore?: Blockstore): Promise
 
 	return { cid, size };
 }
-/*
-export const importDir = async (path: string, unixfs: UnixFS): Promise<ImportResult> => {
-	const dirents = await fs.promises.readdir(path, { withFileTypes: true });
 
-	let rootCid = await unixfs.addDirectory();
-	let totalSize = 0;
+export const importDir = async (path: string, blockstore?: Blockstore): Promise<ImportResult> => {
+	const dirents = await fs.promises.readdir(path, { withFileTypes: true });
+	const links: PBLink[] = [];
 
 	for (const dirent of dirents) {
 		const subPath = Path.join(path, dirent.name);
 
 		const { cid, size } = dirent.isDirectory() ?
-			await importDir(subPath, unixfs) :
-			await importFile(subPath, unixfs);
+			await importDir(subPath, blockstore) :
+			await importFile(subPath, blockstore);
 
-		totalSize += size;
-		rootCid = await unixfs.cp(cid, rootCid, dirent.name);
+		links.push({ Hash: cid, Tsize: size });
 	}
 
-	return { cid: rootCid, size: totalSize };
+	const block = dagPb.encode({
+		Data: new UnixFS({ type: 'directory' }).marshal(),
+		Links: links
+	});
+
+	const hash = await sha256.digest(block);
+	const cid = CID.createV1(dagPb.code, hash);
+	const size = links.reduce((p, c) => p + (c.Tsize ?? 0), 0);
+
+	await blockstore?.put(cid, block);
+
+	return { cid, size };
 }
-*/
-export const importAny = async (path: string, blockstore: Blockstore): Promise<ImportResult> => {
+
+export const importAny = async (path: string, blockstore?: Blockstore): Promise<ImportResult> => {
 	const stat = await fs.promises.stat(path);
-	//const unixfs = createUnixFs({ blockstore });
 
 	if (stat.isDirectory()) {
-		//return await importDir(path, unixfs);
+		return await importDir(path, blockstore);
 	} else {
 		return await importFile(path, blockstore);
 	}
