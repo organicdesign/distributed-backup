@@ -7,9 +7,28 @@ import * as raw from "multiformats/codecs/raw";
 import * as dagPb from "@ipld/dag-pb";
 import { PBLink, prepare, encode } from "@ipld/dag-pb";
 import { UnixFS } from "ipfs-unixfs";
+import { unixfs as createUnixFs } from "@helia/unixfs"
 import type { Chunker } from "ipfs-unixfs-importer/chunker";
+import type { Blockstore } from "interface-blockstore";
 import type { ImportResult } from "./interfaces.js";
 import type { Filestore } from "../filestore/index.js";
+
+export const importFile = async (
+	store: Blockstore,
+	path: string,
+	options: { chunker?: Chunker, key?: Uint8Array } = {}
+): Promise<ImportResult> => {
+	const unixfs = createUnixFs({ blockstore: store });
+
+	if (options.key == null) {
+		const cid = await unixfs.addFile({ content: fs.createReadStream(path) }, options);
+		const { size } = await fs.promises.stat(path);
+
+		return { cid, size };
+	}
+
+	throw new Error("not implemented");
+};
 
 export const importFileNocopy = async (
 	store: Filestore,
