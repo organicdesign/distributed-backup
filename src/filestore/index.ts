@@ -115,18 +115,21 @@ export class Filestore implements Blockstore {
     }
   }
 
-  async putLink (key: CID, path: string, offset: bigint, size: bigint, iv: Uint8Array, options?: AbortOptions): Promise<CID> {
+  async putLink (
+		params: { key: CID, path: string, offset: bigint, size: bigint, iv?: Uint8Array },
+		options?: AbortOptions
+	): Promise<CID> {
     const data = DataObj.encode({
-      FilePath: path,
-      Offset: offset,
-      Size: size,
-      IV: iv
+      FilePath: params.path,
+      Offset: params.offset,
+      Size: params.size,
+      IV: params.iv
     })
 
-    const dKey = cidToKey(key)
+    const dKey = cidToKey(params.key)
 
     await this.datastore.put(dKey, data, options)
 
-    return key
+    return params.key
   }
 }
