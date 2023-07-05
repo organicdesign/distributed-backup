@@ -29,6 +29,21 @@ rpc.addMethod("add", async (params: { path: string, nocopy?: boolean, encrypt?: 
 	return cid;
 });
 
+setInterval(async () => {
+	console.log("running sync");
+	for (const item of database) {
+		console.log(`checking: ${item.path}`);
+
+		const { cid } = await importAny(item.path);
+
+		if (cid.equals(item.cid)) {
+			console.log("matches");
+		} else {
+			console.log("needs update");
+		}
+	}
+}, 5000)
+
 rpc.addMethod("query", async () => {
 	return database;
 });
