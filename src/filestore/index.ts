@@ -7,7 +7,7 @@ import type { Blockstore, Pair } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { AbortOptions, AwaitIterable, Await } from 'interface-store'
 import crypto from "crypto";
-import {key as cryptoKey, iv} from "../crypto/index.js";
+import {key as cryptoKey} from "../crypto/index.js";
 
 export class Filestore implements Blockstore {
   private readonly blockstore: Blockstore
@@ -27,18 +27,29 @@ export class Filestore implements Blockstore {
 
 		const dKey = cidToKey(key)
 		const index = await this.datastore.get(dKey, options)
-    const dataObj = DataObj.decode(index)
-    const cipher = crypto.createCipheriv("aes-256-cbc", cryptoKey, dataObj.IV, { encoding: "binary" });
-    const chunk = await readChunk(dataObj.FilePath, dataObj.Offset, dataObj.Size)
-		const data = cipher.update(chunk);
-    const hash = await sha256.digest(data)
+		const dataObj = DataObj.decode(index)
+
+		let chunk = await readChunk(dataObj.FilePath, dataObj.Offset, dataObj.Size)
+
+		if (dataObj.IV != null) {
+			const cipher = crypto.createCipheriv(
+				"aes-256-cbc",
+				cryptoKey,
+				dataObj.IV,
+				{ encoding: "binary" }
+			);
+
+			chunk = cipher.update(chunk);
+		}
+
+    const hash = await sha256.digest(chunk)
     const cid = CID.create(key.version, raw.code, hash)
 
     if (!cid.equals(key)) {
       throw new Error('CID does not match.')
     }
 
-    return data
+    return chunk
   }
 
   async * getMany (source: AwaitIterable<CID>, options?: AbortOptions): AsyncGenerator<Pair, void, undefined> {
