@@ -11,9 +11,17 @@ process.on("SIGINT", () => {
 	process.exit();
 });
 
+const path = Path.join(__dirname, "..", "src");
+
 console.log("adding:");
-const cid = await rpc.request("add", { path: __dirname });
-console.log("added", cid);
+let start = performance.now();
+const cid = await rpc.request("add", { path });
+console.log("added", performance.now() - start, cid);
+
+console.log("adding:");
+start = performance.now();
+const cid2 = await rpc.request("add", { path, hashonly: true });
+console.log("added", performance.now() - start, cid2);
 
 const query = await rpc.request("query", {});
 

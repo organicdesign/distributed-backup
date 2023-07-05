@@ -15,8 +15,12 @@ const { rpc, close } = await createNetServer("/tmp/server.socket");
 
 const database: { cid: CID, path: string }[] = [];
 
-rpc.addMethod("add", async (params: { path: string, nocopy?: boolean, encrypt?: boolean }) => {
-	const { cid } = await importAny(params.path, blockstore);
+rpc.addMethod("add", async (params: { path: string, nocopy?: boolean, encrypt?: boolean, hashonly?: boolean }) => {
+	const { cid } = await importAny(params.path, params.hashonly ? undefined : blockstore);
+
+	if (params.hashonly) {
+		return cid;
+	}
 
 	await helia.pins.add(cid);
 
