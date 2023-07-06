@@ -44,7 +44,9 @@ rpc.addMethod("add", async (params: { path: string, hashonly?: boolean } & Impor
 		cidVersion: 1
 	};
 
-	logger.add("importing %s", params.path);
+	if (!params.hashonly) {
+		logger.add("importing %s", params.path);
+	}
 
 	const { cid } = await importAny(params.path, config, params.hashonly ? undefined : blockstore);
 
