@@ -60,7 +60,7 @@ export const importDir = async (path: string, config: ImporterConfig, blockstore
 			await importDir(subPath, config, blockstore) :
 			await importFile(subPath, config, blockstore);
 
-		links.push({ Hash: cid, Tsize: size });
+		links.push({ Hash: cid, Tsize: size, Name: dirent.name });
 	}
 
 	const block = dagPb.encode({
