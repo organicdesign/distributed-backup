@@ -25,7 +25,7 @@ interface ImportOptions {
 	encrypt: boolean
 }
 
-const database: { cid: CID, path: string }[] = [];
+const database = new Map<string, { cid: CID, path: string }>();
 
 rpc.addMethod("add", async (params: { path: string, hashonly?: boolean } & ImportOptions) => {
 	const config: ImporterConfig = {
@@ -44,14 +44,14 @@ rpc.addMethod("add", async (params: { path: string, hashonly?: boolean } & Impor
 		await helia.pins.add(cid);
 	}
 
-	database.push({ cid, path: params.path });
+	database.set(params.path, { cid, path: params.path });
 
 	return cid;
 });
 
 setInterval(async () => {
 	console.log("running sync");
-	for (const item of database) {
+	for (const item of database.values()) {
 		console.log(`checking: ${item.path}`);
 
 		const config: ImporterConfig = {
@@ -67,16 +67,20 @@ setInterval(async () => {
 		} else {
 			console.log("needs update");
 			const { cid } = await importAny(item.path, config, blockstore);
-			await helia.pins.add(cid);
+
+			if (!await helia.pins.isPinned(cid)) {
+				await helia.pins.add(cid);
+			}
+
 			await helia.pins.rm(item.cid);
 			item.cid = cid;
-			console.log("updated");
+			console.log("updated", cid);
 		}
 	}
 }, 5000);
 
 rpc.addMethod("query", async () => {
-	return database;
+	return [...database.values()];
 });
 
 process.on("SIGINT", async () => {
