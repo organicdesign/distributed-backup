@@ -7,8 +7,11 @@ import { Filestore } from "./filestore/index.js";
 import { importAny } from "./fs-importer/import-copy-plaintext.js";
 import selectHasher from "./fs-importer/select-hasher.js";
 import selectChunker from "./fs-importer/select-chunker.js";
+import { getConfig } from "./config.js";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
 import type { CID } from "multiformats/cid";
+
+const config = await getConfig();
 
 const blockstore = new Filestore(new MemoryBlockstore, new MemoryDatastore());
 const libp2p = await createLibp2p();
@@ -77,7 +80,7 @@ setInterval(async () => {
 			console.log("updated", cid);
 		}
 	}
-}, 5000);
+}, config.tickInterval * 1000);
 
 rpc.addMethod("query", async () => {
 	return [...database.values()];
