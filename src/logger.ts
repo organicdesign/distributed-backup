@@ -1,6 +1,11 @@
 import { logger } from "@libp2p/logger";
 
-const appName = "backup";
+const APP_NAME = "backup";
 
-export const tick = logger(`${appName}:tick`);
-export const add = logger(`${appName}:add`);
+const createLogger = (name: string) => {
+	return logger(`${APP_NAME}:${name}`);
+};
+
+export const tick = createLogger("tick");
+export const add = createLogger("add");
+export const validate = createLogger("validate")
