@@ -40,7 +40,9 @@ rpc.addMethod("add", async (params: { path: string, hashonly?: boolean } & Impor
 		return cid;
 	}
 
-	await helia.pins.add(cid);
+	if (!await helia.pins.isPinned(cid)) {
+		await helia.pins.add(cid);
+	}
 
 	database.push({ cid, path: params.path });
 
