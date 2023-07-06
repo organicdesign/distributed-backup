@@ -7,5 +7,5 @@ const createLogger = (name: string) => {
 };
 
 export const tick = createLogger("tick");
-export const add = createLogger("add");
-export const validate = createLogger("validate")
+export const add = createLogger("import");
+export const validate = createLogger("validate");

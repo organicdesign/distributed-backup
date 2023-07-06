@@ -8,6 +8,7 @@ import { importAny } from "./fs-importer/import-copy-plaintext.js";
 import selectHasher from "./fs-importer/select-hasher.js";
 import selectChunker from "./fs-importer/select-chunker.js";
 import { getConfig } from "./config.js";
+import * as logger from "./logger.js";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
 import type { CID } from "multiformats/cid";
 
@@ -29,6 +30,7 @@ interface ImportOptions {
 }
 
 const database = new Map<string, { cid: CID, path: string }>();
+const timestamps = new Map<string, number>();
 
 rpc.addMethod("add", async (params: { path: string, hashonly?: boolean } & ImportOptions) => {
 	const config: ImporterConfig = {
@@ -37,49 +39,73 @@ rpc.addMethod("add", async (params: { path: string, hashonly?: boolean } & Impor
 		cidVersion: 1
 	};
 
+	logger.add("importing %s", params.path);
+
 	const { cid } = await importAny(params.path, config, params.hashonly ? undefined : blockstore);
 
 	if (params.hashonly) {
 		return cid;
 	}
 
+	logger.add("imported %s", params.path);
+
 	if (!await helia.pins.isPinned(cid)) {
+		logger.add("pinning %s", params.path);
+
 		await helia.pins.add(cid);
 	}
 
+	timestamps.set(params.path, Date.now());
 	database.set(params.path, { cid, path: params.path });
 
 	return cid;
 });
 
 setInterval(async () => {
-	console.log("running sync");
-	for (const item of database.values()) {
-		console.log(`checking: ${item.path}`);
+	logger.tick("started");
 
-		const config: ImporterConfig = {
+	for (const item of database.values()) {
+		const timestamp = timestamps.get(item.path) ?? 0;
+
+		if (Date.now() - timestamp < config.validateInterval * 1000) {
+			continue;
+		}
+
+		logger.validate("outdated %s", item.path);
+
+		const importerConfig: ImporterConfig = {
 			chunker: selectChunker(),
 			hasher: selectHasher(),
 			cidVersion: 1
 		};
 
-		const { cid } = await importAny(item.path, config);
+		const { cid: hashOnlyCid } = await importAny(item.path, importerConfig);
 
-		if (cid.equals(item.cid)) {
-			console.log("matches");
-		} else {
-			console.log("needs update");
-			const { cid } = await importAny(item.path, config, blockstore);
+		if (hashOnlyCid.equals(item.cid)) {
+			timestamps.set(item.path, Date.now());
 
-			if (!await helia.pins.isPinned(cid)) {
-				await helia.pins.add(cid);
-			}
-
-			await helia.pins.rm(item.cid);
-			item.cid = cid;
-			console.log("updated", cid);
+			logger.validate("cleaned %s", item.path);
+			continue;
 		}
+
+		logger.validate("updating %s", item.path);
+
+		const { cid } = await importAny(item.path, importerConfig, blockstore);
+
+		if (!await helia.pins.isPinned(cid)) {
+			logger.add("pinning %s", item.path);
+			await helia.pins.add(cid);
+		}
+
+		await helia.pins.rm(item.cid);
+		item.cid = cid;
+
+		timestamps.set(item.path, Date.now());
+
+		logger.validate("updated %s", item.path);;
 	}
+
+	logger.tick("finished");
 }, config.tickInterval * 1000);
 
 rpc.addMethod("query", async () => {
