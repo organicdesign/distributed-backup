@@ -1,28 +1,25 @@
 import fs from "fs";
 import Path from "path";
-import { fixedSize } from "ipfs-unixfs-importer/chunker";
 import { UnixFS } from "ipfs-unixfs";
-import { sha256 } from "multiformats/hashes/sha2";
 import { CID } from "multiformats/cid";
 import * as dagPb from "@ipld/dag-pb";
 import type { PBLink } from "@ipld/dag-pb";
-import type { ImportResult } from "./interfaces.js";
 import type { Blockstore } from "interface-blockstore";
+import type { ImportResult, ImporterConfig } from "./interfaces.js";
 
-export const importFile = async (path: string, blockstore?: Blockstore): Promise<ImportResult> => {
+export const importFile = async (path: string, config: ImporterConfig, blockstore?: Blockstore): Promise<ImportResult> => {
 	const stream = fs.createReadStream(path, { highWaterMark: 16 * 1024 });
 	const { size } = await fs.promises.stat(path);
-	const chunker = fixedSize();
 	const links: { cid: CID, size: number, chunk: Uint8Array }[] = [];
 
-	for await (const chunk of chunker(stream)) {
+	for await (const chunk of config.chunker(stream)) {
 		const block = dagPb.encode({
 			Data: new UnixFS({ type: "file", blockSizes: [], data: chunk }).marshal(),
 			Links: []
 		});
 
-		const multihash = await sha256.digest(block);
-		const cid = CID.createV1(dagPb.code, multihash);
+		const multihash = await config.hasher.digest(block);
+		const cid = CID.create(config.cidVersion, dagPb.code, multihash);
 
 		await blockstore?.put(cid, block);
 
@@ -44,15 +41,15 @@ export const importFile = async (path: string, blockstore?: Blockstore): Promise
 		});
 	}
 
-	const multihash = await sha256.digest(block);
-	const cid = CID.createV1(dagPb.code, multihash);
+	const multihash = await config.hasher.digest(block);
+	const cid = CID.create(config.cidVersion, dagPb.code, multihash);
 
 	await blockstore?.put(cid, block);
 
 	return { cid, size };
 }
 
-export const importDir = async (path: string, blockstore?: Blockstore): Promise<ImportResult> => {
+export const importDir = async (path: string, config: ImporterConfig, blockstore?: Blockstore): Promise<ImportResult> => {
 	const dirents = await fs.promises.readdir(path, { withFileTypes: true });
 	const links: PBLink[] = [];
 
@@ -60,8 +57,8 @@ export const importDir = async (path: string, blockstore?: Blockstore): Promise<
 		const subPath = Path.join(path, dirent.name);
 
 		const { cid, size } = dirent.isDirectory() ?
-			await importDir(subPath, blockstore) :
-			await importFile(subPath, blockstore);
+			await importDir(subPath, config, blockstore) :
+			await importFile(subPath, config, blockstore);
 
 		links.push({ Hash: cid, Tsize: size });
 	}
@@ -71,8 +68,8 @@ export const importDir = async (path: string, blockstore?: Blockstore): Promise<
 		Links: links
 	});
 
-	const hash = await sha256.digest(block);
-	const cid = CID.createV1(dagPb.code, hash);
+	const hash = await config.hasher.digest(block);
+	const cid = CID.create(config.cidVersion, dagPb.code, hash);
 	const size = links.reduce((p, c) => p + (c.Tsize ?? 0), 0);
 
 	await blockstore?.put(cid, block);
@@ -80,12 +77,12 @@ export const importDir = async (path: string, blockstore?: Blockstore): Promise<
 	return { cid, size };
 }
 
-export const importAny = async (path: string, blockstore?: Blockstore): Promise<ImportResult> => {
+export const importAny = async (path: string, config: ImporterConfig, blockstore?: Blockstore): Promise<ImportResult> => {
 	const stat = await fs.promises.stat(path);
 
 	if (stat.isDirectory()) {
-		return await importDir(path, blockstore);
+		return await importDir(path, config, blockstore);
 	} else {
-		return await importFile(path, blockstore);
+		return await importFile(path, config, blockstore);
 	}
 }

@@ -1,12 +1,14 @@
-import type { ImporterOptions as FullImporterOptions } from "ipfs-unixfs-importer";
-import type { CID } from "multiformats/cid";
+import type { Chunker } from "ipfs-unixfs-importer/chunker";
+import type { Hasher } from "multiformats/hashes/hasher";
+import type { CID, Version } from "multiformats/cid";
 
-export interface ImporterOptions extends Pick<FullImporterOptions, "chunker" | "cidVersion"> {
-	encrypted: boolean
-	nocopy: boolean
+export interface ImporterConfig {
+	chunker: Chunker
+	hasher: Hasher<string, number>
+	cidVersion: Version
 }
 
 export interface ImportResult {
-	cid: CID,
+	cid: CID
 	size: number
 }
