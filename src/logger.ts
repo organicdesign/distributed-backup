@@ -6,6 +6,7 @@ const createLogger = (name: string) => {
 	return logger(`${APP_NAME}:${name}`);
 };
 
+export const lifecycle = createLogger("lifecycle");
 export const tick = createLogger("tick");
 export const add = createLogger("import");
 export const validate = createLogger("validate");

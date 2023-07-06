@@ -12,13 +12,18 @@ import * as logger from "./logger.js";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
 import type { CID } from "multiformats/cid";
 
+logger.lifecycle("starting");
+
 const config = await getConfig();
+logger.lifecycle("loaded config");
 
 const blockstore = new Filestore(new MemoryBlockstore, new MemoryDatastore());
 const libp2p = await createLibp2p();
 const helia = await createHelia({ libp2p, blockstore });
+logger.lifecycle("started helia");
 
 const { rpc, close } = await createNetServer("/tmp/server.socket");
+logger.lifecycle("started server");
 
 interface ImportOptions {
 	hash: string
@@ -113,8 +118,9 @@ rpc.addMethod("query", async () => {
 });
 
 process.on("SIGINT", async () => {
+	logger.lifecycle("shutting down");
 	await close();
 	process.exit();
 });
 
-console.log("ready");
+logger.lifecycle("ready");
