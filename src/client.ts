@@ -1,8 +1,6 @@
 import { createNetClient } from "@organicdesign/net-rpc";
 import Path from "path";
-import { fileURLToPath } from "url";
-
-const __dirname = Path.dirname(fileURLToPath(import.meta.url));
+import { srcPath } from "./utils.js";
 
 const { close, rpc } = createNetClient("/tmp/server.socket");
 
@@ -11,7 +9,7 @@ process.on("SIGINT", () => {
 	process.exit();
 });
 
-const path = Path.join(__dirname, "..", "src");
+const path = Path.join(srcPath, "src");
 
 console.log("adding:");
 let start = performance.now();
