@@ -3,6 +3,7 @@ import Path from "path";
 import { UnixFS } from "ipfs-unixfs";
 import { CID } from "multiformats/cid";
 import * as dagPb from "@ipld/dag-pb";
+import * as raw from "multiformats/codecs/raw";
 import type { PBLink } from "@ipld/dag-pb";
 import type { Blockstore } from "interface-blockstore";
 import type { ImportResult, ImporterConfig } from "./interfaces.js";
@@ -14,12 +15,12 @@ export const importFile = async (path: string, config: ImporterConfig, blockstor
 
 	for await (const chunk of config.chunker(stream)) {
 		const block = dagPb.encode({
-			Data: new UnixFS({ type: "file", blockSizes: [], data: chunk }).marshal(),
+			Data: chunk,
 			Links: []
 		});
 
 		const multihash = await config.hasher.digest(block);
-		const cid = CID.create(config.cidVersion, dagPb.code, multihash);
+		const cid = CID.create(config.cidVersion, raw.code, multihash);
 
 		await blockstore?.put(cid, block);
 
