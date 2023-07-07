@@ -6,8 +6,7 @@ import * as dagPb from "@ipld/dag-pb";
 import crypto from "crypto";
 import { deriveEncryptionParams } from "../utils.js"
 import * as raw from "multiformats/codecs/raw";
-import { toString as uint8ArrayToString } from "uint8arrays";
-import type { PBLink } from "@ipld/dag-pb";
+import { fromString as uint8ArrayFromString, toString as uint8ArrayToString } from "uint8arrays";
 import type { Blockstore } from "interface-blockstore";
 import type { ImportResult, ImporterConfig } from "./interfaces.js";
 
@@ -40,15 +39,15 @@ export const importFile = async (path: string, config: ImporterConfig, blockstor
 
 	if (links.length === 1) {
 		// If the file is only one block don't wrap it.
-		block = dagPb.encode({
+		block = dagPb.encode(dagPb.prepare({
 			Data: new UnixFS({ type: "file", blockSizes: [], data: links[0].chunk }).marshal(),
 			Links: []
-		});
+		}));
 	} else {
-		block = dagPb.encode({
+		block = dagPb.encode(dagPb.prepare({
 			Data: new UnixFS({ type: "file", blockSizes: links.map(l => BigInt(l.size)) }).marshal(),
 			Links: links.map(l => ({ Hash: l.cid, Tsize: l.size }))
-		});
+		}));
 	}
 
 	const multihash = await config.hasher.digest(block);
@@ -62,26 +61,38 @@ export const importFile = async (path: string, config: ImporterConfig, blockstor
 export const importDir = async (path: string, config: ImporterConfig, blockstore?: Blockstore): Promise<ImportResult> => {
 	const key = new Uint8Array([0, 1, 2, 3]);
 	const dirents = await fs.promises.readdir(path, { withFileTypes: true });
-	const links: PBLink[] = [];
+	const links: { name: Uint8Array, size: number, cid: CID }[] = [];
 
 	for (const dirent of dirents) {
 		const subPath = Path.join(path, dirent.name);
+		const nameBuf = uint8ArrayFromString(dirent.name);
+		const { key: aesKey, iv } = await deriveEncryptionParams(key, [nameBuf]);
+		const cipher = crypto.createCipheriv("aes-256-cbc", aesKey, iv, { encoding: "binary" });
 
 		const { cid, size } = dirent.isDirectory() ?
 			await importDir(subPath, config, blockstore) :
 			await importFile(subPath, config, blockstore);
 
-		links.push({ Hash: cid, Tsize: size, Name: dirent.name });
+		const cipherText = new Uint8Array([
+			...cipher.update(dirent.name),
+			...cipher.final()
+		]);
+
+		links.push({ cid, size, name: cipherText });
 	}
 
-	const block = dagPb.encode({
-		Data: new UnixFS({ type: 'directory' }).marshal(),
-		Links: links
-	});
+	const block = dagPb.encode(dagPb.prepare({
+		Data: new UnixFS({ type: "directory" }).marshal(),
+		Links: links.map(l => ({
+			Hash: l.cid,
+			Tsize: l.size,
+			Name: uint8ArrayToString(l.name)
+		}))
+	}));
 
 	const hash = await config.hasher.digest(block);
 	const cid = CID.create(config.cidVersion, dagPb.code, hash);
-	const size = links.reduce((p, c) => p + (c.Tsize ?? 0), 0);
+	const size = links.reduce((p, c) => p + c.size, 0);
 
 	await blockstore?.put(cid, block);
 
