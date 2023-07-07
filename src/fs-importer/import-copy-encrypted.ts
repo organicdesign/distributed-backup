@@ -69,7 +69,7 @@ export const importDir = async (
 	blockstore?: Blockstore
 ): Promise<ImportResult> => {
 	const dirents = await fs.promises.readdir(path, { withFileTypes: true });
-	const links: { name: Uint8Array, size: number, cid: CID }[] = [];
+	const links: { name: Uint8Array, size: number, cid: CID, iv: Uint8Array }[] = [];
 
 	for (const dirent of dirents) {
 		const subPath = Path.join(path, dirent.name);
@@ -86,11 +86,15 @@ export const importDir = async (
 			...cipher.final()
 		]);
 
-		links.push({ cid, size, name: cipherText });
+		links.push({ cid, size, iv, name: cipherText });
 	}
 
+	links.sort((a, b) => Buffer.compare(a.name, b.name));
+
+	const ivs = uint8ArrayFromString(JSON.stringify(links.map(l => l.iv)));
+
 	const block = dagPb.encode(dagPb.prepare({
-		Data: new UnixFS({ type: "directory" }).marshal(),
+		Data: new UnixFS({ type: "directory", data: ivs }).marshal(),
 		Links: links.map(l => ({
 			Hash: l.cid,
 			Tsize: l.size,
