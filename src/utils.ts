@@ -14,7 +14,7 @@ export const deriveKey = (
 		key,
 		new Uint8Array([index]),
 		new Uint8Array(),
-		options.size ?? 1024,
+		options.size ?? 32,
 		(err, derivedKey) => {
 			if (err) {
 				reject(err);
