@@ -10,8 +10,12 @@ import { fromString as uint8ArrayFromString, toString as uint8ArrayToString } fr
 import type { Blockstore } from "interface-blockstore";
 import type { ImportResult, ImporterConfig } from "./interfaces.js";
 
-export const importFile = async (path: string, config: ImporterConfig, blockstore?: Blockstore): Promise<ImportResult> => {
-	const key = new Uint8Array([0, 1, 2, 3]);
+export const importFile = async (
+	path: string,
+	config: ImporterConfig,
+	key: Uint8Array,
+	blockstore?: Blockstore
+): Promise<ImportResult> => {
 	const stream = fs.createReadStream(path, { highWaterMark: 16 * 1024 });
 	const encryptionParamStream = fs.createReadStream(path, { highWaterMark: 16 * 1024 });
 	const { key: aesKey, iv } = await deriveEncryptionParams(key, encryptionParamStream);
@@ -58,8 +62,12 @@ export const importFile = async (path: string, config: ImporterConfig, blockstor
 	return { cid, size };
 }
 
-export const importDir = async (path: string, config: ImporterConfig, blockstore?: Blockstore): Promise<ImportResult> => {
-	const key = new Uint8Array([0, 1, 2, 3]);
+export const importDir = async (
+	path: string,
+	config: ImporterConfig,
+	key: Uint8Array,
+	blockstore?: Blockstore
+): Promise<ImportResult> => {
 	const dirents = await fs.promises.readdir(path, { withFileTypes: true });
 	const links: { name: Uint8Array, size: number, cid: CID }[] = [];
 
@@ -70,8 +78,8 @@ export const importDir = async (path: string, config: ImporterConfig, blockstore
 		const cipher = crypto.createCipheriv("aes-256-cbc", aesKey, iv, { encoding: "binary" });
 
 		const { cid, size } = dirent.isDirectory() ?
-			await importDir(subPath, config, blockstore) :
-			await importFile(subPath, config, blockstore);
+			await importDir(subPath, config, key, blockstore) :
+			await importFile(subPath, config, key, blockstore);
 
 		const cipherText = new Uint8Array([
 			...cipher.update(dirent.name),
@@ -99,12 +107,12 @@ export const importDir = async (path: string, config: ImporterConfig, blockstore
 	return { cid, size };
 }
 
-export const importAny = async (path: string, config: ImporterConfig, blockstore?: Blockstore): Promise<ImportResult> => {
+export const importAny = async (path: string, config: ImporterConfig, key: Uint8Array, blockstore?: Blockstore): Promise<ImportResult> => {
 	const stat = await fs.promises.stat(path);
 
 	if (stat.isDirectory()) {
-		return await importDir(path, config, blockstore);
+		return await importDir(path, config, key, blockstore);
 	} else {
-		return await importFile(path, config, blockstore);
+		return await importFile(path, config, key, blockstore);
 	}
 }
