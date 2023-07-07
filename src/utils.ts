@@ -1,6 +1,5 @@
 import Path from "path";
 import crypto from "crypto";
-import fs from "fs";
 import { fileURLToPath } from "url";
 
 export const srcPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -27,12 +26,14 @@ export const deriveKey = (
 	);
 });
 
-export const createHmac = async (key: Uint8Array, path: string, options: Partial<{ digest: string }> = {}): Promise<Uint8Array> => {
-	const stream = fs.createReadStream(path, { highWaterMark: 16 * 1024 });
-
+export const createHmac = async (
+	key: Uint8Array,
+	data: Iterable<Uint8Array> | AsyncIterable<Uint8Array>,
+	options: Partial<{ digest: string }> = {}
+): Promise<Uint8Array> => {
 	const hmac = crypto.createHmac(options.digest ?? "sha256", key);
 
-	for await (const chunk of stream) {
+	for await (const chunk of data) {
 		hmac.update(chunk);
 	}
 
@@ -41,7 +42,7 @@ export const createHmac = async (key: Uint8Array, path: string, options: Partial
 
 export const deriveEncryptionParams = async (
 	key: Uint8Array,
-	path: string,
+	data: Iterable<Uint8Array> | AsyncIterable<Uint8Array>,
 	options: Partial<{ digest: string, size: number }> = {}
 ) => {
 	const [ encryptionKey, hmacKey ] = await Promise.all([
@@ -49,7 +50,7 @@ export const deriveEncryptionParams = async (
 		deriveKey(key, 1, options)
 	]);
 
-	const hmac = await createHmac(hmacKey, path, options);
+	const hmac = await createHmac(hmacKey, data, options);
 	const iv = hmac.slice(0, 16);
 
 	return { iv, key: encryptionKey };
