@@ -7,7 +7,6 @@ import type { Blockstore, Pair } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { AbortOptions, AwaitIterable, Await } from 'interface-store'
 import crypto from "crypto";
-import {key as cryptoKey} from "../crypto/index.js";
 
 export class Filestore implements Blockstore {
   private readonly blockstore: Blockstore
@@ -34,7 +33,7 @@ export class Filestore implements Blockstore {
 		if (dataObj.IV != null) {
 			const cipher = crypto.createCipheriv(
 				"aes-256-cbc",
-				cryptoKey,
+				new Uint8Array([0, 1, 2]),
 				dataObj.IV,
 				{ encoding: "binary" }
 			);
