@@ -29,12 +29,26 @@ export const deriveKey = (
 export const createHmac = async (
 	key: Uint8Array,
 	data: Iterable<Uint8Array> | AsyncIterable<Uint8Array>,
-	options: Partial<{ digest: string }> = {}
+	options: Partial<{ digest: string, max: number }> = {}
 ): Promise<Uint8Array> => {
 	const hmac = crypto.createHmac(options.digest ?? "sha256", key);
+	let len = 0;
 
 	for await (const chunk of data) {
+		if (options.max != null && len + chunk.length > options.max) {
+			const diff = len + chunk.length - options.max;
+
+			hmac.update(chunk.slice(0, diff));
+			break;
+		}
+
 		hmac.update(chunk);
+
+		len += chunk.length;
+
+		if (options.max != null && len >= options.max) {
+			break;
+		}
 	}
 
 	return hmac.digest();
@@ -43,7 +57,7 @@ export const createHmac = async (
 export const deriveEncryptionParams = async (
 	key: Uint8Array,
 	data: Iterable<Uint8Array> | AsyncIterable<Uint8Array>,
-	options: Partial<{ digest: string, size: number }> = {}
+	options: Partial<{ digest: string, size: number, max: number }> = {}
 ) => {
 	const [ encryptionKey, hmacKey ] = await Promise.all([
 		deriveKey(key, 0, options),
