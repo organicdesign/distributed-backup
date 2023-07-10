@@ -12,6 +12,10 @@ export default class DatabaseHandler {
 		this.welo = welo;
 	}
 
+	get address (): Address | undefined {
+		return this.database?.address;
+	}
+
 	async create (peers: Uint8Array[]) {
 		this.database = await this.createDatabase(peers);
 	}
