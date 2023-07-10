@@ -10,7 +10,9 @@ import selectChunker from "./fs-importer/select-chunker.js";
 import { getConfig } from "./config.js";
 import * as logger from "./logger.js";
 import { createWelo } from "welo";
+import { Address } from "welo/dist/src/manifest"
 import DatabaseHandler from "./database-handler.js";
+import { toString as uint8ArrayToString, fromString as uint8ArrayFromString } from "uint8arrays";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
 import type { CID } from "multiformats/cid";
 
@@ -80,6 +82,30 @@ rpc.addMethod("add", async (params: { path: string, hashonly?: boolean } & Impor
 	return cid;
 });
 
+rpc.addMethod("query", async () => {
+	return [...database.values()];
+});
+
+rpc.addMethod("id", async () => {
+	return uint8ArrayToString(welo.identity.id, "base58btc");
+});
+
+rpc.addMethod("addPeer", async (params: { peer: string }) => {
+	await handler.addPeers([uint8ArrayFromString(params.peer, "base58btc")]);
+});
+
+rpc.addMethod("connect", async (params: { address: string }) => {
+	const address = Address.fromString(params.address);
+
+	await handler.connect(address);
+});
+
+process.on("SIGINT", async () => {
+	logger.lifecycle("shutting down");
+	await close();
+	process.exit();
+});
+
 setInterval(async () => {
 	logger.tick("started");
 
@@ -127,15 +153,5 @@ setInterval(async () => {
 
 	logger.tick("finished");
 }, config.tickInterval * 1000);
-
-rpc.addMethod("query", async () => {
-	return [...database.values()];
-});
-
-process.on("SIGINT", async () => {
-	logger.lifecycle("shutting down");
-	await close();
-	process.exit();
-});
 
 logger.lifecycle("ready");
