@@ -1,11 +1,13 @@
 import { Database, Welo, Address, Keyvalue } from "welo";
 import { CID } from "multiformats/cid";
 import { decode } from "@ipld/dag-cbor";
+import { toString as uint8ArrayToString } from "uint8arrays";
 
 type KeyvalueDB = Omit<Database, "store"> & { store: Keyvalue };
 
 export default class DatabaseHandler {
 	private readonly welo: Welo;
+	private readonly peers = new Map<string, Uint8Array>();
 	private database: KeyvalueDB | null = null;
 
 	constructor (welo: Welo) {
@@ -17,7 +19,10 @@ export default class DatabaseHandler {
 	}
 
 	async create (peers?: Uint8Array[]) {
-		this.database = await this.createDatabase(peers ?? []);
+		this.peers.clear();
+		this.addPeersToList([...(peers ?? []), this.welo.identity.id]);
+
+		this.database = await this.createDatabase();
 	}
 
 	async connect (address: Address) {
@@ -52,7 +57,9 @@ export default class DatabaseHandler {
 	}
 
 	async addPeers (peers: Uint8Array[]) {
-		const database = await this.createDatabase(peers);
+		this.addPeersToList(peers);
+
+		const database = await this.createDatabase();
 
 		if (this.database == null) {
 			this.database = database;
@@ -62,12 +69,20 @@ export default class DatabaseHandler {
 		await this.migrate(this.database, database);
 	}
 
-	private async createDatabase (peers: Uint8Array[]) {
+	private addPeersToList (peers: Uint8Array[]) {
+		for (const peer of peers) {
+			this.peers.set(uint8ArrayToString(peer), peer);
+		}
+	}
+
+	private async createDatabase () {
+		const peers = this.peers.values();
+
 		const manifest = await this.welo.determine({
 			name: "backup",
 			access: {
 				protocol: "/hldb/access/static",
-				config: { write: [this.welo.identity.id, ...peers] }
+				config: { write: [...peers] }
 			}
 		});
 
