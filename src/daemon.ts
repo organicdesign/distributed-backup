@@ -10,7 +10,7 @@ import selectChunker from "./fs-importer/select-chunker.js";
 import { getConfig } from "./config.js";
 import * as logger from "./logger.js";
 import { createWelo } from "welo";
-import { Address } from "welo/dist/src/manifest"
+import { Address } from "welo/dist/src/manifest/address.js"
 import DatabaseHandler from "./database-handler.js";
 import { toString as uint8ArrayToString, fromString as uint8ArrayFromString } from "uint8arrays";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
@@ -88,6 +88,10 @@ rpc.addMethod("query", async () => {
 
 rpc.addMethod("id", async () => {
 	return uint8ArrayToString(welo.identity.id, "base58btc");
+});
+
+rpc.addMethod("address", async () => {
+	return handler.address?.toString();
 });
 
 rpc.addMethod("addPeer", async (params: { peer: string }) => {
