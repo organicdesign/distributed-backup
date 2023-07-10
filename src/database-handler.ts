@@ -27,10 +27,24 @@ export default class DatabaseHandler {
 			throw new Error("not connected to a database");
 		}
 
-		const store = this.database.store as Keyvalue;
-		const op = store.creators.put(cid.toString(), { cid: cid.bytes });
+		const op = this.database.store.creators.put(cid.toString(), { cid: cid.bytes });
 
 		await this.database.replica.write(op);
+	}
+
+	async delete (cid: CID) {
+		if (this.database == null) {
+			throw new Error("not connected to a database");
+		}
+
+		const op = this.database.store.creators.del(cid.toString());
+
+		await this.database.replica.write(op);
+	}
+
+	async replace (cid: CID) {
+		await this.add(cid);
+		await this.delete(cid);
 	}
 
 	async addPeers (peers: Uint8Array[]) {
