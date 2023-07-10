@@ -48,6 +48,6 @@
     "libp2p": "^0.45.9",
     "multiformats": "^12.0.1",
     "protons-runtime": "^5.0.1",
-    "welo": "^2.0.0"
+    "welo": "^2.1.1"
   }
 }
