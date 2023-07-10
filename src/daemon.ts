@@ -4,11 +4,13 @@ import { MemoryDatastore } from "datastore-core";
 import { MemoryBlockstore } from "blockstore-core";
 import createLibp2p from "./libp2p.js";
 import { Filestore } from "./filestore/index.js";
-import { importAny } from "./fs-importer/import-copy-plaintext.js";
+import { importAny } from "./fs-importer/import-copy-encrypted.js";
 import selectHasher from "./fs-importer/select-hasher.js";
 import selectChunker from "./fs-importer/select-chunker.js";
 import { getConfig } from "./config.js";
 import * as logger from "./logger.js";
+import { createWelo } from "welo";
+import DatabaseHandler from "./database-handler.js";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
 import type { CID } from "multiformats/cid";
 
@@ -20,7 +22,14 @@ logger.lifecycle("loaded config");
 const blockstore = new Filestore(new MemoryBlockstore, new MemoryDatastore());
 const libp2p = await createLibp2p();
 const helia = await createHelia({ libp2p, blockstore });
+
 logger.lifecycle("started helia");
+
+const welo = await createWelo({ ipfs: helia });
+const handler = new DatabaseHandler(welo);
+
+await handler.create();
+logger.lifecycle("started welo: %s", handler.address);
 
 const { rpc, close } = await createNetServer("/tmp/server.socket");
 logger.lifecycle("started server");
@@ -48,7 +57,8 @@ rpc.addMethod("add", async (params: { path: string, hashonly?: boolean } & Impor
 		logger.add("importing %s", params.path);
 	}
 
-	const { cid } = await importAny(params.path, config, params.hashonly ? undefined : blockstore);
+	const key = new Uint8Array([0, 1, 2, 3]);
+	const { cid } = await importAny(params.path, config, key, params.hashonly ? undefined : blockstore);
 
 	if (params.hashonly) {
 		return cid;
@@ -64,6 +74,8 @@ rpc.addMethod("add", async (params: { path: string, hashonly?: boolean } & Impor
 
 	timestamps.set(params.path, Date.now());
 	database.set(params.path, { cid, path: params.path });
+
+	await handler.add(cid);
 
 	return cid;
 });
@@ -86,7 +98,8 @@ setInterval(async () => {
 			cidVersion: 1
 		};
 
-		const { cid: hashOnlyCid } = await importAny(item.path, importerConfig);
+		const key = new Uint8Array([0, 1, 2, 3]);
+		const { cid: hashOnlyCid } = await importAny(item.path, importerConfig, key);
 
 		if (hashOnlyCid.equals(item.cid)) {
 			timestamps.set(item.path, Date.now());
@@ -97,7 +110,7 @@ setInterval(async () => {
 
 		logger.validate("updating %s", item.path);
 
-		const { cid } = await importAny(item.path, importerConfig, blockstore);
+		const { cid } = await importAny(item.path, importerConfig, key, blockstore);
 
 		if (!await helia.pins.isPinned(cid)) {
 			logger.add("pinning %s", item.path);

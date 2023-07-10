@@ -16,8 +16,8 @@ export default class DatabaseHandler {
 		return this.database?.address;
 	}
 
-	async create (peers: Uint8Array[]) {
-		this.database = await this.createDatabase(peers);
+	async create (peers?: Uint8Array[]) {
+		this.database = await this.createDatabase(peers ?? []);
 	}
 
 	async connect (address: Address) {
