@@ -115,6 +115,10 @@ rpc.addMethod("connections", async () => {
 	return libp2p.getConnections().map(c => c.remotePeer.toString());
 });
 
+rpc.addMethod("pubsub", async () => {
+	return libp2p.services.pubsub.getTopics();
+});
+
 rpc.addMethod("id", async () => {
 	return uint8ArrayToString(welo.identity.id, "base58btc");
 });
