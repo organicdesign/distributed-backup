@@ -48,22 +48,22 @@ interface ImportOptions {
 const database = new Map<string, { cid: CID, path: string }>();
 const timestamps = new Map<string, number>();
 
-rpc.addMethod("add", async (params: { path: string, hashonly?: boolean } & ImportOptions) => {
+rpc.addMethod("add", async (params: { path: string, onlyHash?: boolean } & ImportOptions) => {
 	const config: ImporterConfig = {
 		chunker: selectChunker(),
 		hasher: selectHasher(),
 		cidVersion: 1
 	};
 
-	if (!params.hashonly) {
+	if (!params.onlyHash) {
 		logger.add("importing %s", params.path);
 	}
 
 	const key = new Uint8Array([0, 1, 2, 3]);
-	const { cid } = await importAny(params.path, config, key, params.hashonly ? undefined : blockstore);
+	const { cid } = await importAny(params.path, config, key, params.onlyHash ? undefined : blockstore);
 
-	if (params.hashonly) {
-		return cid;
+	if (params.onlyHash) {
+		return cid.toString();
 	}
 
 	logger.add("imported %s", params.path);
@@ -79,7 +79,7 @@ rpc.addMethod("add", async (params: { path: string, hashonly?: boolean } & Impor
 
 	await handler.add(cid);
 
-	return cid;
+	return cid.toString();
 });
 
 rpc.addMethod("query", async () => {
