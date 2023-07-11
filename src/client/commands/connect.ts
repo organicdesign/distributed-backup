@@ -8,6 +8,11 @@ export const builder = createBuilder({
 	address: {
 		type: "string",
 		required: true
+	},
+	type: {
+		type: "string",
+		default: "libp2p",
+		choices: ["libp2p", "welo"] as const
 	}
 });
 
@@ -16,7 +21,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 		throw new Error("Failed to connect to daemon.");
 	}
 
-	const connect = await argv.client.rpc.request("connect", { address: argv.address });
+	const connect = await argv.client.rpc.request("connect", { address: argv.address, type: argv.type });
 
 	console.log(connect);
 
