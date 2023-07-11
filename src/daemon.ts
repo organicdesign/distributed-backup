@@ -2,6 +2,8 @@ import { createNetServer } from "@organicdesign/net-rpc";
 import { createHelia } from "helia";
 import { MemoryDatastore } from "datastore-core";
 import { MemoryBlockstore } from "blockstore-core";
+import yargs from "yargs/yargs";
+import { hideBin } from "yargs/helpers";
 import createLibp2p from "./libp2p.js";
 import { Filestore } from "./filestore/index.js";
 import { importAny as importAnyEncrypted } from "./fs-importer/import-copy-encrypted.js";
@@ -10,12 +12,21 @@ import selectHasher from "./fs-importer/select-hasher.js";
 import selectChunker from "./fs-importer/select-chunker.js";
 import { getConfig } from "./config.js";
 import * as logger from "./logger.js";
-import { createWelo } from "welo";
-import { Address } from "welo/dist/src/manifest/address.js"
+import { createWelo, Address } from "welo";
 import DatabaseHandler from "./database-handler.js";
 import { toString as uint8ArrayToString, fromString as uint8ArrayFromString } from "uint8arrays";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
 import type { CID } from "multiformats/cid";
+
+const argv = await yargs(hideBin(process.argv))
+	.option({
+		socket: {
+			alias: "s",
+			type: "string",
+			default: "/tmp/server.socket"
+		}
+	})
+	.parse();
 
 logger.lifecycle("starting");
 
@@ -34,7 +45,7 @@ const handler = new DatabaseHandler(welo);
 await handler.create();
 logger.lifecycle("started welo: %s", handler.address);
 
-const { rpc, close } = await createNetServer("/tmp/server.socket");
+const { rpc, close } = await createNetServer(argv.socket);
 logger.lifecycle("started server");
 
 interface ImportOptions {
