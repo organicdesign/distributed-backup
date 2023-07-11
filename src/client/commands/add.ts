@@ -9,8 +9,14 @@ export const builder = createBuilder({
 		required: true,
 		type: "string"
 	},
+
 	onlyHash: {
 		alias: "n",
+		default: false,
+		type: "boolean"
+	},
+
+	encrypt: {
 		default: false,
 		type: "boolean"
 	}
@@ -21,7 +27,11 @@ export const handler = createHandler<typeof builder>(async argv => {
 		throw new Error("Failed to connect to daemon.");
 	}
 
-	const add = await argv.client.rpc.request("add", { path: argv.path, onlyHash: argv.onlyHash });
+	const add = await argv.client.rpc.request("add", {
+		path: argv.path,
+		onlyHash: argv.onlyHash,
+		encrypt: argv.encrypt
+	});
 
 	console.log(add);
 

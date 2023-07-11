@@ -4,7 +4,8 @@ import { MemoryDatastore } from "datastore-core";
 import { MemoryBlockstore } from "blockstore-core";
 import createLibp2p from "./libp2p.js";
 import { Filestore } from "./filestore/index.js";
-import { importAny } from "./fs-importer/import-copy-encrypted.js";
+import { importAny as importAnyEncrypted } from "./fs-importer/import-copy-encrypted.js";
+import { importAny as importAnyPlaintext } from "./fs-importer/import-copy-plaintext.js";
 import selectHasher from "./fs-importer/select-hasher.js";
 import selectChunker from "./fs-importer/select-chunker.js";
 import { getConfig } from "./config.js";
@@ -48,7 +49,7 @@ interface ImportOptions {
 const database = new Map<string, { cid: CID, path: string }>();
 const timestamps = new Map<string, number>();
 
-rpc.addMethod("add", async (params: { path: string, onlyHash?: boolean } & ImportOptions) => {
+rpc.addMethod("add", async (params: { path: string, onlyHash?: boolean, encrypt?: boolean } & ImportOptions) => {
 	const config: ImporterConfig = {
 		chunker: selectChunker(),
 		hasher: selectHasher(),
@@ -59,8 +60,18 @@ rpc.addMethod("add", async (params: { path: string, onlyHash?: boolean } & Impor
 		logger.add("importing %s", params.path);
 	}
 
-	const key = new Uint8Array([0, 1, 2, 3]);
-	const { cid } = await importAny(params.path, config, key, params.onlyHash ? undefined : blockstore);
+	let cid: CID;
+
+	if (params.encrypt) {
+		const key = new Uint8Array([0, 1, 2, 3]);
+		const result = await importAnyEncrypted(params.path, config, key, params.onlyHash ? undefined : blockstore);
+
+		cid = result.cid;
+	} else {
+		const result = await importAnyPlaintext(params.path, config, params.onlyHash ? undefined : blockstore);
+
+		cid = result.cid;
+	}
 
 	if (params.onlyHash) {
 		return cid.toString();
@@ -129,7 +140,7 @@ setInterval(async () => {
 		};
 
 		const key = new Uint8Array([0, 1, 2, 3]);
-		const { cid: hashOnlyCid } = await importAny(item.path, importerConfig, key);
+		const { cid: hashOnlyCid } = await importAnyEncrypted(item.path, importerConfig, key);
 
 		if (hashOnlyCid.equals(item.cid)) {
 			timestamps.set(item.path, Date.now());
@@ -140,7 +151,7 @@ setInterval(async () => {
 
 		logger.validate("updating %s", item.path);
 
-		const { cid } = await importAny(item.path, importerConfig, key, blockstore);
+		const { cid } = await importAnyEncrypted(item.path, importerConfig, key, blockstore);
 
 		if (!await helia.pins.isPinned(cid)) {
 			logger.add("pinning %s", item.path);
