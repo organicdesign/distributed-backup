@@ -4,19 +4,13 @@ import { hideBin } from "yargs/helpers";
 import commands from "./client/commands/index.js";
 import { createMiddleware } from "./client/utils.js";
 
-const yargsInstance = yargs(hideBin(process.argv));
-
-for (const command of commands) {
-	yargsInstance.command(command.command, command.desc, command.builder, command.handler);
-}
-
-yargsInstance.demandCommand();
-
-yargsInstance.middleware(createMiddleware(argv => {
-	argv.client = createNetClient(argv.socket);
-}));
-
-await yargsInstance.parse();
+await yargs(hideBin(process.argv))
+	.command(commands)
+	.demandCommand()
+	.middleware(createMiddleware(argv => {
+		argv.client = createNetClient(argv.socket);
+	}))
+	.parse();
 /*
 process.on("SIGINT", () => {
 	close();
