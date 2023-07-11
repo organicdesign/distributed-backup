@@ -28,6 +28,8 @@ export default class DatabaseHandler {
 	async connect (address: Address) {
 		const manifest = await this.welo.fetch(address);
 
+		console.log(manifest);
+
 		this.database = await this.welo.open(manifest) as unknown as KeyvalueDB;
 	}
 
@@ -67,6 +69,27 @@ export default class DatabaseHandler {
 		}
 
 		await this.migrate(this.database, database);
+	}
+
+	async query () {
+		if (this.database == null) {
+			throw new Error("database is not open");
+		}
+
+		const index = await this.database.store.latest();
+		const data = new Map<string, CID>();
+
+		for await (const { key, value } of index.query({})) {
+			const decoded = decode(value) as Uint8Array;
+
+			if (decoded === null) {
+				continue;
+			}
+
+			data.set(key.name(), CID.decode(decoded));
+		}
+
+		return data;
 	}
 
 	private addPeersToList (peers: Uint8Array[]) {

@@ -106,7 +106,9 @@ rpc.addMethod("add", async (params: { path: string, onlyHash?: boolean, encrypt?
 });
 
 rpc.addMethod("query", async () => {
-	return [...database.values()];
+	const map = await handler.query();
+
+	return [...map.values()];
 });
 
 rpc.addMethod("id", async () => {
