@@ -2,7 +2,7 @@ import { createBuilder, createHandler } from "../utils.js";
 
 export const command = "add [path]";
 
-export const desc = "Create an empty repo";
+export const desc = "Add a file or directory to the distributed backup.";
 
 export const builder = createBuilder({
 	path: {
