@@ -1,8 +1,8 @@
 import { createBuilder, createHandler } from "../utils.js";
 
-export const command = "query";
+export const command = "id";
 
-export const desc = "Query the database.";
+export const desc = "Get the identity of the instance.";
 
 export const builder = createBuilder({});
 
@@ -11,9 +11,9 @@ export const handler = createHandler<typeof builder>(async argv => {
 		throw new Error("Failed to connect to daemon.");
 	}
 
-	const query = await argv.client.rpc.request("query", {});
+	const id = await argv.client.rpc.request("id", {});
 
-	console.log(query);
+	console.log(id);
 
 	argv.client.close();
 });
