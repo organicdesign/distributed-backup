@@ -1,9 +1,23 @@
 import { createNetClient } from "@organicdesign/net-rpc";
-import Path from "path";
-import { srcPath } from "./utils.js";
+import yargs from "yargs/yargs";
+import { hideBin } from "yargs/helpers";
+import commands from "./client/commands/index.js";
+import { createMiddleware } from "./client/utils.js";
 
-const { close, rpc } = createNetClient("/tmp/server.socket");
+const yargsInstance = yargs(hideBin(process.argv));
 
+for (const command of commands) {
+	yargsInstance.command(command.command, command.desc, command.builder, command.handler);
+}
+
+yargsInstance.demandCommand();
+
+yargsInstance.middleware(createMiddleware(argv => {
+	argv.client = createNetClient(argv.socket);
+}));
+
+await yargsInstance.parse();
+/*
 process.on("SIGINT", () => {
 	close();
 	process.exit();
@@ -24,3 +38,12 @@ console.log("added", performance.now() - start, cid2);
 const query = await rpc.request("query", {});
 
 console.log("query", query);
+
+const id = await rpc.request("id", {});
+
+console.log("id", id);
+
+const address = await rpc.request("address", {});
+
+console.log("address", address);
+*/

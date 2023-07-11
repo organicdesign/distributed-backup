@@ -3,7 +3,7 @@ import { CID } from "multiformats/cid";
 import { decode } from "@ipld/dag-cbor";
 import { toString as uint8ArrayToString } from "uint8arrays";
 
-type KeyvalueDB = Omit<Database, "store"> & { store: Keyvalue };
+type KeyvalueDB = Omit<Database, "store"> & { store: Keyvalue }
 
 export default class DatabaseHandler {
 	private readonly welo: Welo;
