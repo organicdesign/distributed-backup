@@ -12,7 +12,7 @@ import selectHasher from "./fs-importer/select-hasher.js";
 import selectChunker from "./fs-importer/select-chunker.js";
 import { getConfig } from "./config.js";
 import * as logger from "./logger.js";
-import { createWelo, Address } from "welo";
+import { createWelo, Address } from "../../welo/dist/src/index.js";
 import DatabaseHandler from "./database-handler.js";
 import { toString as uint8ArrayToString, fromString as uint8ArrayFromString } from "uint8arrays";
 import { multiaddr } from "@multiformats/multiaddr";
@@ -109,6 +109,10 @@ rpc.addMethod("query", async () => {
 	const map = await handler.query();
 
 	return [...map.values()];
+});
+
+rpc.addMethod("connections", async () => {
+	return libp2p.getConnections().map(c => c.remotePeer.toString());
 });
 
 rpc.addMethod("id", async () => {
