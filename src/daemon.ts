@@ -15,6 +15,7 @@ import * as logger from "./logger.js";
 import { createWelo, Address } from "welo";
 import DatabaseHandler from "./database-handler.js";
 import { toString as uint8ArrayToString, fromString as uint8ArrayFromString } from "uint8arrays";
+import { multiaddr } from "@multiformats/multiaddr";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
 import type { CID } from "multiformats/cid";
 
@@ -112,18 +113,38 @@ rpc.addMethod("id", async () => {
 	return uint8ArrayToString(welo.identity.id, "base58btc");
 });
 
-rpc.addMethod("address", async () => {
-	return handler.address?.toString();
+rpc.addMethod("addresses", async (params: { type: "libp2p" | "welo" }) => {
+	if (params.type === "welo") {
+		return handler.address?.toString();
+	}
+
+	if (params.type === "libp2p") {
+		return libp2p.getMultiaddrs().map(a => a.toString());
+	}
+
+	throw new Error("invalid type");
 });
 
 rpc.addMethod("addPeer", async (params: { peer: string }) => {
 	await handler.addPeers([uint8ArrayFromString(params.peer, "base58btc")]);
 });
 
-rpc.addMethod("connect", async (params: { address: string }) => {
-	const address = Address.fromString(params.address);
+rpc.addMethod("connect", async (params: { address: string, type: "libp2p" | "welo" }) => {
+	if (params.type === "welo") {
+		const address = Address.fromString(params.address);
 
-	await handler.connect(address);
+		await handler.connect(address);
+		return;
+	}
+
+	if (params.type === "libp2p") {
+		const address = multiaddr(params.address);
+
+		await libp2p.dial(address);
+		return;
+	}
+
+	throw new Error("invalid type");
 });
 
 process.on("SIGINT", async () => {

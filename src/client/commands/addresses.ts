@@ -17,7 +17,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 		throw new Error("Failed to connect to daemon.");
 	}
 
-	const addresses = await argv.client.rpc.request("address", { type: argv.type });
+	const addresses = await argv.client.rpc.request("addresses", { type: argv.type });
 
 	console.log(addresses);
 
