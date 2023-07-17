@@ -85,7 +85,7 @@ export class Filestore implements Blockstore {
     }
 
     const dKey = cidToKey(key)
-    const hasKey = await this.datastore.has(dKey)
+    const hasKey = await this.datastore.has(dKey);
 
     return hasKey
   }

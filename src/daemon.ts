@@ -12,7 +12,7 @@ import selectHasher from "./fs-importer/select-hasher.js";
 import selectChunker from "./fs-importer/select-chunker.js";
 import { getConfig } from "./config.js";
 import * as logger from "./logger.js";
-import { createWelo, Address } from "../../welo/dist/src/index.js";
+import { createWelo, pubsubReplicator, bootstrapReplicator, Address } from "../../welo/dist/src/index.js";
 import DatabaseHandler from "./database-handler.js";
 import { toString as uint8ArrayToString, fromString as uint8ArrayFromString } from "uint8arrays";
 import { multiaddr } from "@multiformats/multiaddr";
@@ -34,13 +34,13 @@ logger.lifecycle("starting");
 const config = await getConfig();
 logger.lifecycle("loaded config");
 
-const blockstore = new Filestore(new MemoryBlockstore, new MemoryDatastore());
+const blockstore = new Filestore(new MemoryBlockstore(), new MemoryDatastore());
 const libp2p = await createLibp2p();
 const helia = await createHelia({ libp2p, blockstore });
 
 logger.lifecycle("started helia");
 
-const welo = await createWelo({ ipfs: helia });
+const welo = await createWelo({ ipfs: helia, replicators: [bootstrapReplicator(), pubsubReplicator()] });
 const handler = new DatabaseHandler(welo);
 
 await handler.create();
@@ -97,6 +97,9 @@ rpc.addMethod("add", async (params: { path: string, onlyHash?: boolean, encrypt?
 		await helia.pins.add(cid);
 	}
 
+
+	logger.add("pinned %s", params.path);
+
 	timestamps.set(params.path, Date.now());
 	database.set(params.path, { cid, path: params.path });
 
@@ -112,7 +115,7 @@ rpc.addMethod("query", async () => {
 });
 
 rpc.addMethod("connections", async () => {
-	return libp2p.getConnections().map(c => c.remotePeer.toString());
+	return libp2p.getConnections().map(c => c.remotePeer);
 });
 
 rpc.addMethod("pubsub", async () => {

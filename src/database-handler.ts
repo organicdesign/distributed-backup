@@ -1,4 +1,4 @@
-import { Database, Welo, Address, Keyvalue } from "welo";
+import { Database, Welo, Address, Keyvalue } from "../../welo/dist/src/index.js";
 import { CID } from "multiformats/cid";
 import { decode } from "@ipld/dag-cbor";
 import { toString as uint8ArrayToString } from "uint8arrays";
@@ -29,6 +29,8 @@ export default class DatabaseHandler {
 		const manifest = await this.welo.fetch(address);
 
 		console.log(manifest);
+
+		await this.database?.close();
 
 		this.database = await this.welo.open(manifest) as unknown as KeyvalueDB;
 	}
@@ -77,7 +79,7 @@ export default class DatabaseHandler {
 		}
 
 		const index = await this.database.store.latest();
-		const data = new Map<string, CID>();
+		const data = new Map<string, unknown>();
 
 		for await (const { key, value } of index.query({})) {
 			const decoded = decode(value) as Uint8Array;
@@ -86,7 +88,7 @@ export default class DatabaseHandler {
 				continue;
 			}
 
-			data.set(key.name(), CID.decode(decoded));
+			data.set(key.name(), decoded);
 		}
 
 		return data;
@@ -103,6 +105,7 @@ export default class DatabaseHandler {
 
 		const manifest = await this.welo.determine({
 			name: "backup",
+			meta: { type: "group" },
 			access: {
 				protocol: "/hldb/access/static",
 				config: { write: [...peers] }
