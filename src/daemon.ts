@@ -5,6 +5,7 @@ import { MemoryBlockstore } from "blockstore-core";
 import yargs from "yargs/yargs";
 import { hideBin } from "yargs/helpers";
 import createLibp2p from "./libp2p.js";
+import { CMS } from "@libp2p/cms";
 import { Filestore } from "./filestore/index.js";
 import { importAny as importAnyEncrypted } from "./fs-importer/import-copy-encrypted.js";
 import { importAny as importAnyPlaintext } from "./fs-importer/import-copy-plaintext.js";
@@ -16,6 +17,7 @@ import { createWelo, pubsubReplicator, bootstrapReplicator, Address } from "../.
 import DatabaseHandler from "./database-handler.js";
 import { toString as uint8ArrayToString, fromString as uint8ArrayFromString } from "uint8arrays";
 import { multiaddr } from "@multiformats/multiaddr";
+import crypto from "crypto"
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
 import type { CID } from "multiformats/cid";
 
@@ -39,6 +41,15 @@ const libp2p = await createLibp2p();
 const helia = await createHelia({ libp2p, blockstore });
 
 logger.lifecycle("started helia");
+
+const key = await libp2p.keychain.createKey("database", "RSA");
+const cms = new CMS(libp2p.keychain)
+
+const aesKey = crypto.randomBytes(32);
+const encrypted = await cms.encrypt(key.name, aesKey);
+
+console.warn("need to save and load aesKey");
+logger.lifecycle("generated key");
 
 const welo = await createWelo({ ipfs: helia, replicators: [bootstrapReplicator(), pubsubReplicator()] });
 const handler = new DatabaseHandler(welo);
@@ -75,8 +86,7 @@ rpc.addMethod("add", async (params: { path: string, onlyHash?: boolean, encrypt?
 	let cid: CID;
 
 	if (params.encrypt) {
-		const key = new Uint8Array([0, 1, 2, 3]);
-		const result = await importAnyEncrypted(params.path, config, key, params.onlyHash ? undefined : blockstore);
+		const result = await importAnyEncrypted(params.path, config, aesKey, params.onlyHash ? undefined : blockstore);
 
 		cid = result.cid;
 	} else {
@@ -184,8 +194,7 @@ setInterval(async () => {
 			cidVersion: 1
 		};
 
-		const key = new Uint8Array([0, 1, 2, 3]);
-		const { cid: hashOnlyCid } = await importAnyEncrypted(item.path, importerConfig, key);
+		const { cid: hashOnlyCid } = await importAnyEncrypted(item.path, importerConfig, aesKey);
 
 		if (hashOnlyCid.equals(item.cid)) {
 			timestamps.set(item.path, Date.now());
@@ -196,7 +205,7 @@ setInterval(async () => {
 
 		logger.validate("updating %s", item.path);
 
-		const { cid } = await importAnyEncrypted(item.path, importerConfig, key, blockstore);
+		const { cid } = await importAnyEncrypted(item.path, importerConfig, aesKey, blockstore);
 
 		if (!await helia.pins.isPinned(cid)) {
 			logger.add("pinning %s", item.path);
