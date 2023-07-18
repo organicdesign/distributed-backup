@@ -69,7 +69,6 @@ interface ImportOptions {
 	encrypt: boolean
 }
 
-const database = new Map<string, { cid: CID, path: string }>();
 const timestamps = new Map<string, number>();
 
 rpc.addMethod("add", async (params: { path: string, onlyHash?: boolean, encrypt?: boolean } & ImportOptions) => {
@@ -111,7 +110,6 @@ rpc.addMethod("add", async (params: { path: string, onlyHash?: boolean, encrypt?
 	logger.add("pinned %s", params.path);
 
 	timestamps.set(params.path, Date.now());
-	database.set(params.path, { cid, path: params.path });
 
 	await handler.add(cid, params.path);
 
@@ -183,14 +181,16 @@ process.on("SIGINT", async () => {
 setInterval(async () => {
 	logger.tick("started");
 
-	for (const item of database.values()) {
-		const timestamp = timestamps.get(item.path) ?? 0;
+	for (const item of (await handler.query()).values() as Iterable<{ path: Uint8Array, cid: Uint8Array }>) {
+		const path = uint8ArrayToString(await cms.decrypt(item.path));
+		const cid = CID.decode(item.cid);
+		const timestamp = timestamps.get(path) ?? 0;
 
 		if (Date.now() - timestamp < config.validateInterval * 1000) {
 			continue;
 		}
 
-		logger.validate("outdated %s", item.path);
+		logger.validate("outdated %s", path);
 
 		const importerConfig: ImporterConfig = {
 			chunker: selectChunker(),
@@ -198,30 +198,31 @@ setInterval(async () => {
 			cidVersion: 1
 		};
 
-		const { cid: hashOnlyCid } = await importAnyEncrypted(item.path, importerConfig, aesKey);
+		const { cid: newCid } = await importAnyEncrypted(path, importerConfig, aesKey);
 
-		if (hashOnlyCid.equals(item.cid)) {
-			timestamps.set(item.path, Date.now());
+		if (newCid.equals(cid)) {
+			timestamps.set(path, Date.now());
 
-			logger.validate("cleaned %s", item.path);
+			logger.validate("cleaned %s", path);
 			continue;
 		}
 
-		logger.validate("updating %s", item.path);
+		logger.validate("updating %s", path);
 
-		const { cid } = await importAnyEncrypted(item.path, importerConfig, aesKey, blockstore);
+		await importAnyEncrypted(path, importerConfig, aesKey, blockstore);
 
-		if (!await helia.pins.isPinned(cid)) {
-			logger.add("pinning %s", item.path);
-			await helia.pins.add(cid);
+		if (!await helia.pins.isPinned(newCid)) {
+			logger.add("pinning %s", path);
+			await helia.pins.add(newCid);
 		}
 
-		await helia.pins.rm(item.cid);
-		item.cid = cid;
+		await helia.pins.rm(cid);
 
-		timestamps.set(item.path, Date.now());
+		await handler.replace(cid, newCid);
 
-		logger.validate("updated %s", item.path);;
+		timestamps.set(path, Date.now());
+
+		logger.validate("updated %s", path);
 	}
 
 	logger.tick("finished");
