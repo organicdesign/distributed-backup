@@ -60,12 +60,12 @@ export default class DatabaseHandler {
 		await this.database.replica.write(op);
 	}
 
-	async replace (cid: CID) {
-		const { path: encryptedPath } = await this.get(cid) as { path: Uint8Array };
+	async replace (oldCid: CID, newCid: CID) {
+		const { path: encryptedPath } = await this.get(oldCid) as { path: Uint8Array };
 		const path = uint8ArrayToString(await this.cms.decrypt(encryptedPath));
 
-		await this.add(cid, path);
-		await this.delete(cid);
+		await this.add(newCid, path);
+		await this.delete(oldCid);
 	}
 
 	async addPeers (peers: Uint8Array[]) {
