@@ -1,17 +1,20 @@
 import { Database, Welo, Address, Keyvalue } from "../../welo/dist/src/index.js";
 import { CID } from "multiformats/cid";
 import { decode } from "@ipld/dag-cbor";
-import { toString as uint8ArrayToString } from "uint8arrays";
+import { toString as uint8ArrayToString, fromString as uint8ArrayFromString } from "uint8arrays";
+import type { CMS } from "@libp2p/cms"
 
 type KeyvalueDB = Omit<Database, "store"> & { store: Keyvalue }
 
 export default class DatabaseHandler {
 	private readonly welo: Welo;
+	private readonly cms: CMS;
 	private readonly peers = new Map<string, Uint8Array>();
 	private database: KeyvalueDB | null = null;
 
-	constructor (welo: Welo) {
+	constructor (welo: Welo, cms: CMS) {
 		this.welo = welo;
+		this.cms = cms;
 	}
 
 	get address (): Address | undefined {
@@ -35,12 +38,14 @@ export default class DatabaseHandler {
 		this.database = await this.welo.open(manifest) as unknown as KeyvalueDB;
 	}
 
-	async add (cid: CID) {
+	async add (cid: CID, path: string) {
 		if (this.database == null) {
 			throw new Error("not connected to a database");
 		}
 
-		const op = this.database.store.creators.put(cid.toString(), { cid: cid.bytes });
+		const encryptedPath = await this.cms.encrypt("database", uint8ArrayFromString(path))
+
+		const op = this.database.store.creators.put(cid.toString(), { cid: cid.bytes, path: encryptedPath });
 
 		await this.database.replica.write(op);
 	}
@@ -56,7 +61,10 @@ export default class DatabaseHandler {
 	}
 
 	async replace (cid: CID) {
-		await this.add(cid);
+		const { path: encryptedPath } = await this.get(cid) as { path: Uint8Array };
+		const path = uint8ArrayToString(await this.cms.decrypt(encryptedPath));
+
+		await this.add(cid, path);
 		await this.delete(cid);
 	}
 
@@ -92,6 +100,15 @@ export default class DatabaseHandler {
 		}
 
 		return data;
+	}
+
+	async get (cid: CID) {
+		if (this.database == null) {
+			throw new Error("database is not open");
+		}
+
+		const index = await this.database.store.latest();
+		return await this.database.store.selectors.get(index)(cid.toString());
 	}
 
 	private addPeersToList (peers: Uint8Array[]) {

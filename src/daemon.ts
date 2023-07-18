@@ -18,8 +18,8 @@ import DatabaseHandler from "./database-handler.js";
 import { toString as uint8ArrayToString, fromString as uint8ArrayFromString } from "uint8arrays";
 import { multiaddr } from "@multiformats/multiaddr";
 import crypto from "crypto"
+import { CID } from "multiformats/cid";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
-import type { CID } from "multiformats/cid";
 
 const argv = await yargs(hideBin(process.argv))
 	.option({
@@ -52,7 +52,7 @@ console.warn("need to save and load aesKey");
 logger.lifecycle("generated key");
 
 const welo = await createWelo({ ipfs: helia, replicators: [bootstrapReplicator(), pubsubReplicator()] });
-const handler = new DatabaseHandler(welo);
+const handler = new DatabaseHandler(welo, cms);
 
 await handler.create();
 logger.lifecycle("started welo: %s", handler.address);
@@ -113,15 +113,19 @@ rpc.addMethod("add", async (params: { path: string, onlyHash?: boolean, encrypt?
 	timestamps.set(params.path, Date.now());
 	database.set(params.path, { cid, path: params.path });
 
-	await handler.add(cid);
+	await handler.add(cid, params.path);
 
 	return cid.toString();
 });
 
 rpc.addMethod("query", async () => {
 	const map = await handler.query();
+	const values = [...map.values()] as { path: Uint8Array, cid: Uint8Array }[];
 
-	return [...map.values()];
+	return values.map(v => ({
+		path: uint8ArrayToString(v.path, "base64"),
+		cid: CID.decode(v.cid).toString()
+	}));
 });
 
 rpc.addMethod("connections", async () => {
@@ -149,7 +153,7 @@ rpc.addMethod("addresses", async (params: { type: "libp2p" | "welo" }) => {
 });
 
 rpc.addMethod("addPeer", async (params: { peer: string }) => {
-	await handler.addPeers([uint8ArrayFromString(params.peer, "base58btc")]);
+	await handler.addPeers([uint8ArrayFromString(params.peer, "base64")]);
 });
 
 rpc.addMethod("connect", async (params: { address: string, type: "libp2p" | "welo" }) => {
