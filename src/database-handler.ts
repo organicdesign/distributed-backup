@@ -38,14 +38,14 @@ export default class DatabaseHandler {
 		this.database = await this.welo.open(manifest) as unknown as KeyvalueDB;
 	}
 
-	async add (cid: CID, path: string) {
+	async add (cid: CID, path: string, encrypted: boolean = false) {
 		if (this.database == null) {
 			throw new Error("not connected to a database");
 		}
 
 		const encryptedPath = await this.cms.encrypt("database", uint8ArrayFromString(path))
 
-		const op = this.database.store.creators.put(cid.toString(), { cid: cid.bytes, path: encryptedPath });
+		const op = this.database.store.creators.put(cid.toString(), { cid: cid.bytes, path: encryptedPath, encrypted });
 
 		await this.database.replica.write(op);
 	}
@@ -61,10 +61,10 @@ export default class DatabaseHandler {
 	}
 
 	async replace (oldCid: CID, newCid: CID) {
-		const { path: encryptedPath } = await this.get(oldCid) as { path: Uint8Array };
+		const { path: encryptedPath, encrypted } = await this.get(oldCid) as { path: Uint8Array, encrypted: boolean };
 		const path = uint8ArrayToString(await this.cms.decrypt(encryptedPath));
 
-		await this.add(newCid, path);
+		await this.add(newCid, path, encrypted);
 		await this.delete(oldCid);
 	}
 

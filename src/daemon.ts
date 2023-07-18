@@ -111,7 +111,7 @@ rpc.addMethod("add", async (params: { path: string, onlyHash?: boolean, encrypt?
 
 	timestamps.set(params.path, Date.now());
 
-	await handler.add(cid, params.path);
+	await handler.add(cid, params.path, params.encrypt);
 
 	return cid.toString();
 });
@@ -181,7 +181,7 @@ process.on("SIGINT", async () => {
 setInterval(async () => {
 	logger.tick("started");
 
-	for (const item of (await handler.query()).values() as Iterable<{ path: Uint8Array, cid: Uint8Array }>) {
+	for (const item of (await handler.query()).values() as Iterable<{ path: Uint8Array, cid: Uint8Array, encrypted: boolean }>) {
 		const path = uint8ArrayToString(await cms.decrypt(item.path));
 		const cid = CID.decode(item.cid);
 		const timestamp = timestamps.get(path) ?? 0;
@@ -198,7 +198,9 @@ setInterval(async () => {
 			cidVersion: 1
 		};
 
-		const { cid: newCid } = await importAnyEncrypted(path, importerConfig, aesKey);
+		const { cid: newCid } = item.encrypted ?
+			await importAnyEncrypted(path, importerConfig, aesKey) :
+			await importAnyPlaintext(path, importerConfig);
 
 		if (newCid.equals(cid)) {
 			timestamps.set(path, Date.now());
@@ -209,7 +211,11 @@ setInterval(async () => {
 
 		logger.validate("updating %s", path);
 
-		await importAnyEncrypted(path, importerConfig, aesKey, blockstore);
+		if (item.encrypted) {
+			await importAnyEncrypted(path, importerConfig, aesKey, blockstore);
+		} else {
+			await importAnyPlaintext(path, importerConfig, blockstore);
+		}
 
 		if (!await helia.pins.isPinned(newCid)) {
 			logger.add("pinning %s", path);
