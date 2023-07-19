@@ -19,6 +19,8 @@ import { toString as uint8ArrayToString, fromString as uint8ArrayFromString } fr
 import { multiaddr } from "@multiformats/multiaddr";
 import crypto from "crypto"
 import { CID } from "multiformats/cid";
+import { GroupDatabase } from "./database/group-database.js";
+import { joinGroup } from "./database/utils.js";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
 
 const argv = await yargs(hideBin(process.argv))
@@ -54,6 +56,8 @@ logger.lifecycle("generated key");
 const welo = await createWelo({ ipfs: helia, replicators: [bootstrapReplicator(), pubsubReplicator()] });
 const handler = new DatabaseHandler(welo, cms);
 
+
+const groups: GroupDatabase[] = [];
 await handler.create();
 logger.lifecycle("started welo: %s", handler.address);
 
@@ -154,22 +158,17 @@ rpc.addMethod("addPeer", async (params: { peer: string }) => {
 	await handler.addPeers([uint8ArrayFromString(params.peer, "base64")]);
 });
 
-rpc.addMethod("connect", async (params: { address: string, type: "libp2p" | "welo" }) => {
-	if (params.type === "welo") {
-		const address = Address.fromString(params.address);
+rpc.addMethod("connect", async (params: { address: string }) => {
+	const address = multiaddr(params.address);
 
-		await handler.connect(address);
-		return;
-	}
+	await libp2p.dial(address);
+});
 
-	if (params.type === "libp2p") {
-		const address = multiaddr(params.address);
+rpc.addMethod("join", async (params: { address: string }) => {
+	const database = await joinGroup(welo, params.address);
+	const group = new GroupDatabase(database);
 
-		await libp2p.dial(address);
-		return;
-	}
-
-	throw new Error("invalid type");
+	groups.push(group);
 });
 
 process.on("SIGINT", async () => {
