@@ -7,9 +7,12 @@ export interface Pair<Key = unknown, Value = unknown> {
 
 export interface GroupEntry {
 	cid: Uint8Array
-	path?: Uint8Array
 	encrypted: boolean
 	meta?: Record<string, unknown>
+}
+
+export interface LocalEntry extends GroupEntry {
+	path?: string
 }
 
 export interface ImportOptions {
