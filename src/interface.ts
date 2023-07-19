@@ -5,7 +5,7 @@ export interface Pair<Key = unknown, Value = unknown> {
 	value: Value
 }
 
-export interface CIDEntry {
+export interface GroupEntry {
 	cid: Uint8Array
 	path?: Uint8Array
 	encrypted: boolean
