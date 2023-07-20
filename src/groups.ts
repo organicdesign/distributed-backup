@@ -1,6 +1,6 @@
 import { GroupDatabase } from "./database/group-database.js";
 import { Key } from "interface-datastore";
-import { Welo, } from "../../welo/dist/src/index.js";
+import { Welo } from "../../welo/dist/src/index.js";
 import { Blocks } from "welo/dist/src/blocks/index.js";
 import { Manifest } from "welo/dist/src/manifest/index.js";
 import type { ManifestData } from "welo/dist/src/manifest/interface.js";

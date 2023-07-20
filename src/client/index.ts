@@ -4,12 +4,12 @@ import * as connect from "./commands/connect.js";
 import * as connections from "./commands/connections.js";
 import * as createGroup from "./commands/create-group.js";
 import * as id from "./commands/id.js";
-import * as join from "./commands/join.js";
+import * as joinGroup from "./commands/join-group.js";
 import * as pubsub from "./commands/pubsub.js";
 import * as query from "./commands/query.js";
 import type { Options } from "yargs";
 
-export default [add, addresses, connect, connections, createGroup, id, join, pubsub, query] as unknown as {
+export default [add, addresses, connect, connections, createGroup, id, joinGroup, pubsub, query] as unknown as {
 	desc: string,
 	command: string,
 	builder: Record<string, Options>,

@@ -1,4 +1,3 @@
-import { createGroup } from "../../database/utils.js";
 import { fromString as uint8ArrayFromString } from "uint8arrays";
 import type { Components } from "../utils.js";
 
@@ -12,7 +11,7 @@ export const method = (components: Components) => async (params: { name: string,
 		meta: { type: "group" },
 		access: {
 			protocol: "/hldb/access/static",
-			config: { write: peerValues }
+			config: { write: [components.welo.identity.id, ...peerValues] }
 		}
 	});
 
