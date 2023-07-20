@@ -7,7 +7,7 @@ export const method = (components: Components) => async (params: { name: string,
 	const peerValues = params.peers.map(p => uint8ArrayFromString(p, "base64"));
 
 	const manifest = await components.welo.determine({
-		name,
+		name: params.name,
 		meta: { type: "group" },
 		access: {
 			protocol: "/hldb/access/static",
@@ -17,5 +17,5 @@ export const method = (components: Components) => async (params: { name: string,
 
 	await components.groups.add(manifest);
 
-	return manifest.address;
+	return manifest.address.toString();
 };

@@ -12,7 +12,7 @@ export const builder = createBuilder({
 
 	peers: {
 		type: "array",
-		required: true
+		default: []
 	}
 });
 
@@ -21,9 +21,9 @@ export const handler = createHandler<typeof builder>(async argv => {
 		throw new Error("Failed to connect to daemon.");
 	}
 
-	const id = await argv.client.rpc.request("create-group", { name: argv.name, peers: argv.peers });
+	const address = await argv.client.rpc.request("create-group", { name: argv.name, peers: argv.peers });
 
-	console.log(id);
+	console.log(address);
 
 	argv.client.close();
 });

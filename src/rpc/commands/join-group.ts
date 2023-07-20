@@ -8,5 +8,5 @@ export const method = (components: Components) => async (params: { address: stri
 
 	await components.groups.add(manifest);
 
-	return manifest.address;
+	return manifest.address.toString();
 };
