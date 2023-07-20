@@ -14,7 +14,7 @@ export class Looper {
 		this.method = method;
 	}
 
-	async run (options: { signal?: AbortSignal }) {
+	async run (options: Partial<{ signal: AbortSignal }> = {}) {
 		for (;;) {
 			if (options.signal?.aborted) {
 				return;

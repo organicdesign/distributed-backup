@@ -21,6 +21,7 @@ import crypto from "crypto"
 import { CID } from "multiformats/cid";
 import { GroupDatabase } from "./database/group-database.js";
 import { joinGroup } from "./database/utils.js";
+import { Looper } from "./looper.js";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
 
 const argv = await yargs(hideBin(process.argv))
@@ -177,7 +178,7 @@ process.on("SIGINT", async () => {
 	process.exit();
 });
 
-setInterval(async () => {
+const looper = new Looper(async () => {
 	logger.tick("started");
 
 	for (const item of (await handler.query()).values() as Iterable<{ path: Uint8Array, cid: Uint8Array, encrypted: boolean }>) {
@@ -231,6 +232,8 @@ setInterval(async () => {
 	}
 
 	logger.tick("finished");
-}, config.tickInterval * 1000);
+}, { sleep: config.tickInterval * 1000 });
 
 logger.lifecycle("ready");
+
+await looper.run();
