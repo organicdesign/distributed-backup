@@ -23,6 +23,7 @@ import { GroupDatabase } from "./database/group-database.js";
 import { joinGroup } from "./database/utils.js";
 import { Looper } from "./looper.js";
 import mainLoop from "./main-loop.js";
+import commands from "./rpc/index.js";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
 
 const argv = await yargs(hideBin(process.argv))
@@ -76,6 +77,10 @@ interface ImportOptions {
 }
 
 const timestamps = new Map<string, number>();
+
+for (const command of commands) {
+	rpc.addMethod(command.name, command.method({ libp2p }))
+}
 
 rpc.addMethod("add", async (params: { path: string, onlyHash?: boolean, encrypt?: boolean } & ImportOptions) => {
 	const config: ImporterConfig = {
@@ -158,12 +163,6 @@ rpc.addMethod("addresses", async (params: { type: "libp2p" | "welo" }) => {
 
 rpc.addMethod("addPeer", async (params: { peer: string }) => {
 	await handler.addPeers([uint8ArrayFromString(params.peer, "base64")]);
-});
-
-rpc.addMethod("connect", async (params: { address: string }) => {
-	const address = multiaddr(params.address);
-
-	await libp2p.dial(address);
 });
 
 rpc.addMethod("join", async (params: { address: string }) => {
