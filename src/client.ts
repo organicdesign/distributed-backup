@@ -1,7 +1,7 @@
 import { createNetClient } from "@organicdesign/net-rpc";
 import yargs from "yargs/yargs";
 import { hideBin } from "yargs/helpers";
-import commands from "./client/commands/index.js";
+import commands from "./client/index.js";
 import { createMiddleware } from "./client/utils.js";
 
 await yargs(hideBin(process.argv))
