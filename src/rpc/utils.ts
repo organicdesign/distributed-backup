@@ -3,6 +3,7 @@ import type { PubSub } from "@libp2p/interface-pubsub";
 import type { Helia } from "@helia/interface";
 import type { Welo } from "../../../welo/dist/src/index.js";
 import type { Filestore } from "../filestore/index.js";
+import type { Groups } from "../groups.js";
 
 
 export interface Components {
@@ -10,5 +11,6 @@ export interface Components {
 	welo: Welo
 	blockstore: Filestore
 	helia: Helia<Components["libp2p"]>
+	groups: Groups
 	encryptionKey: Uint8Array
 }
