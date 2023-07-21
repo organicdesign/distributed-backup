@@ -15,7 +15,7 @@ export interface Components {
 
 export class Groups implements Startable {
 	private readonly components: Components;
-	private groups: GroupDatabase[] = [];
+	private readonly groups = new Map<string, GroupDatabase>();
 	private started = false;
 
 	constructor (components: Components) {
@@ -46,7 +46,7 @@ export class Groups implements Startable {
 	}
 
 	async stop () {
-		this.groups = [];
+		this.groups.clear();
 		this.started = false;
 	}
 
@@ -54,7 +54,7 @@ export class Groups implements Startable {
 		const database = await this.components.welo.open(manifest);
 		const group = new GroupDatabase(database as KeyvalueDB);
 
-		this.groups.push(group);
+		this.groups.set(manifest.name, group);
 
 		await this.components.datastore.put(new Key(database.address.toString()), database.manifest.block.bytes);
 	}

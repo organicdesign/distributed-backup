@@ -11,7 +11,7 @@ import { getConfig } from "./config.js";
 import * as logger from "./logger.js";
 import { createWelo, pubsubReplicator, bootstrapReplicator } from "../../welo/dist/src/index.js";
 import DatabaseHandler from "./database-handler.js";
-import crypto from "crypto"
+import crypto from "crypto";
 import { Looper } from "./looper.js";
 import mainLoop from "./main-loop.js";
 import commands from "./rpc/index.js";
