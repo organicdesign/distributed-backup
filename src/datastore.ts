@@ -1,4 +1,4 @@
-import { Datastore, Key, Query, Pair } from "interface-datastore";
+import { Datastore, Key, Query, Pair, KeyQuery } from "interface-datastore";
 import map from "it-map";
 import { NamespaceDatastore as BrokenNamespacedDatastore } from "datastore-core";
 import type { AbortOptions } from 'interface-store'
@@ -18,8 +18,6 @@ export class NamespaceDatastore extends BrokenNamespacedDatastore {
 		const query: Query = {
 			...q
 		}
-
-		//filter
 
 		query.filters = (query.filters ?? []).map(filter => {
 			return ({ key, value }) => filter({ key: this.transform.convert(key), value })
@@ -42,13 +40,46 @@ export class NamespaceDatastore extends BrokenNamespacedDatastore {
 			})
 		}
 
-		query.filters.push(pair => this.iKey.isAncestorOf(pair.key))
+		query.filters.push(({ key }) => this.iKey.isAncestorOf(key))
 
 		return map(this.iChild.query(query, options), ({ key, value }) => {
 			return {
 				key: this.transform.invert(key),
 				value
 			}
+		})
+	}
+
+	queryKeys (q: KeyQuery, options?: AbortOptions): AsyncIterable<Key> {
+		const query = {
+			...q
+		}
+
+		query.filters = (query.filters ?? []).map(filter => {
+			return (key) => filter(this.transform.convert(key))
+		})
+
+		const { prefix } = q
+		if (prefix != null && prefix !== '/') {
+			delete query.prefix
+			query.filters.push((key) => {
+				return this.transform.invert(key).toString().startsWith(prefix)
+			})
+		}
+
+		if (query.orders != null) {
+			query.orders = query.orders.map(order => {
+				return (a, b) => order(
+					this.transform.invert(a),
+					this.transform.invert(b)
+				)
+			})
+		}
+
+		query.filters.push(key => this.iKey.isAncestorOf(key))
+
+		return map(this.iChild.queryKeys(query, options), key => {
+			return this.transform.invert(key)
 		})
 	}
 }
