@@ -15,9 +15,9 @@ import crypto from "crypto"
 import { Looper } from "./looper.js";
 import mainLoop from "./main-loop.js";
 import commands from "./rpc/index.js";
-import { NamespaceDatastore } from "datastore-core";
 import { Key } from "interface-datastore";
 import { Groups } from "./groups.js";
+import { NamespaceDatastore } from "./datastore.js";
 
 const argv = await yargs(hideBin(process.argv))
 	.option({
@@ -57,6 +57,8 @@ const welo = await createWelo({ ipfs: helia, replicators: [bootstrapReplicator()
 const handler = new DatabaseHandler(welo, cms);
 
 const groups = new Groups({ datastore: groupsDatastore, welo });
+
+await groups.start();
 
 //const groups: GroupDatabase[] = [];
 await handler.create();

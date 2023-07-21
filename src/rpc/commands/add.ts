@@ -28,6 +28,7 @@ export const method = (components: Components) => async (params: { path: string,
 
 		cid = result.cid;
 	} else {
+		// Can we use a blackhole here instead of passing undefined?
 		const result = await importAnyPlaintext(params.path, config, params.onlyHash ? undefined : components.blockstore);
 
 		cid = result.cid;
