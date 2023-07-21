@@ -10,7 +10,13 @@ import type { ImporterConfig } from "../../fs-importer/interfaces.js";
 
 export const name = "add";
 
-export const method = (components: Components) => async (params: { path: string, onlyHash?: boolean, encrypt?: boolean } & ImportOptions) => {
+export const method = (components: Components) => async (params: { group: string, path: string, onlyHash?: boolean, encrypt?: boolean } & ImportOptions) => {
+	const group = components.groups.get(params.group);
+
+	if (group == null) {
+		throw new Error("no such group");
+	}
+
 	const config: ImporterConfig = {
 		chunker: selectChunker(),
 		hasher: selectHasher(),
@@ -49,9 +55,10 @@ export const method = (components: Components) => async (params: { path: string,
 
 	logger.add("pinned %s", params.path);
 
-	//timestamps.set(params.path, Date.now());
-
-	//await handler.add(cid, params.path, params.encrypt);
+	await group.add(cid.toString(), {
+		cid: cid.bytes,
+		encrypted: params.encrypt
+	});
 
 	return cid.toString();
 };
