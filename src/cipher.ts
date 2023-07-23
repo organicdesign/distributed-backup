@@ -15,6 +15,11 @@ interface Components {
 	passphrase: string
 }
 
+interface EncryptionParams {
+	salt: Uint8Array
+	iv: Uint8Array
+}
+
 export class Cipher implements Startable {
 	private readonly datastore: Datastore;
 	private readonly libp2p: Libp2p;
@@ -64,14 +69,19 @@ export class Cipher implements Startable {
 		this.started = false;
 	}
 
-	async * encrypt (loadData: () => Iterable<Uint8Array> | AsyncIterable<Uint8Array>) {
-		const hmac = await this.generateHmac(loadData());
+	async generate (data: Iterable<Uint8Array> | AsyncIterable<Uint8Array>): Promise<EncryptionParams> {
+		const hmac = await this.generateHmac(data);
 		const iv = hmac.subarray(0, 16);
 		const salt = hmac.subarray(16, 32);
-		const key = await this.deriveKey(salt);
-		const cipher = crypto.createCipheriv("aes-256-cbc", key, iv, { encoding: "binary" });
 
-		for await (const chunk of loadData()) {
+		return { iv, salt };
+	}
+
+	async * encrypt (data: Iterable<Uint8Array> | AsyncIterable<Uint8Array>, params: EncryptionParams) {
+		const key = await this.deriveKey(params.salt);
+		const cipher = crypto.createCipheriv("aes-256-cbc", key, params.iv, { encoding: "binary" });
+
+		for await (const chunk of data) {
 			yield cipher.update(chunk);
 		}
 
