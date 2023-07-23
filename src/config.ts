@@ -1,11 +1,7 @@
 import fs from "fs/promises";
 import Path from "path";
 import { srcPath } from "./utils.js";
-
-export interface Config {
-	validateInterval: number
-	tickInterval: number
-}
+import type { Config } from "./interface.js";
 
 export const getConfig = async (): Promise<Config> => {
 	const raw = await fs.readFile(Path.join(srcPath, "config/config.json"), { encoding: "utf8" });

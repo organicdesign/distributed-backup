@@ -18,6 +18,7 @@ import commands from "./rpc/index.js";
 import { Key } from "interface-datastore";
 import { Groups } from "./groups.js";
 import { NamespaceDatastore } from "./datastore.js";
+import type { Components } from "./interface.js";
 
 const argv = await yargs(hideBin(process.argv))
 	.option({
@@ -67,9 +68,11 @@ logger.lifecycle("started welo: %s", handler.address);
 const { rpc, close } = await createNetServer(argv.socket);
 logger.lifecycle("started server");
 
+const components: Components = { libp2p, encryptionKey, helia, welo, blockstore, groups, config };
+
 // Register all the RPC commands.
 for (const command of commands) {
-	rpc.addMethod(command.name, command.method({ libp2p, encryptionKey, helia, welo, blockstore, groups }))
+	rpc.addMethod(command.name, command.method(components))
 }
 
 process.on("SIGINT", async () => {
@@ -78,7 +81,7 @@ process.on("SIGINT", async () => {
 	process.exit();
 });
 
-const looper = new Looper(mainLoop, { sleep: config.tickInterval * 1000 });
+const looper = new Looper(() => mainLoop(components), { sleep: config.tickInterval * 1000 });
 
 logger.lifecycle("ready");
 

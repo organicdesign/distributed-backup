@@ -5,6 +5,11 @@ import type { Helia } from "@helia/interface";
 import type { Filestore } from "./filestore/index.js";
 import type { Groups } from "./groups.js";
 
+export interface Config {
+	validateInterval: number
+	tickInterval: number
+}
+
 export interface Pair<Key = unknown, Value = unknown> {
 	key: Key,
 	value: Value
@@ -39,5 +44,6 @@ export interface Components {
 	blockstore: Filestore
 	helia: Helia<Components["libp2p"]>
 	groups: Groups
-	encryptionKey: Uint8Array
+	encryptionKey: Uint8Array,
+	config: Config
 }
