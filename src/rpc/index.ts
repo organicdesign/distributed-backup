@@ -8,7 +8,7 @@ import * as joinGroup from "./commands/join-group.js";
 import * as listGroups from "./commands/list-groups.js";
 import * as queryGroup from "./commands/query-group.js";
 import * as pubsub from "./commands/pubsub.js";
-import type { Components } from "./utils.js";
+import type { Components } from "../interface.js";
 
 export default [
 	add,

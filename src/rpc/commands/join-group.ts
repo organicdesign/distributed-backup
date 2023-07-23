@@ -1,5 +1,5 @@
 import { Address } from "../../../../welo/dist/src/index.js";
-import type { Components } from "../utils.js";
+import type { Components } from "../../interface.js";
 
 export const name = "join-group";
 

@@ -1,4 +1,4 @@
-import type { Components } from "../utils.js";
+import type { Components } from "../../interface.js";
 
 export const name = "list-groups";
 

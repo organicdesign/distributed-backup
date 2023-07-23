@@ -4,8 +4,7 @@ import * as logger from "../../logger.js";
 import { importAny as importAnyEncrypted } from "../../fs-importer/import-copy-encrypted.js";
 import { importAny as importAnyPlaintext } from "../../fs-importer/import-copy-plaintext.js";
 import type { CID } from "multiformats/cid";
-import type { Components } from "../utils.js";
-import type { ImportOptions } from "../../interface.js";
+import type { Components, ImportOptions } from "../../interface.js";
 import type { ImporterConfig } from "../../fs-importer/interfaces.js";
 
 export const name = "add";
@@ -55,7 +54,7 @@ export const method = (components: Components) => async (params: { group: string
 
 	logger.add("pinned %s", params.path);
 
-	await group.add(cid.toString(), {
+	await group.set(cid.toString(), {
 		cid: cid.bytes,
 		encrypted: params.encrypt
 	});

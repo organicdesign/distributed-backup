@@ -1,5 +1,5 @@
 import all from "it-all";
-import type { Components } from "../utils.js";
+import type { Components } from "../../interface.js";
 
 export const name = "query-group";
 
