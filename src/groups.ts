@@ -24,7 +24,7 @@ export class Groups implements Startable {
 	}
 
 	isStarted (): boolean {
-		return false;
+		return this.started;
 	}
 
 	async start () {
