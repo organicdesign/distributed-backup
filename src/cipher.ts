@@ -12,13 +12,13 @@ interface Options {
 interface Components {
 	libp2p: Libp2p
 	datastore: Datastore
-	passpharse: string
+	passphrase: string
 }
 
 export class Cipher implements Startable {
 	private readonly datastore: Datastore;
 	private readonly libp2p: Libp2p;
-	private readonly passpharse: string;
+	private readonly passphrase: string;
 	private readonly options: Options;
 	private readonly cms: CMS;
 	private rootKey: Uint8Array | null = null;
@@ -28,7 +28,7 @@ export class Cipher implements Startable {
 	constructor (components: Components, options: Partial<Options> = {}) {
 		this.datastore = components.datastore;
 		this.libp2p = components.libp2p;
-		this.passpharse = components.passpharse;
+		this.passphrase = components.passphrase;
 		this.cms = new CMS(this.libp2p.keychain);
 
 		this.options = {
@@ -89,11 +89,11 @@ export class Cipher implements Startable {
 			const raw = await this.datastore.get(key);
 			const pem = uint8ArrayToString(raw);
 
-			await this.libp2p.keychain.importKey(this.options.name, pem, this.passpharse);
+			await this.libp2p.keychain.importKey(this.options.name, pem, this.passphrase);
 		} catch (error) {
 			await this.libp2p.keychain.createKey(this.options.name, "RSA");
 
-			const pem = await this.libp2p.keychain.exportKey(this.options.name, this.passpharse);
+			const pem = await this.libp2p.keychain.exportKey(this.options.name, this.passphrase);
 			const raw = uint8ArrayFromString(pem);
 
 			await this.datastore.put(key, raw);
