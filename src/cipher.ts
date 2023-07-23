@@ -64,14 +64,14 @@ export class Cipher implements Startable {
 		this.started = false;
 	}
 
-	async * encrypt (data: Iterable<Uint8Array> | AsyncIterable<Uint8Array>) {
-		const hmac = await this.generateHmac(data);
+	async * encrypt (loadData: () => Iterable<Uint8Array> | AsyncIterable<Uint8Array>) {
+		const hmac = await this.generateHmac(loadData());
 		const iv = hmac.subarray(0, 16);
 		const salt = hmac.subarray(16, 32);
 		const key = await this.deriveKey(salt);
 		const cipher = crypto.createCipheriv("aes-256-cbc", key, iv, { encoding: "binary" });
 
-		for await (const chunk of data) {
+		for await (const chunk of loadData()) {
 			yield cipher.update(chunk);
 		}
 
