@@ -1,4 +1,4 @@
-import { Welo, Database, Keyvalue } from "../../welo/dist/src/index.js";
+import type { Welo, Database, Keyvalue } from "../../welo/dist/src/index.js";
 import type { Libp2p } from "@libp2p/interface-libp2p";
 import type { PubSub } from "@libp2p/interface-pubsub";
 import type { Helia } from "@helia/interface";
@@ -6,6 +6,7 @@ import type { Filestore } from "./filestore/index.js";
 import type { Groups } from "./groups.js";
 import type { Cipher } from "./cipher.js";
 import type { Datastores } from "./datastores.js";
+import type { Version } from "multiformats/cid";
 
 export interface Config {
 	validateInterval: number
@@ -39,7 +40,7 @@ export interface CombinedEntry {
 
 export interface ImportOptions {
 	hash: string
-	cidVersion: number
+	cidVersion: Version
 	chunker: string
 	rawLeaves: boolean
 	nocopy: boolean
