@@ -12,9 +12,9 @@ import { createWelo, pubsubReplicator, bootstrapReplicator } from "../../welo/di
 import { Looper } from "./looper.js";
 import mainLoop from "./main-loop.js";
 import commands from "./rpc/index.js";
-import { Groups } from "./groups.js";
+import { createGroups } from "./groups.js";
 import { Datastores } from "./datastores.js";
-import { Cipher } from "./cipher.js";
+import { createCipher } from "./cipher.js";
 import type { Components } from "./interface.js";
 
 const argv = await yargs(hideBin(process.argv))
@@ -37,17 +37,13 @@ const stores = new Datastores(datastore);
 const blockstore = new Filestore(new MemoryBlockstore(), stores.get("helia/filestore"));
 const libp2p = await createLibp2p();
 const helia = await createHelia({ libp2p, blockstore, datastore: stores.get("helia/datastore") });
-const cipher = new Cipher({ libp2p, datastore: stores.get("cipher"), passphrase: "super-secret" });
-
-await cipher.start();
+const cipher = await createCipher({ libp2p, datastore: stores.get("cipher"), passphrase: "super-secret" });
 
 logger.lifecycle("started helia");
 
 const welo = await createWelo({ ipfs: helia, replicators: [bootstrapReplicator(), pubsubReplicator()] });
 
-const groups = new Groups({ datastore: stores.get("groups"), welo });
-
-await groups.start();
+const groups = await createGroups({ datastore: stores.get("groups"), welo });
 
 logger.lifecycle("started welo");
 

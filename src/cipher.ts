@@ -179,3 +179,11 @@ export class Cipher implements Startable {
 		return hmac.digest();
 	}
 }
+
+export const createCipher = async (components: Components, options: Partial<Options> = {}): Promise<Cipher> => {
+	const cipher = new Cipher(components, options);
+
+	await cipher.start();
+
+	return cipher;
+};

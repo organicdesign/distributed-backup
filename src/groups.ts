@@ -69,3 +69,11 @@ export class Groups implements Startable {
 		return this.groups.keys();
 	}
 }
+
+export const createGroups = async (components: Components): Promise<Groups> => {
+	const groups = new Groups(components);
+
+	await groups.start();
+
+	return groups;
+}
