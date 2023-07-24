@@ -4,6 +4,7 @@ import type { PubSub } from "@libp2p/interface-pubsub";
 import type { Helia } from "@helia/interface";
 import type { Filestore } from "./filestore/index.js";
 import type { Groups } from "./groups.js";
+import type { Cipher } from "./cipher.js";
 
 export interface Config {
 	validateInterval: number
@@ -44,6 +45,6 @@ export interface Components {
 	blockstore: Filestore
 	helia: Helia<Components["libp2p"]>
 	groups: Groups
-	encryptionKey: Uint8Array,
+	cipher: Cipher,
 	config: Config
 }

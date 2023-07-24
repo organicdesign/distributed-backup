@@ -5,19 +5,17 @@ import { MemoryBlockstore } from "blockstore-core";
 import yargs from "yargs/yargs";
 import { hideBin } from "yargs/helpers";
 import createLibp2p from "./libp2p.js";
-import { CMS } from "@libp2p/cms";
 import { Filestore } from "./filestore/index.js";
 import { getConfig } from "./config.js";
 import * as logger from "./logger.js";
 import { createWelo, pubsubReplicator, bootstrapReplicator } from "../../welo/dist/src/index.js";
-import DatabaseHandler from "./database-handler.js";
-import crypto from "crypto";
 import { Looper } from "./looper.js";
 import mainLoop from "./main-loop.js";
 import commands from "./rpc/index.js";
 import { Key } from "interface-datastore";
 import { Groups } from "./groups.js";
 import { NamespaceDatastore } from "./datastore.js";
+import { Cipher } from "./cipher.js";
 import type { Components } from "./interface.js";
 
 const argv = await yargs(hideBin(process.argv))
@@ -39,36 +37,28 @@ const rootDatastore = new MemoryDatastore();
 const heliaDatastore = new NamespaceDatastore(rootDatastore, new Key("helia/datastore"));
 const heliaFilestore = new NamespaceDatastore(rootDatastore, new Key("helia/filestore"));
 const groupsDatastore = new NamespaceDatastore(rootDatastore, new Key("groups"));
+const cipherDatastore = new NamespaceDatastore(rootDatastore, new Key("cipher"));
 const blockstore = new Filestore(new MemoryBlockstore(), heliaFilestore);
 const libp2p = await createLibp2p();
 const helia = await createHelia({ libp2p, blockstore, datastore: heliaDatastore });
+const cipher = new Cipher({ libp2p, datastore: cipherDatastore, passphrase: "super-secret" });
+
+await cipher.start();
 
 logger.lifecycle("started helia");
 
-const key = await libp2p.keychain.createKey("database", "RSA");
-const cms = new CMS(libp2p.keychain)
-
-const encryptionKey = crypto.randomBytes(32);
-const encrypted = await cms.encrypt(key.name, encryptionKey);
-
-console.warn("need to save and load aesKey");
-logger.lifecycle("generated key");
-
 const welo = await createWelo({ ipfs: helia, replicators: [bootstrapReplicator(), pubsubReplicator()] });
-const handler = new DatabaseHandler(welo, cms);
 
 const groups = new Groups({ datastore: groupsDatastore, welo });
 
 await groups.start();
 
-//const groups: GroupDatabase[] = [];
-await handler.create();
-logger.lifecycle("started welo: %s", handler.address);
+logger.lifecycle("started welo");
 
 const { rpc, close } = await createNetServer(argv.socket);
 logger.lifecycle("started server");
 
-const components: Components = { libp2p, encryptionKey, helia, welo, blockstore, groups, config };
+const components: Components = { libp2p, cipher, helia, welo, blockstore, groups, config };
 
 // Register all the RPC commands.
 for (const command of commands) {

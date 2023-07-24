@@ -29,7 +29,7 @@ export const method = (components: Components) => async (params: { group: string
 	let cid: CID;
 
 	if (params.encrypt) {
-		const result = await importAnyEncrypted(params.path, config, components.encryptionKey, params.onlyHash ? undefined : components.blockstore);
+		const result = await importAnyEncrypted(params.path, config, components.cipher, params.onlyHash ? undefined : components.blockstore);
 
 		cid = result.cid;
 	} else {
