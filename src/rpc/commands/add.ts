@@ -67,7 +67,7 @@ export const method = (components: Components) => async (params: { group: string
 		local: {
 			encrypt: params.encrypt,
 			path: params.path,
-			hash: "sha-256",
+			hash: "sha2-256",
 			chunker: "size-262144",
 			rawLeaves: true,
 			cidVersion: 1,
