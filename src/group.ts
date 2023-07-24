@@ -38,6 +38,32 @@ export class Group {
 
 	}
 
+	async updateTs (cid: CID) {
+		const entry = this.localData.get(cid.toString());
+
+		if (entry == null) {
+			console.warn("cannot update entry that does not exist");
+			return;
+		}
+
+		entry.timestamp = Date.now();
+
+		// Update in-memory.
+		this.localData.set(cid.toString(), entry);
+
+		// Update local storage.
+		await this.datastore.put(new Key(cid.toString()), encode(entry));
+	}
+
+	async rm (cid: CID) {
+		this.localData.delete(cid.toString());
+		await this.datastore.delete(new Key(cid.toString()));
+
+		const op = this.database.store.creators.del(cid.toString());
+
+		await this.database.replica.write(op);
+	}
+
 	async add (entry: CombinedEntry) {
 		const cid = CID.decode(entry.group.cid);
 
