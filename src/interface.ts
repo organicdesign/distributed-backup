@@ -19,6 +19,7 @@ export interface Pair<Key = unknown, Value = unknown> {
 
 export interface GroupEntry {
 	cid: Uint8Array
+	addedBy: Uint8Array
 	encrypted: boolean
 	timestamp: number
 	prev?: Uint8Array
@@ -26,7 +27,9 @@ export interface GroupEntry {
 	meta?: Record<string, unknown>
 }
 
-export interface LocalEntry extends GroupEntry {
+export interface LocalEntry {
+	cid: Uint8Array
+	checked: number
 	path?: string
 }
 
