@@ -27,10 +27,14 @@ export interface GroupEntry {
 	meta?: Record<string, unknown>
 }
 
-export interface LocalEntry {
-	cid: Uint8Array
-	checked: number
+export interface LocalEntry extends ImportOptions {
+	timestamp: number
 	path?: string
+}
+
+export interface CombinedEntry {
+	local: LocalEntry,
+	group: GroupEntry
 }
 
 export interface ImportOptions {
@@ -48,9 +52,9 @@ export interface KeyvalueDB extends Database {
 
 export interface Components {
 	libp2p: Libp2p<{ pubsub: PubSub }>
+	helia: Helia<Components["libp2p"]>
 	welo: Welo
 	blockstore: Filestore
-	helia: Helia<Components["libp2p"]>
 	groups: Groups
 	cipher: Cipher,
 	config: Config,
