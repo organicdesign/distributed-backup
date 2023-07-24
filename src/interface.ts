@@ -20,6 +20,9 @@ export interface Pair<Key = unknown, Value = unknown> {
 export interface GroupEntry {
 	cid: Uint8Array
 	encrypted: boolean
+	timestamp: number
+	prev?: Uint8Array
+	next?: Uint8Array
 	meta?: Record<string, unknown>
 }
 

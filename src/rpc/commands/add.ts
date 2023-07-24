@@ -55,6 +55,7 @@ export const method = (components: Components) => async (params: { group: string
 	logger.add("pinned %s", params.path);
 
 	await group.set(cid.toString(), {
+		timestamp: Date.now(),
 		cid: cid.bytes,
 		encrypted: params.encrypt
 	});
