@@ -1,9 +1,9 @@
+import { BlackHoleBlockstore } from "blockstore-core/black-hole";
 import selectHasher from "../../fs-importer/select-hasher.js";
 import selectChunker from "../../fs-importer/select-chunker.js";
 import * as logger from "../../logger.js";
 import { importAny as importAnyEncrypted } from "../../fs-importer/import-copy-encrypted.js";
 import { importAny as importAnyPlaintext } from "../../fs-importer/import-copy-plaintext.js";
-import type { CID } from "multiformats/cid";
 import type { Components, ImportOptions } from "../../interface.js";
 import type { ImporterConfig } from "../../fs-importer/interfaces.js";
 
@@ -26,18 +26,10 @@ export const method = (components: Components) => async (params: { group: string
 		logger.add("importing %s", params.path);
 	}
 
-	let cid: CID;
+	const store = params.onlyHash ? new BlackHoleBlockstore() : components.blockstore;
+	const load = params.encrypt ? importAnyEncrypted : importAnyPlaintext;
 
-	if (params.encrypt) {
-		const result = await importAnyEncrypted(params.path, config, components.cipher, params.onlyHash ? undefined : components.blockstore);
-
-		cid = result.cid;
-	} else {
-		// Can we use a blackhole here instead of passing undefined?
-		const result = await importAnyPlaintext(params.path, config, params.onlyHash ? undefined : components.blockstore);
-
-		cid = result.cid;
-	}
+	const { cid } = await load(params.path, config, store, components.cipher);
 
 	if (params.onlyHash) {
 		return cid.toString();
@@ -50,7 +42,6 @@ export const method = (components: Components) => async (params: { group: string
 
 		await components.helia.pins.add(cid);
 	}
-
 
 	logger.add("pinned %s", params.path);
 

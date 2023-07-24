@@ -32,11 +32,11 @@ export default async ({ helia, blockstore, config, cipher, groups }: Components)
 				cidVersion: item.local.cidVersion
 			};
 
-			const { cid: newCid } = item.group.encrypted ?
-				await importAnyEncrypted(item.local.path, importerConfig, cipher, new BlackHoleBlockstore()) :
-				await importAnyPlaintext(item.local.path, importerConfig, new BlackHoleBlockstore());
+			const load = item.group.encrypted ? importAnyEncrypted : importAnyPlaintext;
 
-			if (newCid.equals(cid)) {
+			const { cid: hashCid } = await load(item.local.path, importerConfig, new BlackHoleBlockstore(), cipher);
+
+			if (hashCid.equals(cid)) {
 				group.updateTs(cid);
 
 				logger.validate("cleaned %s", item.local.path);
@@ -45,11 +45,7 @@ export default async ({ helia, blockstore, config, cipher, groups }: Components)
 
 			logger.validate("updating %s", item.local.path);
 
-			if (item.group.encrypted) {
-				await importAnyEncrypted(item.local.path, importerConfig, cipher, blockstore);
-			} else {
-				await importAnyPlaintext(item.local.path, importerConfig, blockstore);
-			}
+			const { cid: newCid } = await load(item.local.path, importerConfig, blockstore, cipher);
 
 			if (!await helia.pins.isPinned(newCid)) {
 				logger.add("pinning %s", item.local.path);
