@@ -6,8 +6,8 @@ import { Manifest } from "welo/dist/src/manifest/index.js";
 import { DatastoreWelo } from "./database/datastore-welo.js";
 import type { ManifestData } from "welo/dist/src/manifest/interface.js";
 import type { Datastore } from "interface-datastore";
-import type { KeyvalueDB } from "./interface.js";
 import type { Startable } from "@libp2p/interfaces/startable";
+import type { KeyvalueDB, Pair } from "./interface.js";
 
 export interface Components {
 	datastore: Datastore
@@ -65,8 +65,10 @@ export class Groups implements Startable {
 		return this.groups.get(address);
 	}
 
-	list (): Iterable<string> {
-		return this.groups.keys();
+	* all (): Iterable<Pair<string, GroupDatabase>> {
+		for (const [key, value] of this.groups.entries()) {
+			yield { key, value };
+		}
 	}
 }
 
