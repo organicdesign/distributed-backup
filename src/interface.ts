@@ -5,6 +5,7 @@ import type { Helia } from "@helia/interface";
 import type { Filestore } from "./filestore/index.js";
 import type { Groups } from "./groups.js";
 import type { Cipher } from "./cipher.js";
+import type { Datastores } from "./datastores.js";
 
 export interface Config {
 	validateInterval: number
@@ -46,5 +47,6 @@ export interface Components {
 	helia: Helia<Components["libp2p"]>
 	groups: Groups
 	cipher: Cipher,
-	config: Config
+	config: Config,
+	stores: Datastores
 }
