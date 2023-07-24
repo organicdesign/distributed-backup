@@ -33,5 +33,5 @@ export default (chunker?: string): Chunker => {
 		return rabin({ maxChunkSize, minChunkSize, avgChunkSize });
 	}
 
-	throw new Error("invalid chunker");
+	throw new Error(`invalid chunker: ${chunker}`);
 };

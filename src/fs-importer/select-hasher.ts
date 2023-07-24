@@ -38,5 +38,5 @@ export default (hasher?: string): Hasher<string, number> => {
 			return getHasher(blake2s, "blake2s", parts[1]);
 	}
 
-	throw new Error("invalid hasher");
+	throw new Error(`invalid hasher: ${hasher}`);
 };
