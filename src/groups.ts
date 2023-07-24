@@ -1,9 +1,9 @@
-import { GroupDatabase } from "./database/group-database.js";
+import { Group } from "./group.js";
 import { Key } from "interface-datastore";
 import { Welo } from "../../welo/dist/src/index.js";
 import { Blocks } from "welo/dist/src/blocks/index.js";
 import { Manifest } from "welo/dist/src/manifest/index.js";
-import { DatastoreWelo } from "./database/datastore-welo.js";
+import { NamespaceDatastore } from "./namespace-datastore.js";
 import type { ManifestData } from "welo/dist/src/manifest/interface.js";
 import type { Datastore } from "interface-datastore";
 import type { Startable } from "@libp2p/interfaces/startable";
@@ -16,7 +16,7 @@ export interface Components {
 
 export class Groups implements Startable {
 	private readonly components: Components;
-	private readonly groups = new Map<string, GroupDatabase>();
+	private readonly groups = new Map<string, Group>();
 	private started = false;
 
 	constructor (components: Components) {
@@ -52,9 +52,9 @@ export class Groups implements Startable {
 	}
 
 	async add (manifest: Manifest) {
-		const database = await this.components.welo.open(manifest);
-		const datastore = new DatastoreWelo(database as KeyvalueDB);
-		const group = new GroupDatabase(datastore);
+		const database = await this.components.welo.open(manifest) as KeyvalueDB;
+		const datastore = new NamespaceDatastore(this.components.datastore, new Key(database.address.toString()))
+		const group = new Group({ datastore, database });
 
 		this.groups.set(manifest.name, group);
 
@@ -65,7 +65,7 @@ export class Groups implements Startable {
 		return this.groups.get(address);
 	}
 
-	* all (): Iterable<Pair<string, GroupDatabase>> {
+	* all (): Iterable<Pair<string, Group>> {
 		for (const [key, value] of this.groups.entries()) {
 			yield { key, value };
 		}

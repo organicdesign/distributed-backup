@@ -54,10 +54,26 @@ export const method = (components: Components) => async (params: { group: string
 
 	logger.add("pinned %s", params.path);
 
-	await group.set(cid.toString(), {
-		timestamp: Date.now(),
-		cid: cid.bytes,
-		encrypted: params.encrypt
+	const timestamp = Date.now();
+
+	await group.add({
+		group: {
+			cid: cid.bytes,
+			encrypted: params.encrypt,
+			addedBy: components.welo.identity.id,
+			timestamp
+		},
+
+		local: {
+			encrypt: params.encrypt,
+			path: params.path,
+			hash: "sha256",
+			chunker: "size-262144",
+			rawLeaves: true,
+			cidVersion: 1,
+			nocopy: false,
+			timestamp
+		}
 	});
 
 	return cid.toString();

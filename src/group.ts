@@ -1,6 +1,7 @@
 import { toString as uint8ArrayToString, fromString as uint8ArrayFromString } from "uint8arrays";
 import { CID } from "multiformats/cid";
 import { Datastore, Key, Query } from "interface-datastore";
+import * as dagCbor from "@ipld/dag-cbor";
 import type { AbortOptions } from "interface-store";
 import type { KeyvalueDB, LocalEntry, GroupEntry, CombinedEntry } from "./interface.js";
 
@@ -56,13 +57,13 @@ export class Group {
 		const index = await this.database.store.latest();
 
 		for await (const pair of index.query(query, options)) {
-			const groupEntry = decode<GroupEntry>(pair.value);
+			const groupEntry = dagCbor.decode(pair.value) as GroupEntry;
 
 			if (groupEntry == null) {
 				continue;
 			}
 
-			const localEntry = this.localData.get(pair.key.toString())
+			const localEntry = this.localData.get(pair.key.baseNamespace())
 
 			if (localEntry == null) {
 				console.error("missing localdata - should sync...")
