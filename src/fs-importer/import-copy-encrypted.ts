@@ -1,31 +1,30 @@
 import fs from "fs";
 import Path from "path";
+import { collect } from "streaming-iterables";
 import { UnixFS } from "ipfs-unixfs";
 import { CID } from "multiformats/cid";
 import * as dagPb from "@ipld/dag-pb";
-import crypto from "crypto";
-import { deriveEncryptionParams } from "../utils.js"
 import * as raw from "multiformats/codecs/raw";
-import { fromString as uint8ArrayFromString, toString as uint8ArrayToString } from "uint8arrays";
+import {
+	fromString as uint8ArrayFromString,
+	toString as uint8ArrayToString,
+	concat as concatUint8Arrays
+} from "uint8arrays";
 import type { Blockstore } from "interface-blockstore";
-import type { ImportResult, ImporterConfig } from "./interfaces.js";
+import type { ImportResult, ImporterConfig, Cipher } from "./interfaces.js";
 
 export const importFile = async (
 	path: string,
 	config: ImporterConfig,
-	key: Uint8Array,
+	cipher: Cipher,
 	blockstore?: Blockstore
 ): Promise<ImportResult> => {
-	const stream = fs.createReadStream(path, { highWaterMark: 16 * 1024 });
-	const encryptionParamStream = fs.createReadStream(path, { highWaterMark: 16 * 1024 });
-	const { key: aesKey, iv } = await deriveEncryptionParams(key, encryptionParamStream);
-	const cipher = crypto.createCipheriv("aes-256-cbc", aesKey, iv, { encoding: "binary" });
+	const loadData = () => fs.createReadStream(path, { highWaterMark: 16 * 1024 });
 	const { size } = await fs.promises.stat(path);
 	const links: { cid: CID, size: number, chunk: Uint8Array }[] = [];
+	const params = await cipher.generate(loadData());
 
-	for await (const rawData of config.chunker(stream)) {
-		const chunk = cipher.update(rawData);
-
+	for await (const chunk of config.chunker(cipher.encrypt(loadData(), params))) {
 		const block = dagPb.encode({
 			Data: chunk,
 			Links: []
@@ -65,7 +64,7 @@ export const importFile = async (
 export const importDir = async (
 	path: string,
 	config: ImporterConfig,
-	key: Uint8Array,
+	cipher: Cipher,
 	blockstore?: Blockstore
 ): Promise<ImportResult> => {
 	const dirents = await fs.promises.readdir(path, { withFileTypes: true });
@@ -74,19 +73,16 @@ export const importDir = async (
 	for (const dirent of dirents) {
 		const subPath = Path.join(path, dirent.name);
 		const nameBuf = uint8ArrayFromString(dirent.name);
-		const { key: aesKey, iv } = await deriveEncryptionParams(key, [nameBuf]);
-		const cipher = crypto.createCipheriv("aes-256-cbc", aesKey, iv, { encoding: "binary" });
 
 		const { cid, size } = dirent.isDirectory() ?
-			await importDir(subPath, config, key, blockstore) :
-			await importFile(subPath, config, key, blockstore);
+			await importDir(subPath, config, cipher, blockstore) :
+			await importFile(subPath, config, cipher, blockstore);
 
-		const cipherText = new Uint8Array([
-			...cipher.update(dirent.name),
-			...cipher.final()
-		]);
+		const params = await cipher.generate([nameBuf]);
+		const chunks = await collect(cipher.encrypt([nameBuf], params))
+		const cipherText = concatUint8Arrays(chunks);
 
-		links.push({ cid, size, iv, name: cipherText });
+		links.push({ cid, size, iv: params.iv, name: cipherText });
 	}
 
 	links.sort((a, b) => Buffer.compare(a.name, b.name));
@@ -111,12 +107,12 @@ export const importDir = async (
 	return { cid, size };
 }
 
-export const importAny = async (path: string, config: ImporterConfig, key: Uint8Array, blockstore?: Blockstore): Promise<ImportResult> => {
+export const importAny = async (path: string, config: ImporterConfig, cipher: Cipher, blockstore?: Blockstore): Promise<ImportResult> => {
 	const stat = await fs.promises.stat(path);
 
 	if (stat.isDirectory()) {
-		return await importDir(path, config, key, blockstore);
+		return await importDir(path, config, cipher, blockstore);
 	} else {
-		return await importFile(path, config, key, blockstore);
+		return await importFile(path, config, cipher, blockstore);
 	}
 }
