@@ -27,6 +27,11 @@ export abstract class DatastoreMap <S extends {}> {
 		await this.datastore.put(new Key(key), this.encode(value));
 	}
 
+	async delete (key: string): Promise<void> {
+		this.cache.delete(key);
+		await this.datastore.delete(new Key(key));
+	}
+
 	get (key: string): S | undefined {
 		return this.cache.get(key);
 	}
