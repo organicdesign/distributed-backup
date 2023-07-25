@@ -3,7 +3,7 @@ import type { Pair } from "../interface.js";
 import type { AbortOptions } from "interface-store";
 import type { Datastore } from "interface-datastore";
 
-export abstract class Database <S extends {}> {
+export abstract class DatastoreMap <S extends {}> {
 	private readonly datastore: Datastore;
 
 	constructor (datastore: Datastore) {
