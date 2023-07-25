@@ -15,12 +15,14 @@ export interface Components {
 }
 
 export class Groups implements Startable {
-	private readonly components: Components;
+	private readonly welo: Welo;
+	private readonly datastore: Datastore;
 	private readonly groups = new Map<string, Group>();
 	private started = false;
 
 	constructor (components: Components) {
-		this.components = components;
+		this.welo = components.welo;
+		this.datastore = components.datastore;
 	}
 
 	isStarted (): boolean {
@@ -32,7 +34,7 @@ export class Groups implements Startable {
 			return;
 		}
 
-		for await (const pair of this.components.datastore.query({})) {
+		for await (const pair of this.datastore.query({})) {
 			const block = await Blocks.decode<ManifestData>({ bytes: pair.value })
 			const manifest = Manifest.asManifest({ block });
 
@@ -52,13 +54,13 @@ export class Groups implements Startable {
 	}
 
 	async add (manifest: Manifest) {
-		const database = await this.components.welo.open(manifest) as KeyvalueDB;
-		const datastore = new NamespaceDatastore(this.components.datastore, new Key(database.address.toString()))
+		const database = await this.welo.open(manifest) as KeyvalueDB;
+		const datastore = new NamespaceDatastore(this.datastore, new Key(database.address.toString()))
 		const group = new Group({ datastore, database });
 
 		this.groups.set(manifest.name, group);
 
-		await this.components.datastore.put(new Key(database.address.toString()), database.manifest.block.bytes);
+		await this.datastore.put(new Key(database.address.toString()), database.manifest.block.bytes);
 	}
 
 	get (address: string) {
