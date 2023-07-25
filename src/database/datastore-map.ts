@@ -1,10 +1,10 @@
 import { Key } from "interface-datastore";
 import type { Pair } from "../interface.js";
-import type { AbortOptions } from "interface-store";
 import type { Datastore } from "interface-datastore";
 
 export abstract class DatastoreMap <S extends {}> {
 	private readonly datastore: Datastore;
+	private readonly cache = new Map<string, S>();
 
 	constructor (datastore: Datastore) {
 		this.datastore = datastore;
@@ -13,19 +13,27 @@ export abstract class DatastoreMap <S extends {}> {
 	abstract encode (data: S): Uint8Array;
 	abstract decode (data: Uint8Array): S;
 
-	async set (key: string, data: S): Promise<void> {
-		await this.datastore.put(new Key(key), this.encode(data));
+	async start () {
+		for await (const pair of this.datastore.query({})) {
+			const key = pair.key.toString();
+			const value = this.decode(pair.value);
+
+			this.cache.set(key, value);
+		}
 	}
 
-	async get (key: string): Promise<S> {
-		const data = await this.datastore.get(new Key(key));
-
-		return this.decode(data);
+	async set (key: string, value: S): Promise<void> {
+		this.cache.set(key, value);
+		await this.datastore.put(new Key(key), this.encode(value));
 	}
 
-	async * all (options?: AbortOptions): AsyncGenerator<Pair<string, S>> {
-		for await (const pair of this.datastore.query({}, options)) {
-			yield { key: pair.key.toString(), value: this.decode(pair.value) };
+	get (key: string): S | undefined {
+		return this.cache.get(key);
+	}
+
+	* all (): Generator<Pair<string, S>> {
+		for (const [key, value] of this.cache) {
+			yield { key, value };
 		}
 	}
 }
