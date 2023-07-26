@@ -1,20 +1,9 @@
-import { DatastoreMap } from "./datastore-map.js";
-import { toString as uint8ArrayToString, fromString as uint8ArrayFromString } from "uint8arrays";
 import { CID } from "multiformats/cid";
 import { Datastore } from "interface-datastore";
 import * as dagCbor from "@ipld/dag-cbor";
+import { RefStore } from "./ref-store.js";
 import type { AbortOptions } from "interface-store";
 import type { KeyvalueDB, GroupEntry, Reference } from "./interface.js";
-
-class RefStore extends DatastoreMap<Reference> {
-	encode (data: Reference): Uint8Array {
-		return uint8ArrayFromString(JSON.stringify(data));
-	}
-
-	decode (data: Uint8Array): Reference {
-		return JSON.parse(uint8ArrayToString(data));
-	}
-}
 
 export class Group {
 	private readonly database: KeyvalueDB;
