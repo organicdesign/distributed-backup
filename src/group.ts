@@ -84,6 +84,21 @@ export class Group {
 		await this.database.replica.write(op);
 	}
 
+	async rm (cid: CID) {
+		const pref = {
+			cid,
+			group: this.database.address.cid
+		};
+
+		if (await this.refStore.has(pref)) {
+			await this.refStore.delete(pref);
+		}
+
+		const op = this.database.store.creators.del(cid.toString());
+
+		await this.database.replica.write(op);
+	}
+
 	async * all (): AsyncGenerator<Reference> {
 		yield* this.refStore.all();
 	}

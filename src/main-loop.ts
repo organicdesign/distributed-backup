@@ -1,4 +1,3 @@
-import { CID } from "multiformats/cid";
 import * as logger from "./logger.js";
 import { importAny as importAnyEncrypted } from "./fs-importer/import-copy-encrypted.js";
 import { importAny as importAnyPlaintext } from "./fs-importer/import-copy-plaintext.js";
@@ -12,15 +11,13 @@ export default async ({ helia, blockstore, config, cipher, groups }: Components)
 	logger.tick("started");
 
 	for (const { value: group } of groups.all()) {
-		for await (const item of group.query({})) {
-			if (Date.now() - item.local.timestamp < config.validateInterval * 1000) {
+		for await (const item of group.all()) {
+			if (item.local == null || Date.now() - item.local.updatedAt < config.validateInterval * 1000) {
 				continue;
 			}
 
-			const cid = CID.decode(item.group.cid);
-
 			if (item.local.path == null) {
-				logger.validate("outdated but is not local %s", cid);
+				logger.validate("outdated but is not local %s", item.cid);
 				continue;
 			}
 
@@ -32,12 +29,12 @@ export default async ({ helia, blockstore, config, cipher, groups }: Components)
 				cidVersion: item.local.cidVersion
 			};
 
-			const load = item.group.encrypted ? importAnyEncrypted : importAnyPlaintext;
+			const load = item.encrypted ? importAnyEncrypted : importAnyPlaintext;
 
 			const { cid: hashCid } = await load(item.local.path, importerConfig, new BlackHoleBlockstore(), cipher);
 
-			if (hashCid.equals(cid)) {
-				group.updateTs(cid);
+			if (hashCid.equals(item.cid)) {
+				group.updateTs(item);
 
 				logger.validate("cleaned %s", item.local.path);
 				continue;
@@ -52,26 +49,23 @@ export default async ({ helia, blockstore, config, cipher, groups }: Components)
 				await helia.pins.add(newCid);
 			}
 
-			if (await helia.pins.isPinned(cid)) {
-				await helia.pins.rm(cid);
+			if (await helia.pins.isPinned(item.cid)) {
+				await helia.pins.rm(item.cid);
 			}
 
 			const timestamp = Date.now();
 
 			await group.add({
-				group: {
-					...item.group,
-					cid: newCid.bytes,
-					timestamp
-				},
+				...item,
+				cid: newCid,
 
 				local: {
 					...item.local,
-					timestamp
+					updatedAt: timestamp
 				}
 			});
 
-			await group.rm(cid);
+			await group.rm(item.cid);
 
 			logger.validate("updated %s", item.local.path);
 		}
