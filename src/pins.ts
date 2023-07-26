@@ -31,6 +31,8 @@ export class Pins {
 	}
 
 	async start () {
+		await this.pinsStore.start();
+
 		// Ensure every pin we have saved is actually pinned by helia.
 		const promises: Promise<void>[] = [];
 
