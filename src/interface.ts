@@ -58,7 +58,7 @@ export interface ImportOptions {
 }
 
 export interface Reference<T extends Uint8Array | CID = CID> extends Entry<T> {
-	group: string
+	group: T
 	status: "blocked" | "accepted"
 	local?: ImportOptions & {
 		path: string
