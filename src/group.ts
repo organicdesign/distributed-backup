@@ -1,7 +1,7 @@
 import { CID } from "multiformats/cid";
 import * as dagCbor from "@ipld/dag-cbor";
 import type { RefStore } from "./ref-store.js";
-import type { KeyvalueDB, GroupEntry, Reference } from "./interface.js";
+import type { KeyvalueDB, Entry, Reference } from "./interface.js";
 import type { AbortOptions } from "interface-store";
 
 export class Group {
@@ -22,29 +22,36 @@ export class Group {
 		const index = await this.database.store.latest();
 
 		for await (const pair of index.query({}, options)) {
-			const entry = dagCbor.decode(pair.value) as GroupEntry;
+			const entry = dagCbor.decode(pair.value) as Entry;
+
+			const pref = {
+				cid: CID.parse(pair.key.baseNamespace()),
+				group: this.database.address.cid
+			};
 
 			if (entry == null) {
-				if (this.refStore.has(pair.key.baseNamespace())) {
-					await this.refStore.delete(pair.key.baseNamespace());
+				if (await this.refStore.has(pref)) {
+					await this.refStore.delete(pref);
 				}
+
 				continue;
 			}
 
-			if (this.refStore.has(pair.key.baseNamespace())) {
+			if (await this.refStore.has(pref)) {
 				continue;
 			}
 
-			await this.refStore.set(pair.key.baseNamespace(), {
+			await this.refStore.set({
+				...pref,
 				...entry,
-				group: this.database.address.toString(),
+				group: this.database.address.cid,
 				status: "accepted"
-			})
+			});
 		}
 	}
 
-	async updateTs (cid: CID, group: string) {
-		const ref = this.refStore.get(`${group}/${cid.toString()}`);
+	async updateTs (pref: { cid: CID, group: CID}) {
+		const ref = await this.refStore.get(pref);
 
 		if (ref == null) {
 			console.warn("cannot update entry that does not exist");
@@ -57,31 +64,27 @@ export class Group {
 
 		ref.local.updatedAt = Date.now();
 
-		await this.refStore.set(`${group}/${cid.toString()}`, ref);
+		await this.refStore.set(ref);
 	}
 
 	async add (ref: Reference) {
-		const cid = CID.decode(ref.cid);
-
 		// Update local storage.
-		await this.refStore.set(cid.toString(), ref);
+		await this.refStore.set(ref);
 
 		// Update global database.
-		const op = this.database.store.creators.put(cid.toString(), {
-			cid: ref.cid,
+		const op = this.database.store.creators.put(ref.cid.toString(), {
+			cid: ref.cid.bytes,
 			addedBy: ref.addedBy,
 			encrypted: ref.encrypted,
-			next: ref.next,
-			prev: ref.prev,
+			next: ref.next?.bytes,
+			prev: ref.prev?.bytes,
 			meta: ref.meta
 		});
 
 		await this.database.replica.write(op);
 	}
 
-	* all (): Generator<Reference> {
-		for (const { value } of this.refStore.all()) {
-			yield value;
-		}
+	async * all (): AsyncGenerator<Reference> {
+		yield* this.refStore.all();
 	}
 }
