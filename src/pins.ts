@@ -1,22 +1,17 @@
 import { DatastoreMap } from "./datastore-map.js";
-import { toString as uint8ArrayToString, fromString as uint8ArrayFromString } from "uint8arrays";
 import { CID } from "multiformats/cid";
-import { safePin, safeUnpin } from "./utils.js";
+import { safePin, safeUnpin, decodeAny, encodeAny } from "./utils.js";
 import type { Helia } from "@helia/interface";
 import type { Datastore } from "interface-datastore";
+import type { Pin } from "./interface.js";
 
-interface Pin {
-	cid: Uint8Array,
-	groups: string[]
-}
-
-class PinsStore extends DatastoreMap<Pin> {
-	encode (data: Pin): Uint8Array {
-		return uint8ArrayFromString(JSON.stringify(data));
+class PinsStore extends DatastoreMap<Pin<Uint8Array>> {
+	encode (data: Pin<Uint8Array>): Uint8Array {
+		return encodeAny(data);
 	}
 
-	decode (data: Uint8Array): Pin {
-		return JSON.parse(uint8ArrayToString(data));
+	decode (data: Uint8Array): Pin<Uint8Array> {
+		return decodeAny(data);
 	}
 }
 
@@ -47,40 +42,60 @@ export class Pins {
 		await Promise.all(promises);
 	}
 
-	async add (cid: CID, group: string) {
+	async sync () {
+
+	}
+
+	async add (cid: CID, group: CID) {
 		const existing = this.pinsStore.get(cid.toString());
 
 		await safePin(this.helia, cid);
 
 		if (existing != null) {
-			existing.groups.push(group);
+			existing.groups.push(group.bytes);
 			await this.pinsStore.set(cid.toString(), existing);
 			return;
 		}
 
-		await this.pinsStore.set(cid.toString(), {
-			cid: cid.bytes,
+		await this.pinsStore.set(cid.toString(), this.toRaw({
+			cid: cid,
 			groups: [group]
-		});
+		}));
 	}
 
 	// Remove a pin.
-	async rm (cid: CID, group: string) {
-		const existing = this.pinsStore.get(cid.toString());
+	async rm (cid: CID, group: CID) {
+		const raw = this.pinsStore.get(cid.toString());
 
-		if (existing == null) {
+		if (raw == null) {
 			await safeUnpin(this.helia, cid);
 
 			return;
 		}
 
-		existing.groups = existing.groups.filter(g => g === group);
+		const existing = this.fromRaw(raw);
+
+		existing.groups = existing.groups.filter(g => g.equals(group));
 
 		if (existing.groups.length === 0) {
 			await safeUnpin(this.helia, cid);
 			await this.pinsStore.delete(cid.toString());
 		} else {
-			await this.pinsStore.set(cid.toString(), existing);
+			await this.pinsStore.set(cid.toString(), this.toRaw(existing));
 		}
+	}
+
+	private toRaw (pin: Pin): Pin<Uint8Array> {
+		return {
+			cid: pin.cid.bytes,
+			groups: pin.groups.map(g => g.bytes)
+		};
+	}
+
+	private fromRaw (pin: Pin<Uint8Array>): Pin {
+		return {
+			cid: CID.decode(pin.cid),
+			groups: pin.groups.map(CID.decode)
+		};
 	}
 }
