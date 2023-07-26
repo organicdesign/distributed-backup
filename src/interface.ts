@@ -40,7 +40,7 @@ export interface Pin<T extends Uint8Array | CID = CID>  {
 
 export interface Entry<T extends Uint8Array | CID = CID> {
 	cid: T
-	addedBy: T
+	addedBy: Uint8Array
 	encrypted: boolean
 	timestamp: number
 	prev?: T
