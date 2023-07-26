@@ -1,17 +1,16 @@
 import { CID } from "multiformats/cid";
-import { Datastore } from "interface-datastore";
 import * as dagCbor from "@ipld/dag-cbor";
-import { RefStore } from "./ref-store.js";
-import type { AbortOptions } from "interface-store";
+import type { RefStore } from "./ref-store.js";
 import type { KeyvalueDB, GroupEntry, Reference } from "./interface.js";
+import type { AbortOptions } from "interface-store";
 
 export class Group {
 	private readonly database: KeyvalueDB;
 	private readonly refStore: RefStore;
 
-	constructor (components: { datastore: Datastore, database: KeyvalueDB }) {
+	constructor (components: { refStore: RefStore, database: KeyvalueDB }) {
 		this.database = components.database;
-		this.refStore = new RefStore(components.datastore);
+		this.refStore = components.refStore;
 	}
 
 	async start () {

@@ -3,7 +3,7 @@ import { Key } from "interface-datastore";
 import { Welo } from "../../welo/dist/src/index.js";
 import { Blocks } from "welo/dist/src/blocks/index.js";
 import { Manifest } from "welo/dist/src/manifest/index.js";
-import { NamespaceDatastore } from "./namespace-datastore.js";
+import type { RefStore } from "./ref-store.js";
 import type { ManifestData } from "welo/dist/src/manifest/interface.js";
 import type { Datastore } from "interface-datastore";
 import type { Startable } from "@libp2p/interfaces/startable";
@@ -12,17 +12,20 @@ import type { KeyvalueDB, Pair } from "./interface.js";
 export interface Components {
 	datastore: Datastore
 	welo: Welo
+	refStore: RefStore
 }
 
 export class Groups implements Startable {
 	private readonly welo: Welo;
 	private readonly datastore: Datastore;
+	private readonly refStore: RefStore;
 	private readonly groups = new Map<string, Group>();
 	private started = false;
 
 	constructor (components: Components) {
 		this.welo = components.welo;
 		this.datastore = components.datastore;
+		this.refStore = components.refStore;
 	}
 
 	isStarted (): boolean {
@@ -55,8 +58,7 @@ export class Groups implements Startable {
 
 	async add (manifest: Manifest) {
 		const database = await this.welo.open(manifest) as KeyvalueDB;
-		const datastore = new NamespaceDatastore(this.datastore, new Key(database.address.toString()))
-		const group = new Group({ datastore, database });
+		const group = new Group({ refStore: this.refStore, database });
 
 		this.groups.set(manifest.name, group);
 

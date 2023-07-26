@@ -15,6 +15,7 @@ import commands from "./rpc/index.js";
 import { createGroups } from "./groups.js";
 import { Datastores } from "./datastores.js";
 import { createCipher } from "./cipher.js";
+import { createRefStore } from "./ref-store.js";
 import type { Components } from "./interface.js";
 
 const argv = await yargs(hideBin(process.argv))
@@ -33,6 +34,8 @@ logger.lifecycle("starting...");
 const datastore = new MemoryDatastore();
 const stores = new Datastores(datastore);
 const blockstore = new Filestore(new MemoryBlockstore(), stores.get("helia/filestore"));
+
+const refStore = await createRefStore(stores.get("references"));
 
 // Setup all the modules.
 const config = await getConfig();
@@ -57,7 +60,7 @@ const cipher = await createCipher({
 });
 logger.lifecycle("loaded cipher");
 
-const groups = await createGroups({ datastore: stores.get("groups"), welo });
+const groups = await createGroups({ datastore: stores.get("groups"), welo, refStore });
 logger.lifecycle("loaded groups");
 
 const { rpc, close } = await createNetServer(argv.socket);
