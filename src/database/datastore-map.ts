@@ -36,6 +36,10 @@ export abstract class DatastoreMap <S extends {}> {
 		return this.cache.get(key);
 	}
 
+	has (key: string): boolean {
+		return this.cache.has(key);
+	}
+
 	* all (): Generator<Pair<string, S>> {
 		for (const [key, value] of this.cache) {
 			yield { key, value };
