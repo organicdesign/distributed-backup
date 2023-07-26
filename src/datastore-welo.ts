@@ -2,7 +2,7 @@ import { decode } from "@ipld/dag-cbor";
 import { BaseDatastore, Errors } from "datastore-core";
 import type { Key, Pair, Query, KeyQuery } from "interface-datastore";
 import type { AwaitIterable, AbortOptions } from "interface-store";
-import type { KeyvalueDB } from "../interface.js";
+import type { KeyvalueDB } from "./interface.js";
 
 export class DatastoreWelo extends BaseDatastore {
 	protected readonly database: KeyvalueDB;

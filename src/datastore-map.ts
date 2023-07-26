@@ -1,5 +1,5 @@
 import { Key } from "interface-datastore";
-import type { Pair } from "../interface.js";
+import type { Pair } from "./interface.js";
 import type { Datastore } from "interface-datastore";
 
 export abstract class DatastoreMap <S extends {}> {

@@ -1,4 +1,4 @@
-import { DatastoreMap } from "./database/datastore-map.js";
+import { DatastoreMap } from "./datastore-map.js";
 import { toString as uint8ArrayToString, fromString as uint8ArrayFromString } from "uint8arrays";
 import { CID } from "multiformats/cid";
 import { safePin, safeUnpin } from "./utils.js";
