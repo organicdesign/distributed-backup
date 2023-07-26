@@ -10,7 +10,7 @@ export const method = (components: Components) => async (params: { group: string
 		throw new Error("no such group");
 	}
 
-	const data = await all(group.query({}));
+	const data = await all(group.all());
 
 	return data;
 };

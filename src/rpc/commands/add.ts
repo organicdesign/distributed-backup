@@ -48,12 +48,11 @@ export const method = (components: Components) => async (params: { group: string
 	const timestamp = Date.now();
 
 	await group.add({
-		group: {
-			cid: cid.bytes,
-			encrypted: params.encrypt,
-			addedBy: components.welo.identity.id,
-			timestamp
-		},
+		cid,
+		timestamp,
+		encrypted: params.encrypt,
+		addedBy: components.welo.identity.id,
+		status: "accepted",
 
 		local: {
 			encrypt: params.encrypt,
@@ -63,7 +62,7 @@ export const method = (components: Components) => async (params: { group: string
 			rawLeaves: true,
 			cidVersion: 1,
 			nocopy: false,
-			timestamp
+			updatedAt: timestamp
 		}
 	});
 

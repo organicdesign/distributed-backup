@@ -72,13 +72,27 @@ export class RefStore implements Startable {
 	}
 
 	private toRaw (reference: Reference): Reference<Uint8Array> {
-		return {
-			...reference,
+		const next = reference.next;
+		const prev = reference.prev;
+
+		delete reference.next;
+		delete reference.prev;
+
+		const raw: Reference<Uint8Array> = {
+			...reference as Omit<Reference, "prev" | "next">,
 			cid: reference.cid.bytes,
-			group: reference.group.bytes,
-			prev: reference.prev?.bytes,
-			next: reference.next?.bytes
+			group: reference.group.bytes
 		};
+
+		if (prev != null) {
+			raw.prev = prev.bytes;
+		}
+
+		if (next != null) {
+			raw.next = next.bytes;
+		}
+
+		return raw;
 	}
 
 	private fromRaw (reference: Reference<Uint8Array>): Reference {
@@ -86,7 +100,7 @@ export class RefStore implements Startable {
 			...reference,
 			cid: CID.decode(reference.cid),
 			group: CID.decode(reference.group),
-			prev: reference.next ? CID.decode(reference.next) : undefined,
+			prev: reference.prev ? CID.decode(reference.prev) : undefined,
 			next: reference.next ? CID.decode(reference.next) : undefined
 		};
 	}

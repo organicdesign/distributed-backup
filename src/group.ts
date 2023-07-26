@@ -67,19 +67,28 @@ export class Group {
 		await this.refStore.set(ref);
 	}
 
-	async add (ref: Reference) {
+	async add (ref: Omit<Reference, "group">) {
 		// Update local storage.
-		await this.refStore.set(ref);
+		await this.refStore.set({ ...ref, group: this.database.address.cid });
 
-		// Update global database.
-		const op = this.database.store.creators.put(ref.cid.toString(), {
+		const entry: Entry<Uint8Array> = {
 			cid: ref.cid.bytes,
 			addedBy: ref.addedBy,
 			encrypted: ref.encrypted,
-			next: ref.next?.bytes,
-			prev: ref.prev?.bytes,
-			meta: ref.meta
-		});
+			meta: ref.meta ?? {},
+			timestamp: ref.timestamp
+		};
+
+		if (ref.next) {
+			entry.next = ref.next.bytes;
+		}
+
+		if (ref.prev) {
+			entry.prev = ref.prev.bytes;
+		}
+
+		// Update global database.
+		const op = this.database.store.creators.put(ref.cid.toString(), entry);
 
 		await this.database.replica.write(op);
 	}
