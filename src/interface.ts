@@ -6,7 +6,7 @@ import type { Filestore } from "./filestore/index.js";
 import type { Groups } from "./groups.js";
 import type { Cipher } from "./cipher.js";
 import type { Datastores } from "./datastores.js";
-import type { Version } from "multiformats/cid";
+import type { Version, CID } from "multiformats/cid";
 
 export interface Config {
 	validateInterval: number
@@ -16,25 +16,6 @@ export interface Config {
 export interface Pair<Key = unknown, Value = unknown> {
 	key: Key,
 	value: Value
-}
-
-export interface GroupEntry {
-	cid: Uint8Array
-	addedBy: Uint8Array
-	encrypted: boolean
-	timestamp: number
-	prev?: Uint8Array
-	next?: Uint8Array
-	meta?: Record<string, unknown>
-}
-
-export interface ImportOptions {
-	hash: string
-	cidVersion: Version
-	chunker: string
-	rawLeaves: boolean
-	nocopy: boolean
-	encrypt: boolean
 }
 
 export interface KeyvalueDB extends Database {
@@ -52,12 +33,31 @@ export interface Components {
 	stores: Datastores
 }
 
-export interface Pin {
-	cid: Uint8Array
-	groups: string[]
+export interface Pin<T extends Uint8Array | CID = CID>  {
+	cid: T
+	groups: T[]
 }
 
-export interface Reference extends GroupEntry {
+export interface Entry<T extends Uint8Array | CID = CID> {
+	cid: T
+	addedBy: T
+	encrypted: boolean
+	timestamp: number
+	prev?: T
+	next?: T
+	meta?: Record<string, unknown>
+}
+
+export interface ImportOptions {
+	hash: string
+	cidVersion: Version
+	chunker: string
+	rawLeaves: boolean
+	nocopy: boolean
+	encrypt: boolean
+}
+
+export interface Reference<T extends Uint8Array | CID = CID> extends Entry<T> {
 	group: string
 	status: "blocked" | "accepted"
 	local?: ImportOptions & {
