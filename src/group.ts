@@ -1,102 +1,99 @@
+import { DatastoreMap } from "./database/datastore-map.js";
 import { toString as uint8ArrayToString, fromString as uint8ArrayFromString } from "uint8arrays";
 import { CID } from "multiformats/cid";
-import { Datastore, Key, Query } from "interface-datastore";
+import { Datastore } from "interface-datastore";
 import * as dagCbor from "@ipld/dag-cbor";
 import type { AbortOptions } from "interface-store";
-import type { KeyvalueDB, LocalEntry, GroupEntry, CombinedEntry } from "./interface.js";
+import type { KeyvalueDB, GroupEntry, Reference } from "./interface.js";
 
-const encode = <T extends LocalEntry | GroupEntry>(data: T): Uint8Array => {
-	return uint8ArrayFromString(JSON.stringify(data));
-}
+class RefStore extends DatastoreMap<Reference> {
+	encode (data: Reference): Uint8Array {
+		return uint8ArrayFromString(JSON.stringify(data));
+	}
 
-const decode = <T extends LocalEntry | GroupEntry>(data: Uint8Array): T => {
-	return JSON.parse(uint8ArrayToString(data));
+	decode (data: Uint8Array): Reference {
+		return JSON.parse(uint8ArrayToString(data));
+	}
 }
 
 export class Group {
-	private readonly datastore: Datastore;
 	private readonly database: KeyvalueDB;
-	private readonly localData = new Map<string, LocalEntry>();
+	private readonly refStore: RefStore;
 
 	constructor (components: { datastore: Datastore, database: KeyvalueDB }) {
-		this.datastore = components.datastore;
 		this.database = components.database;
+		this.refStore = new RefStore(components.datastore);
 	}
 
 	async start () {
-		// Load data into memory from storage.
-		for await (const pair of this.datastore.query({})) {
-			const key = pair.key.toString();
-			const value = decode<LocalEntry>(pair.value);
-
-			this.localData.set(key, value);
-		}
+		await this.refStore.start();
 		//this.database.events.addEventListener("update", (evt) => {});
 	}
 
-	async sync () {
+	async sync (options?: AbortOptions) {
+		const index = await this.database.store.latest();
 
+		for await (const pair of index.query({}, options)) {
+			const entry = dagCbor.decode(pair.value) as GroupEntry;
+
+			if (entry == null) {
+				if (this.refStore.has(pair.key.baseNamespace())) {
+					await this.refStore.delete(pair.key.baseNamespace());
+				}
+				continue;
+			}
+
+			if (this.refStore.has(pair.key.baseNamespace())) {
+				continue;
+			}
+
+			await this.refStore.set(pair.key.baseNamespace(), {
+				...entry,
+				group: this.database.address.toString(),
+				status: "accepted"
+			})
+		}
 	}
 
-	async updateTs (cid: CID) {
-		const entry = this.localData.get(cid.toString());
+	async updateTs (cid: CID, group: string) {
+		const ref = this.refStore.get(`${group}/${cid.toString()}`);
 
-		if (entry == null) {
+		if (ref == null) {
 			console.warn("cannot update entry that does not exist");
 			return;
 		}
 
-		entry.timestamp = Date.now();
+		if (!ref.local) {
+			throw new Error("reference is not an upload");
+		}
 
-		// Update in-memory.
-		this.localData.set(cid.toString(), entry);
+		ref.local.updatedAt = Date.now();
 
-		// Update local storage.
-		await this.datastore.put(new Key(cid.toString()), encode(entry));
+		await this.refStore.set(`${group}/${cid.toString()}`, ref);
 	}
 
-	async rm (cid: CID) {
-		this.localData.delete(cid.toString());
-		await this.datastore.delete(new Key(cid.toString()));
-
-		const op = this.database.store.creators.del(cid.toString());
-
-		await this.database.replica.write(op);
-	}
-
-	async add (entry: CombinedEntry) {
-		const cid = CID.decode(entry.group.cid);
-
-		// Update in-memory.
-		this.localData.set(cid.toString(), entry.local);
+	async add (ref: Reference) {
+		const cid = CID.decode(ref.cid);
 
 		// Update local storage.
-		await this.datastore.put(new Key(cid.toString()), encode(entry.local));
+		await this.refStore.set(cid.toString(), ref);
 
 		// Update global database.
-		const op = this.database.store.creators.put(cid.toString(), entry.group);
+		const op = this.database.store.creators.put(cid.toString(), {
+			cid: ref.cid,
+			addedBy: ref.addedBy,
+			encrypted: ref.encrypted,
+			next: ref.next,
+			prev: ref.prev,
+			meta: ref.meta
+		});
 
 		await this.database.replica.write(op);
 	}
 
-	async * query (query: Query, options?: AbortOptions): AsyncGenerator<CombinedEntry> {
-		const index = await this.database.store.latest();
-
-		for await (const pair of index.query(query, options)) {
-			const groupEntry = dagCbor.decode(pair.value) as GroupEntry;
-
-			if (groupEntry == null) {
-				continue;
-			}
-
-			const localEntry = this.localData.get(pair.key.baseNamespace())
-
-			if (localEntry == null) {
-				console.error("missing localdata - should sync...")
-				continue;
-			}
-
-			yield { local: localEntry, group: groupEntry };
+	* all (): Generator<Reference> {
+		for (const { value } of this.refStore.all()) {
+			yield value;
 		}
 	}
 }

@@ -28,16 +28,6 @@ export interface GroupEntry {
 	meta?: Record<string, unknown>
 }
 
-export interface LocalEntry extends ImportOptions {
-	timestamp: number
-	path?: string
-}
-
-export interface CombinedEntry {
-	local: LocalEntry,
-	group: GroupEntry
-}
-
 export interface ImportOptions {
 	hash: string
 	cidVersion: Version
@@ -60,4 +50,18 @@ export interface Components {
 	cipher: Cipher,
 	config: Config,
 	stores: Datastores
+}
+
+export interface Pin {
+	cid: Uint8Array
+	groups: string[]
+}
+
+export interface Reference extends GroupEntry {
+	group: string
+	status: "blocked" | "accepted"
+	local?: ImportOptions & {
+		path: string
+		updatedAt: number
+	}
 }
