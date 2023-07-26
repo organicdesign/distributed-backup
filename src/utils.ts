@@ -1,5 +1,5 @@
 import Path from "path";
-import { toString as uint8ArrayToString, fromString as uint8ArrayFromString } from "uint8arrays";
+import * as cborg from 'cborg'
 import { fileURLToPath } from "url";
 import type { Helia } from "@helia/interface";
 import type { CID } from "multiformats/cid";
@@ -19,9 +19,9 @@ export const safeUnpin = async (helia: Helia, cid: CID) => {
 };
 
 export const encodeAny = <T = unknown>(data: T): Uint8Array => {
-	return uint8ArrayFromString(JSON.stringify(data));
+	return cborg.encode(data);
 };
 
 export const decodeAny = <T = unknown>(data: Uint8Array): T => {
-	return JSON.parse(uint8ArrayToString(data));
+	return cborg.decode(data);
 };
