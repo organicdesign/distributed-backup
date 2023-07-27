@@ -40,7 +40,7 @@ export class NamespaceDatastore extends BrokenNamespacedDatastore {
 			})
 		}
 
-		query.filters.push(({ key }) => this.iKey.isAncestorOf(key))
+		query.filters.unshift(({ key }) => this.iKey.isAncestorOf(key))
 
 		return map(this.iChild.query(query, options), ({ key, value }) => {
 			return {
@@ -76,7 +76,7 @@ export class NamespaceDatastore extends BrokenNamespacedDatastore {
 			})
 		}
 
-		query.filters.push(key => this.iKey.isAncestorOf(key))
+		query.filters.unshift(key => this.iKey.isAncestorOf(key))
 
 		return map(this.iChild.queryKeys(query, options), key => {
 			return this.transform.invert(key)
