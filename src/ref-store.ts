@@ -62,7 +62,7 @@ export class RefStore implements Startable {
 	}
 
 	async * allByGroup (group: CID): AsyncGenerator<Reference> {
-		for await (const { value } of this.datastore.query({ prefix: group.toString() })) {
+		for await (const { value } of this.datastore.query({ prefix: `/${group.toString()}` })) {
 			yield this.fromRaw(decodeAny(value));
 		}
 	}
