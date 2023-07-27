@@ -1,31 +1,27 @@
-import { Group } from "./group.js";
 import { Key } from "interface-datastore";
 import { Welo } from "../../welo/dist/src/index.js";
 import { Blocks } from "welo/dist/src/blocks/index.js";
 import { Manifest } from "welo/dist/src/manifest/index.js";
-import type { RefStore } from "./ref-store.js";
+import type { CID } from "multiformats/cid";
 import type { ManifestData } from "welo/dist/src/manifest/interface.js";
 import type { Datastore } from "interface-datastore";
 import type { Startable } from "@libp2p/interfaces/startable";
-import type { KeyvalueDB, Pair } from "./interface.js";
+import type { KeyvalueDB, Pair, Entry } from "./interface.js";
 
 export interface Components {
 	datastore: Datastore
 	welo: Welo
-	refStore: RefStore
 }
 
 export class Groups implements Startable {
 	private readonly welo: Welo;
 	private readonly datastore: Datastore;
-	private readonly refStore: RefStore;
-	private readonly groups = new Map<string, Group>();
+	private readonly groups = new Map<string, KeyvalueDB>();
 	private started = false;
 
 	constructor (components: Components) {
 		this.welo = components.welo;
 		this.datastore = components.datastore;
-		this.refStore = components.refStore;
 	}
 
 	isStarted (): boolean {
@@ -58,18 +54,58 @@ export class Groups implements Startable {
 
 	async add (manifest: Manifest) {
 		const database = await this.welo.open(manifest) as KeyvalueDB;
-		const group = new Group({ refStore: this.refStore, database });
 
-		this.groups.set(manifest.name, group);
+		this.groups.set(manifest.name, database);
 
-		await this.datastore.put(new Key(database.address.toString()), database.manifest.block.bytes);
+		await this.datastore.put(new Key(database.address.cid.toString()), database.manifest.block.bytes);
 	}
 
-	get (address: string) {
-		return this.groups.get(address);
+	async addTo (group: CID, entry: Entry) {
+		const database = this.groups.get(group.toString());
+
+		if (database == null) {
+			throw new Error("not a part of group");
+		}
+
+		const rawEntry: Entry<Uint8Array> = {
+			cid: entry.cid.bytes,
+			addedBy: entry.addedBy,
+			encrypted: entry.encrypted,
+			meta: entry.meta ?? {},
+			timestamp: entry.timestamp
+		};
+
+		if (entry.next) {
+			rawEntry.next = entry.next.bytes;
+		}
+
+		if (entry.prev) {
+			rawEntry.prev = entry.prev.bytes;
+		}
+
+		// Update global database.
+		const op = database.store.creators.put(entry.cid.toString(), rawEntry);
+
+		await database.replica.write(op);
 	}
 
-	* all (): Iterable<Pair<string, Group>> {
+	async deleteFrom (cid: CID, group: CID) {
+		const database = this.groups.get(group.toString());
+
+		if (database == null) {
+			throw new Error("not a part of group");
+		}
+
+		const op = database.store.creators.del(cid.toString());
+
+		await database.replica.write(op);
+	}
+
+	get (group: CID) {
+		return this.groups.get(group.toString());
+	}
+
+	* all (): Iterable<Pair<string, KeyvalueDB>> {
 		for (const [key, value] of this.groups.entries()) {
 			yield { key, value };
 		}
