@@ -4,6 +4,7 @@ import { safePin, safeUnpin, decodeAny, encodeAny } from "./utils.js";
 import type { Helia } from "@helia/interface";
 import type { Datastore } from "interface-datastore";
 import type { Pin } from "./interface.js";
+import type { Startable } from "@libp2p/interfaces/startable";
 
 class PinsStore extends DatastoreMap<Pin<Uint8Array>> {
 	encode (data: Pin<Uint8Array>): Uint8Array {
@@ -15,17 +16,31 @@ class PinsStore extends DatastoreMap<Pin<Uint8Array>> {
 	}
 }
 
+export interface Components {
+	helia: Helia
+	datastore: Datastore
+}
+
 // Pins are identified with the tuples [CID, group]
-export class Pins {
+export class Pins implements Startable {
 	private readonly helia: Helia;
 	private readonly pinsStore: PinsStore;
+	private started = false;
 
-	constructor (components: { helia: Helia, datastore: Datastore }) {
+	constructor (components: Components) {
 		this.helia = components.helia;
 		this.pinsStore = new PinsStore(components.datastore);
 	}
 
+	isStarted (): boolean {
+		return this.started;
+	}
+
 	async start () {
+		if (this.started) {
+			return;
+		}
+
 		await this.pinsStore.start();
 
 		// Ensure every pin we have saved is actually pinned by helia.
@@ -42,8 +57,8 @@ export class Pins {
 		await Promise.all(promises);
 	}
 
-	async sync () {
-
+	async stop () {
+		this.started = false;
 	}
 
 	async add (cid: CID, group: CID) {
@@ -99,3 +114,11 @@ export class Pins {
 		};
 	}
 }
+
+export const createPins = async (components: Components) => {
+	const pins = new Pins(components);
+
+	await pins.start();
+
+	return pins;
+};
