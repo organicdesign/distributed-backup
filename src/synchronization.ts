@@ -22,13 +22,16 @@ const syncRefs = async ({ groups, references }: Components) => {
 			};
 
 			if (entry == null) {
-				const existing = await references.get(pref);
-				if (existing != null) {
+				try {
+					const existing = await references.get(pref);
+
 					// Don't delete outright.
 					await references.set({
 						...existing,
 						status: "removed"
 					});
+				} catch (error) {
+					// Ignore since this just means it doesn't exist.
 				}
 
 				continue;
