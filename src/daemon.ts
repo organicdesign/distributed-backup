@@ -16,6 +16,7 @@ import { createGroups } from "./groups.js";
 import { Datastores } from "./datastores.js";
 import { createCipher } from "./cipher.js";
 import { createRefStore } from "./ref-store.js";
+import { createPins } from "./pins.js";
 import type { Components } from "./interface.js";
 
 const argv = await yargs(hideBin(process.argv))
@@ -35,7 +36,7 @@ const datastore = new MemoryDatastore();
 const stores = new Datastores(datastore);
 const blockstore = new Filestore(new MemoryBlockstore(), stores.get("helia/filestore"));
 
-const refStore = await createRefStore(stores.get("references"));
+const references = await createRefStore(stores.get("references"));
 
 // Setup all the modules.
 const config = await getConfig();
@@ -46,6 +47,8 @@ logger.lifecycle("loaded libp2p");
 
 const helia = await createHelia({ libp2p, blockstore, datastore: stores.get("helia/datastore") });
 logger.lifecycle("loaded helia");
+
+const pins = await createPins({ helia, datastore: stores.get("pins") });
 
 const welo = await createWelo({
 	ipfs: helia,
@@ -60,13 +63,13 @@ const cipher = await createCipher({
 });
 logger.lifecycle("loaded cipher");
 
-const groups = await createGroups({ datastore: stores.get("groups"), welo, refStore });
+const groups = await createGroups({ datastore: stores.get("groups"), welo });
 logger.lifecycle("loaded groups");
 
 const { rpc, close } = await createNetServer(argv.socket);
 logger.lifecycle("loaded server");
 
-const components: Components = { libp2p, cipher, helia, welo, blockstore, groups, config, stores };
+const components: Components = { libp2p, cipher, helia, welo, blockstore, groups, config, stores, references };
 
 // Register all the RPC commands.
 for (const command of commands) {

@@ -4,6 +4,7 @@ import type { PubSub } from "@libp2p/interface-pubsub";
 import type { Helia } from "@helia/interface";
 import type { Filestore } from "./filestore/index.js";
 import type { Groups } from "./groups.js";
+import type { RefStore } from "./ref-store.js";
 import type { Cipher } from "./cipher.js";
 import type { Datastores } from "./datastores.js";
 import type { Version, CID } from "multiformats/cid";
@@ -30,7 +31,8 @@ export interface Components {
 	groups: Groups
 	cipher: Cipher,
 	config: Config,
-	stores: Datastores
+	stores: Datastores,
+	references: RefStore
 }
 
 export interface Pin<T extends Uint8Array | CID = CID>  {
@@ -59,7 +61,7 @@ export interface ImportOptions {
 
 export interface Reference<T extends Uint8Array | CID = CID> extends Entry<T> {
 	group: T
-	status: "blocked" | "accepted"
+	status: "blocked" | "added" | "removed"
 	local?: ImportOptions & {
 		path: string
 		updatedAt: number
