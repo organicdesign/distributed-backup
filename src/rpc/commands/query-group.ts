@@ -1,16 +1,11 @@
 import all from "it-all";
+import { CID } from "multiformats/cid";
 import type { Components } from "../../interface.js";
 
 export const name = "query-group";
 
-export const method = (components: Components) => async (params: { group: string }) => {
-	const group = components.groups.get(params.group);
-
-	if (group == null) {
-		throw new Error("no such group");
-	}
-
-	const data = await all(group.all());
+export const method = ({ references }: Components) => async (params: { group: string }) => {
+	const data = await all(references.allByGroup(CID.parse(params.group)));
 
 	return data;
 };

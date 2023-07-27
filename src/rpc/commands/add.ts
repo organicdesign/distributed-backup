@@ -1,4 +1,5 @@
 import { BlackHoleBlockstore } from "blockstore-core/black-hole";
+import { CID } from "multiformats/cid";
 import selectHasher from "../../fs-importer/select-hasher.js";
 import selectChunker from "../../fs-importer/select-chunker.js";
 import * as logger from "../../logger.js";
@@ -9,10 +10,10 @@ import type { ImporterConfig } from "../../fs-importer/interfaces.js";
 
 export const name = "add";
 
-export const method = (components: Components) => async (params: { group: string, path: string, onlyHash?: boolean, encrypt?: boolean } & ImportOptions) => {
-	const group = components.groups.get(params.group);
+export const method = ({ references, groups, blockstore, cipher, helia, welo }: Components) => async (params: { group: string, path: string, onlyHash?: boolean, encrypt?: boolean } & ImportOptions) => {
+	const group = CID.parse(params.group);
 
-	if (group == null) {
+	if (groups.get(group) == null) {
 		throw new Error("no such group");
 	}
 
@@ -26,10 +27,10 @@ export const method = (components: Components) => async (params: { group: string
 		logger.add("importing %s", params.path);
 	}
 
-	const store = params.onlyHash ? new BlackHoleBlockstore() : components.blockstore;
+	const store = params.onlyHash ? new BlackHoleBlockstore() : blockstore;
 	const load = params.encrypt ? importAnyEncrypted : importAnyPlaintext;
 
-	const { cid } = await load(params.path, config, store, components.cipher);
+	const { cid } = await load(params.path, config, store, cipher);
 
 	if (params.onlyHash) {
 		return cid.toString();
@@ -37,22 +38,23 @@ export const method = (components: Components) => async (params: { group: string
 
 	logger.add("imported %s", params.path);
 
-	if (!await components.helia.pins.isPinned(cid)) {
+	if (!await helia.pins.isPinned(cid)) {
 		logger.add("pinning %s", params.path);
 
-		await components.helia.pins.add(cid);
+		await helia.pins.add(cid);
 	}
 
 	logger.add("pinned %s", params.path);
 
 	const timestamp = Date.now();
 
-	await group.add({
+	await references.set({
 		cid,
 		timestamp,
+		group,
 		encrypted: params.encrypt,
-		addedBy: components.welo.identity.id,
-		status: "accepted",
+		addedBy: welo.identity.id,
+		status: "added",
 
 		local: {
 			encrypt: params.encrypt,

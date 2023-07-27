@@ -17,5 +17,5 @@ export const method = (components: Components) => async (params: { name: string,
 
 	await components.groups.add(manifest);
 
-	return manifest.address.toString();
+	return manifest.address.cid.toString();
 };
