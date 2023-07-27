@@ -1,11 +1,11 @@
 import { createBuilder, createHandler } from "../utils.js";
 
-export const command = "join-group [address]";
+export const command = "join-group [group]";
 
 export const desc = "Join a group.";
 
 export const builder = createBuilder({
-	address: {
+	group: {
 		type: "string",
 		required: true
 	}
@@ -16,7 +16,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 		throw new Error("Failed to connect to daemon.");
 	}
 
-	const connect = await argv.client.rpc.request("join-group", { address: argv.address });
+	const connect = await argv.client.rpc.request("join-group", { group: argv.group });
 
 	console.log(connect);
 
