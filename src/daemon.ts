@@ -69,7 +69,18 @@ logger.lifecycle("loaded groups");
 const { rpc, close } = await createNetServer(argv.socket);
 logger.lifecycle("loaded server");
 
-const components: Components = { libp2p, cipher, helia, welo, blockstore, groups, config, stores, references };
+const components: Components = {
+	libp2p,
+	cipher,
+	helia,
+	welo,
+	blockstore,
+	groups,
+	config,
+	stores,
+	references,
+	pins
+};
 
 // Register all the RPC commands.
 for (const command of commands) {

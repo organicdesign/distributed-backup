@@ -3,11 +3,15 @@ import * as cborg from "cborg";
 import { CID } from "multiformats/cid";
 import { fileURLToPath } from "url";
 import * as dagCbor from "@ipld/dag-cbor";
-import type { RefStore } from "./ref-store.js";
-import type { Entry } from "./interface.js";
-import type { Pins } from "./pins.js";
-import type { Groups } from "./groups.js";
+import * as logger from "./logger.js";
+import { importAny as importAnyEncrypted } from "./fs-importer/import-copy-encrypted.js";
+import { importAny as importAnyPlaintext } from "./fs-importer/import-copy-plaintext.js";
+import selectChunker from "./fs-importer/select-chunker.js";
+import selectHasher from "./fs-importer/select-hasher.js";
+import { BlackHoleBlockstore } from "blockstore-core/black-hole";
 import type { Helia } from "@helia/interface";
+import type { Entry, Components } from "./interface.js";
+import type { ImporterConfig } from "./fs-importer/interfaces.js";
 
 export const srcPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -31,7 +35,7 @@ export const decodeAny = <T = unknown>(data: Uint8Array): T => {
 	return cborg.decode(data);
 };
 
-const syncRefs = async (refs: RefStore, groups: Groups) => {
+const syncRefs = async ({ groups, references }: Components) => {
 	for (const { value: database } of groups.all()) {
 		const index = await database.store.latest();
 
@@ -44,10 +48,10 @@ const syncRefs = async (refs: RefStore, groups: Groups) => {
 			};
 
 			if (entry == null) {
-				const existing = await refs.get(pref);
+				const existing = await references.get(pref);
 				if (existing != null) {
 					// Don't delete outright.
-					await refs.set({
+					await references.set({
 						...existing,
 						status: "removed"
 					});
@@ -56,11 +60,11 @@ const syncRefs = async (refs: RefStore, groups: Groups) => {
 				continue;
 			}
 
-			if (await refs.has(pref)) {
+			if (await references.has(pref)) {
 				continue;
 			}
 
-			await refs.set({
+			await references.set({
 				...pref,
 				...entry,
 				group: database.address.cid,
@@ -70,18 +74,92 @@ const syncRefs = async (refs: RefStore, groups: Groups) => {
 	}
 }
 
-const syncPins = async (pins: Pins, refs: RefStore) => {
-	for await (const ref of refs.all()) {
+const syncPins = async ({ pins, references }: Components) => {
+	for await (const ref of references.all()) {
 		if (ref.status === "added") {
 			await pins.add(ref.cid, ref.group);
 		} else {
 			await pins.rm(ref.cid, ref.group);
-			await refs.delete({ cid: ref.cid, group: ref.group });
+
+			if (ref.status != "blocked") {
+				await references.delete({ cid: ref.cid, group: ref.group });
+			}
 		}
 	}
 }
 
-export const downSync = async (pins: Pins, refs: RefStore, groups: Groups) => {
-	await syncRefs(refs, groups);
-	await syncPins(pins, refs);
+export const downSync = async (components: Components) => {
+	await syncRefs(components);
+	await syncPins(components);
+}
+
+export const upSync = async ({ groups, helia, pins, blockstore, references, config, cipher }: Components) => {
+	for await (const ref of references.all()) {
+		if (
+			ref.local?.path == null ||
+			ref.status == "removed" ||
+			Date.now() - ref.local.updatedAt < config.validateInterval * 1000
+		) {
+			continue;
+		}
+
+		logger.validate("outdated %s", ref.local.path);
+
+		const importerConfig: ImporterConfig = {
+			chunker: selectChunker(ref.local.chunker),
+			hasher: selectHasher(ref.local.hash),
+			cidVersion: ref.local.cidVersion
+		};
+
+		const load = ref.encrypted ? importAnyEncrypted : importAnyPlaintext;
+
+		const { cid: hashCid } = await load(ref.local.path, importerConfig, new BlackHoleBlockstore(), cipher);
+
+		if (hashCid.equals(ref.cid)) {
+			ref.timestamp = Date.now();
+
+			references.set(ref);
+
+			logger.validate("cleaned %s", ref.local.path);
+			continue;
+		}
+
+		logger.validate("updating %s", ref.local.path);
+
+		const { cid: newCid } = await load(ref.local.path, importerConfig, blockstore, cipher);
+
+		if (!await helia.pins.isPinned(newCid)) {
+			logger.add("pinning %s", ref.local.path);
+			await helia.pins.add(newCid);
+			await pins.add(newCid, ref.group);
+		}
+
+		if (await helia.pins.isPinned(ref.cid)) {
+			await helia.pins.rm(ref.cid);
+			await pins.rm(ref.cid, ref.group);
+		}
+
+		const timestamp = Date.now();
+
+		await references.set({
+			...ref,
+			cid: newCid,
+
+			local: {
+				...ref.local,
+				updatedAt: timestamp
+			}
+		});
+
+		await groups.addTo(ref.group, {
+			...ref,
+			cid: newCid,
+		});
+
+		await references.delete({ cid: ref.cid, group: ref.group });
+
+		await groups.deleteFrom(ref.cid, ref.group);
+
+		logger.validate("updated %s", ref.local.path);
+	}
 }

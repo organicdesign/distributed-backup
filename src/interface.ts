@@ -7,6 +7,7 @@ import type { Groups } from "./groups.js";
 import type { RefStore } from "./ref-store.js";
 import type { Cipher } from "./cipher.js";
 import type { Datastores } from "./datastores.js";
+import type { Pins } from "./pins.js";
 import type { Version, CID } from "multiformats/cid";
 
 export interface Config {
@@ -33,6 +34,7 @@ export interface Components {
 	config: Config,
 	stores: Datastores,
 	references: RefStore
+	pins: Pins
 }
 
 export interface Pin<T extends Uint8Array | CID = CID>  {
