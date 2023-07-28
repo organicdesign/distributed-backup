@@ -68,5 +68,12 @@ export const method = ({ references, groups, blockstore, cipher, helia, welo }: 
 		}
 	});
 
+	await groups.addTo(group, {
+		cid,
+		timestamp,
+		encrypted: params.encrypt,
+		addedBy: welo.identity.id,
+	});
+
 	return cid.toString();
 };
