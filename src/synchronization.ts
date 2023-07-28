@@ -11,10 +11,12 @@ import type { ImporterConfig } from "./fs-importer/interfaces.js";
 
 const syncRefs = async ({ groups, references }: Components) => {
 	for (const { value: database } of groups.all()) {
+		logger.validate("syncing group: %s", database.address.cid.toString());
 		const index = await database.store.latest();
 
 		for await (const pair of index.query({})) {
 			const entry = dagCbor.decode(pair.value) as Entry;
+			logger.validate("syncing item: %s", CID.parse(pair.key.baseNamespace()).toString());
 
 			const pref = {
 				cid: CID.parse(pair.key.baseNamespace()),
@@ -42,9 +44,8 @@ const syncRefs = async ({ groups, references }: Components) => {
 			}
 
 			await references.set({
-				...pref,
 				...entry,
-				group: database.address.cid,
+				...pref,
 				status: "added"
 			});
 		}
