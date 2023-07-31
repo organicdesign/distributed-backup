@@ -4,7 +4,7 @@ import type { PubSub } from "@libp2p/interface-pubsub";
 import type { Helia } from "@helia/interface";
 import type { Filestore } from "./filestore/index.js";
 import type { Groups } from "./groups.js";
-import type { RefStore } from "./ref-store.js";
+import type { References } from "./references.js";
 import type { Cipher } from "./cipher.js";
 import type { Datastores } from "./datastores.js";
 import type { Pins } from "./pins.js";
@@ -33,7 +33,7 @@ export interface Components {
 	cipher: Cipher,
 	config: Config,
 	stores: Datastores,
-	references: RefStore
+	references: References
 	pins: Pins
 }
 

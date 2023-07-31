@@ -7,7 +7,7 @@ import type { Reference } from "./interface.js";
 // Partial reference, some items need only cid & group.
 type PRef = Pick<Reference, "cid" | "group">
 
-export class RefStore implements Startable {
+export class References implements Startable {
 	private readonly datastore: Datastore;
 	private started = false;
 
@@ -106,8 +106,8 @@ export class RefStore implements Startable {
 	}
 }
 
-export const createRefStore = async (datastore: Datastore): Promise<RefStore> => {
-	const refStore = new RefStore(datastore);
+export const createReferences = async (datastore: Datastore): Promise<References> => {
+	const refStore = new References(datastore);
 
 	await refStore.start();
 

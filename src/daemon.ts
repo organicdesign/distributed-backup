@@ -15,7 +15,7 @@ import commands from "./rpc/index.js";
 import { createGroups } from "./groups.js";
 import { Datastores } from "./datastores.js";
 import { createCipher } from "./cipher.js";
-import { createRefStore } from "./ref-store.js";
+import { createReferences } from "./references.js";
 import { createPins } from "./pins.js";
 import type { Components } from "./interface.js";
 
@@ -36,7 +36,7 @@ const datastore = new MemoryDatastore();
 const stores = new Datastores(datastore);
 const blockstore = new Filestore(new MemoryBlockstore(), stores.get("helia/filestore"));
 
-const references = await createRefStore(stores.get("references"));
+const references = await createReferences(stores.get("references"));
 
 // Setup all the modules.
 const config = await getConfig();
