@@ -2,6 +2,7 @@ import { Key } from "interface-datastore";
 import { Welo } from "../../welo/dist/src/index.js";
 import { Blocks } from "welo/dist/src/blocks/index.js";
 import { Manifest } from "welo/dist/src/manifest/index.js";
+import { groups as logger } from "./logger.js";
 import type { CID } from "multiformats/cid";
 import type { ManifestData } from "welo/dist/src/manifest/interface.js";
 import type { Datastore } from "interface-datastore";
@@ -53,6 +54,7 @@ export class Groups implements Startable {
 	}
 
 	async add (manifest: Manifest) {
+		logger(`joining group: ${manifest.address.cid.toString()}`);
 		const database = await this.welo.open(manifest) as KeyvalueDB;
 
 		this.groups.set(manifest.address.cid.toString(), database);

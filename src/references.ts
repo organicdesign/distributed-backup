@@ -1,6 +1,7 @@
 import { encodeAny, decodeAny } from "./utils.js";
 import { CID } from "multiformats/cid";
 import { Datastore, Key } from "interface-datastore";
+import { references as logger } from "./logger.js";
 import type { Startable } from "@libp2p/interfaces/startable";
 import type { Reference } from "./interface.js";
 
@@ -28,6 +29,11 @@ export class References implements Startable {
 	}
 
 	async set (reference: Reference): Promise<void> {
+		if (await this.has(reference)) {
+			return;
+		}
+
+		logger(`adding reference: ${reference.group}/${reference.cid}`);
 		const key = this.toKey(reference);
 		const value = encodeAny(this.toRaw(reference));
 
@@ -43,6 +49,7 @@ export class References implements Startable {
 	}
 
 	async delete (reference: PRef): Promise<void> {
+		logger(`deleting reference: ${reference.group}/${reference.cid}`);
 		const key = this.toKey(reference);
 
 		await this.datastore.delete(key);

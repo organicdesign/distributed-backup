@@ -1,6 +1,7 @@
 import { DatastoreMap } from "./datastore-map.js";
 import { CID } from "multiformats/cid";
 import { safePin, safeUnpin, decodeAny, encodeAny } from "./utils.js";
+import { pins as logger } from "./logger.js";
 import type { Helia } from "@helia/interface";
 import type { Datastore } from "interface-datastore";
 import type { Pin } from "./interface.js";
@@ -64,7 +65,11 @@ export class Pins implements Startable {
 	async add (cid: CID, group: CID) {
 		const existing = this.pinsStore.get(cid.toString());
 
-		await safePin(this.helia, cid);
+		if (existing == null || this.fromRaw(existing).groups.find(g => g.equals(cid))) {
+			logger(`pinning ${group.toString()}/${cid.toString()}`);
+
+			await safePin(this.helia, cid);
+		}
 
 		if (existing != null) {
 			existing.groups.push(group.bytes);
@@ -80,6 +85,8 @@ export class Pins implements Startable {
 
 	// Remove a pin.
 	async rm (cid: CID, group: CID) {
+		logger(`unpinning ${group.toString()}/${cid.toString()}`);
+
 		const raw = this.pinsStore.get(cid.toString());
 
 		if (raw == null) {
