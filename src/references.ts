@@ -29,11 +29,10 @@ export class References implements Startable {
 	}
 
 	async set (reference: Reference): Promise<void> {
-		if (await this.has(reference)) {
-			return;
+		if (!await this.has(reference)) {
+			logger(`[+] ${reference.group}/${reference.cid}`);
 		}
 
-		logger(`[+] ${reference.group}/${reference.cid}`);
 		const key = this.toKey(reference);
 		const value = encodeAny(this.toRaw(reference));
 
