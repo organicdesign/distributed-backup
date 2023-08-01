@@ -8,15 +8,15 @@ import selectHasher from "./fs-importer/select-hasher.js";
 import { BlackHoleBlockstore } from "blockstore-core/black-hole";
 import type { Entry, Components } from "./interface.js";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
-
+;
 const syncRefs = async ({ groups, references }: Components) => {
 	for (const { value: database } of groups.all()) {
-		logger.validate("syncing group: %s", database.address.cid.toString());
+		//logger.validate("syncing group: %s", database.address.cid.toString());
 		const index = await database.store.latest();
 
 		for await (const pair of index.query({})) {
 			const entry = dagCbor.decode(pair.value) as Entry;
-			logger.validate("syncing item: %s", CID.parse(pair.key.baseNamespace()).toString());
+			//logger.validate("syncing item: %s", CID.parse(pair.key.baseNamespace()).toString());
 
 			const pref = {
 				cid: CID.parse(pair.key.baseNamespace()),
@@ -81,7 +81,7 @@ export const upSync = async ({ groups, helia, pins, blockstore, references, conf
 			continue;
 		}
 
-		logger.validate("outdated %s", ref.local.path);
+		//logger.validate("outdated %s", ref.local.path);
 
 		const importerConfig: ImporterConfig = {
 			chunker: selectChunker(ref.local.chunker),
@@ -98,16 +98,16 @@ export const upSync = async ({ groups, helia, pins, blockstore, references, conf
 
 			references.set(ref);
 
-			logger.validate("cleaned %s", ref.local.path);
+			// logger.validate("cleaned %s", ref.local.path);
 			continue;
 		}
 
-		logger.validate("updating %s", ref.local.path);
+		// logger.validate("updating %s", ref.local.path);
 
 		const { cid: newCid } = await load(ref.local.path, importerConfig, blockstore, cipher);
 
 		if (!await helia.pins.isPinned(newCid)) {
-			logger.add("pinning %s", ref.local.path);
+			// logger.add("pinning %s", ref.local.path);
 			await helia.pins.add(newCid);
 			await pins.add(newCid, ref.group);
 		}
@@ -138,6 +138,6 @@ export const upSync = async ({ groups, helia, pins, blockstore, references, conf
 
 		await groups.deleteFrom(ref.cid, ref.group);
 
-		logger.validate("updated %s", ref.local.path);
+		//logger.validate("updated %s", ref.local.path);
 	}
 };
