@@ -80,17 +80,17 @@ export const replaceAll = async ({ helia, references, groups, pins }: Components
 }
 
 export const addAll = async ({ helia, references, groups, pins }: Components, ref: Reference) => {
-		await safePin(helia, ref.cid);
-		await pins.add(ref.cid, ref.group);
-		await references.set(ref);
-		await groups.addTo(ref.group, ref);
+	await safePin(helia, ref.cid);
+	await pins.add(ref.cid, ref.group);
+	await references.set(ref);
+	await groups.addTo(ref.group, ref);
 }
 
 export const deleteAll = async ({ helia, references, groups, pins }: Components, ref: Reference) => {
-		await safeUnpin(helia, ref.cid);
-		await pins.delete(ref.cid, ref.group);
-		await references.delete(ref);
-		await groups.deleteFrom(ref.cid, ref.group);
+	await safeUnpin(helia, ref.cid);
+	await pins.delete(ref.cid, ref.group);
+	await references.delete(ref);
+	await groups.deleteFrom(ref.cid, ref.group);
 }
 
 export const upSync = async (components: Components) => {
