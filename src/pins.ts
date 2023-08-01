@@ -65,11 +65,14 @@ export class Pins implements Startable {
 	async add (cid: CID, group: CID) {
 		const existing = this.pinsStore.get(cid.toString());
 
-		if (existing == null || this.fromRaw(existing).groups.find(g => g.equals(cid))) {
-			logger(`[+] ${group.toString()}/${cid.toString()}`);
-
-			await safePin(this.helia, cid);
+		if (existing != null && existing.groups.find(g => CID.decode(g).equals(group)) != null) {
+			// Already pinned.
+			return;
 		}
+
+		logger(`[+] ${group.toString()}/${cid.toString()}`);
+
+		await safePin(this.helia, cid);
 
 		if (existing != null) {
 			existing.groups.push(group.bytes);
@@ -78,7 +81,7 @@ export class Pins implements Startable {
 		}
 
 		await this.pinsStore.set(cid.toString(), this.toRaw({
-			cid: cid,
+			cid,
 			groups: [group]
 		}));
 	}
@@ -97,7 +100,7 @@ export class Pins implements Startable {
 
 		const existing = this.fromRaw(raw);
 
-		existing.groups = existing.groups.filter(g => g.equals(group));
+		existing.groups = existing.groups.filter(g => !g.equals(group));
 
 		if (existing.groups.length === 0) {
 			await safeUnpin(this.helia, cid);
