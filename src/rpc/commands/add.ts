@@ -10,7 +10,7 @@ import type { ImporterConfig } from "../../fs-importer/interfaces.js";
 
 export const name = "add";
 
-export const method = ({ references, groups, blockstore, cipher, helia, welo }: Components) => async (params: { group: string, path: string, onlyHash?: boolean, encrypt?: boolean } & ImportOptions) => {
+export const method = ({ references, groups, blockstore, cipher, helia, welo, pins }: Components) => async (params: { group: string, path: string, onlyHash?: boolean, encrypt?: boolean } & ImportOptions) => {
 	const group = CID.parse(params.group);
 
 	if (groups.get(group) == null) {
@@ -38,14 +38,6 @@ export const method = ({ references, groups, blockstore, cipher, helia, welo }: 
 
 	logger.add("imported %s", params.path);
 
-	if (!await helia.pins.isPinned(cid)) {
-		logger.add("pinning %s", params.path);
-
-		await helia.pins.add(cid);
-	}
-
-	logger.add("pinned %s", params.path);
-
 	const timestamp = Date.now();
 
 	await references.set({
@@ -67,6 +59,8 @@ export const method = ({ references, groups, blockstore, cipher, helia, welo }: 
 			updatedAt: timestamp
 		}
 	});
+
+	await pins.add(cid, group);
 
 	await groups.addTo(group, {
 		cid,
