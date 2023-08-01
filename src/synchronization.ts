@@ -5,11 +5,11 @@ import { importAny as importAnyEncrypted } from "./fs-importer/import-copy-encry
 import { importAny as importAnyPlaintext } from "./fs-importer/import-copy-plaintext.js";
 import selectChunker from "./fs-importer/select-chunker.js";
 import selectHasher from "./fs-importer/select-hasher.js";
-import { safeReplace } from "./utils.js";
+import { safeReplace, safePin, safeUnpin } from "./utils.js";
 import { BlackHoleBlockstore } from "blockstore-core/black-hole";
-import type { Entry, Components } from "./interface.js";
+import type { Entry, Components, Reference } from "./interface.js";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
-;
+
 const syncRefs = async ({ groups, references }: Components) => {
 	for (const { value: database } of groups.all()) {
 		//logger.validate("syncing group: %s", database.address.cid.toString());
@@ -72,7 +72,29 @@ export const downSync = async (components: Components) => {
 	await syncPins(components);
 }
 
-export const upSync = async ({ groups, helia, pins, blockstore, references, config, cipher }: Components) => {
+export const replaceAll = async ({ helia, references, groups, pins }: Components, oldCid: CID, ref: Reference) => {
+	await safeReplace(helia, oldCid, ref.cid);
+	await pins.replace(oldCid, ref.cid, ref.group);
+	await references.replace(oldCid, ref);
+	await groups.replace(ref.group, oldCid, ref)
+}
+
+export const addAll = async ({ helia, references, groups, pins }: Components, ref: Reference) => {
+		await safePin(helia, ref.cid);
+		await pins.add(ref.cid, ref.group);
+		await references.set(ref);
+		await groups.addTo(ref.group, ref);
+}
+
+export const deleteAll = async ({ helia, references, groups, pins }: Components, ref: Reference) => {
+		await safeUnpin(helia, ref.cid);
+		await pins.delete(ref.cid, ref.group);
+		await references.delete(ref);
+		await groups.deleteFrom(ref.cid, ref.group);
+}
+
+export const upSync = async (components: Components) => {
+	const { blockstore, references, config, cipher } = components;
 	for await (const ref of references.all()) {
 		if (
 			ref.local?.path == null ||
@@ -107,12 +129,9 @@ export const upSync = async ({ groups, helia, pins, blockstore, references, conf
 
 		const { cid: newCid } = await load(ref.local.path, importerConfig, blockstore, cipher);
 
-		await safeReplace(helia, ref.cid, newCid);
-		await pins.replace(ref.cid, newCid, ref.group);
-
 		const timestamp = Date.now();
 
-		await references.replace(ref.cid, {
+		await replaceAll(components, ref.cid, {
 			...ref,
 			cid: newCid,
 
@@ -121,11 +140,6 @@ export const upSync = async ({ groups, helia, pins, blockstore, references, conf
 				updatedAt: timestamp
 			}
 		});
-
-		await groups.replace(ref.group, ref.cid, {
-			...ref,
-			cid: newCid
-		})
 
 		//logger.validate("updated %s", ref.local.path);
 	}
