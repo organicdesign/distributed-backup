@@ -18,6 +18,11 @@ export const safeUnpin = async (helia: Helia, cid: CID) => {
 	}
 };
 
+export const safeReplace = async (helia: Helia, oldCid: CID, newCid: CID) => {
+	await safePin(helia, newCid);
+	await safeUnpin(helia, oldCid);
+};
+
 export const encodeAny = <T = unknown>(data: T): Uint8Array => {
 	return cborg.encode(data);
 };

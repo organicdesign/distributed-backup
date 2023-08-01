@@ -5,6 +5,7 @@ import { importAny as importAnyEncrypted } from "./fs-importer/import-copy-encry
 import { importAny as importAnyPlaintext } from "./fs-importer/import-copy-plaintext.js";
 import selectChunker from "./fs-importer/select-chunker.js";
 import selectHasher from "./fs-importer/select-hasher.js";
+import { safeReplace } from "./utils.js";
 import { BlackHoleBlockstore } from "blockstore-core/black-hole";
 import type { Entry, Components } from "./interface.js";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
@@ -57,7 +58,7 @@ const syncPins = async ({ pins, references }: Components) => {
 		if (ref.status === "added") {
 			await pins.add(ref.cid, ref.group);
 		} else {
-			await pins.rm(ref.cid, ref.group);
+			await pins.delete(ref.cid, ref.group);
 
 			if (ref.status != "blocked") {
 				await references.delete({ cid: ref.cid, group: ref.group });
@@ -106,20 +107,12 @@ export const upSync = async ({ groups, helia, pins, blockstore, references, conf
 
 		const { cid: newCid } = await load(ref.local.path, importerConfig, blockstore, cipher);
 
-		if (!await helia.pins.isPinned(newCid)) {
-			// logger.add("pinning %s", ref.local.path);
-			await helia.pins.add(newCid);
-			await pins.add(newCid, ref.group);
-		}
-
-		if (await helia.pins.isPinned(ref.cid)) {
-			await helia.pins.rm(ref.cid);
-			await pins.rm(ref.cid, ref.group);
-		}
+		await safeReplace(helia, ref.cid, newCid);
+		await pins.replace(ref.cid, newCid, ref.group);
 
 		const timestamp = Date.now();
 
-		await references.set({
+		await references.replace(ref.cid, {
 			...ref,
 			cid: newCid,
 
@@ -129,14 +122,10 @@ export const upSync = async ({ groups, helia, pins, blockstore, references, conf
 			}
 		});
 
-		await groups.addTo(ref.group, {
+		await groups.replace(ref.group, ref.cid, {
 			...ref,
-			cid: newCid,
-		});
-
-		await references.delete({ cid: ref.cid, group: ref.group });
-
-		await groups.deleteFrom(ref.cid, ref.group);
+			cid: newCid
+		})
 
 		//logger.validate("updated %s", ref.local.path);
 	}

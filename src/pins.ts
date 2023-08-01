@@ -66,7 +66,7 @@ export class Pins implements Startable {
 		const existing = this.pinsStore.get(cid.toString());
 
 		if (existing == null || this.fromRaw(existing).groups.find(g => g.equals(cid))) {
-			logger(`pinning ${group.toString()}/${cid.toString()}`);
+			logger(`[+] ${group.toString()}/${cid.toString()}`);
 
 			await safePin(this.helia, cid);
 		}
@@ -84,8 +84,8 @@ export class Pins implements Startable {
 	}
 
 	// Remove a pin.
-	async rm (cid: CID, group: CID) {
-		logger(`unpinning ${group.toString()}/${cid.toString()}`);
+	async delete (cid: CID, group: CID) {
+		logger(`[-] ${group.toString()}/${cid.toString()}`);
 
 		const raw = this.pinsStore.get(cid.toString());
 
@@ -93,7 +93,7 @@ export class Pins implements Startable {
 			await safeUnpin(this.helia, cid);
 
 			return;
-		}
+		};
 
 		const existing = this.fromRaw(raw);
 
@@ -105,6 +105,11 @@ export class Pins implements Startable {
 		} else {
 			await this.pinsStore.set(cid.toString(), this.toRaw(existing));
 		}
+	}
+
+	async replace (oldCid: CID, newCid: CID, group: CID) {
+		await this.add(newCid, group);
+		await this.delete(oldCid, group);
 	}
 
 	private toRaw (pin: Pin): Pin<Uint8Array> {

@@ -33,7 +33,7 @@ export class References implements Startable {
 			return;
 		}
 
-		logger(`adding reference: ${reference.group}/${reference.cid}`);
+		logger(`[+] ${reference.group}/${reference.cid}`);
 		const key = this.toKey(reference);
 		const value = encodeAny(this.toRaw(reference));
 
@@ -49,10 +49,15 @@ export class References implements Startable {
 	}
 
 	async delete (reference: PRef): Promise<void> {
-		logger(`deleting reference: ${reference.group}/${reference.cid}`);
+		logger(`[-] ${reference.group}/${reference.cid}`);
 		const key = this.toKey(reference);
 
 		await this.datastore.delete(key);
+	}
+
+	async replace (oldCid: CID, reference: Reference) {
+		await this.set(reference);
+		await this.delete({ cid: oldCid, group: reference.group })
 	}
 
 	async has ({ cid, group }: PRef): Promise<boolean> {
