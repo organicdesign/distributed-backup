@@ -54,7 +54,7 @@ export class Groups implements Startable {
 	}
 
 	async add (manifest: Manifest) {
-		logger(`joining group: ${manifest.address.cid.toString()}`);
+		logger(`[join] ${manifest.address.cid.toString()}`);
 		const database = await this.welo.open(manifest) as KeyvalueDB;
 
 		this.groups.set(manifest.address.cid.toString(), database);
@@ -68,6 +68,8 @@ export class Groups implements Startable {
 		if (database == null) {
 			throw new Error("not a part of group");
 		}
+
+		logger(`[+] ${group.toString()}/${entry.cid.toString()}`);
 
 		const rawEntry: Entry<Uint8Array> = {
 			cid: entry.cid.bytes,
@@ -97,6 +99,8 @@ export class Groups implements Startable {
 		if (database == null) {
 			throw new Error("not a part of group");
 		}
+;
+		logger(`[-] ${group.toString()}/${cid.toString()}`);
 
 		const op = database.store.creators.del(cid.toString());
 
