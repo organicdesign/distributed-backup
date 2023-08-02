@@ -177,9 +177,8 @@ export class TransactionLog implements Startable {
 			await Promise.all(rollbackValues.map(a => this.applyAction(a)));
 		}
 
-		// Update the saved log.
-		await this.datastore.put(new Key("rollback"), encodeAny([]));
-		await this.save();
+		// Be sure to nuke the rollback data if we were successful.
+		await this.datastore.delete(new Key("rollback"));
 	}
 
 	private async applyAction (action: Action) {
