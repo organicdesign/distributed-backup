@@ -1,6 +1,7 @@
 import { Datastore, Key } from "interface-datastore";
 import { DeferredPromise } from "@open-draft/deferred-promise";
 import { encodeAny, decodeAny } from "./utils.js";
+import type { Startable } from "@libp2p/interfaces/startable";
 
 interface Action {
 	id: number
@@ -49,10 +50,11 @@ class Transaction {
 	}
 }
 
-export class TransactionLog {
-	private readonly queue: { resolver: () => void, transaction: Action[] }[] = [];
+export class TransactionLog implements Startable {
+	private readonly queue: { resolver?: () => void, transaction: Action[] }[] = [];
 	private readonly datastores: Datastore[];
 	private readonly datastore: Datastore;
+	private started = false;
 	private running = false;
 
 	constructor (datastore: Datastore, datastores: Datastore[]) {
@@ -60,11 +62,55 @@ export class TransactionLog {
 		this.datastore = datastore;
 	}
 
+	isStarted () {
+		return this.started;
+	}
+
+	async start () {
+		if (this.started) {
+			return;
+		}
+
+		try {
+			const rawLog = await this.datastore.get(new Key("log"));
+			const transactions = decodeAny<Action[][]>(rawLog);
+
+			for (const transaction of transactions) {
+				this.queue.push({ transaction });
+			}
+		} catch (error) {}
+
+		let rollback: Action[] | undefined = undefined;
+
+		try {
+			const rawRollback = await this.datastore.get(new Key("rollback"));
+			rollback = decodeAny<Action[]>(rawRollback);
+		} catch (error) {}
+
+		if (rollback != null) {
+			await Promise.all(rollback.map(a => this.applyAction(a)));
+		}
+
+		this.started = true;
+	}
+
+	async stop () {
+		if (!this.started) {
+			return;
+		}
+
+		this.started = false;
+	}
+
 	create (): Transaction {
 		return new Transaction(this.datastores);
 	}
 
 	async commit (transaction: Transaction) {
+		if (!this.started) {
+			throw new Error("not started");
+		}
+
 		const promise = new DeferredPromise<void>();
 
 		this.queue.push({
@@ -93,7 +139,7 @@ export class TransactionLog {
 				break;
 			}
 			await this.commitTransaction(item.transaction);
-			item.resolver();
+			item.resolver?.();
 
 			// Update the saved log.
 			await this.save();
