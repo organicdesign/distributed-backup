@@ -9,7 +9,7 @@ interface Action {
 	value?: Uint8Array
 }
 
-class Transaction {
+export class Transaction {
 	private readonly actions: Action[] = [];
 	private readonly datastores: Datastore[];
 
@@ -51,7 +51,7 @@ class Transaction {
 }
 
 export class TransactionLog implements Startable {
-	private readonly queue: { resolver?: () => void, transaction: Action[] }[] = [];
+	private readonly queue: { promise?: DeferredPromise<void>, transaction: Action[] }[] = [];
 	private readonly datastores: Datastore[];
 	private readonly datastore: Datastore;
 	private started = false;
@@ -115,7 +115,7 @@ export class TransactionLog implements Startable {
 
 		this.queue.push({
 			transaction: transaction.data,
-			resolver: () => promise.resolve()
+			promise
 		});
 
 		await this.save();
@@ -138,8 +138,13 @@ export class TransactionLog implements Startable {
 			if (item == null) {
 				break;
 			}
-			await this.commitTransaction(item.transaction);
-			item.resolver?.();
+
+			try {
+				await this.commitTransaction(item.transaction);
+				item.promise?.resolve();
+			} catch (error) {
+				item.promise?.reject();
+			}
 
 			// Update the saved log.
 			await this.save();
@@ -171,14 +176,19 @@ export class TransactionLog implements Startable {
 
 		try {
 			await Promise.all(promises);
+
+			// Be sure to nuke the rollback data if we were successful.
+			await this.datastore.delete(new Key("rollback"));
 		} catch (error) {
 			await Promise.allSettled(promises);
 			// If this fails then it is a catastrophic failure.
 			await Promise.all(rollbackValues.map(a => this.applyAction(a)));
-		}
+			await this.datastore.delete(new Key("rollback"));
 
-		// Be sure to nuke the rollback data if we were successful.
-		await this.datastore.delete(new Key("rollback"));
+			// This is not a catastrophic failire, we have failed to commit but have successfully rolled back.
+			// TODO: Expand errors here so we can decide wether or not we should just blow up.
+			throw error;
+		}
 	}
 
 	private async applyAction (action: Action) {
