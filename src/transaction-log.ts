@@ -167,9 +167,12 @@ export class TransactionLog implements Startable {
 
 		await this.datastore.put(new Key("rollback"), encodeAny(rollbackValues));
 
+		const promises = transaction.map(a => this.applyAction(a));
+
 		try {
-			await Promise.all(transaction.map(a => this.applyAction(a)));
+			await Promise.all(promises);
 		} catch (error) {
+			await Promise.allSettled(promises);
 			// If this fails then it is a catastrophic failure.
 			await Promise.all(rollbackValues.map(a => this.applyAction(a)));
 		}
