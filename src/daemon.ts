@@ -17,6 +17,7 @@ import { Datastores } from "./datastores.js";
 import { createCipher } from "./cipher.js";
 import { createReferences } from "./references.js";
 import { createPins } from "./pins.js";
+import { sequelize } from "./database/index.js";
 import type { Components } from "./interface.js";
 
 const argv = await yargs(hideBin(process.argv))
@@ -30,6 +31,9 @@ const argv = await yargs(hideBin(process.argv))
 	.parse();
 
 logger.lifecycle("starting...");
+
+await sequelize.sync();
+logger.lifecycle("loaded database");
 
 // Setup datastores and blockstores.
 const datastore = new MemoryDatastore();
@@ -88,7 +92,16 @@ for (const command of commands) {
 }
 
 // Cleanup on signal interupt.
+let exiting = false;
+
 process.on("SIGINT", async () => {
+	if (exiting) {
+		logger.lifecycle("force exiting");
+		process.exit(1);
+	}
+
+	exiting = true;
+
 	logger.lifecycle("cleaning up...");
 	await close();
 	logger.lifecycle("stopped server");
@@ -102,6 +115,9 @@ process.on("SIGINT", async () => {
 	logger.lifecycle("stopped helia");
 	await libp2p.stop();
 	logger.lifecycle("stopped libp2p");
+	// Sequelize will close automatically.
+	// await sequelize.close();
+	// logger.lifecycle("stopped database");
 	process.exit();
 });
 
