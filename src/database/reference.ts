@@ -8,6 +8,7 @@ class ReferenceClass extends Model<InferAttributes<ReferenceClass, { omit: "cid"
 	declare cid: CID
 	declare group: CID
 	declare author: Uint8Array
+	declare encrypted: boolean
 	declare timestamp: Date
 	declare prev?: CID
 	declare next?: CID
@@ -63,6 +64,11 @@ export const Reference = sequelize.define<ReferenceClass>(
 			set (value: Uint8Array) {
 				this.setDataValue("author", uint8ArrayToString(value));
 			}
+		},
+
+		encrypted: {
+			type: DataTypes.BOOLEAN,
+			defaultValue: false
 		},
 
 		timestamp: DataTypes.DATE,
