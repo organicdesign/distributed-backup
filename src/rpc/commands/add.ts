@@ -12,7 +12,7 @@ import type { ImporterConfig } from "../../fs-importer/interfaces.js";
 export const name = "add";
 
 export const method = (components: Components) => async (params: { group: string, path: string, onlyHash?: boolean, encrypt?: boolean } & ImportOptions) => {
-	const { groups, blockstore, cipher, welo } = components;
+	const { groups, blockstore, cipher } = components;
 	const group = CID.parse(params.group);
 
 	if (groups.get(group) == null) {
@@ -40,26 +40,16 @@ export const method = (components: Components) => async (params: { group: string
 
 	logger.add("imported %s", params.path);
 
-	const timestamp = Date.now();
-
 	await addAll(components, {
 		cid,
-		timestamp,
 		group,
-		encrypted: params.encrypt,
-		addedBy: welo.identity.id,
-		status: "added",
-
-		local: {
-			encrypt: params.encrypt,
-			path: params.path,
-			hash: "sha2-256",
-			chunker: "size-262144",
-			rawLeaves: true,
-			cidVersion: 1,
-			nocopy: false,
-			updatedAt: timestamp
-		}
+		encrypt: params.encrypt,
+		path: params.path,
+		hash: "sha2-256",
+		chunker: "size-262144",
+		rawLeaves: true,
+		cidVersion: 1,
+		nocopy: false
 	});
 
 	return cid.toString();

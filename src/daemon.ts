@@ -15,9 +15,9 @@ import commands from "./rpc/index.js";
 import { createGroups } from "./groups.js";
 import { Datastores } from "./datastores.js";
 import { createCipher } from "./cipher.js";
-import { createReferences } from "./references.js";
-import { createPins } from "./pins.js";
-import { sequelize } from "./database/index.js";
+// import { createPins } from "./pins.js";
+// import { createReferences } from "./references.js";
+import { sequelize, Reference, Upload } from "./database/index.js";
 import type { Components } from "./interface.js";
 
 const argv = await yargs(hideBin(process.argv))
@@ -40,7 +40,7 @@ const datastore = new MemoryDatastore();
 const stores = new Datastores(datastore);
 const blockstore = new Filestore(new MemoryBlockstore(), stores.get("helia/filestore"));
 
-const references = await createReferences(stores.get("references"));
+// const references = await createReferences(stores.get("references"));
 
 // Setup all the modules.
 const config = await getConfig();
@@ -52,7 +52,7 @@ logger.lifecycle("loaded libp2p");
 const helia = await createHelia({ libp2p, blockstore, datastore: stores.get("helia/datastore") });
 logger.lifecycle("loaded helia");
 
-const pins = await createPins({ helia, datastore: stores.get("pins") });
+// const pins = await createPins({ helia, datastore: stores.get("pins") });
 
 const welo = await createWelo({
 	ipfs: helia,
@@ -82,8 +82,8 @@ const components: Components = {
 	groups,
 	config,
 	stores,
-	references,
-	pins
+	references: Reference,
+	uploads: Upload
 };
 
 // Register all the RPC commands.

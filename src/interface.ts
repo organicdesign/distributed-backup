@@ -4,10 +4,9 @@ import type { PubSub } from "@libp2p/interface-pubsub";
 import type { Helia } from "@helia/interface";
 import type { Filestore } from "./filestore/index.js";
 import type { Groups } from "./groups.js";
-import type { References } from "./references.js";
+import type { Reference, Upload } from "./database/index.js";
 import type { Cipher } from "./cipher.js";
 import type { Datastores } from "./datastores.js";
-import type { Pins } from "./pins.js";
 import type { Version, CID } from "multiformats/cid";
 
 export interface Config {
@@ -15,11 +14,13 @@ export interface Config {
 	tickInterval: number
 }
 
+// Deprecated?
 export interface Pair<Key = unknown, Value = unknown> {
 	key: Key,
 	value: Value
 }
 
+// Deprecated?
 export interface KeyvalueDB extends Database {
 	store: Keyvalue
 }
@@ -30,13 +31,14 @@ export interface Components {
 	welo: Welo
 	blockstore: Filestore
 	groups: Groups
-	cipher: Cipher,
-	config: Config,
-	stores: Datastores,
-	references: References
-	pins: Pins
+	cipher: Cipher
+	config: Config
+	stores: Datastores
+	references: typeof Reference
+	uploads: typeof Upload
 }
 
+// Deprecated
 export interface Pin<T extends Uint8Array | CID = CID>  {
 	cid: T
 	groups: T[]
@@ -44,7 +46,7 @@ export interface Pin<T extends Uint8Array | CID = CID>  {
 
 export interface Entry<T extends Uint8Array | CID = CID> {
 	cid: T
-	addedBy: Uint8Array
+	author: Uint8Array
 	encrypted: boolean
 	timestamp: number
 	prev?: T
@@ -59,8 +61,14 @@ export interface ImportOptions {
 	rawLeaves: boolean
 	nocopy: boolean
 	encrypt: boolean
+	path: string
 }
 
+export interface Reference<T extends Uint8Array | CID = CID> {
+	group: T
+	cid: T
+}
+/*
 export interface Reference<T extends Uint8Array | CID = CID> extends Entry<T> {
 	group: T
 	status: "blocked" | "added" | "removed"
@@ -69,3 +77,4 @@ export interface Reference<T extends Uint8Array | CID = CID> extends Entry<T> {
 		updatedAt: number
 	}
 }
+*/

@@ -73,7 +73,7 @@ export class Groups implements Startable {
 
 		const rawEntry: Entry<Uint8Array> = {
 			cid: entry.cid.bytes,
-			addedBy: entry.addedBy,
+			author: entry.author,
 			encrypted: entry.encrypted,
 			meta: entry.meta ?? {},
 			timestamp: entry.timestamp
