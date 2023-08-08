@@ -3,7 +3,7 @@ import { CID } from "multiformats/cid";
 import selectHasher from "../../fs-importer/select-hasher.js";
 import selectChunker from "../../fs-importer/select-chunker.js";
 import * as logger from "../../logger.js";
-import { addAll } from "../../synchronization.js";
+import { addLocal } from "../../synchronization.js";
 import { importAny as importAnyEncrypted } from "../../fs-importer/import-copy-encrypted.js";
 import { importAny as importAnyPlaintext } from "../../fs-importer/import-copy-plaintext.js";
 import type { Components, ImportOptions } from "../../interface.js";
@@ -40,7 +40,7 @@ export const method = (components: Components) => async (params: { group: string
 
 	logger.add("imported %s", params.path);
 
-	await addAll(components, {
+	await addLocal(components, {
 		cid,
 		group,
 		encrypt: params.encrypt,

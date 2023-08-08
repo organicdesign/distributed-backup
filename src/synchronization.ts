@@ -5,9 +5,8 @@ import { importAny as importAnyEncrypted } from "./fs-importer/import-copy-encry
 import { importAny as importAnyPlaintext } from "./fs-importer/import-copy-plaintext.js";
 import selectChunker from "./fs-importer/select-chunker.js";
 import selectHasher from "./fs-importer/select-hasher.js";
-import { safeReplace, safePin, safeUnpin } from "./utils.js";
+import { safePin, safeUnpin } from "./utils.js";
 import { BlackHoleBlockstore } from "blockstore-core/black-hole";
-import { Reference as ReferenceModel } from "./database/index.js";
 import type { Entry, Components, ImportOptions, Reference } from "./interface.js";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
 
@@ -62,18 +61,82 @@ export const downSync = async ({ groups, references, helia }: Components) => {
 	}
 };
 
-export const replaceAll = async ({ helia, groups }: Components, oldCid: CID, {cid, group}: Reference) => {
+export const replaceAll = async (components: Components, oldCid: CID, data: Reference & ImportOptions) => {
+	const oldRef = await components.references.findOne({
+		where: {
+			cid: oldCid.toString(),
+			group: data.group.toString()
+		}
+	});
+
+	if (oldRef != null) {
+		oldRef.next = data.cid;
+	}
+
+	await addAll(components, data);
+/*
+	await references.create({
+		cid,
+		group,
+		timestamp: new Date(),
+		author: welo.identity.id
+	});
+*/
 	// We can't just replace either... we need to ensure garbage collection is done.
 	//await safeReplace(helia, oldCid, ref.cid);
 	// await pins.replace(oldCid, ref.cid, ref.group);
 	// await references.replace(oldCid, ref);
 	//await groups.replace(ref.group, oldCid, ref)
-}
+};
+
+const addToUploads = async ({ uploads }: Pick<Components, "uploads">, data: Reference & ImportOptions) => {
+	await uploads.create({
+		cid: data.cid,
+		group: data.group,
+		cidVersion: data.cidVersion,
+		path: data.path,
+		rawLeaves: data.rawLeaves,
+		chunker: data.chunker,
+		hash: data.hash,
+		nocopy: data.nocopy,
+		encrypt: data.encrypt,
+		checkedAt: new Date()
+	});
+};
+
+const addToReferences = async ({ references, welo }: Pick<Components, "references" | "welo">, data: Reference & ImportOptions) => {
+	await references.create({
+		cid: data.cid,
+		group: data.group,
+		author: welo.identity.id,
+		blocked: false,
+		downloaded: 100,
+		encrypted: data.encrypt,
+		timestamp: new Date()
+	});
+};
+
+const addToGroup = async ({ groups, welo }: Pick<Components, "groups" | "welo">, data: Reference & ImportOptions) => {
+	await groups.addTo(data.group, {
+		cid: data.cid,
+		timestamp: Date.now(),
+		author: welo.identity.id,
+		encrypted: data.encrypt
+	});
+};
+
+export const addLocal = async (components: Components, data: Reference & ImportOptions) => {
+	await Promise.all([
+		safePin(components.helia, data.cid),
+		addToUploads(components, data),
+		addToReferences(components, data),
+		addToGroup(components, data)
+	]);
+};
 
 export const addAll = async ({ helia, groups, welo, references }: Components, data: Reference & ImportOptions) => {
 	await safePin(helia, data.cid);
-	//await pins.add(ref.cid, ref.group);
-	//await references.set(ref);
+
 	const ref = {
 		cid: data.cid,
 		group: data.group,
@@ -112,32 +175,31 @@ export const deleteAll = async ({ helia, references, groups }: Components, { cid
 }
 
 export const upSync = async (components: Components) => {
-	/*const { blockstore, references, config, cipher } = components;
-	for await (const ref of references.all()) {
-		if (
-			ref.local?.path == null ||
-			ref.status == "removed" ||
-			Date.now() - ref.local.updatedAt < config.validateInterval * 1000
-		) {
+	const { blockstore, config, cipher, uploads } = components;
+
+	const refs = await uploads.findAll();
+
+	for (const ref of refs) {
+		if (Date.now() - ref.checkedAt.getTime() < config.validateInterval * 1000) {
 			continue;
 		}
 
 		//logger.validate("outdated %s", ref.local.path);
 
 		const importerConfig: ImporterConfig = {
-			chunker: selectChunker(ref.local.chunker),
-			hasher: selectHasher(ref.local.hash),
-			cidVersion: ref.local.cidVersion
+			chunker: selectChunker(ref.chunker),
+			hasher: selectHasher(ref.hash),
+			cidVersion: ref.cidVersion
 		};
 
-		const load = ref.encrypted ? importAnyEncrypted : importAnyPlaintext;
+		const load = ref.encrypt ? importAnyEncrypted : importAnyPlaintext;
 
-		const { cid: hashCid } = await load(ref.local.path, importerConfig, new BlackHoleBlockstore(), cipher);
+		const { cid: hashCid } = await load(ref.path, importerConfig, new BlackHoleBlockstore(), cipher);
 
 		if (hashCid.equals(ref.cid)) {
-			ref.timestamp = Date.now();
+			ref.checkedAt = new Date();
 
-			references.set(ref);
+			await ref.save();
 
 			// logger.validate("cleaned %s", ref.local.path);
 			continue;
@@ -145,20 +207,15 @@ export const upSync = async (components: Components) => {
 
 		// logger.validate("updating %s", ref.local.path);
 
-		const { cid: newCid } = await load(ref.local.path, importerConfig, blockstore, cipher);
+		const { cid: newCid } = await load(ref.path, importerConfig, blockstore, cipher);
 
-		const timestamp = Date.now();
-
+		/*
 		await replaceAll(components, ref.cid, {
-			...ref,
-			cid: newCid,
-
-			local: {
-				...ref.local,
-				updatedAt: timestamp
-			}
+			group: ref.group,
+			cid: newCid
 		});
+		*/
 
 		//logger.validate("updated %s", ref.local.path);
-	}*/
+	}
 };
