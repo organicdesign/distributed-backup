@@ -11,7 +11,7 @@ import { Reference as ReferenceModel } from "./database/index.js";
 import type { Entry, Components, ImportOptions, Reference } from "./interface.js";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
 
-const syncRefs = async ({ groups, references, helia }: Components) => {
+export const downSync = async ({ groups, references, helia }: Components) => {
 	for (const { value: database } of groups.all()) {
 		//logger.validate("syncing group: %s", database.address.cid.toString());
 		const index = await database.store.latest();
@@ -60,26 +60,7 @@ const syncRefs = async ({ groups, references, helia }: Components) => {
 			});
 		}
 	}
-}
-
-const syncPins = async ({}: Components) => {
-	/*for await (const ref of references.all()) {
-		if (ref.status === "added") {
-			await pins.add(ref.cid, ref.group);
-		} else {
-			await pins.delete(ref.cid, ref.group);
-
-			if (ref.status != "blocked") {
-				await references.delete({ cid: ref.cid, group: ref.group });
-			}
-		}
-	}*/
-}
-
-export const downSync = async (components: Components) => {
-	await syncRefs(components);
-	await syncPins(components);
-}
+};
 
 export const replaceAll = async ({ helia, groups }: Components, oldCid: CID, {cid, group}: Reference) => {
 	// We can't just replace either... we need to ensure garbage collection is done.
