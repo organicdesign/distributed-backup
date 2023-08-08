@@ -132,6 +132,8 @@ export const addLocal = async (components: Components, data: Reference & ImportO
 		addToReferences(components, data),
 		addToGroup(components, data)
 	]);
+
+	logger.references(`[+] ${data.group}/${data.cid}`);
 };
 
 export const addAll = async ({ helia, groups, welo, references }: Components, data: Reference & ImportOptions) => {
