@@ -5,6 +5,7 @@ import { sequelize } from "./sequelize.js";
 class UploadClass extends Model<InferAttributes<UploadClass, { omit: "cid" | "group" }> & { cid: string, group: string }, InferCreationAttributes<UploadClass>> {
 	declare cid: CID
 	declare group: CID
+	declare path: string
 	declare version: number
 	declare hash: string
 	declare chunker: string
@@ -46,6 +47,11 @@ export const Upload = sequelize.define<UploadClass>(
 			set (value: CID) {
 				this.setDataValue("group", value.toString());
 			}
+		},
+
+		path: {
+			type: DataTypes.STRING,
+			allowNull: false
 		},
 
 		version: {
