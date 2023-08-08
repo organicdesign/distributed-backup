@@ -15,6 +15,7 @@ class ReferenceClass extends Model<InferAttributes<ReferenceClass, { omit: "cid"
 	declare meta?: Record<string, unknown>
 	declare blocked: boolean
 	declare downloaded: number
+	declare pinned: boolean
 }
 
 export const Reference = sequelize.define<ReferenceClass>(
@@ -140,6 +141,12 @@ export const Reference = sequelize.define<ReferenceClass>(
 			type: DataTypes.NUMBER,
 			allowNull: false,
 			defaultValue: 0
+		},
+
+		pinned: {
+			type: DataTypes.BOOLEAN,
+			allowNull: false,
+			defaultValue: false
 		}
 	},
 	{
