@@ -6,7 +6,7 @@ class UploadClass extends Model<InferAttributes<UploadClass, { omit: "cid" | "gr
 	declare cid: CID
 	declare group: CID
 	declare path: string
-	declare version: number
+	declare cidVersion: number
 	declare hash: string
 	declare chunker: string
 	declare rawLeaves: boolean
@@ -55,7 +55,7 @@ export const Upload = sequelize.define<UploadClass>(
 			allowNull: false
 		},
 
-		version: {
+		cidVersion: {
 			type: DataTypes.NUMBER,
 			allowNull: false,
 			defaultValue: 1
