@@ -1,12 +1,12 @@
 import { DataTypes, Model, InferAttributes, InferCreationAttributes } from "sequelize";
-import { CID } from "multiformats/cid";
+import { CID, Version } from "multiformats/cid";
 import { sequelize } from "./sequelize.js";
 
 class UploadClass extends Model<InferAttributes<UploadClass, { omit: "cid" | "group" }> & { cid: string, group: string }, InferCreationAttributes<UploadClass>> {
 	declare cid: CID
 	declare group: CID
 	declare path: string
-	declare cidVersion: number
+	declare cidVersion: Version
 	declare hash: string
 	declare chunker: string
 	declare rawLeaves: boolean
