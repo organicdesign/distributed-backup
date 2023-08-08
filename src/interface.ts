@@ -14,13 +14,11 @@ export interface Config {
 	tickInterval: number
 }
 
-// Deprecated?
 export interface Pair<Key = unknown, Value = unknown> {
 	key: Key,
 	value: Value
 }
 
-// Deprecated?
 export interface KeyvalueDB extends Database {
 	store: Keyvalue
 }
@@ -36,12 +34,6 @@ export interface Components {
 	stores: Datastores
 	references: typeof Reference
 	uploads: typeof Upload
-}
-
-// Deprecated
-export interface Pin<T extends Uint8Array | CID = CID>  {
-	cid: T
-	groups: T[]
 }
 
 export interface Entry<T extends Uint8Array | CID = CID> {
