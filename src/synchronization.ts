@@ -33,7 +33,7 @@ export const downSync = async ({ groups, references, helia }: Components) => {
 				const { count } = await references.findAndCountAll({ where: { cid: cid.toString() } });
 
 				if (count <= 1) {
-					await helia.pins.rm(cid);
+					await safeUnpin(helia, cid);
 				}
 
 				logger.references(`[-] ${group}/${cid}`);
@@ -95,11 +95,12 @@ export const addAll = async ({ helia, groups, welo, references }: Components, da
 }
 
 export const deleteAll = async ({ helia, references, groups }: Components, { cid, group }: Reference) => {
-	// We need to check what is going on here - we can't just unpin something!
-	await safeUnpin(helia, cid);
-	// await pins.delete(ref.cid, ref.group);
+	const { count } = await references.findAndCountAll({ where: { cid: cid.toString() } });
 
-	// Need to work out if we should unpin or not - see above.
+	if (count <= 1) {
+		await safeUnpin(helia, cid);
+	}
+
 	await references.destroy({
 		where: {
 			cid: cid.toString(),
@@ -107,7 +108,6 @@ export const deleteAll = async ({ helia, references, groups }: Components, { cid
 		}
 	});
 
-	// await references.delete(ref);
 	await groups.deleteFrom(cid, group);
 }
 
