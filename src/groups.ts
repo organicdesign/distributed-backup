@@ -102,7 +102,7 @@ export class Groups implements Startable {
 
 		entry.links = [ ...entry.links, ...links.map(l => ({ ...l, cid: l.cid.bytes })) ];
 
-		const op = database.store.creators.put(entry.cid.toString(), entry);
+		const op = database.store.creators.put(cid.toString(), entry);
 
 		await database.replica.write(op);
 	}

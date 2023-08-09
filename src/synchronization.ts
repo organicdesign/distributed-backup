@@ -35,7 +35,7 @@ export const downSync = async (components: Components) => {
 			const existing = await references.findOne({
 				where: {
 					cid: cid.toString(),
-					group: database.address.cid.toString()
+					group: group.toString()
 				}
 			});
 
@@ -124,46 +124,55 @@ export const addLocal = async ({ groups, references, uploads, helia, welo }: Com
 };
 
 export const replaceLocal = async ({ groups, references, uploads, helia, welo }: Components, data: Reference & { oldCid: CID }) => {
-	const [ oldRef, upload ] = await Promise.all([
+	const [ oldRef, oldUpload, existingRef, existingUpload ] = await Promise.all([
 		references.findOne({ where: { cid: data.oldCid.toString(), group: data.group.toString() } }),
-		uploads.findOne({ where: { cid: data.oldCid.toString(), group: data.group.toString() } })
+		uploads.findOne({ where: { cid: data.oldCid.toString(), group: data.group.toString() } }),
+		references.findOne({ where: { cid: data.cid.toString(), group: data.group.toString() } }),
+		uploads.findOne({ where: { cid: data.cid.toString(), group: data.group.toString() } })
 	]);
 
-	if (upload == null || oldRef == null) {
+	if (oldUpload == null || oldRef == null) {
 		throw new Error("upload should exist");
 	}
 
 	const [ ref ] = await sequelize.transaction(async transaction => {
+		oldRef.links = [ ...oldRef.links, { type: "next", cid: data.cid } ];
+
 		return await Promise.all([
-			references.create({
+			existingRef ?? references.create({
 				cid: data.cid,
 				group: data.group,
 				author: welo.identity.id,
 				blocked: false,
 				downloaded: 100,
-				encrypted: upload.encrypt,
+				encrypted: oldUpload.encrypt,
 				timestamp: new Date(),
 				pinned: false,
 				destroyed: false,
 				links: [ { type: "prev", cid: data.oldCid } ]
 			}, { transaction }),
 
-			(async () => {
-				oldRef.links = [ ...oldRef.links, { type: "next", cid: data.cid } ]
-			})(),
+			existingUpload ?? uploads.create({
+				cid: data.cid,
+				group: data.group,
+				checkedAt: new Date(),
+				grouped: false,
+				path: oldUpload.path,
+				cidVersion: oldUpload.cidVersion,
+				hash: oldUpload.hash,
+				chunker: oldUpload.chunker,
+				rawLeaves: oldUpload.rawLeaves,
+				nocopy: oldUpload.nocopy,
+				encrypt: oldUpload.encrypt
+			}, { transaction }),
 
-			(async () => {
-				upload.cid = data.cid;
-				upload.checkedAt = new Date();
-				upload.grouped = false;
-
-				await upload.save({ transaction });
-			})()
+			oldRef.save({ transaction }),
+			oldUpload.destroy({ transaction })
 		]);
 	});
 
 	ref.pinned = true;
-	upload.grouped = true;
+	oldUpload.grouped = true;
 
 	await Promise.all([
 		safePin(helia, data.cid).then(() => ref.save()),
@@ -176,7 +185,7 @@ export const replaceLocal = async ({ groups, references, uploads, helia, welo }:
 			links: ref.links
 		}).then(() =>
 			groups.addLinks(data.group, data.oldCid, [ { type: "next", cid: data.cid } ])
-		).then(() => upload.save())
+		).then(() => oldUpload.save())
 	]);
 
 	logger.references(`[+] ${data.group}/${data.cid}`);
@@ -217,7 +226,7 @@ export const upSync = async (components: Components) => {
 			continue;
 		}
 
-		//logger.validate("outdated %s", ref.local.path);
+		// logger.validate("outdated %s", ref.path);
 
 		const importerConfig: ImporterConfig = {
 			chunker: selectChunker(ref.chunker),
@@ -234,16 +243,16 @@ export const upSync = async (components: Components) => {
 
 			await ref.save();
 
-			// logger.validate("cleaned %s", ref.local.path);
+			// logger.validate("cleaned %s", ref.path);
 			continue;
 		}
 
-		// logger.validate("updating %s", ref.local.path);
+		// logger.validate("updating %s", ref.path);
 
 		const { cid } = await load(ref.path, importerConfig, blockstore, cipher);
 
 		await replaceLocal(components, { group: ref.group, cid, oldCid: ref.cid });
 
-		//logger.validate("updated %s", ref.local.path);
+		// logger.validate("updated %s", ref.path);
 	}
 };
