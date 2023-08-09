@@ -7,6 +7,7 @@ import selectChunker from "./fs-importer/select-chunker.js";
 import selectHasher from "./fs-importer/select-hasher.js";
 import { safePin, safeUnpin } from "./utils.js";
 import { BlackHoleBlockstore } from "blockstore-core/black-hole";
+import { sequelize } from "./database/index.js";
 import type { Entry, Components, ImportOptions, Reference } from "./interface.js";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
 
@@ -48,15 +49,22 @@ export const downSync = async ({ groups, references, helia }: Components) => {
 
 			logger.references(`[+] ${group}/${cid}`);
 
-			await references.create({
+			const ref = await references.create({
 				cid,
 				group,
 				author: entry.author,
 				timestamp: new Date(entry.timestamp),
 				blocked: false,
 				downloaded: 0,
-				encrypted: entry.encrypted
+				encrypted: entry.encrypted,
+				pinned: false
 			});
+
+			await safePin(helia, cid);
+
+			ref.pinned = true;
+
+			await ref.save();
 		}
 	}
 };
@@ -89,30 +97,16 @@ export const replaceAll = async (components: Components, oldCid: CID, data: Refe
 	//await groups.replace(ref.group, oldCid, ref)
 };
 
-const addToUploads = async ({ uploads }: Pick<Components, "uploads">, data: Reference & ImportOptions) => {
-	await uploads.create({
-		cid: data.cid,
-		group: data.group,
-		cidVersion: data.cidVersion,
-		path: data.path,
-		rawLeaves: data.rawLeaves,
-		chunker: data.chunker,
-		hash: data.hash,
-		nocopy: data.nocopy,
-		encrypt: data.encrypt,
-		checkedAt: new Date()
-	});
-};
-
 const addToReferences = async ({ references, welo }: Pick<Components, "references" | "welo">, data: Reference & ImportOptions) => {
-	await references.create({
+	return await references.create({
 		cid: data.cid,
 		group: data.group,
 		author: welo.identity.id,
 		blocked: false,
 		downloaded: 100,
 		encrypted: data.encrypt,
-		timestamp: new Date()
+		timestamp: new Date(),
+		pinned: false
 	});
 };
 
@@ -126,11 +120,41 @@ const addToGroup = async ({ groups, welo }: Pick<Components, "groups" | "welo">,
 };
 
 export const addLocal = async (components: Components, data: Reference & ImportOptions) => {
+	const [ ref, upload ] = await sequelize.transaction(async transaction => {
+		return await Promise.all([
+			components.references.create({
+				cid: data.cid,
+				group: data.group,
+				author: components.welo.identity.id,
+				blocked: false,
+				downloaded: 100,
+				encrypted: data.encrypt,
+				timestamp: new Date(),
+				pinned: false
+			}, { transaction }),
+
+			components.uploads.create({
+				cid: data.cid,
+				group: data.group,
+				cidVersion: data.cidVersion,
+				path: data.path,
+				rawLeaves: data.rawLeaves,
+				chunker: data.chunker,
+				hash: data.hash,
+				nocopy: data.nocopy,
+				encrypt: data.encrypt,
+				checkedAt: new Date(),
+				grouped: false
+			})
+		]);
+	});
+
+	ref.pinned = true;
+	upload.grouped = true;
+
 	await Promise.all([
-		safePin(components.helia, data.cid),
-		addToUploads(components, data),
-		addToReferences(components, data),
-		addToGroup(components, data)
+		safePin(components.helia, data.cid).then(() => ref.save()),
+		addToGroup(components, data).then(() => upload.save())
 	]);
 
 	logger.references(`[+] ${data.group}/${data.cid}`);
@@ -150,7 +174,8 @@ export const addAll = async ({ helia, groups, welo, references }: Components, da
 	await references.create({
 		...ref,
 		downloaded: 100,
-		blocked: false
+		blocked: false,
+		pinned: false
 	});
 
 	await groups.addTo(data.group, {
