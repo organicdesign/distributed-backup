@@ -174,21 +174,32 @@ export const addAll = async ({ helia, groups, welo, references }: Components, da
 	});
 }
 
-export const deleteAll = async ({ helia, references, groups }: Components, { cid, group }: Reference) => {
+export const deleteAll = async ({ helia, references, groups, uploads }: Components, { cid, group }: Reference) => {
+	const [ ref, upload ] = await Promise.all([
+		references.findOne({ where: { cid: cid.toString(), group: group.toString() } }),
+		uploads.findOne({ where: { cid: cid.toString(), group: group.toString() } })
+	]);
+
+	if (ref != null) {
+		ref.destroyed = true;
+
+		await ref.save();
+	}
+
+	await groups.deleteFrom(cid, group);
+
 	const { count } = await references.findAndCountAll({ where: { cid: cid.toString() } });
 
 	if (count <= 1) {
 		await safeUnpin(helia, cid);
 	}
 
-	await references.destroy({
-		where: {
-			cid: cid.toString(),
-			group: group.toString()
-		}
+	await sequelize.transaction(async transaction => {
+		await Promise.all([
+			upload?.destroy({ transaction }),
+			ref?.destroy({ transaction })
+		])
 	});
-
-	await groups.deleteFrom(cid, group);
 }
 
 export const upSync = async (components: Components) => {
