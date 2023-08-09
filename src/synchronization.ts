@@ -62,7 +62,8 @@ export const downSync = async ({ groups, references, helia }: Components) => {
 				downloaded: 0,
 				encrypted: entry.encrypted,
 				pinned: false,
-				destroyed: false
+				destroyed: false,
+				links: []
 			});
 
 			await safePin(helia, cid);
@@ -83,7 +84,7 @@ export const replaceAll = async (components: Components, oldCid: CID, data: Refe
 	});
 
 	if (oldRef != null) {
-		oldRef.next = data.cid;
+		//oldRef.next = data.cid;
 	}
 
 	await addAll(components, data);
@@ -107,7 +108,8 @@ const addToGroup = async ({ groups, welo }: Pick<Components, "groups" | "welo">,
 		cid: data.cid,
 		timestamp: Date.now(),
 		author: welo.identity.id,
-		encrypted: data.encrypt
+		encrypted: data.encrypt,
+		links: []
 	});
 };
 
@@ -123,7 +125,8 @@ export const addLocal = async (components: Components, data: Reference & ImportO
 				encrypted: data.encrypt,
 				timestamp: new Date(),
 				pinned: false,
-				destroyed: false
+				destroyed: false,
+				links: []
 			}, { transaction }),
 
 			components.uploads.create({
@@ -169,12 +172,14 @@ export const addAll = async ({ helia, groups, welo, references }: Components, da
 		downloaded: 100,
 		blocked: false,
 		pinned: false,
-		destroyed: false
+		destroyed: false,
+		links: []
 	});
 
 	await groups.addTo(data.group, {
 		...ref,
-		timestamp: ref.timestamp.getDate()
+		timestamp: ref.timestamp.getDate(),
+		links: []
 	});
 }
 

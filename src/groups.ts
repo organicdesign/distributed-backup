@@ -76,16 +76,9 @@ export class Groups implements Startable {
 			author: entry.author,
 			encrypted: entry.encrypted,
 			meta: entry.meta ?? {},
-			timestamp: entry.timestamp
+			timestamp: entry.timestamp,
+			links: entry.links.map(l => ({ ...l, cid: l.cid.bytes }))
 		};
-
-		if (entry.next) {
-			rawEntry.next = entry.next.bytes;
-		}
-
-		if (entry.prev) {
-			rawEntry.prev = entry.prev.bytes;
-		}
 
 		// Update global database.
 		const op = database.store.creators.put(entry.cid.toString(), rawEntry);

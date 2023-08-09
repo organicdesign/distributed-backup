@@ -23,6 +23,11 @@ export interface KeyvalueDB extends Database {
 	store: Keyvalue
 }
 
+export interface Link<T extends Uint8Array | CID = CID> {
+	cid: T,
+	type: string
+}
+
 export interface Components {
 	libp2p: Libp2p<{ pubsub: PubSub }>
 	helia: Helia<Components["libp2p"]>
@@ -41,8 +46,7 @@ export interface Entry<T extends Uint8Array | CID = CID> {
 	author: Uint8Array
 	encrypted: boolean
 	timestamp: number
-	prev?: T
-	next?: T
+	links: Link<T>[]
 	meta?: Record<string, unknown>
 }
 

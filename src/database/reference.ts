@@ -3,15 +3,15 @@ import { CID } from "multiformats/cid";
 import { toString as uint8ArrayToString, fromString as uint8ArrayFromString } from "uint8arrays";
 import { Upload } from "./upload.js";
 import { sequelize } from "./sequelize.js";
+import type { Link } from "../interface.js";
 
-class ReferenceClass extends Model<InferAttributes<ReferenceClass, { omit: "cid" | "group" | "author" | "next" | "prev" | "meta" }> & { cid: string, group: string, author: string, next?: string, prev?: string, meta?: string }, InferCreationAttributes<ReferenceClass>> {
+class ReferenceClass extends Model<InferAttributes<ReferenceClass, { omit: "cid" | "group" | "author" | "links" | "meta" }> & { cid: string, group: string, author: string, links: string, meta?: string }, InferCreationAttributes<ReferenceClass>> {
 	declare cid: CID
 	declare group: CID
 	declare author: Uint8Array
 	declare encrypted: boolean
 	declare timestamp: Date
-	declare prev?: CID
-	declare next?: CID
+	declare links: Link[]
 	declare meta?: Record<string, unknown>
 	declare blocked: boolean
 	declare downloaded: number
@@ -79,41 +79,26 @@ export const Reference = sequelize.define<ReferenceClass>(
 
 		timestamp: DataTypes.DATE,
 
-		prev: {
+		links: {
 			type: DataTypes.STRING(undefined, true),
-			allowNull: true,
+			allowNull: false,
+			defaultValue: JSON.stringify([]),
 
-			get () {
-				const str = this.getDataValue("prev");
+			get (): Link[] {
+				const str = this.getDataValue("links");
+				const arr: { cid: string, type: string }[] = JSON.parse(str);
 
-				if (str == null) {
-					return undefined;
-				}
-
-				return CID.parse(str);
+				return arr.map(i => ({
+					...i,
+					cid: CID.parse(i.cid)
+				}));
 			},
 
-			set (value: CID) {
-				this.setDataValue("prev", value.toString());
-			}
-		},
-
-		next: {
-			type: DataTypes.STRING(undefined, true),
-			allowNull: true,
-
-			get () {
-				const str = this.getDataValue("next");
-
-				if (str == null) {
-					return undefined;
-				}
-
-				return CID.parse(str);
-			},
-
-			set (value: CID) {
-				this.setDataValue("next", value.toString());
+			set (values: Link[]) {
+				this.setDataValue("links", JSON.stringify(values.map(v => ({
+					...v,
+					cid: v.cid.toString()
+				}))));
 			}
 		},
 
