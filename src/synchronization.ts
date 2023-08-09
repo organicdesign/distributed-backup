@@ -11,6 +11,14 @@ import { sequelize } from "./database/index.js";
 import type { Entry, Components, ImportOptions, Reference } from "./interface.js";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
 
+const unpinIfLast = async ({ references, helia }: Pick<Components, "helia" | "references">, cid: CID) => {
+	const { count } = await references.findAndCountAll({ where: { cid: cid.toString() } });
+
+	if (count <= 1) {
+		await safeUnpin(helia, cid);
+	}
+};
+
 export const downSync = async ({ groups, references, helia }: Components) => {
 	for (const { value: database } of groups.all()) {
 		//logger.validate("syncing group: %s", database.address.cid.toString());
@@ -30,11 +38,7 @@ export const downSync = async ({ groups, references, helia }: Components) => {
 			});
 
 			if (entry == null) {
-				const { count } = await references.findAndCountAll({ where: { cid: cid.toString() } });
-
-				if (count <= 1) {
-					await safeUnpin(helia, cid);
-				}
+				await unpinIfLast({ references, helia }, cid);
 
 				logger.references(`[-] ${group}/${cid}`);
 
@@ -186,13 +190,10 @@ export const deleteAll = async ({ helia, references, groups, uploads }: Componen
 		await ref.save();
 	}
 
-	await groups.deleteFrom(cid, group);
-
-	const { count } = await references.findAndCountAll({ where: { cid: cid.toString() } });
-
-	if (count <= 1) {
-		await safeUnpin(helia, cid);
-	}
+	await Promise.all([
+		groups.deleteFrom(cid, group),
+		unpinIfLast({ references, helia }, cid)
+	]);
 
 	await sequelize.transaction(async transaction => {
 		await Promise.all([
