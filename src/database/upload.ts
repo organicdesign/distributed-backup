@@ -13,6 +13,8 @@ class UploadClass extends Model<InferAttributes<UploadClass, { omit: "cid" | "gr
 	declare nocopy: boolean
 	declare encrypt: boolean
 	declare checkedAt: Date
+
+	// This is a flag to say if it has been added to the group or not.
 	declare grouped: boolean
 }
 
