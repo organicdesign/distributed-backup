@@ -8,7 +8,7 @@ import selectHasher from "./fs-importer/select-hasher.js";
 import { safePin, safeUnpin } from "./utils.js";
 import { BlackHoleBlockstore } from "blockstore-core/black-hole";
 import { sequelize } from "./database/index.js";
-import type { Entry, Components, ImportOptions, Reference } from "./interface.js";
+import type { Entry, Components, ImportOptions, Reference, Link } from "./interface.js";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
 
 const unpinIfLast = async ({ references, helia }: Pick<Components, "helia" | "references">, cid: CID) => {
@@ -103,33 +103,23 @@ export const replaceAll = async (components: Components, oldCid: CID, data: Refe
 	//await groups.replace(ref.group, oldCid, ref)
 };
 
-const addToGroup = async ({ groups, welo }: Pick<Components, "groups" | "welo">, data: Reference & ImportOptions) => {
-	await groups.addTo(data.group, {
-		cid: data.cid,
-		timestamp: Date.now(),
-		author: welo.identity.id,
-		encrypted: data.encrypt,
-		links: []
-	});
-};
-
-export const addLocal = async (components: Components, data: Reference & ImportOptions) => {
+export const addLocal = async ({ groups, references, uploads, helia, welo }: Components, data: Reference & ImportOptions & { links?: Link[] }) => {
 	const [ ref, upload ] = await sequelize.transaction(async transaction => {
 		return await Promise.all([
-			components.references.create({
+			references.create({
 				cid: data.cid,
 				group: data.group,
-				author: components.welo.identity.id,
+				author: welo.identity.id,
 				blocked: false,
 				downloaded: 100,
 				encrypted: data.encrypt,
 				timestamp: new Date(),
 				pinned: false,
 				destroyed: false,
-				links: []
+				links: data.links ?? []
 			}, { transaction }),
 
-			components.uploads.create({
+			uploads.create({
 				cid: data.cid,
 				group: data.group,
 				cidVersion: data.cidVersion,
@@ -149,14 +139,80 @@ export const addLocal = async (components: Components, data: Reference & ImportO
 	upload.grouped = true;
 
 	await Promise.all([
-		safePin(components.helia, data.cid).then(() => ref.save()),
-		addToGroup(components, data).then(() => upload.save())
+		safePin(helia, data.cid).then(() => ref.save()),
+
+		groups.addTo(data.group, {
+			cid: data.cid,
+			timestamp: Date.now(),
+			author: welo.identity.id,
+			encrypted: data.encrypt,
+			links: data.links ?? []
+		}).then(() => upload.save())
 	]);
 
 	logger.references(`[+] ${data.group}/${data.cid}`);
 };
 
-export const addAll = async ({ helia, groups, welo, references }: Components, data: Reference & ImportOptions) => {
+export const replaceLocal = async ({ groups, references, uploads, helia, welo }: Components, data: Reference & { oldCid: CID }) => {
+	const [ oldRef, upload ] = await Promise.all([
+		references.findOne({ where: { cid: data.oldCid.toString(), group: data.group.toString() } }),
+		uploads.findOne({ where: { cid: data.oldCid.toString(), group: data.group.toString() } })
+	]);
+
+	if (upload == null || oldRef == null) {
+		throw new Error("upload should exist");
+	}
+
+	const [ ref ] = await sequelize.transaction(async transaction => {
+		return await Promise.all([
+			references.create({
+				cid: data.cid,
+				group: data.group,
+				author: welo.identity.id,
+				blocked: false,
+				downloaded: 100,
+				encrypted: upload.encrypt,
+				timestamp: new Date(),
+				pinned: false,
+				destroyed: false,
+				links: [ { type: "prev", cid: data.oldCid } ]
+			}, { transaction }),
+
+			(async () => {
+				oldRef.links = [ ...oldRef.links, { type: "next", cid: data.cid } ]
+			})(),
+
+			(async () => {
+				upload.cid = data.cid;
+				upload.checkedAt = new Date();
+				upload.grouped = false;
+
+				await upload.save({ transaction });
+			})()
+		]);
+	});
+
+	ref.pinned = true;
+	upload.grouped = true;
+
+	await Promise.all([
+		safePin(helia, data.cid).then(() => ref.save()),
+
+		groups.addTo(data.group, {
+			cid: data.cid,
+			timestamp: Date.now(),
+			author: welo.identity.id,
+			encrypted: ref.encrypted,
+			links: ref.links
+		}).then(() =>
+			groups.addLinks(data.group, data.oldCid, [ { type: "next", cid: data.cid } ])
+		).then(() => upload.save())
+	]);
+
+	logger.references(`[+] ${data.group}/${data.cid}`);
+};
+
+export const addAll = async ({ helia, groups, welo, references }: Components, data: Reference & ImportOptions & { links?: Link[] }) => {
 	await safePin(helia, data.cid);
 
 	const ref = {
@@ -173,13 +229,13 @@ export const addAll = async ({ helia, groups, welo, references }: Components, da
 		blocked: false,
 		pinned: false,
 		destroyed: false,
-		links: []
+		links: data.links ?? []
 	});
 
 	await groups.addTo(data.group, {
 		...ref,
 		timestamp: ref.timestamp.getDate(),
-		links: []
+		links: data.links ?? []
 	});
 }
 
@@ -241,14 +297,9 @@ export const upSync = async (components: Components) => {
 
 		// logger.validate("updating %s", ref.local.path);
 
-		const { cid: newCid } = await load(ref.path, importerConfig, blockstore, cipher);
+		const { cid } = await load(ref.path, importerConfig, blockstore, cipher);
 
-		/*
-		await replaceAll(components, ref.cid, {
-			group: ref.group,
-			cid: newCid
-		});
-		*/
+		await replaceLocal(components, { group: ref.group, cid, oldCid: ref.cid });
 
 		//logger.validate("updated %s", ref.local.path);
 	}
