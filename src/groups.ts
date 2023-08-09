@@ -94,15 +94,17 @@ export class Groups implements Startable {
 		}
 
 		const index = await database.store.latest();
-		const entry = await database.store.selectors.get(index)(cid.toString()) as Entry | undefined;
+		const entry = await database.store.selectors.get(index)(cid.toString()) as Entry<Uint8Array> | undefined;
 
 		if (entry == null) {
 			throw new Error("no such item in group");
 		}
 
-		entry.links = [ ...entry.links, ...links ];
+		entry.links = [ ...entry.links, ...links.map(l => ({ ...l, cid: l.cid.bytes })) ];
 
-		await this.addTo(group, entry);
+		const op = database.store.creators.put(entry.cid.toString(), entry);
+
+		await database.replica.write(op);
 	}
 
 	async deleteFrom (cid: CID, group: CID) {

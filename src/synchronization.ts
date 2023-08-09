@@ -210,9 +210,9 @@ export const deleteAll = async ({ helia, references, groups, uploads }: Componen
 export const upSync = async (components: Components) => {
 	const { blockstore, config, cipher, uploads } = components;
 
-	const refs = await uploads.findAll();
+	const localRefs = await uploads.findAll();
 
-	for (const ref of refs) {
+	for (const ref of localRefs) {
 		if (Date.now() - ref.checkedAt.getTime() < config.validateInterval * 1000) {
 			continue;
 		}
