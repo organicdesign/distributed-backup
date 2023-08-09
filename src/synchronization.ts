@@ -19,7 +19,9 @@ const unpinIfLast = async ({ references, helia }: Pick<Components, "helia" | "re
 	}
 };
 
-export const downSync = async ({ groups, references, helia }: Components) => {
+export const downSync = async (components: Components) => {
+	const { groups, references, helia } = components;
+
 	for (const { value: database } of groups.all()) {
 		//logger.validate("syncing group: %s", database.address.cid.toString());
 		const index = await database.store.latest();
@@ -38,11 +40,7 @@ export const downSync = async ({ groups, references, helia }: Components) => {
 			});
 
 			if (entry == null) {
-				await unpinIfLast({ references, helia }, cid);
-
-				logger.references(`[-] ${group}/${cid}`);
-
-				await existing?.destroy();
+				await deleteAll(components, { cid, group });
 
 				continue;
 			}
@@ -73,34 +71,6 @@ export const downSync = async ({ groups, references, helia }: Components) => {
 			await ref.save();
 		}
 	}
-};
-
-export const replaceAll = async (components: Components, oldCid: CID, data: Reference & ImportOptions) => {
-	const oldRef = await components.references.findOne({
-		where: {
-			cid: oldCid.toString(),
-			group: data.group.toString()
-		}
-	});
-
-	if (oldRef != null) {
-		//oldRef.next = data.cid;
-	}
-
-	await addAll(components, data);
-/*
-	await references.create({
-		cid,
-		group,
-		timestamp: new Date(),
-		author: welo.identity.id
-	});
-*/
-	// We can't just replace either... we need to ensure garbage collection is done.
-	//await safeReplace(helia, oldCid, ref.cid);
-	// await pins.replace(oldCid, ref.cid, ref.group);
-	// await references.replace(oldCid, ref);
-	//await groups.replace(ref.group, oldCid, ref)
 };
 
 export const addLocal = async ({ groups, references, uploads, helia, welo }: Components, data: Reference & ImportOptions & { links?: Link[] }) => {
@@ -211,33 +181,6 @@ export const replaceLocal = async ({ groups, references, uploads, helia, welo }:
 
 	logger.references(`[+] ${data.group}/${data.cid}`);
 };
-
-export const addAll = async ({ helia, groups, welo, references }: Components, data: Reference & ImportOptions & { links?: Link[] }) => {
-	await safePin(helia, data.cid);
-
-	const ref = {
-		cid: data.cid,
-		group: data.group,
-		author: welo.identity.id,
-		timestamp: new Date(),
-		encrypted: data.encrypt
-	};
-
-	await references.create({
-		...ref,
-		downloaded: 100,
-		blocked: false,
-		pinned: false,
-		destroyed: false,
-		links: data.links ?? []
-	});
-
-	await groups.addTo(data.group, {
-		...ref,
-		timestamp: ref.timestamp.getDate(),
-		links: data.links ?? []
-	});
-}
 
 export const deleteAll = async ({ helia, references, groups, uploads }: Components, { cid, group }: Reference) => {
 	const [ ref, upload ] = await Promise.all([

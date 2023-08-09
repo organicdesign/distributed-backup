@@ -7,7 +7,7 @@ import type { CID } from "multiformats/cid";
 import type { ManifestData } from "welo/dist/src/manifest/interface.js";
 import type { Datastore } from "interface-datastore";
 import type { Startable } from "@libp2p/interfaces/startable";
-import type { KeyvalueDB, Pair, Entry } from "./interface.js";
+import type { KeyvalueDB, Pair, Entry, Link } from "./interface.js";
 
 export interface Components {
 	datastore: Datastore
@@ -86,13 +86,32 @@ export class Groups implements Startable {
 		await database.replica.write(op);
 	}
 
+	async addLinks (group: CID, cid: CID, links: Link[]) {
+		const database = this.groups.get(group.toString());
+
+		if (database == null) {
+			throw new Error("not a part of group");
+		}
+
+		const index = await database.store.latest();
+		const entry = await database.store.selectors.get(index)(cid.toString()) as Entry | undefined;
+
+		if (entry == null) {
+			throw new Error("no such item in group");
+		}
+
+		entry.links = [ ...entry.links, ...links ];
+
+		await this.addTo(group, entry);
+	}
+
 	async deleteFrom (cid: CID, group: CID) {
 		const database = this.groups.get(group.toString());
 
 		if (database == null) {
 			throw new Error("not a part of group");
 		}
-;
+
 		logger(`[-] ${group.toString()}/${cid.toString()}`);
 
 		const op = database.store.creators.del(cid.toString());
