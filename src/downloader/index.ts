@@ -14,6 +14,10 @@ const DATASTORE_PIN_PREFIX = "/pin/";
 const DATASTORE_BLOCK_PREFIX = "/pinned-block/";
 const DATASTORE_ENCODING = base36;
 
+/**
+ * Need to put the queue back in place, we just don't await it till we need to iterate next.
+ */
+
 interface DatastorePin {
 	depth: number
 	metadata: Record<string, string | number | boolean>
@@ -82,34 +86,44 @@ const walkDag = async function * (helia: Helia, cid: CID, options: WalkDagOption
 
 	// walk dag, ensure all blocks are present
 	for await (const cid of dagWalker.walk(block)) {
+		// walk dag n times?
 		yield* walkDag(helia, cid, {
 			...options,
 			depth: options.depth - 1
-		})
+		});
 	}
 }
 
-export const add = async function * (helia: Helia, cid: CID<unknown, number, number, Version>, options: AddOptions = {}): AsyncGenerator {
+export const add = async function * (helia: Helia, cid: CID<unknown, number, number, Version>, count: number, options: AddOptions = {}): AsyncGenerator {
 	const pinKey = toDSKey(cid)
 
 	if (await helia.datastore.has(pinKey)) {
-		throw new Error('Already pinned')
+		throw new Error('Already pinned');
 	}
 
-	const depth = Math.round(options.depth ?? Infinity)
+	const depth = Math.round(options.depth ?? Infinity);
 
 	if (depth < 0) {
-		throw new Error('Depth must be greater than or equal to 0')
+		throw new Error('Depth must be greater than or equal to 0');
 	}
 
-	for await (const {pinnedBlock, block} of walkDag(helia, cid, { ...options, depth })) {
-		// do not update pinned block if this block is already pinned by this CID
-		if (pinnedBlock.pinnedBy.find(c => uint8ArrayEquals(c, cid.bytes)) != null) {
-			return
+	const itr = walkDag(helia, cid, { ...options, depth });
+
+	for (;;) {
+		const itrRes = await itr.next(count);
+
+		if (itrRes.done) {
+			break;
 		}
 
-		pinnedBlock.pinCount++
-		pinnedBlock.pinnedBy.push(cid.bytes)
+		const { value: { pinnedBlock, block } } = itrRes;
+
+		if (pinnedBlock.pinnedBy.find(c => uint8ArrayEquals(c, cid.bytes)) != null) {
+			return;
+		}
+
+		pinnedBlock.pinCount++;
+		pinnedBlock.pinnedBy.push(cid.bytes);
 
 		yield block;
 	}
