@@ -17,6 +17,11 @@ interface DatastorePinnedBlock {
 	pinnedBy: Uint8Array[]
 }
 
+interface DatastorePin {
+	depth: number
+	metadata: Record<string, string | number | boolean>
+}
+
 const toDSKey = (cid: CID): Key => {
 	if (cid.version === 0) {
 		cid = cid.toV1();
@@ -129,4 +134,11 @@ export const add = async function * (helia: Helia, cid: CID<unknown, number, num
 
 		yield blocks;
 	}
+
+	const pin: DatastorePin = {
+		depth,
+		metadata: options.metadata ?? {}
+	}
+
+	await helia.datastore.put(pinKey, cborg.encode(pin), options)
 }
