@@ -111,7 +111,7 @@ export const add = async function * (helia: Helia, cid: CID<unknown, number, num
 			}
 		}
 
-		return { cid, block };
+		return { cid: item.cid, block };
 	};
 
 	// Pull multiple blocks from the queue in one go.
