@@ -76,26 +76,28 @@ export const add = async function * (helia: Helia, cid: CID<unknown, number, num
 		throw new Error('Depth must be greater than or equal to 0');
 	}
 
-	const queue = [cid];
+	const queue: { cid: CID, depth: number }[] = [{ cid, depth: 0 }];
 
 	// Pull a block from the queue enqueing others.
 	const pullFromQueue = async (): Promise<{ block: Uint8Array, cid: CID }> => {
-		const cid = queue.shift();
+		const item = queue.shift();
 
-		if (cid == null) {
+		if (item == null) {
 			throw new Error("queue is empty");
 		}
 
-		const dagWalker = Object.values(dagWalkers).find(dw => dw.codec === cid.code);
+		const dagWalker = Object.values(dagWalkers).find(dw => dw.codec === item.cid.code);
 
 		if (dagWalker == null) {
-			throw new Error(`No dag walker found for cid codec ${cid.code}`);
+			throw new Error(`No dag walker found for cid codec ${item.cid.code}`);
 		}
 
-		const block = await helia.blockstore.get(cid, options);
+		const block = await helia.blockstore.get(item.cid, options);
 
-		for await (const cid of dagWalker.walk(block)) {
-			queue.push(cid);
+		if (item.depth < depth) {
+			for await (const cid of dagWalker.walk(block)) {
+				queue.push({ cid, depth: item.depth + 1 });
+			}
 		}
 
 		return { cid, block };
