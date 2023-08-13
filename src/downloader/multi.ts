@@ -22,6 +22,11 @@ interface DatastorePin {
 	metadata: Record<string, string | number | boolean>
 }
 
+interface ResolvedCID {
+	block: Uint8Array
+	cid: CID
+}
+
 const toDSKey = (cid: CID): Key => {
 	if (cid.version === 0) {
 		cid = cid.toV1();
@@ -63,7 +68,7 @@ const pinBlock = async (helia: Helia, cid: CID, options: AddOptions) => {
 	options.onProgress?.(new CustomProgressEvent<CID>('helia:pin:add', { detail: cid }))
 };
 
-export const add = async function * (helia: Helia, cid: CID<unknown, number, number, Version>, count: number, options: AddOptions = {}): AsyncGenerator<{ block: Uint8Array, cid: CID }[]> {
+export const add = async function * (helia: Helia, cid: CID<unknown, number, number, Version>, count: number, options: AddOptions = {}): AsyncGenerator<ResolvedCID[]> {
 	const pinKey = toDSKey(cid)
 
 	if (await helia.datastore.has(pinKey)) {
@@ -76,10 +81,10 @@ export const add = async function * (helia: Helia, cid: CID<unknown, number, num
 		throw new Error('Depth must be greater than or equal to 0');
 	}
 
-	const queue: { cid: CID, depth: number }[] = [{ cid, depth: 0 }];
+	const queue = [{ cid, depth: 0 }];
 
 	// Pull a block from the queue enqueing others.
-	const pullFromQueue = async (): Promise<{ block: Uint8Array, cid: CID }> => {
+	const pullFromQueue = async (): Promise<ResolvedCID> => {
 		const item = queue.shift();
 
 		if (item == null) {
@@ -104,9 +109,9 @@ export const add = async function * (helia: Helia, cid: CID<unknown, number, num
 	};
 
 	// Pull multiple blocks from the queue in one go.
-	const pullManyFromQueue = async (count: number): Promise<{ block: Uint8Array, cid: CID }[]> => {
-		const promises: Promise<{ block: Uint8Array, cid: CID }>[] = [];
-		const results: { block: Uint8Array, cid: CID }[] = [];
+	const pullManyFromQueue = async (count: number): Promise<ResolvedCID[]> => {
+		const promises: Promise<ResolvedCID>[] = [];
+		const results: ResolvedCID[] = [];
 
 		for (let i = 0; i < count; i++) {
 			if (queue.length == 0) {
