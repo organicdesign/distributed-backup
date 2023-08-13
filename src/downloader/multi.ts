@@ -68,7 +68,7 @@ const pinBlock = async (helia: Helia, cid: CID, options: AddOptions) => {
 	options.onProgress?.(new CustomProgressEvent<CID>('helia:pin:add', { detail: cid }))
 };
 
-export const add = async function * (helia: Helia, cid: CID<unknown, number, number, Version>, count: number, options: AddOptions = {}): AsyncGenerator<ResolvedCID[]> {
+export const add = async function * (helia: Helia, cid: CID<unknown, number, number, Version>, options: AddOptions & { concurrency?: number } = {}): AsyncGenerator<ResolvedCID[]> {
 	const pinKey = toDSKey(cid)
 
 	if (await helia.datastore.has(pinKey)) {
@@ -79,6 +79,12 @@ export const add = async function * (helia: Helia, cid: CID<unknown, number, num
 
 	if (depth < 0) {
 		throw new Error('Depth must be greater than or equal to 0');
+	}
+
+	const concurrency = Math.round(options.concurrency ?? 1);
+
+	if (concurrency < 1) {
+		throw new Error('Concurrency must be greater than or equal to 1');
 	}
 
 	const queue = [{ cid, depth: 0 }];
@@ -133,11 +139,9 @@ export const add = async function * (helia: Helia, cid: CID<unknown, number, num
 	};
 
 	while (queue.length != 0) {
-		const blocks = await pullManyFromQueue(count);
+		const blocks = await pullManyFromQueue(concurrency);
 
-		for (const { cid } of blocks) {
-			await pinBlock(helia, cid, options);
-		}
+		await Promise.all(blocks.map(({ cid }) => pinBlock(helia, cid, options)));
 
 		yield blocks;
 	}
