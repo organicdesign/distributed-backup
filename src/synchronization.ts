@@ -54,14 +54,15 @@ export const downSync = async (components: Components) => {
 			const ref = await references.create({
 				cid,
 				group,
-				author: entry.author,
 				timestamp: new Date(entry.timestamp),
 				blocked: false,
-				downloaded: 0,
+				downloadedBlocks: 0,
+				downloadedSize: 0,
+				discoveredBlocks: 0,
+				discoveredSize: 0,
 				encrypted: entry.encrypted,
 				pinned: false,
-				destroyed: false,
-				links: []
+				destroyed: false
 			});
 
 			await safePin(helia, cid);
@@ -79,14 +80,15 @@ export const addLocal = async ({ groups, references, uploads, helia, welo }: Com
 			references.create({
 				cid: data.cid,
 				group: data.group,
-				author: welo.identity.id,
 				blocked: false,
-				downloaded: 100,
+				downloadedBlocks: 0,
+				downloadedSize: 0,
+				discoveredBlocks: 0,
+				discoveredSize: 0,
 				encrypted: data.encrypt,
 				timestamp: new Date(),
 				pinned: false,
-				destroyed: false,
-				links: data.links ?? []
+				destroyed: false
 			}, { transaction }),
 
 			uploads.create({
@@ -136,20 +138,19 @@ export const replaceLocal = async ({ groups, references, uploads, helia, welo }:
 	}
 
 	const [ ref ] = await sequelize.transaction(async transaction => {
-		oldRef.links = [ ...oldRef.links, { type: "next", cid: data.cid } ];
-
 		return await Promise.all([
 			existingRef ?? references.create({
 				cid: data.cid,
 				group: data.group,
-				author: welo.identity.id,
 				blocked: false,
-				downloaded: 100,
+				downloadedBlocks: 0,
+				downloadedSize: 0,
+				discoveredBlocks: 0,
+				discoveredSize: 0,
 				encrypted: oldUpload.encrypt,
 				timestamp: new Date(),
 				pinned: false,
-				destroyed: false,
-				links: [ { type: "prev", cid: data.oldCid } ]
+				destroyed: false
 			}, { transaction }),
 
 			existingUpload ?? uploads.create({
@@ -182,7 +183,7 @@ export const replaceLocal = async ({ groups, references, uploads, helia, welo }:
 			timestamp: Date.now(),
 			author: welo.identity.id,
 			encrypted: ref.encrypted,
-			links: ref.links
+			links: []
 		}).then(() =>
 			groups.addLinks(data.group, data.oldCid, [ { type: "next", cid: data.cid } ])
 		).then(() => oldUpload.save())

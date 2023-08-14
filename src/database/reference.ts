@@ -1,20 +1,18 @@
 import { DataTypes, Model, InferAttributes, InferCreationAttributes } from "sequelize";
 import { CID } from "multiformats/cid";
-import { toString as uint8ArrayToString, fromString as uint8ArrayFromString } from "uint8arrays";
 import { Upload } from "./upload.js";
 import { sequelize } from "./sequelize.js";
-import type { Link } from "../interface.js";
 
-class ReferenceClass extends Model<InferAttributes<ReferenceClass, { omit: "cid" | "group" | "author" | "links" | "meta" }> & { cid: string, group: string, author: string, links: string, meta?: string }, InferCreationAttributes<ReferenceClass>> {
+class ReferenceClass extends Model<InferAttributes<ReferenceClass, { omit: "cid" | "group" }> & { cid: string, group: string }, InferCreationAttributes<ReferenceClass>> {
 	declare cid: CID
 	declare group: CID
-	declare author: Uint8Array
-	declare encrypted: boolean
-	declare timestamp: Date
-	declare links: Link[]
-	declare meta?: Record<string, unknown>
-	declare blocked: boolean
-	declare downloaded: number
+	declare encrypted: boolean // This can stay since it won't change if group/cid changes.
+	declare timestamp: Date // This can also stay.
+	declare blocked: boolean // This is local data so it must stay.
+	declare discoveredBlocks: number // The number of blocks this DAG has been discovered to have.
+	declare discoveredSize: number // The accumulative size of all the blocks this DAG has been discovered to be.
+	declare downloadedBlocks: number // The number of blocks that have been downloaded to disk.
+	declare downloadedSize: number // The accumulative size of all the blocks on disk for this DAG.
 
 	// This is a flag to say if it has been pinned yet or not.
 	declare pinned: boolean
@@ -58,20 +56,6 @@ export const Reference = sequelize.define<ReferenceClass>(
 			}
 		},
 
-		author: {
-			type: DataTypes.STRING(undefined, true),
-
-			get () {
-				const str = this.getDataValue("author");
-
-				return uint8ArrayFromString(str);
-			},
-
-			set (value: Uint8Array) {
-				this.setDataValue("author", uint8ArrayToString(value));
-			}
-		},
-
 		encrypted: {
 			type: DataTypes.BOOLEAN,
 			defaultValue: false
@@ -79,56 +63,32 @@ export const Reference = sequelize.define<ReferenceClass>(
 
 		timestamp: DataTypes.DATE,
 
-		links: {
-			type: DataTypes.STRING(undefined, true),
-			allowNull: false,
-			defaultValue: JSON.stringify([]),
-
-			get (): Link[] {
-				const str = this.getDataValue("links");
-				const arr: { cid: string, type: string }[] = JSON.parse(str);
-
-				return arr.map(i => ({
-					...i,
-					cid: CID.parse(i.cid)
-				}));
-			},
-
-			set (values: Link[]) {
-				this.setDataValue("links", JSON.stringify(values.map(v => ({
-					...v,
-					cid: v.cid.toString()
-				}))));
-			}
-		},
-
-		meta: {
-			type: DataTypes.STRING,
-			allowNull: true,
-
-			get () {
-				const str = this.getDataValue("meta");
-
-				if (str == null) {
-					return undefined;
-				}
-
-				return JSON.parse(str);
-			},
-
-			set (value: Record<string, undefined>) {
-				this.setDataValue("meta", JSON.stringify(value));
-			}
-		},
-
 		blocked: {
 			type: DataTypes.BOOLEAN,
 			allowNull: false,
 			defaultValue: false
 		},
 
-		downloaded: {
-			type: DataTypes.NUMBER,
+		discoveredBlocks: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0
+		},
+
+		discoveredSize: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0
+		},
+
+		downloadedBlocks: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			defaultValue: 0
+		},
+
+		downloadedSize: {
+			type: DataTypes.INTEGER,
 			allowNull: false,
 			defaultValue: 0
 		},
