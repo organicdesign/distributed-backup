@@ -11,16 +11,19 @@ import { sequelize } from "./database/index.js";
 import type { Entry, Components, ImportOptions, Reference, Link } from "./interface.js";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
 
-const unpinIfLast = async ({ references, helia }: Pick<Components, "helia" | "references">, cid: CID) => {
+const unpinIfLast = async ({ references, helia, pins }: Pick<Components, "helia" | "references" | "pins">, cid: CID) => {
 	const { count } = await references.findAndCountAll({ where: { cid: cid.toString() } });
 
 	if (count <= 1) {
-		await safeUnpin(helia, cid);
+		await Promise.all([
+			safeUnpin(helia, cid),
+			pins.destroy({ where: { cid: cid.toString() } })
+		]);
 	}
 };
 
 export const downSync = async (components: Components) => {
-	const { groups, references, helia } = components;
+	const { groups, references, helia, pins } = components;
 
 	for (const { value: database } of groups.all()) {
 		//logger.validate("syncing group: %s", database.address.cid.toString());
@@ -51,23 +54,33 @@ export const downSync = async (components: Components) => {
 
 			logger.references(`[+] ${group}/${cid}`);
 
+			const [pin] = await pins.findOrCreate({
+				where: {
+					cid: cid.toString()
+				},
+
+				defaults: {
+					cid,
+					blocks: 0,
+					size: 0,
+					diskBlocks: 0,
+					diskSize: 0,
+					downloaded: false
+				}
+			});
+
 			const ref = await references.create({
 				cid,
 				group,
 				timestamp: new Date(entry.timestamp),
 				blocked: false,
-				downloadedBlocks: 0,
-				downloadedSize: 0,
-				discoveredBlocks: 0,
-				discoveredSize: 0,
 				encrypted: entry.encrypted,
-				pinned: false,
 				destroyed: false
 			});
 
 			await safePin(helia, cid);
 
-			ref.pinned = true;
+			pin.downloaded = true;
 
 			await ref.save();
 		}
@@ -143,13 +156,8 @@ export const replaceLocal = async ({ groups, references, uploads, helia, welo }:
 				cid: data.cid,
 				group: data.group,
 				blocked: false,
-				downloadedBlocks: 0,
-				downloadedSize: 0,
-				discoveredBlocks: 0,
-				discoveredSize: 0,
 				encrypted: oldUpload.encrypt,
 				timestamp: new Date(),
-				pinned: false,
 				destroyed: false
 			}, { transaction }),
 
