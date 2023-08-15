@@ -31,22 +31,22 @@ export const Pins = sequelize.define<PinsClass>(
 		},
 
 		blocks: {
-			type: DataTypes.BIGINT({ unsigned: true }),
+			type: DataTypes.BIGINT(),
 			allowNull: false
 		},
 
 		size: {
-			type: DataTypes.BIGINT({ unsigned: true }),
+			type: DataTypes.BIGINT(),
 			allowNull: false
 		},
 
 		diskBlocks: {
-			type: DataTypes.BIGINT({ unsigned: true }),
+			type: DataTypes.BIGINT(),
 			allowNull: false
 		},
 
 		diskSize: {
-			type: DataTypes.BIGINT({ unsigned: true }),
+			type: DataTypes.BIGINT(),
 			allowNull: false
 		},
 
