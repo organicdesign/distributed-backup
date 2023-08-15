@@ -15,9 +15,8 @@ import commands from "./rpc/index.js";
 import { createGroups } from "./groups.js";
 import { Datastores } from "./datastores.js";
 import { createCipher } from "./cipher.js";
-// import { createPins } from "./pins.js";
-// import { createReferences } from "./references.js";
 import { sequelize, References, Uploads, Pins } from "./database/index.js";
+import { unixfs } from "@helia/unixfs";
 import type { Components } from "./interface.js";
 
 const argv = await yargs(hideBin(process.argv))
@@ -82,6 +81,7 @@ const components: Components = {
 	groups,
 	config,
 	stores,
+	unixfs: unixfs(helia),
 	references: References,
 	uploads: Uploads,
 	pins: Pins

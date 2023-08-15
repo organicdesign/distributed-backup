@@ -8,6 +8,7 @@ import type { References, Uploads, Pins } from "./database/index.js";
 import type { Cipher } from "./cipher.js";
 import type { Datastores } from "./datastores.js";
 import type { Version, CID } from "multiformats/cid";
+import type { UnixFS } from "@helia/unixfs";
 
 export interface Config {
 	validateInterval: number
@@ -31,6 +32,7 @@ export interface Link<T extends Uint8Array | CID = CID> {
 export interface Components {
 	libp2p: Libp2p<{ pubsub: PubSub }>
 	helia: Helia<Components["libp2p"]>
+	unixfs: UnixFS
 	welo: Welo
 	blockstore: Filestore
 	groups: Groups
