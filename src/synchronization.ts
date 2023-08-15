@@ -65,7 +65,7 @@ export const downSync = async (components: Components) => {
 					size: 0,
 					diskBlocks: 0,
 					diskSize: 0,
-					downloaded: false
+					pinned: false
 				}
 			});
 
@@ -80,29 +80,32 @@ export const downSync = async (components: Components) => {
 
 			await safePin(helia, cid);
 
-			pin.downloaded = true;
+			pin.pinned = true;
 
 			await ref.save();
 		}
 	}
 };
 
-export const addLocal = async ({ groups, references, uploads, helia, welo }: Components, data: Reference & ImportOptions & { links?: Link[] }) => {
-	const [ ref, upload ] = await sequelize.transaction(async transaction => {
+export const addLocal = async ({ groups, references, uploads, helia, welo, pins }: Components, data: Reference & ImportOptions & { links?: Link[] }) => {
+	const [ [pin], upload ] = await sequelize.transaction(async transaction => {
 		return await Promise.all([
-			references.create({
-				cid: data.cid,
-				group: data.group,
-				blocked: false,
-				downloadedBlocks: 0,
-				downloadedSize: 0,
-				discoveredBlocks: 0,
-				discoveredSize: 0,
-				encrypted: data.encrypt,
-				timestamp: new Date(),
-				pinned: false,
-				destroyed: false
-			}, { transaction }),
+			pins.findOrCreate({
+				where: {
+					cid: data.cid.toString()
+				},
+
+				defaults: {
+					cid: data.cid,
+					blocks: 0,
+					size: 0,
+					diskBlocks: 0,
+					diskSize: 0,
+					pinned: false
+				},
+
+				transaction
+			}),
 
 			uploads.create({
 				cid: data.cid,
@@ -116,15 +119,24 @@ export const addLocal = async ({ groups, references, uploads, helia, welo }: Com
 				encrypt: data.encrypt,
 				checkedAt: new Date(),
 				grouped: false
-			})
+			}),
+
+			references.create({
+				cid: data.cid,
+				group: data.group,
+				blocked: false,
+				encrypted: data.encrypt,
+				timestamp: new Date(),
+				destroyed: false
+			}, { transaction })
 		]);
 	});
 
-	ref.pinned = true;
+	pin.pinned = true;
 	upload.grouped = true;
 
 	await Promise.all([
-		safePin(helia, data.cid).then(() => ref.save()),
+		safePin(helia, data.cid).then(() => pin.save()),
 
 		groups.addTo(data.group, {
 			cid: data.cid,

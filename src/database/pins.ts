@@ -8,7 +8,7 @@ class PinsClass extends Model<InferAttributes<PinsClass, { omit: "cid" }> & { ci
 	declare size: number
 	declare diskBlocks: number
 	declare diskSize: number
-	declare downloaded: boolean
+	declare pinned: boolean
 }
 
 export const Pins = sequelize.define<PinsClass>(
@@ -50,7 +50,7 @@ export const Pins = sequelize.define<PinsClass>(
 			allowNull: false
 		},
 
-		downloaded: {
+		pinned: {
 			type: DataTypes.BOOLEAN,
 			allowNull: false,
 			defaultValue: false
