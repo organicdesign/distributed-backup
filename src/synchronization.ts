@@ -87,8 +87,10 @@ export const downSync = async (components: Components) => {
 	}
 };
 
-export const addLocal = async ({ groups, references, uploads, helia, welo, pins }: Components, data: Reference & ImportOptions & { links?: Link[] }) => {
+export const addLocal = async ({ groups, references, uploads, helia, welo, pins, unixfs }: Components, data: Reference & ImportOptions & { links?: Link[] }) => {
 	const [ [pin], upload ] = await sequelize.transaction(async transaction => {
+		const stat = await unixfs.stat(data.cid);
+
 		return await Promise.all([
 			pins.findOrCreate({
 				where: {
@@ -97,8 +99,8 @@ export const addLocal = async ({ groups, references, uploads, helia, welo, pins 
 
 				defaults: {
 					cid: data.cid,
-					blocks: 0,
-					size: 0,
+					blocks: stat.blocks,
+					size: Number(stat.dagSize),
 					diskBlocks: 0,
 					diskSize: 0,
 					pinned: false
