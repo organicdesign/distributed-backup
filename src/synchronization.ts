@@ -1,4 +1,5 @@
 import * as dagCbor from "@ipld/dag-cbor";
+import * as dagPb from "@ipld/dag-pb";
 import { CID } from "multiformats/cid";
 import * as logger from "./logger.js";
 import { importAny as importAnyEncrypted } from "./fs-importer/import-copy-encrypted.js";
@@ -8,6 +9,7 @@ import selectHasher from "./fs-importer/select-hasher.js";
 import { safePin, safeUnpin } from "./utils.js";
 import { BlackHoleBlockstore } from "blockstore-core/black-hole";
 import { sequelize } from "./database/index.js";
+import { UnixFS } from "ipfs-unixfs";
 import type { Entry, Components, ImportOptions, Reference, Link } from "./interface.js";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
 
@@ -89,7 +91,9 @@ export const downSync = async (components: Components) => {
 
 export const addLocal = async ({ groups, references, uploads, helia, welo, pins, unixfs }: Components, data: Reference & ImportOptions & { links?: Link[] }) => {
 	const [ [pin], upload ] = await sequelize.transaction(async transaction => {
-		const stat = await unixfs.stat(data.cid);
+		const block = await helia.blockstore.get(data.cid);
+		const decoded = dagPb.decode(block);
+		const size = block.length + decoded.Links.reduce((p, c) => p + (c.Tsize ?? 0), 0);
 
 		return await Promise.all([
 			pins.findOrCreate({
@@ -99,8 +103,8 @@ export const addLocal = async ({ groups, references, uploads, helia, welo, pins,
 
 				defaults: {
 					cid: data.cid,
-					blocks: stat.blocks,
-					size: Number(stat.dagSize),
+					blocks: 1,
+					size,
 					diskBlocks: 0,
 					diskSize: 0,
 					pinned: false
