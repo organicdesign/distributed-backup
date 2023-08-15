@@ -150,53 +150,86 @@ export const addLocal = async ({ groups, references, uploads, helia, welo, pins 
 	logger.references(`[+] ${data.group}/${data.cid}`);
 };
 
-export const replaceLocal = async ({ groups, references, uploads, helia, welo }: Components, data: Reference & { oldCid: CID }) => {
-	const [ oldRef, oldUpload, existingRef, existingUpload ] = await Promise.all([
+export const replaceLocal = async ({ groups, references, uploads, helia, welo, pins }: Components, data: Reference & { oldCid: CID }) => {
+	const [ oldRef, oldUpload ] = await Promise.all([
 		references.findOne({ where: { cid: data.oldCid.toString(), group: data.group.toString() } }),
-		uploads.findOne({ where: { cid: data.oldCid.toString(), group: data.group.toString() } }),
-		references.findOne({ where: { cid: data.cid.toString(), group: data.group.toString() } }),
-		uploads.findOne({ where: { cid: data.cid.toString(), group: data.group.toString() } })
+		uploads.findOne({ where: { cid: data.oldCid.toString(), group: data.group.toString() } })
 	]);
 
 	if (oldUpload == null || oldRef == null) {
 		throw new Error("upload should exist");
 	}
 
-	const [ ref ] = await sequelize.transaction(async transaction => {
+	const [ [ref], [pin] ] = await sequelize.transaction(async transaction => {
 		return await Promise.all([
-			existingRef ?? references.create({
-				cid: data.cid,
-				group: data.group,
-				blocked: false,
-				encrypted: oldUpload.encrypt,
-				timestamp: new Date(),
-				destroyed: false
-			}, { transaction }),
+			references.findOrCreate({
+				where: {
+					cid: data.cid.toString(),
+					group: data.group.toString()
+				},
 
-			existingUpload ?? uploads.create({
-				cid: data.cid,
-				group: data.group,
-				checkedAt: new Date(),
-				grouped: false,
-				path: oldUpload.path,
-				cidVersion: oldUpload.cidVersion,
-				hash: oldUpload.hash,
-				chunker: oldUpload.chunker,
-				rawLeaves: oldUpload.rawLeaves,
-				nocopy: oldUpload.nocopy,
-				encrypt: oldUpload.encrypt
-			}, { transaction }),
+				defaults: {
+					cid: data.cid,
+					group: data.group,
+					blocked: false,
+					encrypted: oldUpload.encrypt,
+					timestamp: new Date(),
+					destroyed: false
+				},
+
+				transaction
+			}),
+
+			pins.findOrCreate({
+				where: {
+					cid: data.cid.toString()
+				},
+
+				defaults: {
+					cid: data.cid,
+					blocks: 0,
+					size: 0,
+					diskBlocks: 0,
+					diskSize: 0,
+					pinned: false
+				},
+
+				transaction
+			}),
+
+			uploads.findOrCreate({
+				where: {
+					cid: data.cid.toString(),
+					group: data.group.toString()
+				},
+
+				defaults: {
+					cid: data.cid,
+					group: data.group,
+					checkedAt: new Date(),
+					grouped: false,
+					path: oldUpload.path,
+					cidVersion: oldUpload.cidVersion,
+					hash: oldUpload.hash,
+					chunker: oldUpload.chunker,
+					rawLeaves: oldUpload.rawLeaves,
+					nocopy: oldUpload.nocopy,
+					encrypt: oldUpload.encrypt
+				},
+
+				transaction
+			}),
 
 			oldRef.save({ transaction }),
 			oldUpload.destroy({ transaction })
 		]);
 	});
 
-	ref.pinned = true;
+	pin.pinned = true;
 	oldUpload.grouped = true;
 
 	await Promise.all([
-		safePin(helia, data.cid).then(() => ref.save()),
+		safePin(helia, data.cid).then(() => pin.save()),
 
 		groups.addTo(data.group, {
 			cid: data.cid,
@@ -212,7 +245,7 @@ export const replaceLocal = async ({ groups, references, uploads, helia, welo }:
 	logger.references(`[+] ${data.group}/${data.cid}`);
 };
 
-export const deleteAll = async ({ helia, references, groups, uploads }: Components, { cid, group }: Reference) => {
+export const deleteAll = async ({ helia, references, pins, groups, uploads }: Components, { cid, group }: Reference) => {
 	const [ ref, upload ] = await Promise.all([
 		references.findOne({ where: { cid: cid.toString(), group: group.toString() } }),
 		uploads.findOne({ where: { cid: cid.toString(), group: group.toString() } })
@@ -226,7 +259,7 @@ export const deleteAll = async ({ helia, references, groups, uploads }: Componen
 
 	await Promise.all([
 		groups.deleteFrom(cid, group),
-		unpinIfLast({ references, helia }, cid)
+		unpinIfLast({ references, helia, pins }, cid)
 	]);
 
 	await sequelize.transaction(async transaction => {
