@@ -2,7 +2,7 @@ import { DataTypes, Model, InferAttributes, InferCreationAttributes } from "sequ
 import { CID, Version } from "multiformats/cid";
 import { sequelize } from "./sequelize.js";
 
-class UploadClass extends Model<InferAttributes<UploadClass, { omit: "cid" | "group" }> & { cid: string, group: string }, InferCreationAttributes<UploadClass>> {
+class UploadsClass extends Model<InferAttributes<UploadsClass, { omit: "cid" | "group" }> & { cid: string, group: string }, InferCreationAttributes<UploadsClass>> {
 	declare cid: CID
 	declare group: CID
 	declare path: string
@@ -18,8 +18,8 @@ class UploadClass extends Model<InferAttributes<UploadClass, { omit: "cid" | "gr
 	declare grouped: boolean
 }
 
-export const Upload = sequelize.define<UploadClass>(
-	"upload",
+export const Uploads = sequelize.define<UploadsClass>(
+	"uploads",
 	{
 		cid: {
 			type: DataTypes.STRING(undefined, true),

@@ -1,3 +1,4 @@
 export { sequelize } from "./sequelize.js";
-export { Upload } from "./upload.js";
-export { Reference } from "./reference.js";
+export { Uploads } from "./uploads.js";
+export { References } from "./references.js";
+export { Pins } from "./pins.js";

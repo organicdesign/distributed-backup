@@ -4,7 +4,7 @@ import type { PubSub } from "@libp2p/interface-pubsub";
 import type { Helia } from "@helia/interface";
 import type { Filestore } from "./filestore/index.js";
 import type { Groups } from "./groups.js";
-import type { Reference, Upload } from "./database/index.js";
+import type { References, Uploads, Pins } from "./database/index.js";
 import type { Cipher } from "./cipher.js";
 import type { Datastores } from "./datastores.js";
 import type { Version, CID } from "multiformats/cid";
@@ -37,8 +37,9 @@ export interface Components {
 	cipher: Cipher
 	config: Config
 	stores: Datastores
-	references: typeof Reference
-	uploads: typeof Upload
+	references: typeof References
+	uploads: typeof Uploads
+	pins: typeof Pins
 }
 
 export interface Entry<T extends Uint8Array | CID = CID> {

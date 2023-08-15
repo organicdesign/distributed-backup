@@ -17,7 +17,7 @@ import { Datastores } from "./datastores.js";
 import { createCipher } from "./cipher.js";
 // import { createPins } from "./pins.js";
 // import { createReferences } from "./references.js";
-import { sequelize, Reference, Upload } from "./database/index.js";
+import { sequelize, References, Uploads, Pins } from "./database/index.js";
 import type { Components } from "./interface.js";
 
 const argv = await yargs(hideBin(process.argv))
@@ -82,8 +82,9 @@ const components: Components = {
 	groups,
 	config,
 	stores,
-	references: Reference,
-	uploads: Upload
+	references: References,
+	uploads: Uploads,
+	pins: Pins
 };
 
 // Register all the RPC commands.
