@@ -9,6 +9,7 @@ import type { Cipher } from "./cipher.js";
 import type { Datastores } from "./datastores.js";
 import type { Version, CID } from "multiformats/cid";
 import type { UnixFS } from "@helia/unixfs";
+import type { DownloadManager } from "./download-manager.js";
 
 export interface Config {
 	validateInterval: number
@@ -42,6 +43,7 @@ export interface Components {
 	references: typeof References
 	uploads: typeof Uploads
 	pins: typeof Pins
+	dm: DownloadManager
 }
 
 export interface Entry<T extends Uint8Array | CID = CID> {

@@ -80,9 +80,10 @@ export const downSync = async (components: Components) => {
 				destroyed: false
 			});
 
-			await safePin(helia, cid);
+			components.dm.add(cid);
+			// await safePin(helia, cid);
 
-			pin.pinned = true;
+			// pin.pinned = true;
 
 			await ref.save();
 		}

@@ -10,13 +10,14 @@ import { Filestore } from "./filestore/index.js";
 import { getConfig } from "./config.js";
 import * as logger from "./logger.js";
 import { Looper } from "./looper.js";
-import mainLoop from "./main-loop.js";
+import { syncLoop, downloadLoop } from "./loops.js";
 import commands from "./rpc/index.js";
 import { createGroups } from "./groups.js";
 import { Datastores } from "./datastores.js";
 import { createCipher } from "./cipher.js";
 import { sequelize, References, Uploads, Pins } from "./database/index.js";
 import { unixfs } from "@helia/unixfs";
+import { DownloadManager } from "./download-manager.js";
 import type { Components } from "./interface.js";
 
 const argv = await yargs(hideBin(process.argv))
@@ -72,6 +73,8 @@ logger.lifecycle("loaded groups");
 const { rpc, close } = await createNetServer(argv.socket);
 logger.lifecycle("loaded server");
 
+const dm = new DownloadManager(helia);
+
 const components: Components = {
 	libp2p,
 	cipher,
@@ -81,6 +84,7 @@ const components: Components = {
 	groups,
 	config,
 	stores,
+	dm,
 	unixfs: unixfs(helia),
 	references: References,
 	uploads: Uploads,
@@ -122,10 +126,13 @@ process.on("SIGINT", async () => {
 	process.exit();
 });
 
-// Create the looper.
-const looper = new Looper(() => mainLoop(components), { sleep: config.tickInterval * 1000 });
+// Create the loops.
+const loops = [
+	new Looper(() => syncLoop(components), { sleep: config.tickInterval * 1000 }),
+	new Looper(() => downloadLoop(components), { sleep: config.tickInterval * 1000 })
+];
 
 logger.lifecycle("started");
 
 // Run the main loop.
-await looper.run();
+await Promise.all(loops.map(l => l.run()))
