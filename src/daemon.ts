@@ -16,7 +16,6 @@ import { createGroups } from "./groups.js";
 import { Datastores } from "./datastores.js";
 import { createCipher } from "./cipher.js";
 import { sequelize, References, Uploads, Pins } from "./database/index.js";
-import { unixfs } from "@helia/unixfs";
 import { DownloadManager } from "./download-manager.js";
 import type { Components } from "./interface.js";
 
@@ -85,7 +84,6 @@ const components: Components = {
 	config,
 	stores,
 	dm,
-	unixfs: unixfs(helia),
 	references: References,
 	uploads: Uploads,
 	pins: Pins

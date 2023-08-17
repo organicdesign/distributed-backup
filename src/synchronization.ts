@@ -9,7 +9,6 @@ import selectHasher from "./fs-importer/select-hasher.js";
 import { safePin, safeUnpin } from "./utils.js";
 import { BlackHoleBlockstore } from "blockstore-core/black-hole";
 import { sequelize } from "./database/index.js";
-import { UnixFS } from "ipfs-unixfs";
 import type { Entry, Components, ImportOptions, Reference, Link } from "./interface.js";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
 
@@ -25,7 +24,7 @@ const unpinIfLast = async ({ references, helia, pins }: Pick<Components, "helia"
 };
 
 export const downSync = async (components: Components) => {
-	const { groups, references, helia, pins } = components;
+	const { groups, references, pins } = components;
 
 	for (const { value: database } of groups.all()) {
 		//logger.validate("syncing group: %s", database.address.cid.toString());
@@ -56,7 +55,7 @@ export const downSync = async (components: Components) => {
 
 			logger.references(`[+] ${group}/${cid}`);
 
-			const [pin] = await pins.findOrCreate({
+			await pins.findOrCreate({
 				where: {
 					cid: cid.toString()
 				},
@@ -90,7 +89,7 @@ export const downSync = async (components: Components) => {
 	}
 };
 
-export const addLocal = async ({ groups, references, uploads, helia, welo, pins, unixfs }: Components, data: Reference & ImportOptions & { links?: Link[] }) => {
+export const addLocal = async ({ groups, references, uploads, helia, welo, pins }: Components, data: Reference & ImportOptions & { links?: Link[] }) => {
 	const [ [pin], upload ] = await sequelize.transaction(async transaction => {
 		const block = await helia.blockstore.get(data.cid);
 		const decoded = dagPb.decode(block);
