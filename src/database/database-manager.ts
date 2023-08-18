@@ -39,6 +39,15 @@ export class DatabaseManager {
 		]));
 	}
 
+	/**
+	 * Get the size on disk for a given pin.
+	 */
+	async getSize (cid: CID) {
+		const blocks = await Blocks.findAll({ where: { pinnedBy: cid.toString() } });
+
+		return blocks.reduce((c, b) => b.size + c, 0);
+	}
+
 	async download (cid: CID) {
 		// Download the block and fetch the downloads referencing it.
 		const [ downloads, block ] = await Promise.all([
