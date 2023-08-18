@@ -59,6 +59,13 @@ export class DatabaseManager {
 	}
 
 	async download (cid: CID) {
+		// Check if we are already downloading this.
+		const activePromise = this.activeDownloads.get(cid.toString());
+
+		if (activePromise != null) {
+			return activePromise;
+		}
+
 		const promise = (async () => {
 			// Download the block and fetch the downloads referencing it.
 			const [ downloads, block ] = await Promise.all([
