@@ -119,11 +119,19 @@ export class DatabaseManager {
 
 			for await (const cid of dagWalker.walk(block)) {
 				for (const d of downloads) {
-					promises.push(Downloads.create({
-						cid,
-						pinnedBy: d.pinnedBy,
-						depth: d.depth + 1
-					}));
+					promises.push((async () => {
+						const pin = await Pins.findOne({ where: { cid: d.pinnedBy.toString() } });
+
+						if (pin == null || pin.depth <= d.depth) {
+							return;
+						}
+
+						await Downloads.create({
+							cid,
+							pinnedBy: d.pinnedBy,
+							depth: d.depth + 1
+						})
+					})());
 				}
 			}
 
