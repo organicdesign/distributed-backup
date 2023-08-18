@@ -4,11 +4,8 @@ import { sequelize } from "./sequelize.js";
 
 class PinsClass extends Model<InferAttributes<PinsClass, { omit: "cid" }> & { cid: string }, InferCreationAttributes<PinsClass>> {
 	declare cid: CID
-	declare blocks: number
-	declare size: number
-	declare diskBlocks: number
-	declare diskSize: number
-	declare pinned: boolean
+	declare depth: number
+	declare completed: boolean
 }
 
 export const Pins = sequelize.define<PinsClass>(
@@ -30,27 +27,12 @@ export const Pins = sequelize.define<PinsClass>(
 			}
 		},
 
-		blocks: {
-			type: DataTypes.BIGINT(),
+		depth: {
+			type: DataTypes.INTEGER({ unsigned: true }),
 			allowNull: false
 		},
 
-		size: {
-			type: DataTypes.BIGINT(),
-			allowNull: false
-		},
-
-		diskBlocks: {
-			type: DataTypes.BIGINT(),
-			allowNull: false
-		},
-
-		diskSize: {
-			type: DataTypes.BIGINT(),
-			allowNull: false
-		},
-
-		pinned: {
+		completed: {
 			type: DataTypes.BOOLEAN,
 			allowNull: false,
 			defaultValue: false
