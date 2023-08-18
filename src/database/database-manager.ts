@@ -18,7 +18,7 @@ interface DatastorePinnedBlock {
 
 export class DatabaseManager {
 	private readonly helia: Helia;
-	private readonly activeDownloads = new Map<string, Promise<void>>();
+	private readonly activeDownloads = new Map<string, Promise<Uint8Array>>();
 
 	constructor ({ helia }: { helia: Helia }) {
 		this.helia = helia;
@@ -58,7 +58,7 @@ export class DatabaseManager {
 		return blocks.reduce((c, b) => b.size + c, 0);
 	}
 
-	async download (cid: CID) {
+	async download (cid: CID): Promise<Uint8Array> {
 		// Check if we are already downloading this.
 		const activePromise = this.activeDownloads.get(cid.toString());
 
@@ -99,7 +99,7 @@ export class DatabaseManager {
 
 			for (const d of downloads) {
 				if (pinnedBlock.pinnedBy.find(c => uint8ArrayEquals(c, cid.bytes)) != null) {
-					return;
+					continue;
 				}
 
 				pinnedBlock.pinCount++;
@@ -139,12 +139,16 @@ export class DatabaseManager {
 
 			// Delete the download references
 			await Promise.all(downloads.map(d => d.destroy()));
+
+			return block;
 		})();
 
 		this.activeDownloads.set(cid.toString(), promise);
 
-		await promise;
+		const block = await promise;
 
 		this.activeDownloads.delete(cid.toString());
+
+		return block;
 	}
 }
