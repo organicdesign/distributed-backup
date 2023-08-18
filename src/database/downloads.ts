@@ -53,7 +53,7 @@ export const Downloads = sequelize.define<DownloadsClass>(
 		},
 
 		depth: {
-			type: DataTypes.BIGINT(),
+			type: DataTypes.INTEGER({ unsigned: true }),
 			allowNull: false
 		}
 	}

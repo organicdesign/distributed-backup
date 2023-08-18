@@ -50,7 +50,7 @@ export const Blocks = sequelize.define<BlocksClass>(
 		},
 
 		depth: {
-			type: DataTypes.BIGINT(),
+			type: DataTypes.INTEGER({ unsigned: true }),
 			allowNull: false
 		}
 	}
