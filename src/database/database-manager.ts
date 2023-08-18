@@ -58,6 +58,57 @@ export class DatabaseManager {
 		return blocks.reduce((c, b) => b.size + c, 0);
 	}
 
+	async * downloadPin (pin: CID) {
+		const pinData = await Pins.findOne({ where: { cid: pin.toString() } })
+
+		if (pinData == null) {
+			throw new Error("no such pin");
+		}
+
+		const queue: Array<() => Promise<CID>> = [];
+		const promises: Array<Promise<CID>> = [];
+
+		const enqueue = (cid: CID, depth: number): void => {
+			queue.push(async () => {
+				const promise = (async () => {
+					const dagWalker = Object.values(dagWalkers).find(dw => dw.codec === cid.code);
+
+					if (dagWalker == null) {
+						throw new Error(`No dag walker found for cid codec ${cid.code}`);
+					}
+
+					const block = await this.download(cid);
+
+					if (depth < pinData.depth) {
+						for await (const cid of dagWalker.walk(block)) {
+							enqueue(cid, depth + 1)
+						}
+					}
+
+					return cid
+				})();
+
+				promises.push(promise)
+
+				return promise
+			})
+		}
+
+		enqueue(pin, 0);
+
+		while (queue.length + promises.length !== 0) {
+			const func = queue.shift();
+
+			if (func == null) {
+				await promises.shift();
+
+				continue;
+			}
+
+			yield func;
+		}
+	}
+
 	async download (cid: CID): Promise<Uint8Array> {
 		// Check if we are already downloading this.
 		const activePromise = this.activeDownloads.get(cid.toString());
