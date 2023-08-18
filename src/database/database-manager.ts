@@ -18,6 +18,7 @@ interface DatastorePinnedBlock {
 
 export class DatabaseManager {
 	private readonly helia: Helia;
+	private readonly activeDownloads = new Map<string, Promise<void>>();
 
 	constructor ({ helia }: { helia: Helia }) {
 		this.helia = helia;
@@ -40,78 +41,95 @@ export class DatabaseManager {
 	}
 
 	/**
+	 * Get all the download heads for a given pin.
+	 */
+	async getHeads (pin: CID) {
+		const downloads = await Downloads.findAll({ where: { pinnedBy: pin.toString() } });
+
+		return downloads.map(d => d.cid);
+	}
+
+	/**
 	 * Get the size on disk for a given pin.
 	 */
-	async getSize (cid: CID) {
-		const blocks = await Blocks.findAll({ where: { pinnedBy: cid.toString() } });
+	async getSize (pin: CID) {
+		const blocks = await Blocks.findAll({ where: { pinnedBy: pin.toString() } });
 
 		return blocks.reduce((c, b) => b.size + c, 0);
 	}
 
 	async download (cid: CID) {
-		// Download the block and fetch the downloads referencing it.
-		const [ downloads, block ] = await Promise.all([
-			Downloads.findAll({ where: { cid: cid.toString() } }),
-			this.helia.blockstore.get(cid)
-		]);
+		const promise = (async () => {
+			// Download the block and fetch the downloads referencing it.
+			const [ downloads, block ] = await Promise.all([
+				Downloads.findAll({ where: { cid: cid.toString() } }),
+				this.helia.blockstore.get(cid)
+			]);
 
-		// Save the blocks to the database.
-		await Promise.all(downloads.map(d => Blocks.create({
-			cid,
-			pinnedBy: d.pinnedBy,
-			depth: d.depth,
-			size: block.length
-		})));
+			// Save the blocks to the database.
+			await Promise.all(downloads.map(d => Blocks.create({
+				cid,
+				pinnedBy: d.pinnedBy,
+				depth: d.depth,
+				size: block.length
+			})));
 
-		// Register those blocks as pinned by helia.
-		const blockKey = new Key(`${DATASTORE_BLOCK_PREFIX}${DATASTORE_ENCODING.encode(cid.multihash.bytes)}`);
+			// Register those blocks as pinned by helia.
+			const blockKey = new Key(`${DATASTORE_BLOCK_PREFIX}${DATASTORE_ENCODING.encode(cid.multihash.bytes)}`);
 
-		let pinnedBlock: DatastorePinnedBlock = {
-			pinCount: 0,
-			pinnedBy: []
-		};
+			let pinnedBlock: DatastorePinnedBlock = {
+				pinCount: 0,
+				pinnedBy: []
+			};
 
-		try {
-			pinnedBlock = cborg.decode(await this.helia.datastore.get(blockKey));
-		} catch (err: any) {
-			if (err.code !== 'ERR_NOT_FOUND') {
-				throw err;
-			}
-		}
-
-		for (const d of downloads) {
-			if (pinnedBlock.pinnedBy.find(c => uint8ArrayEquals(c, cid.bytes)) != null) {
-				return;
+			try {
+				pinnedBlock = cborg.decode(await this.helia.datastore.get(blockKey));
+			} catch (err: any) {
+				if (err.code !== 'ERR_NOT_FOUND') {
+					throw err;
+				}
 			}
 
-			pinnedBlock.pinCount++;
-			pinnedBlock.pinnedBy.push(d.pinnedBy.bytes);
-		}
-
-		await this.helia.datastore.put(blockKey, cborg.encode(pinnedBlock));
-
-		// Add the next blocks to download.
-		const dagWalker = Object.values(dagWalkers).find(dw => dw.codec === cid.code);
-
-		if (dagWalker == null) {
-			throw new Error(`No dag walker found for cid codec ${cid.code}`);
-		}
-
-		const promises: Promise<unknown>[] = [];
-
-		for await (const cid of dagWalker.walk(block)) {
 			for (const d of downloads) {
-				promises.push(Downloads.create({
-					cid,
-					pinnedBy: d.pinnedBy,
-					depth: d.depth + 1
-				}));
+				if (pinnedBlock.pinnedBy.find(c => uint8ArrayEquals(c, cid.bytes)) != null) {
+					return;
+				}
+
+				pinnedBlock.pinCount++;
+				pinnedBlock.pinnedBy.push(d.pinnedBy.bytes);
 			}
-		}
 
-		await Promise.all(promises);
+			await this.helia.datastore.put(blockKey, cborg.encode(pinnedBlock));
 
-		// Delete the download references
-		await Promise.all(downloads.map(d => d.destroy()));
+			// Add the next blocks to download.
+			const dagWalker = Object.values(dagWalkers).find(dw => dw.codec === cid.code);
+
+			if (dagWalker == null) {
+				throw new Error(`No dag walker found for cid codec ${cid.code}`);
+			}
+
+			const promises: Promise<unknown>[] = [];
+
+			for await (const cid of dagWalker.walk(block)) {
+				for (const d of downloads) {
+					promises.push(Downloads.create({
+						cid,
+						pinnedBy: d.pinnedBy,
+						depth: d.depth + 1
+					}));
+				}
+			}
+
+			await Promise.all(promises);
+
+			// Delete the download references
+			await Promise.all(downloads.map(d => d.destroy()));
+		})();
+
+		this.activeDownloads.set(cid.toString(), promise);
+
+		await promise;
+
+		this.activeDownloads.delete(cid.toString());
 	}
 }
