@@ -16,6 +16,12 @@ interface DatastorePinnedBlock {
 	pinnedBy: Uint8Array[]
 }
 
+enum PinState {
+	UNPINNED,
+	PINNED,
+	PENDING
+}
+
 export class DatabaseManager {
 	private readonly helia: Helia;
 	private readonly activeDownloads = new Map<string, Promise<Uint8Array>>();
@@ -38,6 +44,19 @@ export class DatabaseManager {
 				depth: 0
 			}, { transaction })
 		]));
+	}
+
+	/**
+	 * Get the current state of the pin.
+	 */
+	async getState (cid: CID): Promise<PinState> {
+		const pin = await Pins.findOne({ where: { cid: cid.toString() } });
+
+		if (pin == null) {
+			return PinState.UNPINNED;
+		}
+
+		return pin.completed ? PinState.PINNED : PinState.PENDING;
 	}
 
 	/**
