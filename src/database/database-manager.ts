@@ -4,12 +4,23 @@ import * as cborg from "cborg";
 import { Key } from "interface-datastore";
 import { equals as uint8ArrayEquals } from "uint8arrays/equals";
 import * as dagWalkers from "../../node_modules/helia/dist/src/utils/dag-walkers.js";
+import type { DAGWalker } from "../../node_modules/helia/dist/src/index.js";
 import type { CID } from "multiformats/cid";
 import type { Helia } from "@helia/interface";
 
 const DATASTORE_PIN_PREFIX = "/pin/";
 const DATASTORE_BLOCK_PREFIX = "/pinned-block/";
 const DATASTORE_ENCODING = base36;
+
+const getDagWalker = (cid: CID): DAGWalker => {
+	const dagWalker = Object.values(dagWalkers).find(dw => dw.codec === cid.code);
+
+	if (dagWalker == null) {
+		throw new Error(`No dag walker found for cid codec ${cid.code}`);
+	}
+
+	return dagWalker;
+};
 
 interface DatastorePinnedBlock {
 	pinCount: number
@@ -78,7 +89,7 @@ export class DatabaseManager {
 	}
 
 	async * downloadPin (pin: CID) {
-		const pinData = await Pins.findOne({ where: { cid: pin.toString() } })
+		const pinData = await Pins.findOne({ where: { cid: pin.toString() } });
 
 		if (pinData == null) {
 			throw new Error("no such pin");
@@ -90,26 +101,21 @@ export class DatabaseManager {
 		const enqueue = (cid: CID, depth: number): void => {
 			queue.push(async () => {
 				const promise = (async () => {
-					const dagWalker = Object.values(dagWalkers).find(dw => dw.codec === cid.code);
-
-					if (dagWalker == null) {
-						throw new Error(`No dag walker found for cid codec ${cid.code}`);
-					}
-
+					const dagWalker = getDagWalker(cid);
 					const block = await this.download(cid);
 
 					if (depth < pinData.depth) {
 						for await (const cid of dagWalker.walk(block)) {
-							enqueue(cid, depth + 1)
+							enqueue(cid, depth + 1);
 						}
 					}
 
-					return cid
+					return cid;
 				})();
 
-				promises.push(promise)
+				promises.push(promise);
 
-				return promise
+				return promise;
 			})
 		}
 
@@ -179,12 +185,7 @@ export class DatabaseManager {
 			await this.helia.datastore.put(blockKey, cborg.encode(pinnedBlock));
 
 			// Add the next blocks to download.
-			const dagWalker = Object.values(dagWalkers).find(dw => dw.codec === cid.code);
-
-			if (dagWalker == null) {
-				throw new Error(`No dag walker found for cid codec ${cid.code}`);
-			}
-
+			const dagWalker = getDagWalker(cid);
 			const promises: Promise<unknown>[] = [];
 
 			for await (const cid of dagWalker.walk(block)) {
