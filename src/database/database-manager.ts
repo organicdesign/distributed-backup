@@ -70,6 +70,12 @@ export class DatabaseManager {
 		return pin.completed ? PinState.PINNED : PinState.PENDING;
 	}
 
+	async getActiveDownloads (): Promise<CID[]> {
+		const pins = await Pins.findAll({ where: { completed: false } });
+
+		return pins.map(p => p.cid);
+	}
+
 	/**
 	 * Get all the download heads for a given pin.
 	 */
