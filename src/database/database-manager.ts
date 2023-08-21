@@ -35,7 +35,7 @@ enum PinState {
 
 export class DatabaseManager {
 	private readonly helia: Helia;
-	private readonly activeDownloads = new Map<string, Promise<Uint8Array>>();
+	private readonly activeDownloads = new Map<string, Promise<{ block: Uint8Array, cid: CID, links: CID[] }>>();
 
 	constructor ({ helia }: { helia: Helia }) {
 		this.helia = helia;
@@ -76,7 +76,7 @@ export class DatabaseManager {
 	async getHeads (pin: CID) {
 		const downloads = await Downloads.findAll({ where: { pinnedBy: pin.toString() } });
 
-		return downloads.map(d => d.cid);
+		return downloads;
 	}
 
 	/**
@@ -101,11 +101,10 @@ export class DatabaseManager {
 		const enqueue = (cid: CID, depth: number): void => {
 			queue.push(async () => {
 				const promise = (async () => {
-					const dagWalker = getDagWalker(cid);
-					const block = await this.download(cid);
+					const { links } = await this.download(cid);
 
 					if (depth < pinData.depth) {
-						for await (const cid of dagWalker.walk(block)) {
+						for (const cid of links) {
 							enqueue(cid, depth + 1);
 						}
 					}
@@ -119,7 +118,11 @@ export class DatabaseManager {
 			})
 		}
 
-		enqueue(pin, 0);
+		const heads = await this.getHeads(pin);
+
+		for (const head of heads) {
+			enqueue(head.cid, head.depth);
+		}
 
 		while (queue.length + promises.length !== 0) {
 			const func = queue.shift();
@@ -134,7 +137,7 @@ export class DatabaseManager {
 		}
 	}
 
-	async download (cid: CID): Promise<Uint8Array> {
+	async download (cid: CID): Promise<{ block: Uint8Array, cid: CID, links: CID[] }> {
 		// Check if we are already downloading this.
 		const activePromise = this.activeDownloads.get(cid.toString());
 
@@ -187,6 +190,7 @@ export class DatabaseManager {
 			// Add the next blocks to download.
 			const dagWalker = getDagWalker(cid);
 			const promises: Promise<unknown>[] = [];
+			const links: CID[] = [];
 
 			for await (const cid of dagWalker.walk(block)) {
 				for (const d of downloads) {
@@ -196,6 +200,8 @@ export class DatabaseManager {
 						if (pin == null || pin.depth <= d.depth) {
 							return;
 						}
+
+						links.push(cid);
 
 						await Downloads.create({
 							cid,
@@ -211,15 +217,15 @@ export class DatabaseManager {
 			// Delete the download references
 			await Promise.all(downloads.map(d => d.destroy()));
 
-			return block;
+			return { block, cid, links };
 		})();
 
 		this.activeDownloads.set(cid.toString(), promise);
 
-		const block = await promise;
+		const data = await promise;
 
 		this.activeDownloads.delete(cid.toString());
 
-		return block;
+		return data;
 	}
 }
