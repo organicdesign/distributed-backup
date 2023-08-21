@@ -50,7 +50,7 @@ export const Blocks = sequelize.define<BlocksClass>(
 		},
 
 		depth: {
-			type: DataTypes.INTEGER({ unsigned: true }),
+			type: DataTypes.INTEGER(),
 			allowNull: false
 		}
 	}

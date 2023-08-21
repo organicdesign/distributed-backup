@@ -4,7 +4,7 @@ import { sequelize } from "./sequelize.js";
 
 class PinsClass extends Model<InferAttributes<PinsClass, { omit: "cid" }> & { cid: string }, InferCreationAttributes<PinsClass>> {
 	declare cid: CID
-	declare depth: number
+	declare depth?: number
 	declare completed: boolean
 }
 
@@ -28,8 +28,8 @@ export const Pins = sequelize.define<PinsClass>(
 		},
 
 		depth: {
-			type: DataTypes.INTEGER({ unsigned: true }),
-			allowNull: false
+			type: DataTypes.INTEGER(),
+			allowNull: true
 		},
 
 		completed: {

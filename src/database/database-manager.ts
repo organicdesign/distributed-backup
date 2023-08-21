@@ -7,6 +7,7 @@ import * as dagWalkers from "../../node_modules/helia/dist/src/utils/dag-walkers
 import type { DAGWalker } from "../../node_modules/helia/dist/src/index.js";
 import type { CID } from "multiformats/cid";
 import type { Helia } from "@helia/interface";
+import type { Transaction } from "sequelize";
 
 const DATASTORE_PIN_PREFIX = "/pin/";
 const DATASTORE_BLOCK_PREFIX = "/pinned-block/";
@@ -41,12 +42,22 @@ export class DatabaseManager {
 		this.helia = helia;
 	}
 
-	async pin (cid: CID) {
-		await sequelize.transaction(transaction => Promise.all([
+	async pin (cid: CID, options?: Partial<{ transaction: Transaction }>) {
+		const pin = await Pins.findOne({
+			where: {
+				cid: cid.toString()
+			}
+		});
+
+		if (pin != null) {
+			return;
+		}
+
+		const action = (transaction: Transaction) => Promise.all([
 			Pins.create({
 				cid,
 				completed: false,
-				depth: -1
+				depth: Infinity
 			}, { transaction }),
 
 			Downloads.create({
@@ -54,7 +65,13 @@ export class DatabaseManager {
 				pinnedBy: cid,
 				depth: 0
 			}, { transaction })
-		]));
+		]);
+
+		if (options?.transaction) {
+			await action(options.transaction);
+		} else {
+			await sequelize.transaction(action)
+		}
 	}
 
 	/**
@@ -109,7 +126,7 @@ export class DatabaseManager {
 				const promise = (async () => {
 					const { links } = await this.download(cid);
 
-					if (depth < pinData.depth) {
+					if (pinData.depth == null || depth < pinData.depth) {
 						for (const cid of links) {
 							enqueue(cid, depth + 1);
 						}
@@ -203,7 +220,7 @@ export class DatabaseManager {
 					promises.push((async () => {
 						const pin = await Pins.findOne({ where: { cid: d.pinnedBy.toString() } });
 
-						if (pin == null || pin.depth <= d.depth) {
+						if (pin?.depth == null || pin.depth <= d.depth) {
 							return;
 						}
 

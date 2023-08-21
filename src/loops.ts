@@ -12,5 +12,14 @@ export const syncLoop = async (components: Components) => {
 };
 
 export const downloadLoop = async (components: Components) => {
-	console.log(await components.dm.download());
+	const pins = await components.dm.getActiveDownloads();
+
+	for (const pin of pins) {
+		const { done, value: f } = await components.dm.downloadPin(pin).next();
+
+		if (!done) {
+			const cid = await f();
+			console.log("downloaded", cid, pin);
+		}
+	}
 };

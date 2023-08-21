@@ -8,7 +8,7 @@ import type { References, Uploads, Pins } from "./database/index.js";
 import type { Cipher } from "./cipher.js";
 import type { Datastores } from "./datastores.js";
 import type { Version, CID } from "multiformats/cid";
-import type { DownloadManager } from "./download-manager.js";
+import type { DatabaseManager } from "./database/database-manager.js";
 
 export interface Config {
 	validateInterval: number
@@ -41,7 +41,7 @@ export interface Components {
 	references: typeof References
 	uploads: typeof Uploads
 	pins: typeof Pins
-	dm: DownloadManager
+	dm: DatabaseManager
 }
 
 export interface Entry<T extends Uint8Array | CID = CID> {

@@ -16,7 +16,8 @@ import { createGroups } from "./groups.js";
 import { Datastores } from "./datastores.js";
 import { createCipher } from "./cipher.js";
 import { sequelize, References, Uploads, Pins } from "./database/index.js";
-import { DownloadManager } from "./download-manager.js";
+// import { DownloadManager } from "./download-manager.js";
+import { DatabaseManager } from "./database/database-manager.js";
 import type { Components } from "./interface.js";
 
 const argv = await yargs(hideBin(process.argv))
@@ -72,7 +73,7 @@ logger.lifecycle("loaded groups");
 const { rpc, close } = await createNetServer(argv.socket);
 logger.lifecycle("loaded server");
 
-const dm = new DownloadManager(helia);
+const dm = new DatabaseManager({ helia });
 
 const components: Components = {
 	libp2p,

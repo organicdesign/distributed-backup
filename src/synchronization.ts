@@ -6,7 +6,7 @@ import { importAny as importAnyEncrypted } from "./fs-importer/import-copy-encry
 import { importAny as importAnyPlaintext } from "./fs-importer/import-copy-plaintext.js";
 import selectChunker from "./fs-importer/select-chunker.js";
 import selectHasher from "./fs-importer/select-hasher.js";
-import { safePin, safeUnpin } from "./utils.js";
+import { safeUnpin } from "./utils.js";
 import { BlackHoleBlockstore } from "blockstore-core/black-hole";
 import { sequelize } from "./database/index.js";
 import type { Entry, Components, ImportOptions, Reference, Link } from "./interface.js";
@@ -55,21 +55,6 @@ export const downSync = async (components: Components) => {
 
 			logger.references(`[+] ${group}/${cid}`);
 
-			await pins.findOrCreate({
-				where: {
-					cid: cid.toString()
-				},
-
-				defaults: {
-					cid,
-					blocks: 0,
-					size: 0,
-					diskBlocks: 0,
-					diskSize: 0,
-					pinned: false
-				}
-			});
-
 			const ref = await references.create({
 				cid,
 				group,
@@ -79,7 +64,7 @@ export const downSync = async (components: Components) => {
 				destroyed: false
 			});
 
-			components.dm.add(cid);
+			await components.dm.pin(cid);
 			// await safePin(helia, cid);
 
 			// pin.pinned = true;
@@ -89,30 +74,13 @@ export const downSync = async (components: Components) => {
 	}
 };
 
-export const addLocal = async ({ groups, references, uploads, helia, welo, pins }: Components, data: Reference & ImportOptions & { links?: Link[] }) => {
-	const [ [pin], upload ] = await sequelize.transaction(async transaction => {
+export const addLocal = async ({ groups, references, uploads, helia, welo, dm }: Components, data: Reference & ImportOptions & { links?: Link[] }) => {
+	const [ upload ] = await sequelize.transaction(async transaction => {
 		const block = await helia.blockstore.get(data.cid);
 		const decoded = dagPb.decode(block);
 		const size = block.length + decoded.Links.reduce((p, c) => p + (c.Tsize ?? 0), 0);
 
 		return await Promise.all([
-			pins.findOrCreate({
-				where: {
-					cid: data.cid.toString()
-				},
-
-				defaults: {
-					cid: data.cid,
-					blocks: 1,
-					size,
-					diskBlocks: 0,
-					diskSize: 0,
-					pinned: false
-				},
-
-				transaction
-			}),
-
 			uploads.create({
 				cid: data.cid,
 				group: data.group,
@@ -134,29 +102,26 @@ export const addLocal = async ({ groups, references, uploads, helia, welo, pins 
 				encrypted: data.encrypt,
 				timestamp: new Date(),
 				destroyed: false
-			}, { transaction })
+			}, { transaction }),
+
+			dm.pin(data.cid, { transaction })
 		]);
 	});
 
-	pin.pinned = true;
 	upload.grouped = true;
 
-	await Promise.all([
-		safePin(helia, data.cid).then(() => pin.save()),
-
-		groups.addTo(data.group, {
-			cid: data.cid,
-			timestamp: Date.now(),
-			author: welo.identity.id,
-			encrypted: data.encrypt,
-			links: data.links ?? []
-		}).then(() => upload.save())
-	]);
+	await groups.addTo(data.group, {
+		cid: data.cid,
+		timestamp: Date.now(),
+		author: welo.identity.id,
+		encrypted: data.encrypt,
+		links: data.links ?? []
+	}).then(() => upload.save());
 
 	logger.references(`[+] ${data.group}/${data.cid}`);
 };
 
-export const replaceLocal = async ({ groups, references, uploads, helia, welo, pins }: Components, data: Reference & { oldCid: CID }) => {
+export const replaceLocal = async ({ groups, references, uploads, welo, dm }: Components, data: Reference & { oldCid: CID }) => {
 	const [ oldRef, oldUpload ] = await Promise.all([
 		references.findOne({ where: { cid: data.oldCid.toString(), group: data.group.toString() } }),
 		uploads.findOne({ where: { cid: data.oldCid.toString(), group: data.group.toString() } })
@@ -166,7 +131,7 @@ export const replaceLocal = async ({ groups, references, uploads, helia, welo, p
 		throw new Error("upload should exist");
 	}
 
-	const [ [ref], [pin] ] = await sequelize.transaction(async transaction => {
+	const [ [ref] ] = await sequelize.transaction(async transaction => {
 		return await Promise.all([
 			references.findOrCreate({
 				where: {
@@ -186,22 +151,7 @@ export const replaceLocal = async ({ groups, references, uploads, helia, welo, p
 				transaction
 			}),
 
-			pins.findOrCreate({
-				where: {
-					cid: data.cid.toString()
-				},
-
-				defaults: {
-					cid: data.cid,
-					blocks: 0,
-					size: 0,
-					diskBlocks: 0,
-					diskSize: 0,
-					pinned: false
-				},
-
-				transaction
-			}),
+			dm.pin(data.cid, { transaction }),
 
 			uploads.findOrCreate({
 				where: {
@@ -231,12 +181,9 @@ export const replaceLocal = async ({ groups, references, uploads, helia, welo, p
 		]);
 	});
 
-	pin.pinned = true;
 	oldUpload.grouped = true;
 
 	await Promise.all([
-		safePin(helia, data.cid).then(() => pin.save()),
-
 		groups.addTo(data.group, {
 			cid: data.cid,
 			timestamp: Date.now(),
