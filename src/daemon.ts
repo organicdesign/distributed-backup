@@ -55,6 +55,7 @@ logger.lifecycle("loaded helia");
 // const pins = await createPins({ helia, datastore: stores.get("pins") });
 
 const welo = await createWelo({
+	// @ts-ignore Helia version mismatch here.
 	ipfs: helia,
 	replicators: [bootstrapReplicator(), pubsubReplicator()]
 });

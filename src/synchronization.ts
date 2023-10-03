@@ -74,54 +74,10 @@ export const downSync = async (components: Components) => {
 	}
 };
 
-export const addLocal = async ({ groups, references, uploads, helia, welo, dm }: Components, data: Reference & ImportOptions & { links?: Link[] }) => {
-	const [ upload ] = await sequelize.transaction(async transaction => {
-		const block = await helia.blockstore.get(data.cid);
-		const decoded = dagPb.decode(block);
-		const size = block.length + decoded.Links.reduce((p, c) => p + (c.Tsize ?? 0), 0);
-
-		return await Promise.all([
-			uploads.create({
-				cid: data.cid,
-				group: data.group,
-				cidVersion: data.cidVersion,
-				path: data.path,
-				rawLeaves: data.rawLeaves,
-				chunker: data.chunker,
-				hash: data.hash,
-				nocopy: data.nocopy,
-				encrypt: data.encrypt,
-				checkedAt: new Date(),
-				grouped: false
-			}),
-
-			references.create({
-				cid: data.cid,
-				group: data.group,
-				blocked: false,
-				encrypted: data.encrypt,
-				timestamp: new Date(),
-				destroyed: false
-			}, { transaction }),
-
-			dm.pin(data.cid, { transaction })
-		]);
-	});
-
-	upload.grouped = true;
-
-	await groups.addTo(data.group, {
-		cid: data.cid,
-		timestamp: Date.now(),
-		author: welo.identity.id,
-		encrypted: data.encrypt,
-		links: data.links ?? []
-	}).then(() => upload.save());
-
-	logger.references(`[+] ${data.group}/${data.cid}`);
-};
-
 export const replaceLocal = async ({ groups, references, uploads, welo, dm }: Components, data: Reference & { oldCid: CID }) => {
+	throw new Error("not implemented");
+
+	/*
 	const [ oldRef, oldUpload ] = await Promise.all([
 		references.findOne({ where: { cid: data.oldCid.toString(), group: data.group.toString() } }),
 		uploads.findOne({ where: { cid: data.oldCid.toString(), group: data.group.toString() } })
@@ -196,9 +152,12 @@ export const replaceLocal = async ({ groups, references, uploads, welo, dm }: Co
 	]);
 
 	logger.references(`[+] ${data.group}/${data.cid}`);
+	*/
 };
 
 export const deleteAll = async ({ helia, references, pins, groups, uploads }: Components, { cid, group }: Reference) => {
+	throw new Error("not implemented");
+	/*
 	const [ ref, upload ] = await Promise.all([
 		references.findOne({ where: { cid: cid.toString(), group: group.toString() } }),
 		uploads.findOne({ where: { cid: cid.toString(), group: group.toString() } })
@@ -221,6 +180,7 @@ export const deleteAll = async ({ helia, references, pins, groups, uploads }: Co
 			ref?.destroy({ transaction })
 		])
 	});
+	*/
 }
 
 export const upSync = async (components: Components) => {
@@ -258,7 +218,7 @@ export const upSync = async (components: Components) => {
 
 		const { cid } = await load(ref.path, importerConfig, blockstore, cipher);
 
-		await replaceLocal(components, { group: ref.group, cid, oldCid: ref.cid });
+		// await replaceLocal(components, { group: ref.group, cid, oldCid: ref.cid });
 
 		// logger.validate("updated %s", ref.path);
 	}
