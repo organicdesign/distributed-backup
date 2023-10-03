@@ -38,8 +38,7 @@ export class DownloadManager {
 		const action = (transaction: Transaction) => Promise.all([
 			Pins.create({
 				cid,
-				state: "DOWNLOADING",
-				depth: Infinity
+				state: "DOWNLOADING"
 			}, { transaction }),
 
 			Downloads.create({
@@ -62,11 +61,7 @@ export class DownloadManager {
 	async getState (cid: CID): Promise<string> {
 		const pin = await Pins.findOne({ where: { cid: cid.toString() } });
 
-		if (pin == null) {
-			return "DESTROYED";
-		}
-
-		return pin.state;
+		return pin == null ? "DESTROYED" : pin.state;
 	}
 
 	async getActiveDownloads (): Promise<CID[]> {
@@ -93,6 +88,7 @@ export class DownloadManager {
 		return blocks.reduce((c, b) => b.size + c, 0);
 	}
 
+	// Download an entire pin.
 	async * downloadPin (pin: CID) {
 		const pinData = await Pins.findOne({ where: { cid: pin.toString() } });
 
@@ -120,8 +116,8 @@ export class DownloadManager {
 				promises.push(promise);
 
 				return promise;
-			})
-		}
+			});
+		};
 
 		const heads = await this.getHeads(pin);
 
@@ -142,6 +138,7 @@ export class DownloadManager {
 		}
 	}
 
+	// Download an individial block.
 	async download (cid: CID): Promise<{ block: Uint8Array, cid: CID, links: CID[] }> {
 		// Check if we are already downloading this.
 		const activePromise = this.activeDownloads.get(cid.toString());
@@ -179,7 +176,7 @@ export class DownloadManager {
 					promises.push((async () => {
 						const pin = await Pins.findOne({ where: { cid: d.pinnedBy.toString() } });
 
-						if (pin?.depth == null || pin.depth <= d.depth) {
+						if (pin?.depth != null && pin.depth <= d.depth) {
 							return;
 						}
 
