@@ -2,8 +2,12 @@ import { DataTypes, Model, InferAttributes, InferCreationAttributes } from "sequ
 import { CID } from "multiformats/cid";
 import { sequelize } from "./sequelize.js";
 
+/**
+ * This class is for keeping track of raw pins.
+ */
+
 class PinsClass extends Model<InferAttributes<PinsClass, { omit: "cid" }> & { cid: string }, InferCreationAttributes<PinsClass>> {
-	declare cid: CID
+	declare cid: CID // Primary
 	declare depth?: number
 	declare completed: boolean
 }

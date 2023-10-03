@@ -2,10 +2,15 @@ import { DataTypes, Model, InferAttributes, InferCreationAttributes } from "sequ
 import { CID } from "multiformats/cid";
 import { sequelize } from "./sequelize.js";
 
+/**
+ * This class handles remote data added to IPFS.
+ */
+
 class ReferencesClass extends Model<InferAttributes<ReferencesClass, { omit: "cid" | "group" }> & { cid: string, group: string }, InferCreationAttributes<ReferencesClass>> {
-	declare cid: CID
-	declare group: CID
-	declare encrypted: boolean // This can stay since it won't change if group/cid changes.
+	declare cid: CID // Primary
+	declare group: CID // Primary
+	// declare state: "BLOCKED" | "LOCAL" | "DOWNLOADED" | "DOWNLOADING" | "DESTROYED"
+	declare encrypted: boolean // This can stay since it won't change unless group/cid changes.
 	declare timestamp: Date // This can also stay.
 	declare blocked: boolean // This is local data so it must stay.
 

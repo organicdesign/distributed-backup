@@ -2,9 +2,13 @@ import { DataTypes, Model, InferAttributes, InferCreationAttributes } from "sequ
 import { CID } from "multiformats/cid";
 import { sequelize } from "./sequelize.js";
 
+/**
+ * This class is for keeping track of downloaded blocks.
+ */
+
 class BlocksClass extends Model<InferAttributes<BlocksClass, { omit: "cid" | "pinnedBy" }> & { cid: string, pinnedBy: string }, InferCreationAttributes<BlocksClass>> {
-	declare cid: CID
-	declare pinnedBy: CID
+	declare cid: CID // Primary
+	declare pinnedBy: CID // Primary
 	declare size: number
 	declare depth: number
 }

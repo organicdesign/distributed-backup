@@ -2,8 +2,12 @@ import { DataTypes, Model, InferAttributes, InferCreationAttributes } from "sequ
 import { CID, Version } from "multiformats/cid";
 import { sequelize } from "./sequelize.js";
 
+/**
+ * This class handles managing local data added to IPFS.
+ */
+
 class UploadsClass extends Model<InferAttributes<UploadsClass, { omit: "cid" }> & { cid: string }, InferCreationAttributes<UploadsClass>> {
-	declare cid: CID
+	declare cid: CID // Primary
 	declare path: string
 	declare cidVersion: Version
 	declare hash: string

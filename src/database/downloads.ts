@@ -2,18 +2,13 @@ import { DataTypes, Model, InferAttributes, InferCreationAttributes } from "sequ
 import { CID } from "multiformats/cid";
 import { sequelize } from "./sequelize.js";
 
-/*
-+------------------------------------------------------------------------------+
-|                                   Downloads                                  |
-+----------------------------------------------------+-------------------------+
-|                     Primary Key                    |                         |
-+-----------------------+-----------------------------+------------------------+
-|          CID          |          Pinned By         |           Depth         |
-+-----------------------+---------------------------+--------------------------+
-*/
+/**
+ * This class is for keeping track of blocks that need to be downloaded.
+ */
+
 class DownloadsClass extends Model<InferAttributes<DownloadsClass, { omit: "cid" | "pinnedBy" }> & { cid: string, pinnedBy: string }, InferCreationAttributes<DownloadsClass>> {
-	declare cid: CID
-	declare pinnedBy: CID
+	declare cid: CID // Primary
+	declare pinnedBy: CID // Primary
 	declare depth: number
 }
 
