@@ -4,8 +4,6 @@ import { sequelize } from "./sequelize.js";
 
 class PinsClass extends Model<InferAttributes<PinsClass, { omit: "cid" }> & { cid: string }, InferCreationAttributes<PinsClass>> {
 	declare cid: CID
-	declare group?: string
-	declare path?: string
 	declare depth?: number
 	declare state: "DOWNLOADING" | "COMPLETED" | "DELETING"
 }
@@ -30,16 +28,6 @@ export const Pins = sequelize.define<PinsClass>(
 			}
 		},
 
-		group: {
-			type: DataTypes.STRING,
-			allowNull: true
-		},
-
-		path: {
-			type: DataTypes.STRING,
-			allowNull: true
-		},
-
 		depth: {
 			type: DataTypes.INTEGER(),
 			allowNull: true
@@ -49,16 +37,6 @@ export const Pins = sequelize.define<PinsClass>(
 			type: DataTypes.STRING,
 			allowNull: false,
 			defaultValue: "DOWNLOADING"
-		}
-	},
-
-	{
-		validate: {
-			pathOrGroup() {
-				if (this.path === null && this.group === null) {
-					throw new Error("both 'group' and 'path' cannot both be null");
-				}
-			}
 		}
 	}
 );

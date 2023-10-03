@@ -64,6 +64,7 @@ export class Referencer {
 	}
 
 	async addFromGroup (cid: CID, group: string, depth?: number) {
+		// Create the reference
 		await Pins.findOrCreate({
 			where: {
 				cid: cid.toString()
@@ -71,7 +72,6 @@ export class Referencer {
 
 			defaults: {
 				cid,
-				group,
 				state: "DOWNLOADING",
 				depth
 			}
@@ -99,7 +99,6 @@ export class Referencer {
 
 			defaults: {
 				cid,
-				path,
 				state: "DOWNLOADING",
 				depth
 			}
