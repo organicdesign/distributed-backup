@@ -13,3 +13,4 @@ export const validate = createLogger("validate");
 export const references = createLogger("references");
 export const pins = createLogger("pins");
 export const groups = createLogger("groups");
+export const uploads = createLogger("uploads");
