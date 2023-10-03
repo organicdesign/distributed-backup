@@ -9,7 +9,7 @@ import { sequelize } from "./sequelize.js";
 class PinsClass extends Model<InferAttributes<PinsClass, { omit: "cid" }> & { cid: string }, InferCreationAttributes<PinsClass>> {
 	declare cid: CID // Primary
 	declare depth?: number
-	declare completed: boolean
+	declare state: "COMPLETED" | "DOWNLOADING" | "DESTROYED"
 }
 
 export const Pins = sequelize.define<PinsClass>(
@@ -36,10 +36,10 @@ export const Pins = sequelize.define<PinsClass>(
 			allowNull: true
 		},
 
-		completed: {
-			type: DataTypes.BOOLEAN,
+		state: {
+			type: DataTypes.STRING,
 			allowNull: false,
-			defaultValue: false
+			defaultValue: "DOWNLOADING"
 		}
 	}
 );

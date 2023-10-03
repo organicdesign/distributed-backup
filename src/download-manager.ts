@@ -1,17 +1,10 @@
 import { sequelize, Pins, Downloads, Blocks } from "./database/index.js";
-import { base36 } from "multiformats/bases/base36";
-import * as cborg from "cborg";
-import { Key } from "interface-datastore";
-import { equals as uint8ArrayEquals } from "uint8arrays/equals";
 import * as dagWalkers from "../node_modules/helia/dist/src/utils/dag-walkers.js";
 import type { DAGWalker } from "../node_modules/helia/dist/src/index.js";
 import type { CID } from "multiformats/cid";
 import type { Helia } from "@helia/interface";
 import type { Transaction } from "sequelize";
-
-const DATASTORE_PIN_PREFIX = "/pin/";
-const DATASTORE_BLOCK_PREFIX = "/pinned-block/";
-const DATASTORE_ENCODING = base36;
+import { addBlockRef } from "./utils.js";
 
 const getDagWalker = (cid: CID): DAGWalker => {
 	const dagWalker = Object.values(dagWalkers).find(dw => dw.codec === cid.code);
@@ -22,17 +15,6 @@ const getDagWalker = (cid: CID): DAGWalker => {
 
 	return dagWalker;
 };
-
-interface DatastorePinnedBlock {
-	pinCount: number
-	pinnedBy: Uint8Array[]
-}
-
-enum PinState {
-	UNPINNED,
-	PINNED,
-	PENDING
-}
 
 export class DownloadManager {
 	private readonly helia: Helia;
@@ -56,7 +38,7 @@ export class DownloadManager {
 		const action = (transaction: Transaction) => Promise.all([
 			Pins.create({
 				cid,
-				completed: false,
+				state: "DOWNLOADING",
 				depth: Infinity
 			}, { transaction }),
 
@@ -77,18 +59,18 @@ export class DownloadManager {
 	/**
 	 * Get the current state of the pin.
 	 */
-	async getState (cid: CID): Promise<PinState> {
+	async getState (cid: CID): Promise<string> {
 		const pin = await Pins.findOne({ where: { cid: cid.toString() } });
 
 		if (pin == null) {
-			return PinState.UNPINNED;
+			return "DESTROYED";
 		}
 
-		return pin.completed ? PinState.PINNED : PinState.PENDING;
+		return pin.state;
 	}
 
 	async getActiveDownloads (): Promise<CID[]> {
-		const pins = await Pins.findAll({ where: { completed: false } });
+		const pins = await Pins.findAll({ where: { state: "DOWNLOADING" } });
 
 		return pins.map(p => p.cid);
 	}
@@ -183,32 +165,9 @@ export class DownloadManager {
 				size: block.length
 			})));
 
-			// Register those blocks as pinned by helia.
-			const blockKey = new Key(`${DATASTORE_BLOCK_PREFIX}${DATASTORE_ENCODING.encode(cid.multihash.bytes)}`);
-
-			let pinnedBlock: DatastorePinnedBlock = {
-				pinCount: 0,
-				pinnedBy: []
-			};
-
-			try {
-				pinnedBlock = cborg.decode(await this.helia.datastore.get(blockKey));
-			} catch (err: any) {
-				if (err.code !== 'ERR_NOT_FOUND') {
-					throw err;
-				}
-			}
-
 			for (const d of downloads) {
-				if (pinnedBlock.pinnedBy.find(c => uint8ArrayEquals(c, cid.bytes)) != null) {
-					continue;
-				}
-
-				pinnedBlock.pinCount++;
-				pinnedBlock.pinnedBy.push(d.pinnedBy.bytes);
+				await addBlockRef(this.helia, cid, d.pinnedBy);
 			}
-
-			await this.helia.datastore.put(blockKey, cborg.encode(pinnedBlock));
 
 			// Add the next blocks to download.
 			const dagWalker = getDagWalker(cid);
