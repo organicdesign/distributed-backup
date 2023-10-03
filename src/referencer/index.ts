@@ -2,6 +2,7 @@ import { sequelize } from "./sequelize";
 import { Pins } from "./pins.js";
 import { Blocks } from "./blocks.js";
 import { Downloads } from "./downloads.js";
+import { References } from "./references.js";
 import { CID } from "multiformats/cid";
 import * as dagWalkers from "../../node_modules/helia/dist/src/utils/dag-walkers.js";
 import type { AbortOptions } from "@libp2p/interface";
@@ -65,16 +66,38 @@ export class Referencer {
 
 	async addFromGroup (cid: CID, group: string, depth?: number) {
 		// Create the reference
-		await Pins.findOrCreate({
-			where: {
-				cid: cid.toString()
-			},
+		await sequelize.transaction(async transaction => {
+			return await Promise.all([
+				Pins.findOrCreate({
+					where: {
+						cid: cid.toString()
+					},
 
-			defaults: {
-				cid,
-				state: "DOWNLOADING",
-				depth
-			}
+					defaults: {
+						cid,
+						state: "DOWNLOADING",
+						depth
+					},
+
+					transaction
+				}),
+
+				References.findOrCreate({
+					where: {
+						cid: cid.toString(),
+						reference: group
+					},
+
+					defaults: {
+						cid,
+						reference: group,
+						type: "REMOTE",
+						meta: {}
+					},
+
+					transaction
+				})
+			]);
 		});
 
 		await Downloads.findOrCreate({
@@ -92,16 +115,38 @@ export class Referencer {
 	}
 
 	async addLocal (cid: CID, path: string, depth?: number)  {
-		const [ pin ] = await Pins.findOrCreate({
-			where: {
-				cid: cid.toString()
-			},
+		const [ [ pin ] ] = await sequelize.transaction(async transaction => {
+			return await Promise.all([
+				Pins.findOrCreate({
+					where: {
+						cid: cid.toString()
+					},
 
-			defaults: {
-				cid,
-				state: "DOWNLOADING",
-				depth
-			}
+					defaults: {
+						cid,
+						state: "DOWNLOADING",
+						depth
+					},
+
+					transaction
+				}),
+
+				References.findOrCreate({
+					where: {
+						cid: cid.toString(),
+						reference: path
+					},
+
+					defaults: {
+						cid,
+						reference: path,
+						type: "LOCAL",
+						meta: {}
+					},
+
+					transaction
+				})
+			]);
 		});
 
 		// Load all the blocks into SQLite
