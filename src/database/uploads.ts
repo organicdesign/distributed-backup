@@ -13,9 +13,6 @@ class UploadsClass extends Model<InferAttributes<UploadsClass, { omit: "cid" | "
 	declare nocopy: boolean
 	declare encrypt: boolean
 	declare checkedAt: Date
-
-	// This is a flag to say if it has been added to the group or not.
-	declare grouped: boolean
 }
 
 export const Uploads = sequelize.define<UploadsClass>(
@@ -98,12 +95,6 @@ export const Uploads = sequelize.define<UploadsClass>(
 			type: DataTypes.DATE,
 			allowNull: false,
 			defaultValue: new Date()
-		},
-
-		grouped: {
-			type: DataTypes.BOOLEAN,
-			allowNull: false,
-			defaultValue: false
 		}
 	}
 );
