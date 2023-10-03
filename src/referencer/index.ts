@@ -7,6 +7,7 @@ import { CID } from "multiformats/cid";
 import * as dagWalkers from "../../node_modules/helia/dist/src/utils/dag-walkers.js";
 import type { AbortOptions } from "@libp2p/interface";
 import type { Blockstore } from "interface-blockstore";
+import type { Helia } from "@helia/interface";
 
 const walkDag = async function * (blockstore: Blockstore, cid: CID, maxDepth: number, options: AbortOptions): AsyncGenerator<() => Promise<{ cid: CID, depth: number }>> {
 	const queue: Array<() => Promise<{ cid: CID, depth: number }>> = [];
@@ -55,9 +56,11 @@ const walkDag = async function * (blockstore: Blockstore, cid: CID, maxDepth: nu
 
 export class Referencer {
 	private readonly blockstore: Blockstore;
+	private readonly helia: Helia;
 
-	constructor ({ blockstore }: { blockstore: Blockstore }) {
+	constructor ({ blockstore, helia }: { blockstore: Blockstore, helia: Helia }) {
 		this.blockstore = blockstore;
+		this.helia = helia;
 	}
 
 	async start () {
@@ -168,6 +171,8 @@ export class Referencer {
 				}
 			});
 		}
+
+		await this.helia.pins.add(cid, { depth });
 
 		pin.state = "COMPLETED";
 
