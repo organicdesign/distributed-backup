@@ -3,7 +3,7 @@ import type { Components, ImportOptions } from "../../interface.js";
 
 export const name = "add";
 
-export const method = (components: Components) => async (params: { group: string, path: string, onlyHash?: boolean, encrypt?: boolean } & ImportOptions) => {
+export const method = (components: Components) => async (params: { path: string, onlyHash?: boolean, encrypt?: boolean } & ImportOptions) => {
 	const cid = await addLocal(components, {
 		encrypt: params.encrypt,
 		path: params.path,
