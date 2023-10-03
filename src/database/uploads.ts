@@ -2,9 +2,8 @@ import { DataTypes, Model, InferAttributes, InferCreationAttributes } from "sequ
 import { CID, Version } from "multiformats/cid";
 import { sequelize } from "./sequelize.js";
 
-class UploadsClass extends Model<InferAttributes<UploadsClass, { omit: "cid" | "group" }> & { cid: string, group: string }, InferCreationAttributes<UploadsClass>> {
+class UploadsClass extends Model<InferAttributes<UploadsClass, { omit: "cid" }> & { cid: string }, InferCreationAttributes<UploadsClass>> {
 	declare cid: CID
-	declare group: CID
 	declare path: string
 	declare cidVersion: Version
 	declare hash: string
@@ -31,22 +30,6 @@ export const Uploads = sequelize.define<UploadsClass>(
 
 			set (value: CID) {
 				this.setDataValue("cid", value.toString());
-			}
-		},
-
-		group: {
-			type: DataTypes.STRING(undefined, true),
-			primaryKey: true,
-			allowNull: false,
-
-			get () {
-				const str = this.getDataValue("group");
-
-				return CID.parse(str);
-			},
-
-			set (value: CID) {
-				this.setDataValue("group", value.toString());
 			}
 		},
 
