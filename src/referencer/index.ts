@@ -65,7 +65,19 @@ export class Referencer {
 	}
 
 	async addLocal (cid: CID, path: string, depth: number)  {
-	// Load all the blocks into SQLite
+		const [ pin ] = await Pins.findOrCreate({
+			where: {
+				cid: cid.toString()
+			},
+
+			defaults: {
+				cid,
+				path,
+				state: "DOWNLOADING"
+			}
+		});
+
+		// Load all the blocks into SQLite
 		for await (const promise of walkDag(this.blockstore, cid, depth, {})) {
 			const subCid = await promise();
 			const block = await this.blockstore.get(subCid);
@@ -84,5 +96,9 @@ export class Referencer {
 				}
 			});
 		}
+
+		pin.state = "COMPLETED";
+
+		await pin.save();
 	}
 }
