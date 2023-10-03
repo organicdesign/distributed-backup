@@ -6,6 +6,7 @@ import * as createGroup from "./commands/create-group.js";
 import * as id from "./commands/id.js";
 import * as joinGroup from "./commands/join-group.js";
 import * as listGroups from "./commands/list-groups.js";
+import * as listUploads from "./commands/list-uploads.js";
 import * as queryGroup from "./commands/query-group.js";
 import * as queryPins from "./commands/query-pins.js";
 import * as pubsub from "./commands/pubsub.js";
@@ -20,6 +21,7 @@ export default [
 	id,
 	joinGroup,
 	listGroups,
+	listUploads,
 	queryGroup,
 	queryPins,
 	pubsub
