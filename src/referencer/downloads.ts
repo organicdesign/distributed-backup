@@ -5,7 +5,7 @@ import { sequelize } from "./sequelize.js";
 class DownloadsClass extends Model<InferAttributes<DownloadsClass, { omit: "cid" | "pinnedBy" }> & { cid: string, pinnedBy: string }, InferCreationAttributes<DownloadsClass>> {
 	declare cid: CID
 	declare pinnedBy: CID
-	declare depth: number
+	declare depth?: number
 }
 
 export const Downloads = sequelize.define<DownloadsClass>(
@@ -45,7 +45,7 @@ export const Downloads = sequelize.define<DownloadsClass>(
 
 		depth: {
 			type: DataTypes.INTEGER(),
-			allowNull: false
+			allowNull: true
 		}
 	}
 );

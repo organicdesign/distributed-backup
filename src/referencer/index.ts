@@ -3,14 +3,13 @@ import { Pins } from "./pins.js";
 import { Blocks } from "./blocks.js";
 import { Downloads } from "./downloads.js";
 import { CID } from "multiformats/cid";
-import type { Helia } from "@helia/interface";
-import type { Blockstore } from "interface-blockstore";
 import * as dagWalkers from "../../node_modules/helia/dist/src/utils/dag-walkers.js";
-import type { AbortOptions } from '@libp2p/interface'
+import type { AbortOptions } from "@libp2p/interface";
+import type { Blockstore } from "interface-blockstore";
 
-const walkDag = async function * (blockstore: Blockstore, cid: CID, maxDepth: number, options: AbortOptions): AsyncGenerator<() => Promise<CID>> {
-	const queue: Array<() => Promise<CID>> = [];
-	const promises: Array<Promise<CID>> = [];
+const walkDag = async function * (blockstore: Blockstore, cid: CID, maxDepth: number, options: AbortOptions): AsyncGenerator<() => Promise<{ cid: CID, depth: number }>> {
+	const queue: Array<() => Promise<{ cid: CID, depth: number }>> = [];
+	const promises: Array<Promise<{ cid: CID, depth: number }>> = [];
 
 	const enqueue = (cid: CID, depth: number): void => {
 		queue.push(async () => {
@@ -29,7 +28,7 @@ const walkDag = async function * (blockstore: Blockstore, cid: CID, maxDepth: nu
 					}
 				}
 
-				return cid;
+				return { cid, depth };
 			});
 
 			promises.push(promise);
@@ -64,7 +63,35 @@ export class Referencer {
 		await sequelize.sync();
 	}
 
-	async addLocal (cid: CID, path: string, depth: number)  {
+	async addFromGroup (cid: CID, group: string, depth?: number) {
+		await Pins.findOrCreate({
+			where: {
+				cid: cid.toString()
+			},
+
+			defaults: {
+				cid,
+				group,
+				state: "DOWNLOADING",
+				depth
+			}
+		});
+
+		await Downloads.findOrCreate({
+			where: {
+				cid: cid.toString(),
+				pinnedBy: cid.toString()
+			},
+
+			defaults: {
+				cid,
+				pinnedBy: cid,
+				depth: 0
+			}
+		});
+	}
+
+	async addLocal (cid: CID, path: string, depth?: number)  {
 		const [ pin ] = await Pins.findOrCreate({
 			where: {
 				cid: cid.toString()
@@ -73,25 +100,26 @@ export class Referencer {
 			defaults: {
 				cid,
 				path,
-				state: "DOWNLOADING"
+				state: "DOWNLOADING",
+				depth
 			}
 		});
 
 		// Load all the blocks into SQLite
-		for await (const promise of walkDag(this.blockstore, cid, depth, {})) {
-			const subCid = await promise();
-			const block = await this.blockstore.get(subCid);
+		for await (const promise of walkDag(this.blockstore, cid, depth ?? Infinity, {})) {
+			const item = await promise();
+			const block = await this.blockstore.get(item.cid);
 
 			await Blocks.findOrCreate({
 				where: {
-					cid: subCid.toString(),
+					cid: item.cid.toString(),
 					pinnedBy: cid.toString()
 				},
 
 				defaults: {
-					cid: subCid,
+					cid: item.cid,
 					pinnedBy: cid,
-					depth: depth,
+					depth: item.depth,
 					size: block.length
 				}
 			});
