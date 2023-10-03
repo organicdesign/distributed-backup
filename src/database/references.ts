@@ -1,6 +1,5 @@
 import { DataTypes, Model, InferAttributes, InferCreationAttributes } from "sequelize";
 import { CID } from "multiformats/cid";
-import { Uploads } from "./uploads.js";
 import { sequelize } from "./sequelize.js";
 
 class ReferencesClass extends Model<InferAttributes<ReferencesClass, { omit: "cid" | "group" }> & { cid: string, group: string }, InferCreationAttributes<ReferencesClass>> {
@@ -66,24 +65,6 @@ export const References = sequelize.define<ReferencesClass>(
 			type: DataTypes.BOOLEAN,
 			allowNull: false,
 			defaultValue: false
-		}
-	},
-	{
-		hooks: {
-			async afterDestroy (reference) {
-				const upload = await Uploads.findOne({
-					where: {
-						cid: reference.dataValues.cid,
-						group: reference.dataValues.group
-					}
-				});
-
-				if (upload == null) {
-					return;
-				}
-
-				await upload.destroy();
-			}
 		}
 	}
 );
