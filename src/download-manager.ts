@@ -162,6 +162,10 @@ export class DownloadManager {
 				this.helia.blockstore.get(cid)
 			]);
 
+			for (const d of downloads) {
+				await addBlockRef(this.helia, cid, d.pinnedBy);
+			}
+
 			// Save the blocks to the database.
 			await Promise.all(downloads.map(d => Blocks.create({
 				cid,
@@ -169,10 +173,6 @@ export class DownloadManager {
 				depth: d.depth,
 				size: block.length
 			})));
-
-			for (const d of downloads) {
-				await addBlockRef(this.helia, cid, d.pinnedBy);
-			}
 
 			// Add the next blocks to download.
 			const dagWalker = getDagWalker(cid);
