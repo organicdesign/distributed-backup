@@ -9,13 +9,9 @@ import { sequelize } from "./sequelize.js";
 class ReferencesClass extends Model<InferAttributes<ReferencesClass, { omit: "cid" | "group" }> & { cid: string, group: string }, InferCreationAttributes<ReferencesClass>> {
 	declare cid: CID // Primary
 	declare group: CID // Primary
-	// declare state: "BLOCKED" | "LOCAL" | "DOWNLOADED" | "DOWNLOADING" | "DESTROYED"
+	declare state: "BLOCKED" | "DOWNLOADED" | "DOWNLOADING" | "DESTROYED"
 	declare encrypted: boolean // This can stay since it won't change unless group/cid changes.
-	declare timestamp: Date // This can also stay.
-	declare blocked: boolean // This is local data so it must stay.
-
-	// This is a flag to say if it has been destoyed, pending unpinning.
-	declare destroyed: boolean
+	declare timestamp: Date // This can also stay..
 }
 
 export const References = sequelize.define<ReferencesClass>(
@@ -60,16 +56,10 @@ export const References = sequelize.define<ReferencesClass>(
 
 		timestamp: DataTypes.DATE,
 
-		blocked: {
-			type: DataTypes.BOOLEAN,
+		state: {
+			type: DataTypes.STRING,
 			allowNull: false,
-			defaultValue: false
-		},
-
-		destroyed: {
-			type: DataTypes.BOOLEAN,
-			allowNull: false,
-			defaultValue: false
+			defaultValue: "DOWNLOADING"
 		}
 	}
 );
