@@ -1,5 +1,4 @@
 import * as logger from "./logger.js";
-import { downSync, upSync } from "./synchronization.js";
 import { syncFromGroups } from "./sync/sync-from-groups.js";
 import type { Components } from "./interface.js";
 
@@ -20,7 +19,10 @@ export const downloadLoop = async (components: Components) => {
 
 		if (!done) {
 			const cid = await f();
-			console.log("downloaded", cid, pin);
+
+			logger.downloads(`[+] ${cid}`);
+		} else {
+			logger.pins(`[+] ${pin}`);
 		}
 	}
 };

@@ -52,6 +52,8 @@ export const syncFromGroups = async (components: Components) => {
 				encrypted: entry.encrypted
 			});
 
+			logger.pins(`[~] ${cid}`);
+
 			await components.dm.pin(cid);
 		}
 	}

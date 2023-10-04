@@ -59,9 +59,8 @@ export const downSync = async (components: Components) => {
 				cid,
 				group,
 				timestamp: new Date(entry.timestamp),
-				blocked: false,
-				encrypted: entry.encrypted,
-				destroyed: false
+				state: "DOWNLOADING",
+				encrypted: entry.encrypted
 			});
 
 			await components.dm.pin(cid);

@@ -14,3 +14,4 @@ export const references = createLogger("references");
 export const pins = createLogger("pins");
 export const groups = createLogger("groups");
 export const uploads = createLogger("uploads");
+export const downloads = createLogger("downloads");
