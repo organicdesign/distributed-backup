@@ -1,3 +1,5 @@
+import { exportFs } from "../../fs-exporter/index.js";
+import { CID } from "multiformats/cid";
 import type { Components } from "../../interface.js";
 
 export const name = "export";
@@ -10,5 +12,7 @@ export const method = (components: Components) => async (params: { path: string,
 		throw new Error("Could not find CID");
 	}
 
-	throw new Error("not implemented");
+	const cid = CID.parse(params.cid);
+
+	await exportFs(components, cid, params.path);
 };
