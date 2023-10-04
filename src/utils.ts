@@ -5,8 +5,10 @@ import { fileURLToPath } from "url";
 import { base36 } from "multiformats/bases/base36";
 import { Datastore, Key } from "interface-datastore";
 import { equals as uint8ArrayEquals } from "uint8arrays";
+import * as dagWalkers from "../node_modules/helia/dist/src/utils/dag-walkers.js";
+import type { AbortOptions } from "@libp2p/interface";
 import type { Helia } from "@helia/interface";
-
+import type { Blockstore } from "interface-blockstore";
 
 interface DatastorePin {
 	depth: number
@@ -96,4 +98,49 @@ export const addBlockRef = async ({ datastore }: { datastore: Datastore }, cid: 
 	pinnedBlock.pinnedBy.push(by.bytes);
 
 	await datastore.put(blockKey, cborg.encode(pinnedBlock));
+};
+
+export const walkDag = async function * (blockstore: Blockstore, cid: CID, maxDepth: number, options: AbortOptions): AsyncGenerator<() => Promise<{ cid: CID, depth: number }>> {
+	const queue: Array<() => Promise<{ cid: CID, depth: number }>> = [];
+	const promises: Array<Promise<{ cid: CID, depth: number }>> = [];
+
+	const enqueue = (cid: CID, depth: number): void => {
+		queue.push(async () => {
+			const promise = Promise.resolve().then(async () => {
+				const dagWalker = Object.values(dagWalkers).find(dw => dw.codec === cid.code);
+
+				if (dagWalker == null) {
+					throw new Error(`No dag walker found for cid codec ${cid.code}`);
+				}
+
+				const block = await blockstore.get(cid, options);
+
+				if (depth < maxDepth) {
+					for await (const cid of dagWalker.walk(block)) {
+						enqueue(cid, depth + 1);
+					}
+				}
+
+				return { cid, depth };
+			});
+
+			promises.push(promise);
+
+			return promise;
+		});
+	}
+
+	enqueue(cid, 0);
+
+	while (queue.length + promises.length !== 0) {
+		const func = queue.shift();
+
+		if (func == null) {
+			await promises.shift();
+
+			continue;
+		}
+
+		yield func;
+	}
 };
