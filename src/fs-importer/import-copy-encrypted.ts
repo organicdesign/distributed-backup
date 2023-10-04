@@ -93,7 +93,7 @@ export const importDir = async (
 		Links: links.map(l => ({
 			Hash: l.cid,
 			Tsize: l.size,
-			Name: uint8ArrayToString(l.name, "base64")
+			Name: uint8ArrayToString(l.name, "base32")
 		}))
 	}));
 
