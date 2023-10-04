@@ -136,10 +136,14 @@ export class DownloadManager {
 
 			yield func;
 		}
+
+		pinData.state = "COMPLETED";
+
+		await pinData.save();
 	}
 
 	// Download an individial block.
-	async download (cid: CID): Promise<{ block: Uint8Array, cid: CID, links: CID[] }> {
+	private async download (cid: CID): Promise<{ block: Uint8Array, cid: CID, links: CID[] }> {
 		// Check if we are already downloading this.
 		const activePromise = this.activeDownloads.get(cid.toString());
 
