@@ -100,7 +100,7 @@ export const addBlockRef = async ({ datastore }: { datastore: Datastore }, cid: 
 	await datastore.put(blockKey, cborg.encode(pinnedBlock));
 };
 
-export const walkDag = async function * (blockstore: Blockstore, cid: CID, maxDepth: number, options: AbortOptions): AsyncGenerator<() => Promise<{ cid: CID, depth: number }>> {
+export const walkDag = async function * (blockstore: Blockstore, cid: CID, maxDepth?: number, options?: AbortOptions): AsyncGenerator<() => Promise<{ cid: CID, depth: number }>> {
 	const queue: Array<() => Promise<{ cid: CID, depth: number }>> = [];
 	const promises: Array<Promise<{ cid: CID, depth: number }>> = [];
 
@@ -115,7 +115,7 @@ export const walkDag = async function * (blockstore: Blockstore, cid: CID, maxDe
 
 				const block = await blockstore.get(cid, options);
 
-				if (depth < maxDepth) {
+				if (maxDepth == null || depth < maxDepth) {
 					for await (const cid of dagWalker.walk(block)) {
 						enqueue(cid, depth + 1);
 					}
