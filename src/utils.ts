@@ -53,7 +53,7 @@ export const addPinRef = async ({ datastore }: { datastore: Datastore }, cid: CI
 	const pinKey= new Key(`/pin/${cid.toString(base36)}`);
 
 	if (await datastore.has(pinKey)) {
-		throw new Error("Already pinned");
+		return;
 	}
 
 	const depth = Math.round(options?.depth ?? Infinity)

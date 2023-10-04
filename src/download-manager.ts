@@ -4,7 +4,7 @@ import type { DAGWalker } from "../node_modules/helia/dist/src/index.js";
 import type { CID } from "multiformats/cid";
 import type { Helia } from "@helia/interface";
 import type { Transaction } from "sequelize";
-import { addBlockRef } from "./utils.js";
+import { addBlockRef, addPinRef } from "./utils.js";
 
 const getDagWalker = (cid: CID): DAGWalker => {
 	const dagWalker = Object.values(dagWalkers).find(dw => dw.codec === cid.code);
@@ -24,6 +24,7 @@ export class DownloadManager {
 		this.helia = helia;
 	}
 
+	// Add a pin to the downloads.
 	async pin (cid: CID, options?: Partial<{ transaction: Transaction }>) {
 		const pin = await Pins.findOne({
 			where: {
@@ -64,6 +65,7 @@ export class DownloadManager {
 		return pin == null ? "DESTROYED" : pin.state;
 	}
 
+	// Get all the pins that are actively downloading.
 	async getActiveDownloads (): Promise<CID[]> {
 		const pins = await Pins.findAll({ where: { state: "DOWNLOADING" } });
 
@@ -136,6 +138,8 @@ export class DownloadManager {
 
 			yield func;
 		}
+
+		await addPinRef(this.helia, pin);
 
 		pinData.state = "COMPLETED";
 
