@@ -1,12 +1,13 @@
 import * as logger from "./logger.js";
 import { downSync, upSync } from "./synchronization.js";
+import { syncFromGroups } from "./sync/sync-from-groups.js";
 import type { Components } from "./interface.js";
 
 export const syncLoop = async (components: Components) => {
 	// logger.tick("started");
 
-	await downSync(components);
-	await upSync(components);
+	await syncFromGroups(components);
+	//await upSync(components);
 
 	// logger.tick("finished");
 };
