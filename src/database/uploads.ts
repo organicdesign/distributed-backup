@@ -15,7 +15,8 @@ class UploadsClass extends Model<InferAttributes<UploadsClass, { omit: "cid" }> 
 	declare rawLeaves: boolean
 	declare nocopy: boolean
 	declare encrypt: boolean
-	declare checkedAt: Date
+	declare timestamp: Date
+	declare autoUpdate: boolean
 }
 
 export const Uploads = sequelize.define<UploadsClass>(
@@ -78,10 +79,16 @@ export const Uploads = sequelize.define<UploadsClass>(
 			defaultValue: false
 		},
 
-		checkedAt: {
+		timestamp: {
 			type: DataTypes.DATE,
 			allowNull: false,
 			defaultValue: new Date()
+		},
+
+		autoUpdate: {
+			type: DataTypes.BOOLEAN,
+			allowNull: false,
+			defaultValue: false
 		}
 	}
 );

@@ -188,7 +188,7 @@ export const upSync = async (components: Components) => {
 	const localRefs = await uploads.findAll();
 
 	for (const ref of localRefs) {
-		if (Date.now() - ref.checkedAt.getTime() < config.validateInterval * 1000) {
+		if (Date.now() - ref.timestamp.getTime() < config.validateInterval * 1000) {
 			continue;
 		}
 
@@ -205,7 +205,7 @@ export const upSync = async (components: Components) => {
 		const { cid: hashCid } = await load(ref.path, importerConfig, new BlackHoleBlockstore(), cipher);
 
 		if (hashCid.equals(ref.cid)) {
-			ref.checkedAt = new Date();
+			ref.timestamp = new Date();
 
 			await ref.save();
 

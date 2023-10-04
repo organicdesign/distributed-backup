@@ -19,6 +19,11 @@ export const builder = createBuilder({
 	encrypt: {
 		default: false,
 		type: "boolean"
+	},
+
+	autoUpdate: {
+		default: false,
+		type: "boolean"
 	}
 });
 
@@ -30,7 +35,8 @@ export const handler = createHandler<typeof builder>(async argv => {
 	const add = await argv.client.rpc.request("add", {
 		path: argv.path,
 		onlyHash: argv.onlyHash,
-		encrypt: argv.encrypt
+		encrypt: argv.encrypt,
+		autoUpdate: argv.autoUpdate
 	});
 
 	console.log(add);
