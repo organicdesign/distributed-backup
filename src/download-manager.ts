@@ -51,7 +51,7 @@ export class DownloadManager {
 		if (options?.transaction) {
 			await action(options.transaction);
 		} else {
-			await sequelize.transaction(action)
+			await sequelize.transaction(action);
 		}
 	}
 
@@ -182,11 +182,20 @@ export class DownloadManager {
 
 						links.push(cid);
 
-						await Downloads.create({
-							cid,
-							pinnedBy: d.pinnedBy,
-							depth: d.depth + 1
-						})
+						const download = await Downloads.findOne({
+							where: {
+								cid: cid.toString(),
+								pinnedBy: d.pinnedBy.toString()
+							}
+						});
+
+						if (download == null) {
+							await Downloads.create({
+								cid,
+								pinnedBy: d.pinnedBy,
+								depth: d.depth + 1
+							});
+						}
 					})());
 				}
 			}
