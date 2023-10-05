@@ -32,17 +32,24 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 
 	logger.add("imported %s", params.path);
 
-	await uploads.create({
-		cid,
-		cidVersion: params.cidVersion,
-		path: params.path,
-		rawLeaves: params.rawLeaves,
-		chunker: params.chunker,
-		hash: params.hash,
-		nocopy: params.nocopy,
-		encrypt: params.encrypt,
-		timestamp: new Date(),
-		autoUpdate: params.autoUpdate ?? false
+	await uploads.findOrCreate({
+		where: {
+			cid: cid.toString()
+		},
+
+		defaults: {
+			cid,
+			cidVersion: params.cidVersion,
+			path: params.path,
+			state: "COMPLETED",
+			rawLeaves: params.rawLeaves,
+			chunker: params.chunker,
+			hash: params.hash,
+			nocopy: params.nocopy,
+			encrypt: params.encrypt,
+			timestamp: new Date(),
+			autoUpdate: params.autoUpdate ?? false
+		}
 	});
 
 	logger.uploads(`[+] ${params.path}`);

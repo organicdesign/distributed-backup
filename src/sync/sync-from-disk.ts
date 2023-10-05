@@ -41,12 +41,10 @@ export const syncFromDisk = async (components: Components) => {
 
 		const { cid } = await load(upload.path, importerConfig, components.blockstore, components.cipher);
 
-
-		await upload.destroy();
-
 		await sequelize.transaction(async transaction => {
 			await Promise.all([
 				upload.destroy({ transaction }),
+
 				components.uploads.findOrCreate({
 					where: {
 						cid: cid.toString()
@@ -54,22 +52,23 @@ export const syncFromDisk = async (components: Components) => {
 
 					defaults: {
 						cid,
-						cidVersion: upload.cidVersion,
 						path: upload.path,
+						state: "REPLACING",
+						cidVersion: upload.cidVersion,
 						rawLeaves: upload.rawLeaves,
 						chunker: upload.chunker,
 						hash: upload.hash,
 						nocopy: upload.nocopy,
 						encrypt: upload.encrypt,
 						timestamp: new Date(),
-						autoUpdate: upload.autoUpdate
+						autoUpdate: upload.autoUpdate,
+						replaces: upload.cid
 					},
 
 					transaction
 				})
 			]);
 		});
-		// await replaceLocal(components, { group: ref.group, cid, oldCid: ref.cid });
 
 		logger.validate("updated %s", upload.path);
 	}
