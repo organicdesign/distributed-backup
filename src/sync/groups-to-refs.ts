@@ -3,7 +3,7 @@ import { CID } from "multiformats/cid";
 import * as logger from "../logger.js";
 import type { Entry, Components } from "../interface.js";
 
-export const syncFromGroups = async (components: Components) => {
+export const groupsToRefs = async (components: Components) => {
 	const { groups, references } = components;
 
 	for (const { value: database } of groups.all()) {

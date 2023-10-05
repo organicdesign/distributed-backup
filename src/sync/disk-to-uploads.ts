@@ -8,7 +8,7 @@ import { sequelize } from "../database/sequelize.js";
 import type { Components } from "../interface.js";
 import type { ImporterConfig } from "../fs-importer/interfaces.js";
 
-export const syncFromDisk = async (components: Components) => {
+export const diskToUploads = async (components: Components) => {
 	const uploads = await components.uploads.findAll({ where: { autoUpdate: true } });
 
 	for (const upload of uploads) {

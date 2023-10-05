@@ -1,13 +1,13 @@
 import * as logger from "./logger.js";
-import { syncFromGroups } from "./sync/sync-from-groups.js";
-import { syncFromDisk } from "./sync/sync-from-disk.js";
+import { groupsToRefs } from "./sync/groups-to-refs.js";
+import { diskToUploads } from "./sync/disk-to-uploads.js";
 import type { Components } from "./interface.js";
 
 export const syncLoop = async (components: Components) => {
 	// logger.tick("started");
 
-	await syncFromGroups(components);
-	await syncFromDisk(components);
+	await groupsToRefs(components);
+	await diskToUploads(components);
 	//await upSync(components);//
 
 	// logger.tick("finished");
