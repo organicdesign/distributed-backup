@@ -5,7 +5,6 @@ import selectChunker from "../fs-importer/select-chunker.js";
 import selectHasher from "../fs-importer/select-hasher.js";
 import * as logger from "../logger.js";
 import { sequelize } from "../database/sequelize.js";
-import { Op } from "sequelize";
 import type { Components } from "../interface.js";
 import type { ImporterConfig } from "../fs-importer/interfaces.js";
 
@@ -13,13 +12,10 @@ export const diskToUploads = async (components: Components) => {
 	const uploads = await components.uploads.findAll({
 		where: {
 			autoUpdate: true,
-			[Op.or]: [
-				{ state: "COMPLETED" },
-				{ state: "REPLACING" }
-			]
+			state: "COMPLETED"
 		}
 	});
-///
+
 	for (const upload of uploads) {
 		if (Date.now() - upload.timestamp.getTime() < components.config.validateInterval * 1000) {
 			continue;
@@ -49,44 +45,56 @@ export const diskToUploads = async (components: Components) => {
 		logger.validate("updating %s", upload.path);
 
 		const { cid } = await load(upload.path, importerConfig, components.blockstore, components.cipher);
+		const existingUpload = await components.uploads.findOne({ where: { cid: cid.toString(), group: upload.group.toString() } });
 
-		await sequelize.transaction(async transaction => {
-			upload.state = "REPLACED";
+		upload.autoUpdate = false;
 
-			const replacing = await components.uploads.findOne({ where: { cid: cid.toString() } });
+		await sequelize.transaction(transaction => Promise.all([
+			components.uploads.findOrCreate({
+				where: {
+					cid: cid.toString(),
+					group: upload.group.toString()
+				},
 
-			await Promise.all([
-				(async () => {
-					if (replacing == null) {
-						await components.uploads.create({
-							cid,
-							group: upload.group,
-							path: upload.path,
-							state: "REPLACING",
-							cidVersion: upload.cidVersion,
-							rawLeaves: upload.rawLeaves,
-							chunker: upload.chunker,
-							hash: upload.hash,
-							nocopy: upload.nocopy,
-							encrypt: upload.encrypt,
-							timestamp: new Date(),
-							autoUpdate: upload.autoUpdate,
-							replaces: upload.cid
-						}, { transaction });
-					} else {
-						replacing.state = "REPLACING";
-						replacing.replaces = upload.cid;
+				defaults: {
+					cid,
+					group: upload.group,
+					path: upload.path,
+					state: "UPLOADING",
+					cidVersion: upload.cidVersion,
+					rawLeaves: upload.rawLeaves,
+					chunker: upload.chunker,
+					hash: upload.hash,
+					nocopy: upload.nocopy,
+					encrypt: upload.encrypt,
+					timestamp: new Date(),
+					autoUpdate: true,
+					replaces: upload.cid
+				},
 
-						await replacing.save({ transaction });
-					}
-				})(),
+				transaction
+			}),
 
-				// Need to make sure this gets unpinned.
-				// Destroying the upload will mean re-downloading it.
-				//upload.destroy({ transaction }),
-				upload.save({ transaction })
-			]);
-		});
+			upload.save({ transaction }),
+
+			(async () => {
+				if (existingUpload != null) {
+					existingUpload.autoUpdate = true;
+					existingUpload.state = "UPLOADING";
+					existingUpload.timestamp = new Date();
+					existingUpload.replaces = upload.cid;
+
+
+					await existingUpload.save({ transaction });
+				}
+			})()
+		]));
+
+		// Need to make sure this gets unpinned.
+		// Destroying the upload will mean re-downloading it.
+		// const replacing = await components.uploads.findOne({ where: { cid: cid.toString(), group: upload.group.toString() } });
+
+		//replacing.destroy(),
 
 		logger.validate("updated %s", upload.path);
 	}
