@@ -6,7 +6,7 @@ import { sequelize } from "./sequelize.js";
  * This class handles managing local data added to IPFS.
  */
 
-class UploadsClass extends Model<InferAttributes<UploadsClass, { omit: "cid" | "replaces" | "group" }> & { cid: string, group: string, replaces?: string }, InferCreationAttributes<UploadsClass>> {
+class UploadsClass extends Model<InferAttributes<UploadsClass, { omit: "cid" | "replaces" | "group" | "replacedBy" }> & { cid: string, group: string, replaces?: string, replacedBy?: string }, InferCreationAttributes<UploadsClass>> {
 	declare cid: CID // Primary
 	declare group: CID // Primary
 	declare path: string
@@ -20,6 +20,7 @@ class UploadsClass extends Model<InferAttributes<UploadsClass, { omit: "cid" | "
 	declare timestamp: Date
 	declare autoUpdate: boolean
 	declare replaces?: CID
+	declare replacedBy?: CID
 }
 
 export const Uploads = sequelize.define<UploadsClass>(
@@ -127,6 +128,21 @@ export const Uploads = sequelize.define<UploadsClass>(
 
 			set (value: CID) {
 				this.setDataValue("replaces", value.toString());
+			}
+		},
+
+		replacedBy: {
+			type: DataTypes.STRING(undefined, true),
+			allowNull: true,
+
+			get () {
+				const str = this.getDataValue("replacedBy");
+
+				return str == null ? str : CID.parse(str);
+			},
+
+			set (value: CID) {
+				this.setDataValue("replacedBy", value.toString());
 			}
 		}
 	}

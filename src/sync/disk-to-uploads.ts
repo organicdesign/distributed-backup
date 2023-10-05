@@ -48,6 +48,7 @@ export const diskToUploads = async (components: Components) => {
 		const existingUpload = await components.uploads.findOne({ where: { cid: cid.toString(), group: upload.group.toString() } });
 
 		upload.autoUpdate = false;
+		upload.replacedBy = cid;
 
 		await sequelize.transaction(transaction => Promise.all([
 			components.uploads.findOrCreate({
@@ -83,7 +84,7 @@ export const diskToUploads = async (components: Components) => {
 					existingUpload.state = "UPLOADING";
 					existingUpload.timestamp = new Date();
 					existingUpload.replaces = upload.cid;
-
+					existingUpload.replacedBy = undefined;
 
 					await existingUpload.save({ transaction });
 				}
