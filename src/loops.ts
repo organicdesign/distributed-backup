@@ -1,6 +1,7 @@
 import * as logger from "./logger.js";
 import { groupsToRefs } from "./sync/groups-to-refs.js";
 import { diskToUploads } from "./sync/disk-to-uploads.js";
+import { uploadToGroups } from "./sync/upload-to-groups.js";
 import type { Components } from "./interface.js";
 
 export const syncLoop = async (components: Components) => {
@@ -8,6 +9,7 @@ export const syncLoop = async (components: Components) => {
 
 	await groupsToRefs(components);
 	await diskToUploads(components);
+	await uploadToGroups(components);
 	//await upSync(components);//
 
 	// logger.tick("finished");
