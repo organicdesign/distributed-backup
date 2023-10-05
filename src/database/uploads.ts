@@ -6,7 +6,7 @@ import { sequelize } from "./sequelize.js";
  * This class handles managing local data added to IPFS.
  */
 
-class UploadsClass extends Model<InferAttributes<UploadsClass, { omit: "cid" | "replaces" | "group" | "replacedBy" }> & { cid: string, group: string, replaces?: string, replacedBy?: string }, InferCreationAttributes<UploadsClass>> {
+class UploadsClass extends Model<InferAttributes<UploadsClass, { omit: "cid" | "group" | "versions" | "replacedBy" }> & { cid: string, group: string, versions?: string, replacedBy?: string }, InferCreationAttributes<UploadsClass>> {
 	declare cid: CID // Primary
 	declare group: CID // Primary
 	declare path: string
@@ -19,7 +19,8 @@ class UploadsClass extends Model<InferAttributes<UploadsClass, { omit: "cid" | "
 	declare encrypt: boolean
 	declare timestamp: Date
 	declare autoUpdate: boolean
-	declare replaces?: CID
+	declare versionCount?: number
+	declare versions: CID[]
 	declare replacedBy?: CID
 }
 
@@ -116,18 +117,37 @@ export const Uploads = sequelize.define<UploadsClass>(
 			defaultValue: false
 		},
 
-		replaces: {
+		versionCount: {
+			type: DataTypes.INTEGER(),
+			allowNull: true
+		},
+
+		versions: {
 			type: DataTypes.STRING(undefined, true),
 			allowNull: true,
 
 			get () {
-				const str = this.getDataValue("replaces");
+				const str = this.getDataValue("versions");
 
-				return str == null ? str : CID.parse(str);
+				if (str == null) {
+					return [];
+				}
+
+				const arr: string[] = JSON.parse(str);
+
+				return arr.map(str => CID.parse(str));
 			},
 
-			set (value?: CID) {
-				this.setDataValue("replaces", value?.toString());
+			set (value?: CID[]) {
+				if (value == null) {
+					this.setDataValue("versions", "[]");
+					return;
+				}
+
+				const arr = value.map(cid => cid.toString());
+				const str = JSON.stringify(arr);
+
+				this.setDataValue("versions", str);
 			}
 		},
 

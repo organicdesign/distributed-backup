@@ -21,11 +21,11 @@ export const uploadToGroups = async (components: Components) => {
 				timestamp: Date.now(),
 				author: components.welo.identity.id,
 				encrypted: upload.encrypt,
-				links: upload.replaces ? [ { type: "prev", cid: upload.replaces } ] : []
+				links: upload.versions.length !== 0 ? [ { type: "prev", cid: upload.versions[0] } ] : []
 			});
 
-			if (upload.replaces) {
-				await components.groups.addLinks(group, upload.replaces, [ { type: "next", cid: upload.cid } ])
+			if (upload.versions.length !== 0) {
+				await components.groups.addLinks(group, upload.versions[0], [ { type: "next", cid: upload.cid } ]);
 			}
 
 			upload.state = "COMPLETED";

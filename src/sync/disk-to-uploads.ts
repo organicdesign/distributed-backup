@@ -46,6 +46,8 @@ export const diskToUploads = async (components: Components) => {
 
 		const { cid } = await load(upload.path, importerConfig, components.blockstore, components.cipher);
 		const existingUpload = await components.uploads.findOne({ where: { cid: cid.toString(), group: upload.group.toString() } });
+		const versions = [upload.cid, ...upload.versions].slice(0, upload.versionCount);
+		const versionsToRemove = [upload.cid, ...upload.versions].slice(upload.versionCount);
 
 		upload.autoUpdate = false;
 		upload.replacedBy = cid;
@@ -69,8 +71,9 @@ export const diskToUploads = async (components: Components) => {
 					nocopy: upload.nocopy,
 					encrypt: upload.encrypt,
 					timestamp: new Date(),
+					versionCount: upload.versionCount,
 					autoUpdate: true,
-					replaces: upload.cid
+					versions
 				},
 
 				transaction
@@ -83,12 +86,22 @@ export const diskToUploads = async (components: Components) => {
 					existingUpload.autoUpdate = true;
 					existingUpload.state = "UPLOADING";
 					existingUpload.timestamp = new Date();
-					existingUpload.replaces = upload.cid;
+					existingUpload.versions = versions;
+					existingUpload.versionCount = upload.versionCount;
 					existingUpload.replacedBy = undefined;
 
 					await existingUpload.save({ transaction });
 				}
-			})()
+			})(),
+
+			versionsToRemove.map(v => components.uploads.destroy({
+				where: {
+					cid: v.toString(),
+					group: upload.group.toString()
+				},
+
+				transaction
+			}))
 		]));
 
 		// Need to make sure this gets unpinned.

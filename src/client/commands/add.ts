@@ -29,6 +29,10 @@ export const builder = createBuilder({
 	autoUpdate: {
 		default: false,
 		type: "boolean"
+	},
+
+	versionCount: {
+		type: "number"
 	}
 });
 
@@ -42,7 +46,8 @@ export const handler = createHandler<typeof builder>(async argv => {
 		path: argv.path,
 		onlyHash: argv.onlyHash,
 		encrypt: argv.encrypt,
-		autoUpdate: argv.autoUpdate
+		autoUpdate: argv.autoUpdate,
+		versionCount: argv.versionCount
 	});
 
 	console.log(add);
