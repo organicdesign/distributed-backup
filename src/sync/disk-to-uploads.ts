@@ -60,6 +60,7 @@ export const diskToUploads = async (components: Components) => {
 					if (replacing == null) {
 						await components.uploads.create({
 							cid,
+							group: upload.group,
 							path: upload.path,
 							state: "REPLACING",
 							cidVersion: upload.cidVersion,

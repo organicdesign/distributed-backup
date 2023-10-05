@@ -8,7 +8,7 @@ import type { CID } from "multiformats/cid";
 import type { ImporterConfig } from "../fs-importer/interfaces.js";
 import type { Components, ImportOptions } from "../interface.js";
 
-export const addLocal = async (components: Components, params: ImportOptions & { onlyHash?: boolean, autoUpdate?: boolean }): Promise<CID> => {
+export const addLocal = async (components: Components, params: ImportOptions & { group: CID, onlyHash?: boolean, autoUpdate?: boolean }): Promise<CID> => {
 	const { blockstore, cipher, uploads } = components;
 
 	const config: ImporterConfig = {
@@ -34,14 +34,16 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 
 	await uploads.findOrCreate({
 		where: {
-			cid: cid.toString()
+			cid: cid.toString(),
+			group: params.group.toString(),
 		},
 
 		defaults: {
 			cid,
+			group: params.group,
 			cidVersion: params.cidVersion,
 			path: params.path,
-			state: "COMPLETED",
+			state: "UPLOADING",
 			rawLeaves: params.rawLeaves,
 			chunker: params.chunker,
 			hash: params.hash,

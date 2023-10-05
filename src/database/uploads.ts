@@ -6,10 +6,11 @@ import { sequelize } from "./sequelize.js";
  * This class handles managing local data added to IPFS.
  */
 
-class UploadsClass extends Model<InferAttributes<UploadsClass, { omit: "cid" | "replaces" }> & { cid: string, replaces?: string }, InferCreationAttributes<UploadsClass>> {
+class UploadsClass extends Model<InferAttributes<UploadsClass, { omit: "cid" | "replaces" | "group" }> & { cid: string, group: string, replaces?: string }, InferCreationAttributes<UploadsClass>> {
 	declare cid: CID // Primary
+	declare group: CID // Primary
 	declare path: string
-	declare state: "REPLACING" | "COMPLETED" | "REPLACED"
+	declare state: "REPLACING" | "UPLOADING" | "COMPLETED" | "REPLACED"
 	declare cidVersion: Version
 	declare hash: string
 	declare chunker: string
@@ -37,6 +38,22 @@ export const Uploads = sequelize.define<UploadsClass>(
 
 			set (value: CID) {
 				this.setDataValue("cid", value.toString());
+			}
+		},
+
+		group: {
+			type: DataTypes.STRING(undefined, true),
+			primaryKey: true,
+			allowNull: false,
+
+			get () {
+				const str = this.getDataValue("group");
+
+				return CID.parse(str);
+			},
+
+			set (value: CID) {
+				this.setDataValue("group", value.toString());
 			}
 		},
 
