@@ -9,7 +9,7 @@ import { sequelize } from "./sequelize.js";
 class UploadsClass extends Model<InferAttributes<UploadsClass, { omit: "cid" | "replaces" }> & { cid: string, replaces?: string }, InferCreationAttributes<UploadsClass>> {
 	declare cid: CID // Primary
 	declare path: string
-	declare state: "REPLACING" | "COMPLETED"
+	declare state: "REPLACING" | "COMPLETED" | "REPLACED"
 	declare cidVersion: Version
 	declare hash: string
 	declare chunker: string
