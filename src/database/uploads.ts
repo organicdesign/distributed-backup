@@ -126,8 +126,8 @@ export const Uploads = sequelize.define<UploadsClass>(
 				return str == null ? str : CID.parse(str);
 			},
 
-			set (value: CID) {
-				this.setDataValue("replaces", value.toString());
+			set (value?: CID) {
+				this.setDataValue("replaces", value?.toString());
 			}
 		},
 
@@ -141,8 +141,8 @@ export const Uploads = sequelize.define<UploadsClass>(
 				return str == null ? str : CID.parse(str);
 			},
 
-			set (value: CID) {
-				this.setDataValue("replacedBy", value.toString());
+			set (value?: CID) {
+				this.setDataValue("replacedBy", value?.toString());
 			}
 		}
 	}
