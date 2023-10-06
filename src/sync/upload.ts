@@ -1,4 +1,5 @@
 import { BlackHoleBlockstore } from "blockstore-core/black-hole";
+import all from "it-all";
 import * as logger from "../logger.js";
 import selectHasher from "../fs-importer/select-hasher.js";
 import selectChunker from "../fs-importer/select-chunker.js";
@@ -31,6 +32,10 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 	}
 
 	logger.add("imported %s", params.path);
+
+	// Save this.
+	await components.dm.pin(cid);
+	await all(components.dm.downloadPin(cid));
 
 	await uploads.findOrCreate({
 		where: {
