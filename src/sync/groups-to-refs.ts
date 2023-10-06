@@ -17,7 +17,26 @@ export const groupsToRefs = async (components: Components) => {
 			//logger.validate("syncing item: %s", CID.parse(pair.key.baseNamespace()).toString());
 
 			if (entry == null) {
-				//await deleteAll(components, { cid, group });
+				const ref = await references.findOne({
+					where: {
+						cid: cid.toString(),
+						group: group.toString()
+					}
+				});
+
+				if (ref != null) {
+					ref.state = "DESTROYED";
+
+					await ref.save();
+
+					logger.references(`[-] ${group}/${cid}`);
+
+					/*
+					logger.pins(`[-] ${cid}`);
+
+					await components.dm.unpin(cid);
+					*/
+				}
 
 				continue;
 			}
@@ -42,8 +61,6 @@ export const groupsToRefs = async (components: Components) => {
 				continue;
 			}
 
-			logger.references(`[+] ${group}/${cid}`);
-
 			await references.create({
 				cid,
 				group,
@@ -52,9 +69,13 @@ export const groupsToRefs = async (components: Components) => {
 				encrypted: entry.encrypted
 			});
 
+			logger.references(`[+] ${group}/${cid}`);
+
+			/*
 			logger.pins(`[~] ${cid}`);
 
 			await components.dm.pin(cid);
+			*/
 		}
 	}
 };
