@@ -1,10 +1,11 @@
 import { sequelize, Pins, Downloads, Blocks } from "./database/index.js";
 import * as dagWalkers from "../node_modules/helia/dist/src/utils/dag-walkers.js";
-import type { DAGWalker } from "../node_modules/helia/dist/src/index.js";
-import type { CID } from "multiformats/cid";
-import type { Helia } from "@helia/interface";
-import type { Transaction } from "sequelize";
 import { addBlockRef, addPinRef } from "./utils.js";
+import * as logger from "./logger.js";
+import type { DAGWalker } from "../node_modules/helia/dist/src/index.js";
+import type { Components } from "./interface.js";
+import type { CID } from "multiformats/cid";
+import type { Transaction } from "sequelize";
 
 const getDagWalker = (cid: CID): DAGWalker => {
 	const dagWalker = Object.values(dagWalkers).find(dw => dw.codec === cid.code);
@@ -17,11 +18,25 @@ const getDagWalker = (cid: CID): DAGWalker => {
 };
 
 export class DownloadManager {
-	private readonly helia: Helia;
+	private readonly components: Components;
 	private readonly activeDownloads = new Map<string, Promise<{ block: Uint8Array, cid: CID, links: CID[] }>>();
 
-	constructor ({ helia }: { helia: Helia }) {
-		this.helia = helia;
+	constructor (components: Components) {
+		this.components = components;
+	}
+
+	async unpin (cid: CID) {
+		if (await this.components.helia.pins.isPinned(cid)) {
+			await this.components.helia.pins.rm(cid);
+		}
+
+		await sequelize.transaction(transaction => Promise.all([
+			Pins.destroy({ where: { cid: cid.toString() }, transaction }),
+			Downloads.destroy({ where: { pinnedBy: cid.toString() }, transaction }),
+			Blocks.destroy({ where: { pinnedBy: cid.toString() }, transaction })
+		]));
+
+		logger.pins(`[-] ${cid}`);
 	}
 
 	// Add a pin to the downloads.
@@ -54,6 +69,8 @@ export class DownloadManager {
 		} else {
 			await sequelize.transaction(action);
 		}
+
+		logger.pins(`[~] ${cid}`);
 	}
 
 	/**
@@ -139,11 +156,12 @@ export class DownloadManager {
 			yield func;
 		}
 
-		await addPinRef(this.helia, pin);
+		await addPinRef(this.components.helia, pin);
 
 		pinData.state = "COMPLETED";
 
 		await pinData.save();
+		logger.pins(`[+] ${pin}`);
 	}
 
 	// Download an individial block.
@@ -159,11 +177,11 @@ export class DownloadManager {
 			// Download the block and fetch the downloads referencing it.
 			const [ downloads, block ] = await Promise.all([
 				Downloads.findAll({ where: { cid: cid.toString() } }),
-				this.helia.blockstore.get(cid)
+				this.components.helia.blockstore.get(cid)
 			]);
 
 			for (const d of downloads) {
-				await addBlockRef(this.helia, cid, d.pinnedBy);
+				await addBlockRef(this.components.helia, cid, d.pinnedBy);
 			}
 
 			// Save the blocks to the database.
@@ -212,6 +230,8 @@ export class DownloadManager {
 
 			// Delete the download references
 			await Promise.all(downloads.map(d => d.destroy()));
+
+			logger.downloads(`[+] ${cid}`);
 
 			return { block, cid, links };
 		})();
