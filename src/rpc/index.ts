@@ -1,5 +1,4 @@
 import * as add from "./commands/add.js";
-import * as addToGroup from "./commands/add-to-group.js";
 import * as addresses from "./commands/addresses.js";
 import * as connect from "./commands/connect.js";
 import * as connections from "./commands/connections.js";
@@ -17,7 +16,6 @@ import type { Components } from "../interface.js";
 
 export default [
 	add,
-	addToGroup,
 	addresses,
 	connect,
 	connections,
