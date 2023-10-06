@@ -44,7 +44,7 @@ const removeUploads = async (components: Components) => {
 	}));
 };
 
-export const uploadToGroups = async (components: Components) => {
+export const uploadsToGroups = async (components: Components) => {
 	await Promise.all([
 		addUploads(components),
 		removeUploads(components)

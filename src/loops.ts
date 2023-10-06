@@ -1,16 +1,16 @@
 import { groupsToRefs } from "./sync/groups-to-refs.js";
 import { diskToUploads } from "./sync/disk-to-uploads.js";
-import { uploadToGroups } from "./sync/upload-to-groups.js";
+import { uploadsToGroups } from "./sync/uploads-to-groups.js";
 import { refsToPins } from "./sync/refs-to-pins.js";
 import type { Components } from "./interface.js";
 
 export const syncLoop = async (components: Components) => {
 	// logger.tick("started");
 
+	await diskToUploads(components);
+	await uploadsToGroups(components);
 	await groupsToRefs(components);
 	await refsToPins(components);
-	await diskToUploads(components);
-	await uploadToGroups(components);
 
 	// logger.tick("finished");
 };
