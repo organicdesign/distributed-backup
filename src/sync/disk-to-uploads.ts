@@ -5,6 +5,7 @@ import selectChunker from "../fs-importer/select-chunker.js";
 import selectHasher from "../fs-importer/select-hasher.js";
 import * as logger from "../logger.js";
 import { sequelize } from "../database/sequelize.js";
+import { Op } from "sequelize";
 import type { Components } from "../interface.js";
 import type { ImporterConfig } from "../fs-importer/interfaces.js";
 
@@ -48,6 +49,13 @@ export const diskToUploads = async (components: Components) => {
 		const existingUpload = await components.uploads.findOne({ where: { cid: cid.toString(), group: upload.group.toString() } });
 		const versions = [upload.cid, ...upload.versions].slice(0, upload.versionCount);
 		const versionsToRemove = [upload.cid, ...upload.versions].slice(upload.versionCount);
+
+		const uploadsToRemove = await components.uploads.findAll({
+			where: {
+				group: upload.group.toString(),
+				[Op.or]: versionsToRemove.map(v => ({ cid: v.toString() }))
+			}
+		});
 
 		upload.autoUpdate = false;
 		upload.replacedBy = cid;
@@ -94,14 +102,11 @@ export const diskToUploads = async (components: Components) => {
 				}
 			})(),
 
-			versionsToRemove.map(v => components.uploads.destroy({
-				where: {
-					cid: v.toString(),
-					group: upload.group.toString()
-				},
+			...uploadsToRemove.map(u => {
+				u.state = "DESTROYED";
 
-				transaction
-			}))
+				return u.save({ transaction });
+			})
 		]));
 
 		// Need to make sure this gets unpinned.

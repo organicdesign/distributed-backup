@@ -10,7 +10,7 @@ class UploadsClass extends Model<InferAttributes<UploadsClass, { omit: "cid" | "
 	declare cid: CID // Primary
 	declare group: CID // Primary
 	declare path: string
-	declare state: "UPLOADING" | "COMPLETED"
+	declare state: "UPLOADING" | "COMPLETED" | "DESTROYED"
 	declare cidVersion: Version
 	declare hash: string
 	declare chunker: string
