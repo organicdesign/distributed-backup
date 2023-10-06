@@ -2,7 +2,7 @@ import * as logger from "../logger.js";
 import { CID } from "multiformats/cid";
 import type { Components } from "../interface.js";
 
-export const uploadToGroups = async (components: Components) => {
+const addUploads = async (components: Components) => {
 	const uploads = await components.uploads.findAll({ where: { state: "UPLOADING" } });
 
 	if (uploads.length === 0) {
@@ -33,4 +33,20 @@ export const uploadToGroups = async (components: Components) => {
 			await upload.save();
 		}
 	}
+};
+
+const removeUploads = async (components: Components) => {
+	const uploads = await components.uploads.findAll({ where: { state: "DESTROYED" } });
+
+	await Promise.all(uploads.map(async u => {
+		await components.groups.deleteFrom(u.cid, u.group);
+		await u.destroy();
+	}));
+};
+
+export const uploadToGroups = async (components: Components) => {
+	await Promise.all([
+		addUploads(components),
+		removeUploads(components)
+	]);
 };
