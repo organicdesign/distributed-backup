@@ -10,7 +10,7 @@ import type { ImporterConfig } from "../fs-importer/interfaces.js";
 import type { Components, ImportOptions } from "../interface.js";
 
 export const addLocal = async (components: Components, params: ImportOptions & { group: CID, onlyHash?: boolean, autoUpdate?: boolean, versionCount?: number }): Promise<CID> => {
-	const { blockstore, cipher, uploads } = components;
+	const { blockstore, cipher, localContent } = components;
 
 	const config: ImporterConfig = {
 		chunker: selectChunker(),
@@ -37,7 +37,7 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 	await components.dm.pin(cid);
 	await all(components.dm.downloadPin(cid));
 
-	await uploads.findOrCreate({
+	await localContent.findOrCreate({
 		where: {
 			cid: cid.toString(),
 			group: params.group.toString(),

@@ -11,7 +11,7 @@ import type { Components } from "../interface.js";
 import type { ImporterConfig } from "../fs-importer/interfaces.js";
 
 export const diskToUploads = async (components: Components) => {
-	const uploads = await components.uploads.findAll({
+	const uploads = await components.localContent.findAll({
 		where: {
 			autoUpdate: true,
 			state: "COMPLETED"
@@ -52,11 +52,11 @@ export const diskToUploads = async (components: Components) => {
 		await components.dm.pin(cid);
 		await all(components.dm.downloadPin(cid));
 
-		const existingUpload = await components.uploads.findOne({ where: { cid: cid.toString(), group: upload.group.toString() } });
+		const existingUpload = await components.localContent.findOne({ where: { cid: cid.toString(), group: upload.group.toString() } });
 		const versions = [upload.cid, ...upload.versions].slice(0, upload.versionCount);
 		const versionsToRemove = [upload.cid, ...upload.versions].slice(upload.versionCount);
 
-		const uploadsToRemove = await components.uploads.findAll({
+		const uploadsToRemove = await components.localContent.findAll({
 			where: {
 				group: upload.group.toString(),
 				[Op.or]: versionsToRemove.map(v => ({ cid: v.toString() }))
@@ -67,7 +67,7 @@ export const diskToUploads = async (components: Components) => {
 		upload.replacedBy = cid;
 
 		await sequelize.transaction(transaction => Promise.all([
-			components.uploads.findOrCreate({
+			components.localContent.findOrCreate({
 				where: {
 					cid: cid.toString(),
 					group: upload.group.toString()

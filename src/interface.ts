@@ -4,7 +4,7 @@ import type { PubSub } from "@libp2p/interface-pubsub";
 import type { Helia } from "@helia/interface";
 import type { Filestore } from "./filestore/index.js";
 import type { Groups } from "./groups.js";
-import type { References, Uploads, Pins } from "./database/index.js";
+import type { RemoteContent, LocalContent, Pins } from "./database/index.js";
 import type { Cipher } from "./cipher.js";
 import type { Datastores } from "./datastores.js";
 import type { Version, CID } from "multiformats/cid";
@@ -38,8 +38,8 @@ export interface Components {
 	cipher: Cipher
 	config: Config
 	stores: Datastores
-	references: typeof References
-	uploads: typeof Uploads
+	remoteContent: typeof RemoteContent
+	localContent: typeof LocalContent
 	pins: typeof Pins
 	dm: DownloadManager
 }

@@ -6,7 +6,7 @@ import { sequelize } from "./sequelize.js";
  * This class handles managing local data added to IPFS.
  */
 
-class UploadsClass extends Model<InferAttributes<UploadsClass, { omit: "cid" | "group" | "versions" | "replacedBy" }> & { cid: string, group: string, versions?: string, replacedBy?: string }, InferCreationAttributes<UploadsClass>> {
+class localContentClass extends Model<InferAttributes<localContentClass, { omit: "cid" | "group" | "versions" | "replacedBy" }> & { cid: string, group: string, versions?: string, replacedBy?: string }, InferCreationAttributes<localContentClass>> {
 	declare cid: CID // Primary
 	declare group: CID // Primary
 	declare path: string
@@ -24,7 +24,7 @@ class UploadsClass extends Model<InferAttributes<UploadsClass, { omit: "cid" | "
 	declare replacedBy?: CID
 }
 
-export const Uploads = sequelize.define<UploadsClass>(
+export const LocalContent = sequelize.define<localContentClass>(
 	"uploads",
 	{
 		cid: {

@@ -2,7 +2,7 @@ import { Op } from "sequelize";
 import type { Components } from "../interface.js";
 
 export const refsToPins = async (components: Components) => {
-	const refs = await components.references.findAll({
+	const refs = await components.remoteContent.findAll({
 		where: {
 			[Op.or]: [
 				{ state: "DOWNLOADING" },

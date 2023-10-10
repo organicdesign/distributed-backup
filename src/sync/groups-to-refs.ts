@@ -4,7 +4,7 @@ import * as logger from "../logger.js";
 import type { Entry, Components } from "../interface.js";
 
 export const groupsToRefs = async (components: Components) => {
-	const { groups, references } = components;
+	const { groups, remoteContent } = components;
 
 	for (const { value: database } of groups.all()) {
 		//logger.validate("syncing group: %s", database.address.cid.toString());
@@ -17,7 +17,7 @@ export const groupsToRefs = async (components: Components) => {
 			//logger.validate("syncing item: %s", CID.parse(pair.key.baseNamespace()).toString());
 
 			if (entry == null) {
-				const ref = await references.findOne({
+				const ref = await remoteContent.findOne({
 					where: {
 						cid: cid.toString(),
 						group: group.toString()
@@ -42,7 +42,7 @@ export const groupsToRefs = async (components: Components) => {
 			}
 
 			// Check if we have uploaded this item...
-			const local = await components.uploads.findOne({ where: { cid: cid.toString() } });
+			const local = await components.localContent.findOne({ where: { cid: cid.toString() } });
 
 			if (local) {
 				// We have uploaded it - no need to download it.
@@ -50,7 +50,7 @@ export const groupsToRefs = async (components: Components) => {
 			}
 
 			// Check if we already have this item...
-			const reference = await references.findOne({
+			const reference = await remoteContent.findOne({
 				where: {
 					cid: cid.toString(),
 					group: group.toString()
@@ -61,7 +61,7 @@ export const groupsToRefs = async (components: Components) => {
 				continue;
 			}
 
-			await references.create({
+			await remoteContent.create({
 				cid,
 				group,
 				timestamp: new Date(entry.timestamp),

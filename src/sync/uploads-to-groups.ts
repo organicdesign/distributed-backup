@@ -3,7 +3,7 @@ import { CID } from "multiformats/cid";
 import type { Components } from "../interface.js";
 
 const addUploads = async (components: Components) => {
-	const uploads = await components.uploads.findAll({ where: { state: "UPLOADING" } });
+	const uploads = await components.localContent.findAll({ where: { state: "UPLOADING" } });
 
 	if (uploads.length === 0) {
 		// Nothing needs updating.
@@ -36,7 +36,7 @@ const addUploads = async (components: Components) => {
 };
 
 const removeUploads = async (components: Components) => {
-	const uploads = await components.uploads.findAll({ where: { state: "DESTROYED" } });
+	const uploads = await components.localContent.findAll({ where: { state: "DESTROYED" } });
 
 	await Promise.all(uploads.map(async u => {
 		await components.groups.deleteFrom(u.cid, u.group);

@@ -12,8 +12,8 @@ import { sequelize } from "./database/index.js";
 import type { Entry, Components, ImportOptions, Reference, Link } from "./interface.js";
 import type { ImporterConfig } from "./fs-importer/interfaces.js";
 
-const unpinIfLast = async ({ references, helia, pins }: Pick<Components, "helia" | "references" | "pins">, cid: CID) => {
-	const { count } = await references.findAndCountAll({ where: { cid: cid.toString() } });
+const unpinIfLast = async ({ remoteContent, helia, pins }: Components, cid: CID) => {
+	const { count } = await remoteContent.findAndCountAll({ where: { cid: cid.toString() } });
 
 	if (count <= 1) {
 		await Promise.all([
@@ -24,7 +24,7 @@ const unpinIfLast = async ({ references, helia, pins }: Pick<Components, "helia"
 };
 
 export const downSync = async (components: Components) => {
-	const { groups, references, pins } = components;
+	const { groups, remoteContent, pins } = components;
 
 	for (const { value: database } of groups.all()) {
 		//logger.validate("syncing group: %s", database.address.cid.toString());
@@ -36,7 +36,7 @@ export const downSync = async (components: Components) => {
 			const group = database.address.cid;
 			//logger.validate("syncing item: %s", CID.parse(pair.key.baseNamespace()).toString());
 
-			const existing = await references.findOne({
+			const existing = await remoteContent.findOne({
 				where: {
 					cid: cid.toString(),
 					group: group.toString()
@@ -55,7 +55,7 @@ export const downSync = async (components: Components) => {
 
 			logger.references(`[+] ${group}/${cid}`);
 
-			const ref = await references.create({
+			const ref = await remoteContent.create({
 				cid,
 				group,
 				timestamp: new Date(entry.timestamp),
@@ -73,7 +73,7 @@ export const downSync = async (components: Components) => {
 	}
 };
 
-export const replaceLocal = async ({ groups, references, uploads, welo, dm }: Components, data: Reference & { oldCid: CID }) => {
+export const replaceLocal = async ({ groups, remoteContent, localContent, welo, dm }: Components, data: Reference & { oldCid: CID }) => {
 	throw new Error("not implemented");
 
 	/*
@@ -154,7 +154,7 @@ export const replaceLocal = async ({ groups, references, uploads, welo, dm }: Co
 	*/
 };
 
-export const deleteAll = async ({ helia, references, pins, groups, uploads }: Components, { cid, group }: Reference) => {
+export const deleteAll = async ({ helia, remoteContent, pins, groups, localContent }: Components, { cid, group }: Reference) => {
 	throw new Error("not implemented");
 	/*
 	const [ ref, upload ] = await Promise.all([
@@ -183,9 +183,9 @@ export const deleteAll = async ({ helia, references, pins, groups, uploads }: Co
 }
 
 export const upSync = async (components: Components) => {
-	const { blockstore, config, cipher, uploads } = components;
+	const { blockstore, config, cipher, localContent } = components;
 
-	const localRefs = await uploads.findAll();
+	const localRefs = await localContent.findAll();
 
 	for (const ref of localRefs) {
 		if (Date.now() - ref.timestamp.getTime() < config.validateInterval * 1000) {
