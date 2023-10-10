@@ -1,6 +1,5 @@
 import * as dagWalkers from "../../node_modules/helia/dist/src/utils/dag-walkers.js";
 import { addBlockRef, addPinRef } from "./utils.js";
-//import * as logger from "./logger.js";
 import type { Blocks } from "./blocks.js";
 import type { Pins } from "./pins.js";
 import type { Downloads } from "./downloads.js";
@@ -8,6 +7,7 @@ import type { DAGWalker } from "../../node_modules/helia/dist/src/index.js";
 import type { CID } from "multiformats/cid";
 import type { Transaction, Sequelize } from "sequelize";
 import type { Helia } from "@helia/interface";
+import { Event, EventTarget} from 'ts-event-target';
 
 const getDagWalker = (cid: CID): DAGWalker => {
 	const dagWalker = Object.values(dagWalkers).find(dw => dw.codec === cid.code);
@@ -27,13 +27,28 @@ interface Components {
 	blocks: Blocks
 }
 
+type EventTypes = "pins:removed" | "pins:added" | "pins:adding" | "downloads:added" | "downloads:removed" | "blocks:added" | "blocks:removed";
+
+class CIDEvent extends Event<EventTypes> {
+	cid: CID;
+
+	constructor(type: EventTypes, cid: CID) {
+		super(type);
+		this.cid = cid;
+	}
+}
+
 export class PinManager {
-	readonly events = new EventTarget();
+	readonly events = new EventTarget<[CIDEvent]>();
 	private readonly components: Components;
 	private readonly activeDownloads = new Map<string, Promise<{ block: Uint8Array, cid: CID, links: CID[] }>>();
 
 	constructor (components: Components) {
 		this.components = components;
+	}
+
+	async all () {
+		return await this.components.pins.findAll({ where: {} });
 	}
 
 	async unpin (cid: CID) {
@@ -47,8 +62,7 @@ export class PinManager {
 			this.components.blocks.destroy({ where: { pinnedBy: cid.toString() }, transaction })
 		]));
 
-		this.events.dispatchEvent(new CustomEvent<{ cid: CID }>("pin-removed", { detail: { cid } }));
-		// logger.pins(`[-] ${cid}`);
+		this.events.dispatchEvent(new CIDEvent("pins:removed", cid));
 	}
 
 	// Add a pin to the downloads.
@@ -82,8 +96,7 @@ export class PinManager {
 			await this.components.sequelize.transaction(action);
 		}
 
-		this.events.dispatchEvent(new CustomEvent<{ cid: CID }>("pin-adding", { detail: { cid } }));
-		// logger.pins(`[~] ${cid}`);
+		this.events.dispatchEvent(new CIDEvent("pins:adding", cid));
 	}
 
 	/**
@@ -175,8 +188,7 @@ export class PinManager {
 
 		await pinData.save();
 
-		this.events.dispatchEvent(new CustomEvent<{ cid: CID }>("pin-added", { detail: { cid: pin } }));
-		// logger.pins(`[+] ${pin}`);
+		this.events.dispatchEvent(new CIDEvent("pins:added", pin));
 	}
 
 	// Download an individial block.
@@ -246,8 +258,7 @@ export class PinManager {
 			// Delete the download references
 			await Promise.all(downloads.map(d => d.destroy()));
 
-			// logger.downloads(`[+] ${cid}`);
-			this.events.dispatchEvent(new CustomEvent<{ cid: CID }>("download-added", { detail: { cid } }));
+			this.events.dispatchEvent(new CIDEvent("downloads:added", cid));
 
 			return { block, cid, links };
 		})();

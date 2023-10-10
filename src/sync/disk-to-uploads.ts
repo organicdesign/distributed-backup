@@ -49,8 +49,8 @@ export const diskToUploads = async (components: Components) => {
 		const { cid } = await load(upload.path, importerConfig, components.blockstore, components.cipher);
 
 		// Save this.
-		await components.dm.pin(cid);
-		await all(components.dm.downloadPin(cid));
+		await components.pinManager.pin(cid);
+		await all(components.pinManager.downloadPin(cid));
 
 		const existingUpload = await components.localContent.findOne({ where: { cid: cid.toString(), group: upload.group.toString() } });
 		const versions = [upload.cid, ...upload.versions].slice(0, upload.versionCount);

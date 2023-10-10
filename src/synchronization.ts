@@ -1,4 +1,4 @@
-import * as dagCbor from "@ipld/dag-cbor";
+/*import * as dagCbor from "@ipld/dag-cbor";
 import * as dagPb from "@ipld/dag-pb";
 import { CID } from "multiformats/cid";
 import * as logger from "./logger.js";
@@ -152,7 +152,7 @@ export const replaceLocal = async ({ groups, remoteContent, localContent, welo, 
 
 	logger.references(`[+] ${data.group}/${data.cid}`);
 	*/
-};
+/*};
 
 export const deleteAll = async ({ helia, remoteContent, pins, groups, localContent }: Components, { cid, group }: Reference) => {
 	throw new Error("not implemented");
@@ -180,7 +180,7 @@ export const deleteAll = async ({ helia, remoteContent, pins, groups, localConte
 		])
 	});
 	*/
-}
+/*}
 
 export const upSync = async (components: Components) => {
 	const { blockstore, config, cipher, localContent } = components;
@@ -221,4 +221,4 @@ export const upSync = async (components: Components) => {
 
 		// logger.validate("updated %s", ref.path);
 	}
-};
+};*/

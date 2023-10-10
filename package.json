@@ -55,6 +55,7 @@
     "protons-runtime": "^5.0.1",
     "sequelize": "^6.32.1",
     "sqlite3": "^5.1.6",
+    "ts-event-target": "^0.1.5",
     "welo": "^2.1.1",
     "yargs": "^17.7.2"
   }

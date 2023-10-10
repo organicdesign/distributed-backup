@@ -15,7 +15,7 @@ export const refsToPins = async (components: Components) => {
 	const destoyed = refs.filter(r => r.state === "DESTROYED");
 
 	await Promise.all(downloading.map(async ref => {
-		await components.dm.pin(ref.cid);
+		await components.pinManager.pin(ref.cid);
 
 		ref.state = "DOWNLOADED";
 
@@ -23,14 +23,7 @@ export const refsToPins = async (components: Components) => {
 	}));
 
 	await Promise.all(destoyed.map(async ref => {
-		const { count } = await components.pins.findAndCountAll({
-			where: { cid: ref.cid.toString() }
-		});
-
-		if (count <= 1) {
-			await components.dm.unpin(ref.cid);
-		}
-
+		await components.pinManager.unpin(ref.cid);
 		await ref.destroy();
 	}));
 };

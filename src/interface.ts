@@ -4,11 +4,11 @@ import type { PubSub } from "@libp2p/interface-pubsub";
 import type { Helia } from "@helia/interface";
 import type { Filestore } from "./filestore/index.js";
 import type { Groups } from "./groups.js";
-import type { RemoteContent, LocalContent, Pins } from "./database/index.js";
+import type { RemoteContent, LocalContent } from "./database/index.js";
 import type { Cipher } from "./cipher.js";
 import type { Datastores } from "./datastores.js";
 import type { Version, CID } from "multiformats/cid";
-import type { DownloadManager } from "./download-manager.js";
+import type { PinManager } from "./helia-pin-manager/pin-manager.js";
 
 export interface Config {
 	validateInterval: number
@@ -40,8 +40,7 @@ export interface Components {
 	stores: Datastores
 	remoteContent: typeof RemoteContent
 	localContent: typeof LocalContent
-	pins: typeof Pins
-	dm: DownloadManager
+	pinManager: PinManager
 }
 
 export interface Entry<T extends Uint8Array | CID = CID> {

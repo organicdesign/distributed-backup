@@ -15,8 +15,8 @@ import commands from "./rpc/index.js";
 import { createGroups } from "./groups.js";
 import { Datastores } from "./datastores.js";
 import { createCipher } from "./cipher.js";
-import { sequelize, RemoteContent, LocalContent, Pins } from "./database/index.js";
-import { DownloadManager } from "./download-manager.js";
+import { sequelize, RemoteContent, LocalContent } from "./database/index.js";
+import setupPinManager from "./helia-pin-manager/index.js";
 import type { Components } from "./interface.js";
 
 const argv = await yargs(hideBin(process.argv))
@@ -73,7 +73,12 @@ logger.lifecycle("loaded groups");
 const { rpc, close } = await createNetServer(argv.socket);
 logger.lifecycle("loaded server");
 
-const dm = new DownloadManager({ helia });
+const pinManager = await setupPinManager(helia);
+
+pinManager.events.addEventListener("downloads:added", ({ cid }) => logger.downloads(`[+] ${cid}`));
+pinManager.events.addEventListener("pins:added", ({ cid }) => logger.pins(`[+] ${cid}`));
+pinManager.events.addEventListener("pins:adding", ({ cid }) => logger.pins(`[~] ${cid}`));
+pinManager.events.addEventListener("pins:removed", ({ cid }) => logger.pins(`[-] ${cid}`));
 
 const components: Components = {
 	libp2p,
@@ -84,10 +89,9 @@ const components: Components = {
 	groups,
 	config,
 	stores,
-	dm,
+	pinManager,
 	remoteContent: RemoteContent,
-	localContent: LocalContent,
-	pins: Pins
+	localContent: LocalContent
 };
 
 // Register all the RPC commands.
