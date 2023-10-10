@@ -18,10 +18,10 @@ const getDagWalker = (cid: CID): DAGWalker => {
 };
 
 export class DownloadManager {
-	private readonly components: Components;
+	private readonly components: Pick<Components, "helia">;
 	private readonly activeDownloads = new Map<string, Promise<{ block: Uint8Array, cid: CID, links: CID[] }>>();
 
-	constructor (components: Components) {
+	constructor (components: Pick<Components, "helia">) {
 		this.components = components;
 	}
 

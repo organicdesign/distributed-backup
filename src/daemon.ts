@@ -15,7 +15,7 @@ import commands from "./rpc/index.js";
 import { createGroups } from "./groups.js";
 import { Datastores } from "./datastores.js";
 import { createCipher } from "./cipher.js";
-import { sequelize, References, Uploads, Pins } from "./database/index.js";
+import { sequelize, RemoteContent, LocalContent, Pins } from "./database/index.js";
 import { DownloadManager } from "./download-manager.js";
 import type { Components } from "./interface.js";
 
@@ -85,8 +85,8 @@ const components: Components = {
 	config,
 	stores,
 	dm,
-	references: References,
-	uploads: Uploads,
+	remoteContent: RemoteContent,
+	localContent: LocalContent,
 	pins: Pins
 };
 
