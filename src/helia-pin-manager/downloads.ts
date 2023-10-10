@@ -1,4 +1,4 @@
-import { DataTypes, Model, InferAttributes, InferCreationAttributes, Sequelize } from "sequelize";
+import { DataTypes, Model, InferAttributes, InferCreationAttributes, Sequelize, ModelCtor } from "sequelize";
 import { CID } from "multiformats/cid";
 
 /**
@@ -11,7 +11,9 @@ class DownloadsClass extends Model<InferAttributes<DownloadsClass, { omit: "cid"
 	declare depth: number
 }
 
-export const setupDownloads = (sequelize: Sequelize) => {
+export type Downloads = ModelCtor<DownloadsClass>;
+
+export const setupDownloads = (sequelize: Sequelize): Downloads => {
 	return sequelize.define<DownloadsClass>(
 		"downloads",
 		{

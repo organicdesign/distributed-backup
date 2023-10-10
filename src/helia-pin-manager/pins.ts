@@ -1,4 +1,4 @@
-import { DataTypes, Model, InferAttributes, InferCreationAttributes, Sequelize } from "sequelize";
+import { DataTypes, Model, InferAttributes, InferCreationAttributes, Sequelize, ModelCtor } from "sequelize";
 import { CID } from "multiformats/cid";
 
 /**
@@ -11,7 +11,9 @@ class PinsClass extends Model<InferAttributes<PinsClass, { omit: "cid" }> & { ci
 	declare state: "COMPLETED" | "DOWNLOADING" | "DESTROYED"
 }
 
-export const setupPins = (sequelize: Sequelize) => {
+export type Pins = ModelCtor<PinsClass>;
+
+export const setupPins = (sequelize: Sequelize): Pins => {
 	return sequelize.define<PinsClass>(
 		"pin",
 		{

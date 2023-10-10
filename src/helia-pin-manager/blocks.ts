@@ -1,4 +1,4 @@
-import { DataTypes, Model, InferAttributes, InferCreationAttributes, Sequelize } from "sequelize";
+import { DataTypes, Model, InferAttributes, InferCreationAttributes, Sequelize, ModelCtor } from "sequelize";
 import { CID } from "multiformats/cid";
 
 /**
@@ -12,7 +12,9 @@ class BlocksClass extends Model<InferAttributes<BlocksClass, { omit: "cid" | "pi
 	declare depth: number
 }
 
-export const setupBlocks = (sequelize: Sequelize) => {
+export type Blocks = ModelCtor<BlocksClass>;
+
+export const setupBlocks = (sequelize: Sequelize): Blocks => {
 	return sequelize.define<BlocksClass>(
 		"blocks",
 		{
