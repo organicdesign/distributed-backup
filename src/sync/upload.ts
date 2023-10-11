@@ -34,8 +34,7 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 	logger.add("imported %s", params.path);
 
 	// Save this.
-	await components.pinManager.pin(cid);
-	await all(components.pinManager.downloadPin(cid));
+	await components.pinManager.pinLocal(cid);
 
 	await localContent.findOrCreate({
 		where: {

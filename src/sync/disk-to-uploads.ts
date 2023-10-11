@@ -44,13 +44,14 @@ export const diskToUploads = async (components: Components) => {
 			continue;
 		}
 
-		logger.validate("updating %s", upload.path);
+		logger.add("importing %s", upload.path);
 
 		const { cid } = await load(upload.path, importerConfig, components.blockstore, components.cipher);
 
+		logger.add("imported %s", upload.path);
+
 		// Save this.
-		await components.pinManager.pin(cid);
-		await all(components.pinManager.downloadPin(cid));
+		await components.pinManager.pinLocal(cid);
 
 		const existingUpload = await components.localContent.findOne({ where: { cid: cid.toString(), group: upload.group.toString() } });
 		const versions = [upload.cid, ...upload.versions].slice(0, upload.versionCount);
@@ -120,7 +121,6 @@ export const diskToUploads = async (components: Components) => {
 		// const replacing = await components.uploads.findOne({ where: { cid: cid.toString(), group: upload.group.toString() } });
 
 		//replacing.destroy(),
-
-		logger.validate("updated %s", upload.path);
+//
 	}
 };

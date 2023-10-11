@@ -8,7 +8,7 @@ import { CID } from "multiformats/cid";
 class PinsClass extends Model<InferAttributes<PinsClass, { omit: "cid" }> & { cid: string }, InferCreationAttributes<PinsClass>> {
 	declare cid: CID // Primary
 	declare depth?: number
-	declare state: "COMPLETED" | "DOWNLOADING" | "DESTROYED"
+	declare state: "COMPLETED" | "DOWNLOADING" | "DESTROYED" | "UPLOADING"
 }
 
 export type Pins = ModelCtor<PinsClass>;

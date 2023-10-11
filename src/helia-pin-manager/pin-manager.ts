@@ -75,6 +75,44 @@ export class PinManager {
 		this.events.dispatchEvent(new CIDEvent("pins:removed", cid));
 	}
 
+	/**
+	 * Pin a CID without downloading any blocks. This will throw an error if all the blocks don't exist locally.
+	 */
+	async pinLocal (cid: CID) {
+		this.events.dispatchEvent(new CIDEvent("pins:adding", cid));
+
+		const pin = await this.components.pins.create({
+			cid,
+			state: "UPLOADING"
+		});
+
+		const walk = async (subCid: CID) => {
+			const dagWalker = getDagWalker(subCid);
+
+			if (!await this.components.helia.blockstore.has(subCid)) {
+				throw new Error("pin does not exist locally");
+			}
+
+			await addBlockRef(this.components.helia, subCid, cid);
+
+			const block = await this.components.helia.blockstore.get(subCid);
+
+			for await (const cid of dagWalker.walk(block)) {
+				await walk(cid);
+			}
+		};
+
+		await walk(cid);
+
+		await addPinRef(this.components.helia, cid);
+
+		pin.state = "COMPLETED";
+
+		await pin.save();
+
+		this.events.dispatchEvent(new CIDEvent("pins:added", cid));
+	}
+
 	// Add a pin to the downloads.
 	async pin (cid: CID, options?: Partial<{ transaction: Transaction }>) {
 		const pin = await this.components.pins.findOne({
