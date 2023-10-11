@@ -10,6 +10,7 @@ class RemoteContentClass extends Model<InferAttributes<RemoteContentClass, { omi
 	declare cid: CID // Primary
 	declare group: CID // Primary
 	declare state: "BLOCKED" | "DOWNLOADED" | "DOWNLOADING" | "DESTROYED"
+	declare priority: number
 	declare encrypted: boolean // This can stay since it won't change unless group/cid changes.
 	declare timestamp: Date // This can also stay..
 }
@@ -47,6 +48,11 @@ export const RemoteContent = sequelize.define<RemoteContentClass>(
 			set (value: CID) {
 				this.setDataValue("group", value.toString());
 			}
+		},
+
+		priority: {
+			type: DataTypes.NUMBER,
+			defaultValue: 1
 		},
 
 		encrypted: {
