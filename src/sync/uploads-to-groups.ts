@@ -40,6 +40,7 @@ const removeUploads = async (components: Components) => {
 
 	await Promise.all(uploads.map(async u => {
 		await components.groups.deleteFrom(u.cid, u.group);
+		await components.pinManager.unpin(u.cid);
 		await u.destroy();
 	}));
 };

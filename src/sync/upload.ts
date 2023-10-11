@@ -1,5 +1,4 @@
 import { BlackHoleBlockstore } from "blockstore-core/black-hole";
-import all from "it-all";
 import * as logger from "../logger.js";
 import selectHasher from "../fs-importer/select-hasher.js";
 import selectChunker from "../fs-importer/select-chunker.js";

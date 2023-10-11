@@ -1,6 +1,5 @@
 import { importAny as importAnyEncrypted } from "../fs-importer/import-copy-encrypted.js";
 import { importAny as importAnyPlaintext } from "../fs-importer/import-copy-plaintext.js";
-import all from "it-all";
 import { BlackHoleBlockstore } from "blockstore-core/black-hole";
 import selectChunker from "../fs-importer/select-chunker.js";
 import selectHasher from "../fs-importer/select-hasher.js";
@@ -118,9 +117,10 @@ export const diskToUploads = async (components: Components) => {
 
 		// Need to make sure this gets unpinned.
 		// Destroying the upload will mean re-downloading it.
-		// const replacing = await components.uploads.findOne({ where: { cid: cid.toString(), group: upload.group.toString() } });
-
-		//replacing.destroy(),
-//
+		/*await Promise.all(uploadsToRemove.map(async upload => {
+			await components.groups.deleteFrom(upload.cid, upload.group);
+			await components.pinManager.unpin(upload.cid);
+			await upload.destroy();
+		}));*/
 	}
 };
