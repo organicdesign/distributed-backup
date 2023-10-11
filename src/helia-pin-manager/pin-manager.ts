@@ -52,6 +52,16 @@ export class PinManager {
 	}
 
 	async unpin (cid: CID) {
+		const pin = await this.components.pins.findOne({ where: { cid: cid.toString() } });
+
+		if (pin == null) {
+			return;
+		}
+
+		pin.state = "DESTROYED";
+
+		await pin.save();
+
 		if (await this.components.helia.pins.isPinned(cid)) {
 			await this.components.helia.pins.rm(cid);
 		}
