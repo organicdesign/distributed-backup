@@ -5,7 +5,7 @@ import type { Pins } from "./pins.js";
 import type { Downloads } from "./downloads.js";
 import type { DAGWalker } from "../../node_modules/helia/dist/src/index.js";
 import type { CID } from "multiformats/cid";
-import type { Transaction, Sequelize } from "sequelize";
+import type { Sequelize } from "sequelize";
 import type { Helia } from "@helia/interface";
 import { Event, EventTarget} from 'ts-event-target';
 
@@ -114,7 +114,7 @@ export class PinManager {
 	}
 
 	// Add a pin to the downloads.
-	async pin (cid: CID, options?: Partial<{ transaction: Transaction }>) {
+	async pin (cid: CID) {
 		const pin = await this.components.pins.findOne({
 			where: {
 				cid: cid.toString()
@@ -125,7 +125,7 @@ export class PinManager {
 			return;
 		}
 
-		const action = (transaction: Transaction) => Promise.all([
+		await this.components.sequelize.transaction(transaction => Promise.all([
 			this.components.pins.create({
 				cid,
 				state: "DOWNLOADING"
@@ -136,13 +136,7 @@ export class PinManager {
 				pinnedBy: cid,
 				depth: 0
 			}, { transaction })
-		]);
-
-		if (options?.transaction) {
-			await action(options.transaction);
-		} else {
-			await this.components.sequelize.transaction(action);
-		}
+		]));
 
 		this.events.dispatchEvent(new CIDEvent("pins:adding", cid));
 	}
