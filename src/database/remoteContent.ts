@@ -51,7 +51,7 @@ export const RemoteContent = sequelize.define<RemoteContentClass>(
 		},
 
 		priority: {
-			type: DataTypes.NUMBER,
+			type: DataTypes.INTEGER,
 			defaultValue: 1
 		},
 

@@ -1,7 +1,9 @@
+import { Op } from "sequelize";
 import { groupsToRefs } from "./sync/groups-to-refs.js";
 import { diskToUploads } from "./sync/disk-to-uploads.js";
 import { uploadsToGroups } from "./sync/uploads-to-groups.js";
 import { refsToPins } from "./sync/refs-to-pins.js";
+import { linearWeightTranslation } from "./utils.js";
 import type { Components } from "./interface.js";
 
 export const syncLoop = async (components: Components) => {
@@ -23,11 +25,25 @@ export const syncLoop = async (components: Components) => {
 export const downloadLoop = async (components: Components) => {
 	const pins = await components.pinManager.getActiveDownloads();
 
-	for (const pin of pins) {
-		const { done, value: f } = await components.pinManager.downloadPin(pin).next();
+	const remoteContents = await components.remoteContent.findAll({
+		where: {
+			[Op.or]: pins.map(p => ({ cid: p.toString() }))
+		}
+	});
 
-		if (!done) {
-			await f();
+	for (const pin of pins) {
+		const remoteContent = remoteContents.find(r => pin.equals(r.cid));
+		const priority = remoteContent?.priority ?? 100;
+		const weight = Math.ceil(linearWeightTranslation(priority / 100) * 10);
+
+		for (let i = 0; i < weight; i++) {
+			const { done, value: f } = await components.pinManager.downloadPin(pin).next();
+
+			if (!done) {
+				await f();
+			} else {
+				break;
+			}
 		}
 	}
 };

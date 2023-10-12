@@ -78,3 +78,11 @@ export const walkDag = async function * (blockstore: Blockstore, cid: CID, maxDe
 		yield func;
 	}
 };
+
+export const linearWeightTranslation = (p: number) => {
+	return 1 - p;
+};
+
+export const logWeightTranslation = (p: number) => {
+	return 1 - Math.log10((10 - 1) * p - 1);
+};
