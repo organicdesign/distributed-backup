@@ -1,9 +1,15 @@
 import { sha256 } from "multiformats/hashes/sha2";
-import { fromString as uint8ArrayFromString } from "uint8arrays";
+import {  } from 'bip32';
+import { fromString as uint8ArrayFromString, toString as uint8ArrayToString, } from "uint8arrays";
 import { keysPBM } from "@libp2p/crypto/keys";
 import { peerIdFromKeys } from "@libp2p/peer-id";
+import * as ecc from "tiny-secp256k1";
+import { BIP32Factory, type BIP32Interface } from 'bip32';
 import type { PeerId } from "@libp2p/interface-peer-id";
-import type { BIP32Interface } from 'bip32';
+
+const KEY_SEPARATOR = "-";
+
+export const bip32 = BIP32Factory(ecc);
 
 export const nameToPath = async (name: string, hardened: boolean = true): Promise<string> => {
 	const hash = await sha256.digest(uint8ArrayFromString(name));
@@ -33,3 +39,20 @@ export const keyToPeerId = async (key: BIP32Interface): Promise<PeerId> => {
 
 	return await peerIdFromKeys(marshaledPublicKey, marshaledPrivateKey);
 };
+
+export const encodeKey = (key: BIP32Interface): string => {
+	if (key.privateKey == null) {
+		throw new Error("key is missing private data");
+	}
+
+	const privateKey = uint8ArrayToString(key.privateKey, "base58btc");
+	const chainCode = uint8ArrayToString(key.chainCode, "base58btc");
+
+	return `${privateKey}${KEY_SEPARATOR}${chainCode}`
+};
+
+export const decodeKey = (key: string): BIP32Interface => {
+	const [privateKey, chainCode] = key.split(KEY_SEPARATOR).map(s => uint8ArrayFromString(s, "base58btc"));
+
+	return bip32.fromPrivateKey(Buffer.from(privateKey), Buffer.from(chainCode));
+}
