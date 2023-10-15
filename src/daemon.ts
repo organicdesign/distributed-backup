@@ -49,7 +49,8 @@ const blockstore = new Filestore(new MemoryBlockstore(), stores.get("helia/files
 const config = await getConfig();
 logger.lifecycle("loaded config");
 
-const libp2p = await createLibp2p();
+const peerId = await keyManager.getPeerId();
+const libp2p = await createLibp2p(peerId);
 logger.lifecycle("loaded libp2p");
 
 const helia = await createHelia({ libp2p, blockstore, datastore: stores.get("helia/datastore") });

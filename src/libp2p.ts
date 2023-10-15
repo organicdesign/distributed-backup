@@ -6,8 +6,12 @@ import { webSockets } from "@libp2p/websockets";
 import { gossipsub } from "@chainsafe/libp2p-gossipsub";
 import { noise } from "@chainsafe/libp2p-noise";
 import { identifyService } from "libp2p/identify";
+import { bootstrap } from "@libp2p/bootstrap";
+import type { PeerId } from "@libp2p/interface-peer-id";
 
-export default async () => await createLibp2p({
+export default async (peerId?: PeerId) => await createLibp2p({
+	peerId,
+
 	addresses: {
 		listen: [
 			"/ip4/127.0.0.1/tcp/0",
@@ -19,7 +23,7 @@ export default async () => await createLibp2p({
 	connectionManager: {
 		autoDialInterval: 6e3
 	},
-
+//
 	transports: [tcp(), webSockets()],
 	connectionEncryption: [noise()],
 	streamMuxers: [yamux()],
