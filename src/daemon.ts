@@ -61,7 +61,8 @@ logger.lifecycle("loaded helia");
 const welo = await createWelo({
 	// @ts-ignore Helia version mismatch here.
 	ipfs: helia,
-	replicators: [bootstrapReplicator(), pubsubReplicator()]
+	replicators: [bootstrapReplicator(), pubsubReplicator()],
+	identity: await keyManager.getWeloIdentity()
 });
 logger.lifecycle("loaded welo");
 

@@ -1,9 +1,16 @@
+import { Identity } from "welo";
 import { importKeyFile, keyToPeerId } from "./utils.js";
+import { Secp256k1PrivateKey, Secp256k1PublicKey } from "../../node_modules/@libp2p/crypto/dist/src/keys/secp256k1-class.js";
+import { keys } from "@libp2p/crypto";
+import * as cbor from "@ipld/dag-cbor";
+import { sha256 } from "multiformats/hashes/sha2";
+import { encode as encodeBlock } from "multiformats/block";
 import type { BIP32Interface } from "bip32";
 import type { PeerId } from "@libp2p/interface-peer-id";
 
 enum keyIndicies {
 	LIBP2P,
+	WELO,
 	AES,
 	HMAC
 };
@@ -19,6 +26,39 @@ export class KeyManager {
 		const key = this.key.deriveHardened(keyIndicies.LIBP2P);
 
 		return await keyToPeerId(key);
+	}
+
+	async getWeloIdentity (): Promise<Identity> {
+		const key = this.key.deriveHardened(keyIndicies.WELO);
+
+		const privateBytes = key.privateKey;
+
+		if (privateBytes == null) {
+			throw new Error("key is missing private data");
+		}
+
+		const publicKey = new Secp256k1PublicKey(key.publicKey);
+		const privateKey = new Secp256k1PrivateKey(privateBytes, key.publicKey);
+
+		const marshalled = keys.marshalPublicKey(publicKey, "secp256k1");
+
+		const signedIdentity = {
+			id: keys.marshalPublicKey(privateKey.public, "secp256k1"),
+			pub: marshalled,
+			sig: await privateKey.sign(marshalled)
+		};
+
+		const block = await encodeBlock<typeof signedIdentity, number, number>({
+			value: signedIdentity,
+			codec: cbor,
+			hasher: sha256
+		});
+
+		return new Identity({
+			pubkey: publicKey,
+			priv: privateKey,
+			block
+		});
 	}
 
 	getAesKey (): Uint8Array {
