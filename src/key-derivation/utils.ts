@@ -4,10 +4,13 @@ import { fromString as uint8ArrayFromString, toString as uint8ArrayToString, } f
 import { keysPBM } from "@libp2p/crypto/keys";
 import { peerIdFromKeys } from "@libp2p/peer-id";
 import * as ecc from "tiny-secp256k1";
-import { BIP32Factory, type BIP32Interface } from 'bip32';
+import { BIP32Factory, type BIP32Interface } from "bip32";
+import bip39 from "bip39";
 import type { PeerId } from "@libp2p/interface-peer-id";
 
 const KEY_SEPARATOR = "-";
+const LIBP2P_KEY_INDEX = 0;
+const AES_KEY_INDEX = 1;
 
 export const bip32 = BIP32Factory(ecc);
 
@@ -27,14 +30,16 @@ export const nameToPath = async (name: string, hardened: boolean = true): Promis
 };
 
 export const keyToPeerId = async (key: BIP32Interface): Promise<PeerId> => {
+	const libp2pKey = key.deriveHardened(LIBP2P_KEY_INDEX);
+
 	const marshaledPublicKey = keysPBM.PublicKey.encode({
 		Type: keysPBM.KeyType.Secp256k1,
-		Data: key.publicKey
+		Data: libp2pKey.publicKey
 	});
 
 	const marshaledPrivateKey = keysPBM.PrivateKey.encode({
 		Type: keysPBM.KeyType.Secp256k1,
-		Data: key.privateKey
+		Data: libp2pKey.privateKey
 	});
 
 	return await peerIdFromKeys(marshaledPublicKey, marshaledPrivateKey);
@@ -55,4 +60,26 @@ export const decodeKey = (key: string): BIP32Interface => {
 	const [privateKey, chainCode] = key.split(KEY_SEPARATOR).map(s => uint8ArrayFromString(s, "base58btc"));
 
 	return bip32.fromPrivateKey(Buffer.from(privateKey), Buffer.from(chainCode));
-}
+};
+
+export const generateMnemonic = (): string => {
+	return bip39.generateMnemonic();
+};
+
+export const mnemonicToKey = async (mnemonic: string, serverName: string): Promise<BIP32Interface> => {
+	const seed = await bip39.mnemonicToSeed(mnemonic);
+	const path = await nameToPath(serverName);
+	const node = bip32.fromSeed(seed);
+
+	return node.derivePath(path);
+};
+
+export const keyToAES = (key: BIP32Interface): Uint8Array => {
+	const AESKey = key.deriveHardened(AES_KEY_INDEX);
+
+	if (AESKey.privateKey == null) {
+		throw new Error("key is missing private data");
+	}
+
+	return AESKey.privateKey;
+};
