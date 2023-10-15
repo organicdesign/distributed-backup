@@ -34,7 +34,7 @@ export const downloadLoop = async (components: Components) => {
 	for (const pin of pins) {
 		const remoteContent = remoteContents.find(r => pin.equals(r.cid));
 		const priority = remoteContent?.priority ?? 100;
-		const weight = Math.ceil(linearWeightTranslation(priority / 100) * 10);
+		const weight = Math.ceil(linearWeightTranslation(priority / 100) * 10); // The 10 here is the max number of slots per pin.
 
 		for (let i = 0; i < weight; i++) {
 			const { done, value: f } = await components.pinManager.downloadPin(pin).next();

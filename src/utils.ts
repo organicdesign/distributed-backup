@@ -7,7 +7,7 @@ import type { AbortOptions } from "@libp2p/interface";
 import type { Helia } from "@helia/interface";
 import type { Blockstore } from "interface-blockstore";
 
-export const srcPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), "..");
+export const projectPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), "..");
 
 export const safePin = async (helia: Helia, cid: CID) => {
 	if (!await helia.pins.isPinned(cid)) {

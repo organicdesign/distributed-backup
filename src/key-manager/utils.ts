@@ -9,8 +9,6 @@ import bip39 from "bip39";
 import type { PeerId } from "@libp2p/interface-peer-id";
 
 const KEY_SEPARATOR = "-";
-const LIBP2P_KEY_INDEX = 0;
-const AES_KEY_INDEX = 1;
 
 export const bip32 = BIP32Factory(ecc);
 
@@ -30,16 +28,14 @@ export const nameToPath = async (name: string, hardened: boolean = true): Promis
 };
 
 export const keyToPeerId = async (key: BIP32Interface): Promise<PeerId> => {
-	const libp2pKey = key.deriveHardened(LIBP2P_KEY_INDEX);
-
 	const marshaledPublicKey = keysPBM.PublicKey.encode({
 		Type: keysPBM.KeyType.Secp256k1,
-		Data: libp2pKey.publicKey
+		Data: key.publicKey
 	});
 
 	const marshaledPrivateKey = keysPBM.PrivateKey.encode({
 		Type: keysPBM.KeyType.Secp256k1,
-		Data: libp2pKey.privateKey
+		Data: key.privateKey
 	});
 
 	return await peerIdFromKeys(marshaledPublicKey, marshaledPrivateKey);
@@ -72,16 +68,6 @@ export const mnemonicToKey = async (mnemonic: string, serverName: string): Promi
 	const node = bip32.fromSeed(seed);
 
 	return node.derivePath(path);
-};
-
-export const keyToAes = (key: BIP32Interface): Uint8Array => {
-	const AESKey = key.deriveHardened(AES_KEY_INDEX);
-
-	if (AESKey.privateKey == null) {
-		throw new Error("key is missing private data");
-	}
-
-	return AESKey.privateKey;
 };
 
 export const generateKeyFile = async (path: string, mnemonic: string, name: string) => {

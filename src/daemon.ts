@@ -1,3 +1,4 @@
+import Path from "path";
 import { createNetServer } from "@organicdesign/net-rpc";
 import { createHelia } from "helia";
 import { MemoryDatastore } from "datastore-core";
@@ -17,6 +18,8 @@ import { Datastores } from "./datastores.js";
 import { createCipher } from "./cipher.js";
 import { sequelize, RemoteContent, LocalContent } from "./database/index.js";
 import setupPinManager from "./helia-pin-manager/index.js";
+import { createKeyManager } from "./key-manager/index.js";
+import { projectPath } from "./utils.js";
 import type { Components } from "./interface.js";
 
 const argv = await yargs(hideBin(process.argv))
@@ -35,6 +38,7 @@ await sequelize.sync();
 logger.lifecycle("loaded database");
 
 // Setup datastores and blockstores.
+const keyManager = await createKeyManager(Path.join(projectPath, "config/key.json"));
 const datastore = new MemoryDatastore();
 const stores = new Datastores(datastore);
 const blockstore = new Filestore(new MemoryBlockstore(), stores.get("helia/filestore"));
@@ -60,11 +64,7 @@ const welo = await createWelo({
 });
 logger.lifecycle("loaded welo");
 
-const cipher = await createCipher({
-	libp2p,
-	datastore: stores.get("cipher"),
-	passphrase: "super-secret"
-});
+const cipher = await createCipher({ keyManager });
 logger.lifecycle("loaded cipher");
 
 const groups = await createGroups({ datastore: stores.get("groups"), welo });
@@ -128,11 +128,11 @@ process.on("SIGINT", async () => {
 	// logger.lifecycle("stopped database");
 	process.exit();
 });
-
+//
 // Create the loops.
 const loops = [
 	new Looper(() => syncLoop(components), { sleep: config.tickInterval * 1000 }),
-	new Looper(() => downloadLoop(components), { sleep: config.tickInterval * 1000 })
+	new Looper(() => downloadLoop(components), { sleep: config.tickInterval * 1000 + 5000 })
 ];
 
 logger.lifecycle("started");

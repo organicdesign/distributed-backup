@@ -1,18 +1,9 @@
 import crypto from "crypto";
-import { Datastore, Key } from "interface-datastore";
-import { toString as uint8ArrayToString, fromString as uint8ArrayFromString } from "uint8arrays";
-import { CMS } from "@libp2p/cms";
+import type { KeyManager } from "./key-manager/index.js";
 import type { Startable } from "@libp2p/interfaces/startable";
-import type { Libp2p } from "@libp2p/interface-libp2p";
-
-interface Options {
-	name: string
-}
 
 interface Components {
-	libp2p: Libp2p
-	datastore: Datastore
-	passphrase: string
+	keyManager: KeyManager
 }
 
 interface EncryptionParams {
@@ -21,25 +12,11 @@ interface EncryptionParams {
 }
 
 export class Cipher implements Startable {
-	private readonly datastore: Datastore;
-	private readonly libp2p: Libp2p;
-	private readonly passphrase: string;
-	private readonly options: Options;
-	private readonly cms: CMS;
-	private rootKey: Uint8Array | null = null;
-	private hmacKey: Uint8Array | null = null;
+	private readonly keyManager: KeyManager;
 	private started: boolean = false;
 
-	constructor (components: Components, options: Partial<Options> = {}) {
-		this.datastore = components.datastore;
-		this.libp2p = components.libp2p;
-		this.passphrase = components.passphrase;
-		this.cms = new CMS(this.libp2p.keychain);
-
-		this.options = {
-			name: "backup",
-			...options
-		};
+	constructor (components: Components) {
+		this.keyManager = components.keyManager;
 	}
 
 	isStarted (): boolean {
@@ -51,21 +28,10 @@ export class Cipher implements Startable {
 			return;
 		}
 
-		await this.loadLibp2pKey();
-		await this.loadRootKey();
-
-		this.hmacKey = await this.deriveKey(new Uint8Array());
-
 		this.started = true;
 	}
 
 	async stop (): Promise<void> {
-		this.rootKey?.fill(0);
-		this.hmacKey?.fill(0);
-
-		this.rootKey = null;
-		this.hmacKey = null;
-
 		this.started = false;
 	}
 
@@ -92,49 +58,11 @@ export class Cipher implements Startable {
 		}
 	}
 
-	private async loadLibp2pKey () {
-		const key = new Key("libp2p");
-
-		try {
-			const raw = await this.datastore.get(key);
-			const pem = uint8ArrayToString(raw);
-
-			await this.libp2p.keychain.importKey(this.options.name, pem, this.passphrase);
-		} catch (error) {
-			await this.libp2p.keychain.createKey(this.options.name, "RSA");
-
-			const pem = await this.libp2p.keychain.exportKey(this.options.name, this.passphrase);
-			const raw = uint8ArrayFromString(pem);
-
-			await this.datastore.put(key, raw);
-		}
-	}
-
-	private async loadRootKey () {
-		const key = new Key("root");
-
-		try {
-			const encrypted = await this.datastore.get(key);
-
-			this.rootKey = await this.cms.decrypt(encrypted);
-		} catch (error) {
-			this.rootKey = crypto.randomBytes(64);
-
-			const encrypted = await this.cms.encrypt(this.options.name, this.rootKey);
-
-			await this.datastore.put(key, encrypted)
-		}
-	}
-
 	private async deriveKey (salt: Uint8Array): Promise<Uint8Array> {
 		return await new Promise((resolve, reject) => {
-			if (this.rootKey == null) {
-				throw new Error("root key has not been loaded");
-			}
-
 			crypto.hkdf(
 				"sha256",
-				this.rootKey,
+				this.keyManager.getAesKey(),
 				salt,
 				new Uint8Array(),
 				32,
@@ -151,12 +79,8 @@ export class Cipher implements Startable {
 	}
 
 	private async generateHmac (data: Iterable<Uint8Array> | AsyncIterable<Uint8Array>) {
-		if (this.hmacKey == null) {
-			throw new Error("hmac key has not been derived");
-		}
-
 		const max: number | null = null;
-		const hmac = crypto.createHmac("sha256", this.hmacKey);
+		const hmac = crypto.createHmac("sha256", this.keyManager.getHmacKey());
 		let len = 0;
 
 		for await (const chunk of data) {
@@ -180,8 +104,8 @@ export class Cipher implements Startable {
 	}
 }
 
-export const createCipher = async (components: Components, options: Partial<Options> = {}): Promise<Cipher> => {
-	const cipher = new Cipher(components, options);
+export const createCipher = async (components: Components): Promise<Cipher> => {
+	const cipher = new Cipher(components);
 
 	await cipher.start();
 
