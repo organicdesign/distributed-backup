@@ -1,5 +1,5 @@
+import fs from "fs/promises";
 import { sha256 } from "multiformats/hashes/sha2";
-import {  } from 'bip32';
 import { fromString as uint8ArrayFromString, toString as uint8ArrayToString, } from "uint8arrays";
 import { keysPBM } from "@libp2p/crypto/keys";
 import { peerIdFromKeys } from "@libp2p/peer-id";
@@ -74,7 +74,7 @@ export const mnemonicToKey = async (mnemonic: string, serverName: string): Promi
 	return node.derivePath(path);
 };
 
-export const keyToAES = (key: BIP32Interface): Uint8Array => {
+export const keyToAes = (key: BIP32Interface): Uint8Array => {
 	const AESKey = key.deriveHardened(AES_KEY_INDEX);
 
 	if (AESKey.privateKey == null) {
@@ -82,4 +82,18 @@ export const keyToAES = (key: BIP32Interface): Uint8Array => {
 	}
 
 	return AESKey.privateKey;
+};
+
+export const generateKeyFile = async (path: string, mnemonic: string, name: string) => {
+	const masterKey = await mnemonicToKey(mnemonic, name);
+	const key = encodeKey(masterKey);
+
+	await fs.writeFile(path, JSON.stringify({ key }));
+};
+
+export const importKeyFile = async (path: string): Promise<BIP32Interface> => {
+	const data = await fs.readFile(path, "utf8");
+	const json = JSON.parse(data);
+
+	return decodeKey(json.key);
 };
