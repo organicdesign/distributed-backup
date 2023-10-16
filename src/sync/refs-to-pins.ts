@@ -23,7 +23,13 @@ export const refsToPins = async (components: Components) => {
 	}));
 
 	await Promise.all(destoyed.map(async ref => {
-		await components.pinManager.unpin(ref.cid);
+		try {
+			await components.pinManager.unpin(ref.cid);
+		} catch (error) {
+			if (error.code != "ERR_NOT_FOUND") {
+				throw error;
+			}
+		}
 		await ref.destroy();
 	}));
 };
