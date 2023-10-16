@@ -1,10 +1,10 @@
 import { Key } from "interface-datastore";
-import { Welo } from "../../welo/dist/src/index.js";
-import { Blocks } from "welo/dist/src/blocks/index.js";
-import { Manifest } from "welo/dist/src/manifest/index.js";
+import { decodeCbor } from "../node_modules/welo/dist/src/utils/block.js";
+import { Manifest } from "../node_modules/welo/dist/src/manifest/index.js";
 import { groups as logger } from "./logger.js";
 import type { CID } from "multiformats/cid";
-import type { ManifestData } from "welo/dist/src/manifest/interface.js";
+import type { Welo } from "../../welo/dist/src/index.js";
+import type { ManifestData } from "../node_modules/welo/dist/src/manifest/interface.js";
 import type { Datastore } from "interface-datastore";
 import type { Startable } from "@libp2p/interfaces/startable";
 import type { KeyvalueDB, Pair, Entry, Link } from "./interface.js";
@@ -35,7 +35,7 @@ export class Groups implements Startable {
 		}
 
 		for await (const pair of this.datastore.query({})) {
-			const block = await Blocks.decode<ManifestData>({ bytes: pair.value })
+			const block = await decodeCbor<ManifestData>(pair.value)
 			const manifest = Manifest.asManifest({ block });
 
 			if (manifest == null) {
