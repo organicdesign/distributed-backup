@@ -64,8 +64,8 @@ export class PinManager {
 
 		try {
 			await this.components.helia.pins.rm(cid);
-		} catch (error: any) {
-			if (error["code"] !== "ERR_NOT_FOUND") {
+		} catch (error) {
+			if ((error as Error)["code"] !== "ERR_NOT_FOUND") {
 				throw error;
 			}
 		}

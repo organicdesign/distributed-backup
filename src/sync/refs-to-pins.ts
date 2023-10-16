@@ -26,7 +26,7 @@ export const refsToPins = async (components: Components) => {
 		try {
 			await components.pinManager.unpin(ref.cid);
 		} catch (error) {
-			if (error.code != "ERR_NOT_FOUND") {
+			if ((error as Error)["code"] !== "ERR_NOT_FOUND") {
 				throw error;
 			}
 		}
