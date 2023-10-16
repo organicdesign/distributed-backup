@@ -7,10 +7,15 @@ import { gossipsub } from "@chainsafe/libp2p-gossipsub";
 import { noise } from "@chainsafe/libp2p-noise";
 import { identifyService } from "libp2p/identify";
 import { bootstrap } from "@libp2p/bootstrap";
+import { preSharedKey } from "libp2p/pnet";
 import type { PeerId } from "@libp2p/interface-peer-id";
 
-export default async (peerId?: PeerId) => await createLibp2p({
+export default async ({ peerId, psk }: { peerId?: PeerId, psk?: Uint8Array }) => await createLibp2p({
 	peerId,
+	transports: [tcp(), webSockets()],
+	connectionEncryption: [noise()],
+	streamMuxers: [yamux()],
+	connectionProtector: psk ? preSharedKey({ psk }) : undefined,
 
 	addresses: {
 		listen: [
@@ -23,10 +28,7 @@ export default async (peerId?: PeerId) => await createLibp2p({
 	connectionManager: {
 		autoDialInterval: 6e3
 	},
-//
-	transports: [tcp(), webSockets()],
-	connectionEncryption: [noise()],
-	streamMuxers: [yamux()],
+
 	services: {
 		identify: identifyService(),
 		pubsub: gossipsub({ allowPublishToZeroPeers: true }),

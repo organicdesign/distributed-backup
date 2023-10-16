@@ -37,6 +37,13 @@ const argv = await yargs(hideBin(process.argv))
 			default: Path.join(projectPath, "config/key.json")
 		}
 	})
+	.option({
+		private: {
+			alias: "p",
+			type: "boolean",
+			default: false
+		}
+	})
 	.parse();
 
 logger.lifecycle("starting...");
@@ -57,7 +64,8 @@ const config = await getConfig();
 logger.lifecycle("loaded config");
 
 const peerId = await keyManager.getPeerId();
-const libp2p = await createLibp2p(peerId);
+const psk = keyManager.getPskKey();
+const libp2p = await createLibp2p({ peerId, psk: argv.private ? psk : undefined });
 logger.lifecycle("loaded libp2p");
 
 const helia = await createHelia({ libp2p, blockstore, datastore: stores.get("helia/datastore") });
