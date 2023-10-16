@@ -61,18 +61,3 @@ export interface ImportOptions {
 	encrypt: boolean
 	path: string
 }
-
-export interface Reference<T extends Uint8Array | CID = CID> {
-	group: T
-	cid: T
-}
-/*
-export interface Reference<T extends Uint8Array | CID = CID> extends Entry<T> {
-	group: T
-	status: "blocked" | "added" | "removed"
-	local?: ImportOptions & {
-		path: string
-		updatedAt: number
-	}
-}
-*/
