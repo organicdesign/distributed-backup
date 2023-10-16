@@ -37,12 +37,16 @@ export const downloadLoop = async (components: Components) => {
 		const weight = Math.ceil(linearWeightTranslation(priority / 100) * 10); // The 10 here is the max number of slots per pin.
 
 		for (let i = 0; i < weight; i++) {
-			const { done, value: f } = await components.pinManager.downloadPin(pin).next();
+			try {
+				const { done, value: f } = await components.pinManager.downloadPin(pin).next();
 
-			if (!done) {
-				await f();
-			} else {
-				break;
+				if (!done) {
+					await f();
+				} else {
+					break;
+				}
+			} catch (error) {
+				console.error(`failed to download pin: ${pin}, error: ${error}`);
 			}
 		}
 	}
