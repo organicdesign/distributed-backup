@@ -1,5 +1,6 @@
 import type { Welo, Database, Keyvalue } from "../../welo/dist/src/index.js";
-import type { Libp2p } from "@libp2p/interface-libp2p";
+import type { Libp2p as BaseLibp2p } from "@libp2p/interface-libp2p";
+import type { DualKadDHT } from "@libp2p/kad-dht";
 import type { PubSub } from "@libp2p/interface-pubsub";
 import type { Helia } from "@helia/interface";
 import type { Filestore } from "./filestore/index.js";
@@ -9,6 +10,8 @@ import type { Cipher } from "./cipher.js";
 import type { Datastores } from "./datastores.js";
 import type { Version, CID } from "multiformats/cid";
 import type { PinManager } from "./helia-pin-manager/pin-manager.js";
+
+export type Libp2p = BaseLibp2p<{ pubsub: PubSub, dht: DualKadDHT }>
 
 export interface Config {
 	validateInterval: number
@@ -30,7 +33,7 @@ export interface Link<T extends Uint8Array | CID = CID> {
 }
 
 export interface Components {
-	libp2p: Libp2p<{ pubsub: PubSub }>
+	libp2p: Libp2p
 	helia: Helia<Components["libp2p"]>
 	welo: Welo
 	blockstore: Filestore
