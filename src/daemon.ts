@@ -30,6 +30,13 @@ const argv = await yargs(hideBin(process.argv))
 			default: "/tmp/server.socket"
 		}
 	})
+	.option({
+		key: {
+			alias: "k",
+			type: "string",
+			default: Path.join(projectPath, "config/key.json")
+		}
+	})
 	.parse();
 
 logger.lifecycle("starting...");
@@ -38,7 +45,7 @@ await sequelize.sync();
 logger.lifecycle("loaded database");
 
 // Setup datastores and blockstores.
-const keyManager = await createKeyManager(Path.join(projectPath, "config/key.json"));
+const keyManager = await createKeyManager(Path.resolve(argv.key));
 const datastore = new MemoryDatastore();
 const stores = new Datastores(datastore);
 const blockstore = new Filestore(new MemoryBlockstore(), stores.get("helia/filestore"));
@@ -134,7 +141,7 @@ process.on("SIGINT", async () => {
 // Create the loops.
 const loops = [
 	new Looper(() => syncLoop(components), { sleep: config.tickInterval * 1000 }),
-	new Looper(() => downloadLoop(components), { sleep: config.tickInterval * 1000 + 5000 })
+	new Looper(() => downloadLoop(components), { sleep: config.tickInterval * 1000 })
 ];
 
 logger.lifecycle("started");
