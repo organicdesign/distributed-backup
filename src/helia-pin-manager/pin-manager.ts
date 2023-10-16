@@ -62,12 +62,16 @@ export class PinManager {
 
 		await pin.save();
 
-		if (await this.components.helia.pins.isPinned(cid)) {
+		try {
 			await this.components.helia.pins.rm(cid);
+		} catch (error: any) {
+			if (error["code"] !== "ERR_NOT_FOUND") {
+				throw error;
+			}
 		}
 
 		await this.components.sequelize.transaction(transaction => Promise.all([
-			this.components.pins.destroy({ where: { cid: cid.toString() }, transaction }),
+			pin.destroy({ transaction }),
 			this.components.downloads.destroy({ where: { pinnedBy: cid.toString() }, transaction }),
 			this.components.blocks.destroy({ where: { pinnedBy: cid.toString() }, transaction })
 		]));
