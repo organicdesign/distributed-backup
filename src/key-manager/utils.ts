@@ -62,24 +62,29 @@ export const generateMnemonic = (): string => {
 	return bip39.generateMnemonic();
 };
 
-export const mnemonicToKey = async (mnemonic: string, serverName: string): Promise<BIP32Interface> => {
-	const seed = await bip39.mnemonicToSeed(mnemonic);
-	const path = await nameToPath(serverName);
-	const node = bip32.fromSeed(seed);
-
-	return node.derivePath(path);
-};
-
 export const generateKeyFile = async (path: string, mnemonic: string, name: string) => {
-	const masterKey = await mnemonicToKey(mnemonic, name);
-	const key = encodeKey(masterKey);
+	const [seed, childPath] = await Promise.all([
+		bip39.mnemonicToSeed(mnemonic),
+		nameToPath(name)
+	]);
 
-	await fs.writeFile(path, JSON.stringify({ key }));
+	const node = bip32.fromSeed(seed);
+	const networkKey = node.deriveHardened(0).privateKey;
+	const serverKey = node.derivePath(childPath);
+	const key = encodeKey(serverKey);
+
+	if (networkKey == null) {
+		throw new Error("key is missing private data");
+	}
+
+	const psk = uint8ArrayToString(networkKey, "base16");
+
+	await fs.writeFile(path, JSON.stringify({ key, psk: `/key/swarm/psk/1.0.0/\n/base16/\n${psk}` }));
 };
 
-export const importKeyFile = async (path: string): Promise<BIP32Interface> => {
+export const importKeyFile = async (path: string): Promise<{ key: BIP32Interface, psk: Uint8Array }> => {
 	const data = await fs.readFile(path, "utf8");
 	const json = JSON.parse(data);
 
-	return decodeKey(json.key);
+	return { key: decodeKey(json.key), psk: uint8ArrayFromString(json.psk) };
 };

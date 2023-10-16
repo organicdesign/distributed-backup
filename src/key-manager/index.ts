@@ -17,9 +17,15 @@ enum keyIndicies {
 
 export class KeyManager {
 	private readonly key: BIP32Interface;
+	private readonly psk: Uint8Array;
 
-	constructor (key: BIP32Interface) {
-		this.key = key;
+	constructor (keys: { key: BIP32Interface, psk: Uint8Array }) {
+		this.key = keys.key;
+		this.psk = keys.psk;
+	}
+
+	getPskKey (): Uint8Array {
+		return this.psk;
 	}
 
 	async getPeerId (): Promise<PeerId> {
@@ -81,7 +87,7 @@ export class KeyManager {
 }
 
 export const createKeyManager = async (path: string): Promise<KeyManager> => {
-	const key = await importKeyFile(path);
+	const keys = await importKeyFile(path);
 
-	return new KeyManager(key);
+	return new KeyManager(keys);
 };
