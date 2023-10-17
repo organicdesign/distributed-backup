@@ -11,7 +11,7 @@ export const groupsToRefs = async (components: Components) => {
 		const index = await database.store.latest();
 
 		for await (const pair of index.query({})) {
-			const entry = dagCbor.decode(pair.value) as Entry;
+			const entry = dagCbor.decode(pair.value) as Entry<Uint8Array>;
 			const cid = CID.parse(pair.key.baseNamespace());
 			const group = database.address.cid;
 			//logger.validate("syncing item: %s", CID.parse(pair.key.baseNamespace()).toString());

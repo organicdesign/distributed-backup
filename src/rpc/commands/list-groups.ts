@@ -19,7 +19,7 @@ export const method = (components: Components) => async () => {
 				(async () => {
 					try {
 						for await (const pair of index.query({})) {
-							const entry = dagCbor.decode(pair.value) as Entry;
+							const entry = dagCbor.decode(pair.value) as Entry<Uint8Array>;
 
 							if (entry != null) {
 								items++;
