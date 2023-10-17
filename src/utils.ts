@@ -6,6 +6,7 @@ import * as dagWalkers from "../node_modules/helia/dist/src/utils/dag-walkers.js
 import type { AbortOptions } from "@libp2p/interface";
 import type { Helia } from "@helia/interface";
 import type { Blockstore } from "interface-blockstore";
+import type { Libp2p } from "./interface.js";
 
 export const projectPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -85,4 +86,22 @@ export const linearWeightTranslation = (p: number) => {
 
 export const logWeightTranslation = (p: number) => {
 	return 1 - Math.log10((10 - 1) * p - 1);
+};
+
+export const countPeers = async ({ libp2p }: { libp2p: Libp2p }, cid: CID, options?: { timeout: number }): Promise<number> => {
+	let count = 0;
+
+	const itr = libp2p.contentRouting.findProviders(cid, {
+		signal: AbortSignal.timeout(options?.timeout ?? 3000)
+	});
+
+	try {
+		for await (const _ of itr) {
+			count++;
+		}
+	} catch (error) {
+		// Do nothing
+	}
+
+	return count;
 };
