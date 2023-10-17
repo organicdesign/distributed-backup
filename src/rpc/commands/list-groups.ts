@@ -10,8 +10,8 @@ export const method = (components: Components) => async () => {
 	for (const { key: cid, value: database } of components.groups.all()) {
 		promises.push((async () => {
 			const index = await database.store.latest();
+			const peers = new Set<string>();
 			let items = 0;
-			let peers = 0;
 
 			await Promise.all([
 				(async () => {
@@ -29,8 +29,13 @@ export const method = (components: Components) => async () => {
 				})(),
 				(async () => {
 					try {
-						for await (const _ of components.libp2p.services.dht.findProviders(CID.parse(cid), { signal: AbortSignal.timeout(1000) })) {
-							peers++;
+						for await (const peer of components.libp2p.services.dht.findProviders(CID.parse(cid), { signal: AbortSignal.timeout(3000) })) {
+							// Provider is type 4
+							if (peer.type === 4) {
+								for (const provider of peer.providers) {
+									peers.add(provider.id.toString());
+								}
+							}
 						}
 					} catch (error) {
 						// Do nothing
@@ -38,7 +43,7 @@ export const method = (components: Components) => async () => {
 				})()
 			]);
 
-			return { cid, name: database.manifest.name, count: items, peers };
+			return { cid, name: database.manifest.name, count: items, peers: peers.size };
 		})());
 	}
 
