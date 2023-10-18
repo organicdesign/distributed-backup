@@ -1,3 +1,4 @@
+import Path from "path";
 import { createBuilder, createHandler } from "../utils.js";
 
 export const command = "add [group] [path]";
@@ -43,7 +44,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 
 	const add = await argv.client.rpc.request("add", {
 		group: argv.group,
-		path: argv.path,
+		path: Path.resolve(argv.path),
 		onlyHash: argv.onlyHash,
 		encrypt: argv.encrypt,
 		autoUpdate: argv.autoUpdate,
