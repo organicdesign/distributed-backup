@@ -1,5 +1,7 @@
 import * as dagWalkers from "../../node_modules/helia/dist/src/utils/dag-walkers.js";
 import { addBlockRef, addPinRef } from "./utils.js";
+import { Event, EventTarget} from "ts-event-target";
+import Queue from "p-queue";
 import type { Blocks } from "./blocks.js";
 import type { Pins } from "./pins.js";
 import type { Downloads } from "./downloads.js";
@@ -7,7 +9,6 @@ import type { DAGWalker } from "../../node_modules/helia/dist/src/index.js";
 import type { CID } from "multiformats/cid";
 import type { Sequelize } from "sequelize";
 import type { Helia } from "@helia/interface";
-import { Event, EventTarget} from 'ts-event-target';
 
 const getDagWalker = (cid: CID): DAGWalker => {
 	const dagWalker = Object.values(dagWalkers).find(dw => dw.codec === cid.code);
@@ -42,6 +43,7 @@ export class PinManager {
 	readonly events = new EventTarget<[CIDEvent]>();
 	private readonly components: Components;
 	private readonly activeDownloads = new Map<string, Promise<{ block: Uint8Array, cid: CID, links: CID[] }>>();
+	private readonly queue = new Queue({ concurrency: 1 });
 
 	constructor (components: Components) {
 		this.components = components;
@@ -70,11 +72,11 @@ export class PinManager {
 			}
 		}
 
-		await this.components.sequelize.transaction(transaction => Promise.all([
+		await this.queue.add(() => this.components.sequelize.transaction(transaction => Promise.all([
 			pin.destroy({ transaction }),
 			this.components.downloads.destroy({ where: { pinnedBy: cid.toString() }, transaction }),
 			this.components.blocks.destroy({ where: { pinnedBy: cid.toString() }, transaction })
-		]));
+		])));
 
 		this.events.dispatchEvent(new CIDEvent("pins:removed", cid));
 	}
@@ -129,7 +131,7 @@ export class PinManager {
 			return;
 		}
 
-		await this.components.sequelize.transaction(transaction => Promise.all([
+		await this.queue.add(() => this.components.sequelize.transaction(transaction => Promise.all([
 			this.components.pins.create({
 				cid,
 				state: "DOWNLOADING"
@@ -140,7 +142,7 @@ export class PinManager {
 				pinnedBy: cid,
 				depth: 0
 			}, { transaction })
-		]));
+		])));
 
 		this.events.dispatchEvent(new CIDEvent("pins:adding", cid));
 	}
@@ -281,20 +283,18 @@ export class PinManager {
 
 						links.push(cid);
 
-						const download = await this.components.downloads.findOne({
+						await this.queue.add(() => this.components.downloads.findOrCreate({
 							where: {
 								cid: cid.toString(),
 								pinnedBy: d.pinnedBy.toString()
-							}
-						});
+							},
 
-						if (download == null) {
-							await this.components.downloads.create({
+							defaults: {
 								cid,
 								pinnedBy: d.pinnedBy,
 								depth: d.depth + 1
-							});
-						}
+							}
+						}));
 					})());
 				}
 			}
