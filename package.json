@@ -55,6 +55,7 @@
     "it-map": "^3.0.3",
     "libp2p": "^0.46.14",
     "multiformats": "^12.0.1",
+    "p-queue": "^7.4.1",
     "protons-runtime": "^5.0.1",
     "sequelize": "^6.32.1",
     "sqlite3": "^5.1.6",

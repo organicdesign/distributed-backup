@@ -2,6 +2,7 @@ import * as dagWalkers from "../../node_modules/helia/dist/src/utils/dag-walkers
 import { addBlockRef, addPinRef } from "./utils.js";
 import { Event, EventTarget} from "ts-event-target";
 import Queue from "p-queue";
+import { DeferredPromise } from "@open-draft/deferred-promise";
 import type { Blocks } from "./blocks.js";
 import type { Pins } from "./pins.js";
 import type { Downloads } from "./downloads.js";
@@ -189,26 +190,23 @@ export class PinManager {
 			throw new Error("no such pin");
 		}
 
+		if (pinData.state === "COMPLETED") {
+			return;
+		}
+
 		const queue: Array<() => Promise<CID>> = [];
-		const promises: Array<Promise<CID>> = [];
 
 		const enqueue = (cid: CID, depth: number): void => {
 			queue.push(async () => {
-				const promise = (async () => {
-					const { links } = await this.download(cid);
+				const { links } = await this.download(cid);
 
-					if (pinData.depth == null || depth < pinData.depth) {
-						for (const cid of links) {
-							enqueue(cid, depth + 1);
-						}
+				if (pinData.depth == null || depth < pinData.depth) {
+					for (const cid of links) {
+						enqueue(cid, depth + 1);
 					}
+				}
 
-					return cid;
-				})();
-
-				promises.push(promise);
-
-				return promise;
+				return cid;
 			});
 		};
 
@@ -217,6 +215,9 @@ export class PinManager {
 		for (const head of heads) {
 			enqueue(head.cid, head.depth);
 		}
+
+
+		const promises: Array<Promise<CID>> = [];
 
 		while (queue.length + promises.length !== 0) {
 			const func = queue.shift();
@@ -227,7 +228,16 @@ export class PinManager {
 				continue;
 			}
 
-			yield func;
+			const promise = new DeferredPromise<CID>();
+
+			promises.push(promise)
+
+			yield async () => {
+				const value = await func();
+				promise.resolve(value);
+
+				return value;
+			};
 		}
 
 		await addPinRef(this.components.helia, pin);
