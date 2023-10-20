@@ -1,6 +1,5 @@
 import type { Welo, Database, Keyvalue } from "../../welo/dist/src/index.js";
 import type { Libp2p as BaseLibp2p } from "libp2p";
-import type { DualKadDHT } from "@libp2p/kad-dht";
 import type { PubSub } from "@libp2p/interface-pubsub";
 import type { GossipsubEvents } from "@chainsafe/libp2p-gossipsub";
 import type { Helia } from "helia";
@@ -12,7 +11,7 @@ import type { Datastores } from "./datastores.js";
 import type { Version, CID } from "multiformats/cid";
 import type { PinManager } from "./helia-pin-manager/pin-manager.js";
 
-export type Libp2p = BaseLibp2p<{ pubsub: PubSub<GossipsubEvents>, dht: DualKadDHT }>
+export type Libp2p = BaseLibp2p<{ pubsub: PubSub<GossipsubEvents> }>
 
 export interface Config {
 	validateInterval: number
