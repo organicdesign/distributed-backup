@@ -44,7 +44,7 @@ export const downloadLoop = async (components: Components) => {
 
 	const SLOTS = 10;
 
-	const batchDownload = function * (itr: Iterable<CID>): Generator<AsyncIterable<() => Promise<CID>>> {
+	const batchDownload = function * (itr: Iterable<CID>): Generator<AsyncIterable<() => Promise<{ cid: CID, block: Uint8Array }>>> {
 		for (const cid of itr) {
 			const remoteContent = remoteContents.find(r => cid.equals(r.cid));
 			const priority = remoteContent?.priority ?? 100;
@@ -56,9 +56,9 @@ export const downloadLoop = async (components: Components) => {
 		}
 	};
 
-	const logSpeed = tap<CID>(async cid => {
+	const logSpeed = tap<{ cid: CID, block: Uint8Array }>(({ block }) => {
 		try {
-			const block = await components.blockstore.get(cid);
+			//const block = await components.blockstore.get(cid);
 
 			size += BigInt(block.length);
 
@@ -75,7 +75,7 @@ export const downloadLoop = async (components: Components) => {
 	await pipe(
 		pins,
 		batchDownload,
-		i => parallelMerge<AsyncIterable<() => Promise<CID>>[]>(...i),
+		i => parallelMerge<AsyncIterable<() => Promise<{ cid: CID, block: Uint8Array }>>[]>(...i),
 		i => parallel(i, { concurrency: SLOTS, ordered: false }),
 		logSpeed,
 		i => collect(i)

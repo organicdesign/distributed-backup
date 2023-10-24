@@ -194,11 +194,11 @@ export class PinManager {
 			return;
 		}
 
-		const queue: Array<() => Promise<CID>> = [];
+		const queue: Array<() => Promise<{ cid: CID, block: Uint8Array }>> = [];
 
 		const enqueue = (cid: CID, depth: number): void => {
 			queue.push(async () => {
-				const { links } = await this.download(cid);
+				const { links, block } = await this.download(cid);
 
 				if (pinData.depth == null || depth < pinData.depth) {
 					for (const cid of links) {
@@ -206,7 +206,7 @@ export class PinManager {
 					}
 				}
 
-				return cid;
+				return { cid, block };
 			});
 		};
 
@@ -217,7 +217,7 @@ export class PinManager {
 		}
 
 
-		const promises: Array<Promise<CID>> = [];
+		const promises: Array<Promise<{ cid: CID, block: Uint8Array }>> = [];
 
 		while (queue.length + promises.length !== 0) {
 			const func = queue.shift();
@@ -228,9 +228,9 @@ export class PinManager {
 				continue;
 			}
 
-			const promise = new DeferredPromise<CID>();
+			const promise = new DeferredPromise<{ cid: CID, block: Uint8Array }>();
 
-			promises.push(promise)
+			promises.push(promise);
 
 			yield async () => {
 				const value = await func();
