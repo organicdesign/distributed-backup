@@ -167,8 +167,11 @@ export class PinManager {
 	/**
 	 * Get all the download heads for a given pin.
 	 */
-	async getHeads (pin: CID) {
-		const downloads = await this.components.downloads.findAll({ where: { pinnedBy: pin.toString() } });
+	async getHeads (pin: CID, options?: Partial<{ limit: number }>) {
+		const downloads = await this.components.downloads.findAll({
+			where: { pinnedBy: pin.toString() },
+			limit: options?.limit ?? undefined
+		});
 
 		return downloads;
 	}
@@ -180,6 +183,25 @@ export class PinManager {
 		const blocks = await this.components.blocks.findAll({ where: { pinnedBy: pin.toString() } });
 
 		return blocks.reduce((c, b) => b.size + c, 0);
+	}
+
+	/**
+	 * Similar to `downloadPin` but only returns pins that are availible now.
+	 */
+	async downloadSync (pin: CID, options?: Partial<{ limit: number }>) {
+		const pinData = await this.components.pins.findOne({ where: { cid: pin.toString() } });
+
+		if (pinData == null) {
+			throw new Error("no such pin");
+		}
+
+		if (pinData.state === "COMPLETED") {
+			return [];
+		}
+
+		const heads = await this.getHeads(pin, options);
+
+		return heads.map(h => () => this.download(h.cid));
 	}
 
 	// Download an entire pin.
@@ -215,7 +237,6 @@ export class PinManager {
 		for (const head of heads) {
 			enqueue(head.cid, head.depth);
 		}
-
 
 		const promises: Array<Promise<{ cid: CID, block: Uint8Array }>> = [];
 
