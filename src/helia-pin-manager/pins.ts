@@ -5,16 +5,16 @@ import { CID } from "multiformats/cid";
  * This class is for keeping track of raw pins.
  */
 
-class PinsClass extends Model<InferAttributes<PinsClass, { omit: "cid" }> & { cid: string }, InferCreationAttributes<PinsClass>> {
+export class PinModel extends Model<InferAttributes<PinModel, { omit: "cid" }> & { cid: string }, InferCreationAttributes<PinModel>> {
 	declare cid: CID // Primary
 	declare depth?: number
 	declare state: "COMPLETED" | "DOWNLOADING" | "DESTROYED" | "UPLOADING"
 }
 
-export type Pins = ModelCtor<PinsClass>;
+export type Pins = ModelCtor<PinModel>;
 
 export const setupPins = (sequelize: Sequelize): Pins => {
-	return sequelize.define<PinsClass>(
+	return sequelize.define<PinModel>(
 		"pin",
 		{
 			cid: {

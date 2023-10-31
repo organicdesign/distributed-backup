@@ -1,4 +1,4 @@
-import fs from "fs";
+/*import fs from "fs";
 import crypto from "crypto";
 import { CID } from "multiformats/cid";
 import { sha256 } from "multiformats/hashes/sha2";
@@ -126,3 +126,4 @@ export const importFileNocopy = async (
 
 	return { cid, size };
 };
+*/
