@@ -201,7 +201,27 @@ export class PinManager {
 
 		const heads = await this.getHeads(pin, options);
 
-		return heads.map(h => () => this.download(h.cid));
+		return heads.map(h => async () => {
+			const downloadResult = await this.download(h.cid);
+
+			const heads = await this.getHeads(pin, { limit: 1 });
+
+			if (heads.length === 0) {
+				await addPinRef(this.components.helia, pin);
+
+				const isCompleted = pinData.state === "COMPLETED";
+
+				if (!isCompleted) {
+					pinData.state = "COMPLETED";
+
+					await pinData.save();
+
+					this.events.dispatchEvent(new CIDEvent("pins:added", pin));
+				}
+			}
+
+			return downloadResult;
+		});
 	}
 
 	// Download an entire pin.
