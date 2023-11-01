@@ -41,7 +41,8 @@ export const method = (components: Components) => async () => {
 					group: cid,
 					groupName: database.manifest.name,
 					encrypted: entry.encrypted,
-					size: await components.pinManager.getSize(item)
+					size: await components.pinManager.getSize(item),
+					state: await components.pinManager.getState(item)
 				};
 			})());
 		}
