@@ -40,7 +40,8 @@ export const method = (components: Components) => async () => {
 					peers: await countPeers(components, item, { timeout: 3000 }),
 					group: cid,
 					groupName: database.manifest.name,
-					encrypted: entry.encrypted
+					encrypted: entry.encrypted,
+					size: await components.pinManager.getSize(item)
 				};
 			})());
 		}
