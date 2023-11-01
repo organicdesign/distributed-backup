@@ -201,7 +201,8 @@ export class PinManager {
 
 		const heads = await this.getHeads(pin, options);
 
-		return heads.map(h => async () => {
+		// Filter the heads that are already downloading.
+		return heads.filter(h => !this.activeDownloads.has(h.cid.toString())).map(h => async () => {
 			const downloadResult = await this.download(h.cid);
 
 			const heads = await this.getHeads(pin, { limit: 1 });
