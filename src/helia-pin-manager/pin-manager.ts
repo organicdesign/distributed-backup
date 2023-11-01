@@ -312,12 +312,19 @@ export class PinManager {
 			}
 
 			// Save the blocks to the database.
-			await Promise.all(downloads.map(d => this.components.blocks.create({
-				cid,
-				pinnedBy: d.pinnedBy,
-				depth: d.depth,
-				size: block.length
-			})));
+			await Promise.all(downloads.map(d => this.queue.add(() => this.components.blocks.findOrCreate({
+				where: {
+					cid: cid.toString(),
+					pinnedBy: d.pinnedBy.toString()
+				},
+
+				defaults: {
+					cid,
+					pinnedBy: d.pinnedBy,
+					depth: d.depth,
+					size: block.length
+				}
+			}))));
 
 			// Add the next blocks to download.
 			const dagWalker = getDagWalker(cid);
