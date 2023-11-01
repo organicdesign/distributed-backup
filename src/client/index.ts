@@ -3,6 +3,7 @@ import * as addresses from "./commands/addresses.js";
 import * as connect from "./commands/connect.js";
 import * as connections from "./commands/connections.js";
 import * as createGroup from "./commands/create-group.js";
+import * as del from "./commands/delete.js";
 import * as exportData from "./commands/export.js";
 import * as id from "./commands/id.js";
 import * as joinGroup from "./commands/join-group.js";
@@ -21,6 +22,7 @@ export default [
 	connect,
 	connections,
 	createGroup,
+	del,
 	exportData,
 	id,
 	joinGroup,
