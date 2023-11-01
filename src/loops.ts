@@ -8,6 +8,7 @@ import * as logger from "./logger.js";
 import { pipe } from "it-pipe";
 import { take, collect, tap, parallelMerge } from "streaming-iterables";
 import parallel from "it-parallel";
+import { compare } from "uint8arrays";
 import type { Components } from "./interface.js";
 import type { CID } from "multiformats/cid";
 
@@ -28,7 +29,7 @@ let start: number | null = null;
 
 export const downloadLoop = async (components: Components) => {
 	//logger.tick("STARTED");
-	const pins = await components.pinManager.getActiveDownloads();
+	const pins = [...await components.pinManager.getActiveDownloads()];
 	// logger.tick("GOT ACTIVE");
 
 	if (pins.length !== 0 && start == null) {
@@ -44,15 +45,19 @@ export const downloadLoop = async (components: Components) => {
 
 	const SLOTS = 10;
 
-	const batchDownload = function * (itr: Iterable<CID>): Generator<AsyncIterable<() => Promise<{ cid: CID, block: Uint8Array }>>> {
+	const batchDownload = async function * (itr: Iterable<CID>): AsyncGenerator<() => Promise<{ cid: CID, block: Uint8Array }>, void, undefined> {
 		for (const cid of itr) {
 			const remoteContent = remoteContents.find(r => cid.equals(r.cid));
 			const priority = remoteContent?.priority ?? 100;
 			const weight = Math.ceil(linearWeightTranslation(priority / 100) * SLOTS);
 
-			const downloader = components.pinManager.downloadPin(cid);
+			const downloaders = await components.pinManager.downloadSync(cid, { limit: weight });
 
-			yield take(weight, downloader);
+			yield* downloaders;
+
+			//const downloader = components.pinManager.downloadPin(cid);
+
+			//yield take(weight, downloader);
 		}
 	};
 
@@ -75,11 +80,32 @@ export const downloadLoop = async (components: Components) => {
 	await pipe(
 		pins,
 		batchDownload,
-		i => parallelMerge<AsyncIterable<() => Promise<{ cid: CID, block: Uint8Array }>>[]>(...i),
 		i => parallel(i, { concurrency: SLOTS, ordered: false }),
 		logSpeed,
 		i => collect(i)
 	);
+
+
+	// ---------------------------------------------------------------------------
+
+	const downloadAll = async function * () {
+		pins.sort((a, b) => compare(a.bytes, b.bytes));
+
+		for (;;) {
+			for (const pin of pins) {
+				const remoteContent = remoteContents.find(r => pin.equals(r.cid));
+				const priority = remoteContent?.priority ?? 100;
+				const weight = Math.ceil(linearWeightTranslation(priority / 100) * SLOTS);
+
+				const downloaders = await components.pinManager.downloadSync(pin, { limit: weight });
+
+				for (const downloader of downloaders) {
+					yield downloader;
+				}
+			}
+		}
+	}
+
 
 	//logger.tick("FINISHED");
 };
