@@ -30,12 +30,16 @@ export const groupsToRefs = async (components: Components) => {
 					await ref.save();
 
 					logger.references(`[-] ${group}/${cid}`);
+				}
 
-					/*
-					logger.pins(`[-] ${cid}`);
+				const local = await components.localContent.findOne({ where: { cid: cid.toString() } });
 
-					await components.dm.unpin(cid);
-					*/
+				if (local != null) {
+					local.state = "DESTROYED";
+
+					await local.save();
+
+					logger.uploads(`[-] ${group}/${cid}`);
 				}
 
 				continue;
