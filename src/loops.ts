@@ -11,6 +11,7 @@ import parallel from "it-parallel";
 import { compare } from "uint8arrays";
 import type { Components } from "./interface.js";
 import type { CID } from "multiformats/cid";
+import type { RemoteContentClass } from "./database/remoteContent.js";
 
 export const syncLoop = async (components: Components) => {
 	// logger.lifecycle("started");
@@ -29,25 +30,12 @@ let start: number | null = null;
 
 export const downloadLoop = async (components: Components) => {
 	//logger.tick("STARTED");
-	const pins = [...await components.pinManager.getActiveDownloads()];
-	// logger.tick("GOT ACTIVE");
-
-	if (pins.length !== 0 && start == null) {
-		start = Date.now();
-	}
-
-	const remoteContents = await components.remoteContent.findAll({
-		where: {
-			[Op.or]: pins.map(p => ({ cid: p.toString() }))
-		}
-	});
 	// logger.tick("GOT REMOTE CONTENTS");
 
 	const SLOTS = 10;
 
-	const batchDownload = async function * (itr: Iterable<CID>): AsyncGenerator<() => Promise<{ cid: CID, block: Uint8Array }>, void, undefined> {
-		for (const cid of itr) {
-			const remoteContent = remoteContents.find(r => cid.equals(r.cid));
+	const batchDownload = async function * (itr: AsyncIterable<[CID, RemoteContentClass | undefined]>): AsyncGenerator<() => Promise<{ cid: CID, block: Uint8Array }>, void, undefined> {
+		for await (const [cid, remoteContent] of itr) {
 			const priority = remoteContent?.priority ?? 100;
 			const weight = Math.ceil(linearWeightTranslation(priority / 100) * SLOTS);
 
@@ -77,8 +65,39 @@ export const downloadLoop = async (components: Components) => {
 		}
 	});
 
+	const loop = async function * () {
+		for (;;) {
+			await new Promise(resolve => setTimeout(resolve, 100));
+			yield;
+		}
+	}
+
+	const getPins = async function * (loop: AsyncIterable<void>): AsyncGenerator<[CID, RemoteContentClass | undefined]> {
+		for await (const _ of loop) {
+			const pins = [...await components.pinManager.getActiveDownloads()];
+			// logger.tick("GOT ACTIVE");
+
+			if (pins.length !== 0 && start == null) {
+				start = Date.now();
+			}
+
+			const remoteContents = await components.remoteContent.findAll({
+				where: {
+					[Op.or]: pins.map(p => ({ cid: p.toString() }))
+				}
+			});
+
+			for (const cid of pins) {
+				const remoteContent = remoteContents.find(r => cid.equals(r.cid));
+
+				yield [cid, remoteContent];
+			}
+		}
+	}
+
 	await pipe(
-		pins,
+		loop,
+		getPins,
 		batchDownload,
 		i => parallel(i, { concurrency: SLOTS, ordered: false }),
 		logSpeed,
@@ -87,7 +106,7 @@ export const downloadLoop = async (components: Components) => {
 
 
 	// ---------------------------------------------------------------------------
-
+/*
 	const downloadAll = async function * () {
 		pins.sort((a, b) => compare(a.bytes, b.bytes));
 
@@ -105,7 +124,7 @@ export const downloadLoop = async (components: Components) => {
 			}
 		}
 	}
-
+*/
 
 	//logger.tick("FINISHED");
 };
