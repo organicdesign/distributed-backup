@@ -71,8 +71,6 @@ logger.lifecycle("loaded libp2p");
 const helia = await createHelia({ libp2p, blockstore, datastore: stores.get("helia/datastore") });
 logger.lifecycle("loaded helia");
 
-// const pins = await createPins({ helia, datastore: stores.get("pins") });
-
 const welo = await createWelo({
 	// @ts-ignore Helia version mismatch here.
 	ipfs: helia,
@@ -98,8 +96,10 @@ pinManager.events.addEventListener("pins:adding", ({ cid }) => logger.pins(`[~] 
 pinManager.events.addEventListener("pins:removed", ({ cid }) => logger.pins(`[-] ${cid}`));
 
 const components: Components = {
+// @ts-ignore
 	libp2p,
 	cipher,
+// @ts-ignores
 	helia,
 	welo,
 	blockstore,

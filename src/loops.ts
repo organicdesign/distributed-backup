@@ -32,7 +32,7 @@ export const downloadLoop = async (components: Components) => {
 	//logger.tick("STARTED");
 	// logger.tick("GOT REMOTE CONTENTS");
 
-	const SLOTS = 10;
+	const SLOTS = 50;
 
 	const batchDownload = async function * (itr: AsyncIterable<[CID, RemoteContentClass | undefined]>): AsyncGenerator<() => Promise<{ cid: CID, block: Uint8Array }>, void, undefined> {
 		for await (const [cid, remoteContent] of itr) {
@@ -42,10 +42,6 @@ export const downloadLoop = async (components: Components) => {
 			const downloaders = await components.pinManager.downloadSync(cid, { limit: weight });
 
 			yield* downloaders;
-
-			//const downloader = components.pinManager.downloadPin(cid);
-
-			//yield take(weight, downloader);
 		}
 	};
 
@@ -93,7 +89,7 @@ export const downloadLoop = async (components: Components) => {
 				yield [cid, remoteContent];
 			}
 		}
-	}
+	};
 
 	await pipe(
 		loop,
@@ -103,28 +99,6 @@ export const downloadLoop = async (components: Components) => {
 		logSpeed,
 		i => collect(i)
 	);
-
-
-	// ---------------------------------------------------------------------------
-/*
-	const downloadAll = async function * () {
-		pins.sort((a, b) => compare(a.bytes, b.bytes));
-
-		for (;;) {
-			for (const pin of pins) {
-				const remoteContent = remoteContents.find(r => pin.equals(r.cid));
-				const priority = remoteContent?.priority ?? 100;
-				const weight = Math.ceil(linearWeightTranslation(priority / 100) * SLOTS);
-
-				const downloaders = await components.pinManager.downloadSync(pin, { limit: weight });
-
-				for (const downloader of downloaders) {
-					yield downloader;
-				}
-			}
-		}
-	}
-*/
 
 	//logger.tick("FINISHED");
 };

@@ -6,7 +6,7 @@ import { sequelize } from "./sequelize.js";
  * This class handles remote data added to IPFS.
  */
 
-class RemoteContentClass extends Model<InferAttributes<RemoteContentClass, { omit: "cid" | "group" }> & { cid: string, group: string }, InferCreationAttributes<RemoteContentClass>> {
+export class RemoteContentClass extends Model<InferAttributes<RemoteContentClass, { omit: "cid" | "group" }> & { cid: string, group: string }, InferCreationAttributes<RemoteContentClass>> {
 	declare cid: CID // Primary
 	declare group: CID // Primary
 	declare state: "BLOCKED" | "DOWNLOADED" | "DOWNLOADING" | "DESTROYED"
