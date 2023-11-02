@@ -26,6 +26,10 @@ const formatSize = (size: number): string => {
 	return `${size} B`;
 }
 
+const formatPercent = (decimal: number): string => {
+	return `${Math.floor(decimal * 1000)  / 10}%`;
+}
+
 export const handler = createHandler<typeof builder>(async argv => {
 	if (argv.client == null) {
 		throw new Error("Failed to connect to daemon.");
@@ -48,8 +52,8 @@ export const handler = createHandler<typeof builder>(async argv => {
 
 	let header = "Name".padEnd(10);
 
-	header += "Size".padEnd(15);
-	header += "Blocks".padEnd(15);
+	header += "Size".padEnd(27);
+	header += "Blocks".padEnd(20);
 	header += "State".padEnd(15);
 	header += "Revisions".padEnd(10);
 	header += "Peers".padEnd(10);
@@ -63,8 +67,8 @@ export const handler = createHandler<typeof builder>(async argv => {
 		let str = "";
 
 		str += item.name.slice(0, 8).padEnd(10);
-		str += `${formatSize(item.size)}/${formatSize(item.totalSize)}`.slice(0, 13).padEnd(15);
-		str += `${item.blocks}/${item.totalBlocks}`.slice(0, 13).padEnd(15);
+		str += `${formatSize(item.size)}/${formatSize(item.totalSize)} (${formatPercent(item.size/item.totalSize)})`.slice(0, 25).padEnd(27);
+		str += `${item.blocks}/${item.totalBlocks} (${formatPercent(item.blocks/item.totalBlocks)})`.slice(0, 18).padEnd(20);
 		str += `${item.state}`.slice(0, 13).padEnd(15);
 		str += `${item.revisions}`.slice(0, 8).padEnd(10);
 		str += `${item.peers}`.slice(0, 8).padEnd(10);
@@ -74,6 +78,25 @@ export const handler = createHandler<typeof builder>(async argv => {
 
 		console.log(str);
 	}
+
+	const totalCount = items.length;
+	const completedCount = items.filter(i => i.state === "COMPLETED").length;
+	const size = items.reduce((a, b) => a + b.size, 0);
+	const totalSize = items.reduce((a, b) => a + b.totalSize, 0);
+	const blocks = items.reduce((a, b) => a + b.blocks, 0);
+	const totalBlocks = items.reduce((a, b) => a + b.totalBlocks, 0);
+
+	let footer = "\n";
+
+	footer += "Total".padEnd(15);
+	footer += "Blocks".padEnd(20);
+	footer += "Size".padEnd(25);
+	footer += "\n";
+	footer += `${completedCount}/${totalCount} (${formatPercent(completedCount/totalCount)})`.slice(0, 13).padEnd(15);
+	footer += `${blocks}/${totalBlocks} (${formatPercent(blocks/totalBlocks)})`.slice(0, 18).padEnd(20);
+	footer += `${formatSize(size)}/${formatSize(totalSize)} (${formatPercent(size/totalSize)})`.slice(0, 23).padEnd(20);
+
+	console.log(footer);
 
 	argv.client.close();
 });
