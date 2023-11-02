@@ -93,7 +93,7 @@ export class PinManager {
 			state: "UPLOADING"
 		});
 
-		const walk = async (subCid: CID) => {
+		const walk = async (subCid: CID, depth: number) => {
 			const dagWalker = getDagWalker(subCid);
 
 			if (!await this.components.helia.blockstore.has(subCid)) {
@@ -104,12 +104,26 @@ export class PinManager {
 
 			const block = await this.components.helia.blockstore.get(subCid);
 
+			await this.queue.add(() => this.components.blocks.findOrCreate({
+				where: {
+					cid: subCid.toString(),
+					pinnedBy: cid.toString()
+				},
+
+				defaults: {
+					cid: subCid,
+					pinnedBy: cid,
+					size: block.length,
+					depth
+				}
+			}));
+
 			for await (const cid of dagWalker.walk(block)) {
-				await walk(cid);
+				await walk(cid, depth + 1);
 			}
 		};
 
-		await walk(cid);
+		await walk(cid, 0);
 
 		await addPinRef(this.components.helia, cid);
 
