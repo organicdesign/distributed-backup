@@ -90,12 +90,12 @@ export const handler = createHandler<typeof builder>(async argv => {
 	let footer = "\n";
 
 	footer += "Total".padEnd(15);
-	footer += "Blocks".padEnd(20);
 	footer += "Size".padEnd(25);
+	footer += "Blocks".padEnd(20);
 	footer += "\n";
 	footer += `${completedCount}/${totalCount} (${formatPercent(completedCount/totalCount)})`.slice(0, 13).padEnd(15);
+	footer += `${formatSize(size)}/${formatSize(totalSize)} (${formatPercent(size/totalSize)})`.slice(0, 23).padEnd(25);
 	footer += `${blocks}/${totalBlocks} (${formatPercent(blocks/totalBlocks)})`.slice(0, 18).padEnd(20);
-	footer += `${formatSize(size)}/${formatSize(totalSize)} (${formatPercent(size/totalSize)})`.slice(0, 23).padEnd(20);
 
 	console.log(footer);
 
