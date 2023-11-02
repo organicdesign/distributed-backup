@@ -52,6 +52,8 @@ export interface Entry<T extends Uint8Array | CID = CID> {
 	encrypted: boolean
 	timestamp: number
 	links: Link<T>[]
+	blocks: number
+	size: number
 	meta?: Record<string, unknown>
 }
 

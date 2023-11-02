@@ -21,7 +21,9 @@ const addUploads = async (components: Components) => {
 				timestamp: Date.now(),
 				author: components.welo.identity.id,
 				encrypted: upload.encrypt,
-				links: upload.versions.length !== 0 ? [ { type: "prev", cid: upload.versions[0] } ] : []
+				links: upload.versions.length !== 0 ? [ { type: "prev", cid: upload.versions[0] } ] : [],
+				blocks: await components.pinManager.getBlockCount(upload.cid),
+				size: await components.pinManager.getSize(upload.cid)
 			});
 
 			if (upload.versions.length !== 0) {
