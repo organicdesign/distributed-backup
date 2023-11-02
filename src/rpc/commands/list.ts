@@ -45,7 +45,8 @@ export const method = (components: Components) => async () => {
 					size: await components.pinManager.getSize(item),
 					blocks: await components.pinManager.getBlockCount(item),
 					totalSize: entry.size,
-					totalBlocks: entry.blocks
+					totalBlocks: entry.blocks,
+					meta: entry.meta
 				};
 			})());
 		}

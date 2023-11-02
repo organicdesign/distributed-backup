@@ -30,6 +30,9 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 		return cid;
 	}
 
+	const pathParts = params.path.split("/");
+	const filename = pathParts[pathParts.length - 1];
+
 	logger.add("imported %s", params.path);
 
 	// Save this.
@@ -55,7 +58,8 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 			timestamp: new Date(),
 			autoUpdate: params.autoUpdate ?? false,
 			versionCount: params.versionCount,
-			versions: []
+			versions: [],
+			meta: { name: filename }
 		}
 	});
 

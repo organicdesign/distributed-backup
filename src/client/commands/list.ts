@@ -47,10 +47,11 @@ export const handler = createHandler<typeof builder>(async argv => {
 		size: number,
 		blocks: number,
 		totalSize: number,
-		totalBlocks: number
+		totalBlocks: number,
+		meta?: Record<string, unknown>
 	}[] = await argv.client.rpc.request("list", {});
 
-	let header = "Name".padEnd(10);
+	let header = "Name".padEnd(20);
 
 	header += "Size".padEnd(27);
 	header += "Blocks".padEnd(20);
@@ -66,7 +67,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 	for (const item of items) {
 		let str = "";
 
-		str += item.name.slice(0, 8).padEnd(10);
+		str += (item.meta?.name as string | null ?? item.name).slice(0, 18).padEnd(20);
 		str += `${formatSize(item.size)}/${formatSize(item.totalSize)} (${formatPercent(item.size/item.totalSize)})`.slice(0, 25).padEnd(27);
 		str += `${item.blocks}/${item.totalBlocks} (${formatPercent(item.blocks/item.totalBlocks)})`.slice(0, 18).padEnd(20);
 		str += `${item.state}`.slice(0, 13).padEnd(15);

@@ -6,7 +6,7 @@ import { sequelize } from "./sequelize.js";
  * This class handles managing local data added to IPFS.
  */
 
-class localContentClass extends Model<InferAttributes<localContentClass, { omit: "cid" | "group" | "versions" | "replacedBy" }> & { cid: string, group: string, versions?: string, replacedBy?: string }, InferCreationAttributes<localContentClass>> {
+class localContentClass extends Model<InferAttributes<localContentClass, { omit: "cid" | "group" | "versions" | "replacedBy" | "meta" }> & { cid: string, group: string, versions?: string, replacedBy?: string, meta?: string }, InferCreationAttributes<localContentClass>> {
 	declare cid: CID // Primary
 	declare group: CID // Primary
 	declare path: string
@@ -22,6 +22,7 @@ class localContentClass extends Model<InferAttributes<localContentClass, { omit:
 	declare versionCount?: number
 	declare versions: CID[]
 	declare replacedBy?: CID
+	declare meta?: Record<string, unknown>
 }
 
 export const LocalContent = sequelize.define<localContentClass>(
@@ -163,6 +164,34 @@ export const LocalContent = sequelize.define<localContentClass>(
 
 			set (value?: CID) {
 				this.setDataValue("replacedBy", value?.toString());
+			}
+		},
+
+		meta: {
+			type: DataTypes.STRING(undefined, true),
+			allowNull: true,
+
+			get () {
+				const str = this.getDataValue("meta");
+
+				if (str == null) {
+					return {};
+				}
+
+				const arr: Record<string, unknown> = JSON.parse(str);
+
+				return arr;
+			},
+
+			set (value?: Record<string, unknown>) {
+				if (value == null) {
+					this.setDataValue("meta", "{}");
+					return;
+				}
+
+				const str = JSON.stringify(value);
+
+				this.setDataValue("meta", str);
 			}
 		}
 	}
