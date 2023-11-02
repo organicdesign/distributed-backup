@@ -185,6 +185,12 @@ export class PinManager {
 		return blocks.reduce((c, b) => b.size + c, 0);
 	}
 
+	async getBlockCount (pin: CID) {
+		const { count } = await this.components.blocks.findAndCountAll({ where: { pinnedBy: pin.toString() } });
+
+		return count;
+	}
+
 	/**
 	 * Similar to `downloadPin` but only returns pins that are availible now.
 	 */

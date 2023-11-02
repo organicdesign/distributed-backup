@@ -42,7 +42,8 @@ export const method = (components: Components) => async () => {
 					groupName: database.manifest.name,
 					encrypted: entry.encrypted,
 					size: await components.pinManager.getSize(item),
-					state: await components.pinManager.getState(item)
+					state: await components.pinManager.getState(item),
+					blocks: await components.pinManager.getBlockCount(item)
 				};
 			})());
 		}

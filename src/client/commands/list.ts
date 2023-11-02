@@ -20,12 +20,14 @@ export const handler = createHandler<typeof builder>(async argv => {
 		groupName: string,
 		encrypted: boolean,
 		size: number,
-		state: string
+		state: string,
+		blocks: number
 	}[] = await argv.client.rpc.request("list", {});
 
 	let header = "Name".padEnd(10);
 
 	header += "Size".padEnd(10);
+	header += "Blocks".padEnd(10);
 	header += "State".padEnd(15);
 	header += "Revisions".padEnd(10);
 	header += "Peers".padEnd(10);
@@ -58,6 +60,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 
 		str += item.name.slice(0, 8).padEnd(10);
 		str += `${niceSize}`.slice(0, 8).padEnd(10);
+		str += `${item.blocks}`.slice(0, 8).padEnd(10);
 		str += `${item.state}`.slice(0, 13).padEnd(15);
 		str += `${item.revisions}`.slice(0, 8).padEnd(10);
 		str += `${item.peers}`.slice(0, 8).padEnd(10);
