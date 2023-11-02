@@ -54,6 +54,7 @@ export interface Entry<T extends Uint8Array | CID = CID> {
 	links: Link<T>[]
 	blocks: number
 	size: number
+	priority: number
 	meta?: Record<string, unknown>
 }
 

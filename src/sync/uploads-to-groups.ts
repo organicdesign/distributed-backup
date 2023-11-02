@@ -24,7 +24,8 @@ const addUploads = async (components: Components) => {
 				links: upload.versions.length !== 0 ? [ { type: "prev", cid: upload.versions[0] } ] : [],
 				blocks: await components.pinManager.getBlockCount(upload.cid),
 				size: await components.pinManager.getSize(upload.cid),
-				meta: upload.meta
+				meta: upload.meta,
+				priority: 1
 			});
 
 			if (upload.versions.length !== 0) {

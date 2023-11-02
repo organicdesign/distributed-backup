@@ -48,6 +48,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 		blocks: number,
 		totalSize: number,
 		totalBlocks: number,
+		priority: number,
 		meta?: Record<string, unknown>
 	}[] = await argv.client.rpc.request("list", {});
 
@@ -56,6 +57,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 	header += "Size".padEnd(27);
 	header += "Blocks".padEnd(20);
 	header += "State".padEnd(15);
+	header += "Priority".padEnd(10);
 	header += "Revisions".padEnd(10);
 	header += "Peers".padEnd(10);
 	header += "Group".padEnd(10);
@@ -71,6 +73,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 		str += `${formatSize(item.size)}/${formatSize(item.totalSize)} (${formatPercent(item.size/item.totalSize)})`.slice(0, 25).padEnd(27);
 		str += `${item.blocks}/${item.totalBlocks} (${formatPercent(item.blocks/item.totalBlocks)})`.slice(0, 18).padEnd(20);
 		str += `${item.state}`.slice(0, 13).padEnd(15);
+		str += `${item.priority}`.slice(0, 8).padEnd(10);
 		str += `${item.revisions}`.slice(0, 8).padEnd(10);
 		str += `${item.peers}`.slice(0, 8).padEnd(10);
 		str += `${item.groupName}`.slice(0, 8).padEnd(10);

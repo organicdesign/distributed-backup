@@ -71,7 +71,7 @@ export const groupsToRefs = async (components: Components) => {
 				timestamp: new Date(entry.timestamp),
 				state: "DOWNLOADING",
 				encrypted: entry.encrypted,
-				priority: 1
+				priority: entry.priority
 			});
 
 			logger.references(`[+] ${group}/${cid}`);
