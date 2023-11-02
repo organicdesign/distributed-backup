@@ -88,10 +88,22 @@ export class PinManager {
 	async pinLocal (cid: CID) {
 		this.events.dispatchEvent(new CIDEvent("pins:adding", cid));
 
-		const pin = await this.components.pins.create({
-			cid,
-			state: "UPLOADING"
-		});
+		const data = await this.queue.add(async () => await this.components.pins.findOrCreate({
+			where: {
+				cid: cid.toString()
+			},
+
+			defaults: {
+				cid,
+				state: "UPLOADING"
+			}
+		}));
+
+		if (data == null) {
+			throw new Error("pin find or create failed");
+		}
+
+		const [ pin ] = data;
 
 		const walk = async (subCid: CID, depth: number) => {
 			const dagWalker = getDagWalker(subCid);
@@ -168,7 +180,7 @@ export class PinManager {
 	async getState (cid: CID): Promise<string> {
 		const pin = await this.components.pins.findOne({ where: { cid: cid.toString() } });
 
-		return pin == null ? "DESTROYED" : pin.state;
+		return pin == null ? "NOTFOUND" : pin.state;
 	}
 
 	// Get all the pins that are actively downloading.
