@@ -1,5 +1,6 @@
 import * as dagWalkers from "../../node_modules/helia/dist/src/utils/dag-walkers.js";
 import { CID } from "multiformats/cid";
+import * as raw from "multiformats/codecs/raw";
 import * as dagPb from "@ipld/dag-pb";
 import { UnixFS } from "ipfs-unixfs";
 import Path from "path";
@@ -20,6 +21,11 @@ export const exportFs = async ({ blockstore }: Components, cid: CID, path: strin
 
 		if (data.Data == null) {
 			throw new Error("data is null");
+		}
+
+		if (cid.code === raw.code) {
+			await fs.appendFile(path, data.Data);
+			return;
 		}
 
 		const fsData = UnixFS.unmarshal(data.Data);
