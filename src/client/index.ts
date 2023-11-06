@@ -4,6 +4,7 @@ import * as connect from "./commands/connect.js";
 import * as connections from "./commands/connections.js";
 import * as createGroup from "./commands/create-group.js";
 import * as del from "./commands/delete.js";
+import * as edit from "./commands/edit.js";
 import * as exportData from "./commands/export.js";
 import * as id from "./commands/id.js";
 import * as joinGroup from "./commands/join-group.js";
@@ -23,6 +24,7 @@ export default [
 	connections,
 	createGroup,
 	del,
+	edit,
 	exportData,
 	id,
 	joinGroup,
