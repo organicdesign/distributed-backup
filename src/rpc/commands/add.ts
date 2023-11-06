@@ -4,7 +4,7 @@ import type { Components, ImportOptions } from "../../interface.js";
 
 export const name = "add";
 
-export const method = (components: Components) => async (params: { path: string, group: string, onlyHash?: boolean, encrypt?: boolean, autoUpdate?: boolean, versionCount?: number } & ImportOptions) => {
+export const method = (components: Components) => async (params: { path: string, group: string, onlyHash?: boolean, encrypt?: boolean, autoUpdate?: boolean, versionCount?: number, priority?: number } & ImportOptions) => {
 	const cid = await addLocal(components, {
 		group: CID.parse(params.group),
 		encrypt: params.encrypt,
@@ -16,7 +16,8 @@ export const method = (components: Components) => async (params: { path: string,
 		nocopy: false,
 		onlyHash: params.onlyHash,
 		autoUpdate: params.autoUpdate,
-		versionCount: params.versionCount
+		versionCount: params.versionCount,
+		priority: params.priority ?? 1
 	});
 
 	return cid.toString();

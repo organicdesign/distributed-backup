@@ -21,6 +21,7 @@ class localContentClass extends Model<InferAttributes<localContentClass, { omit:
 	declare autoUpdate: boolean
 	declare versionCount?: number
 	declare versions: CID[]
+	declare priority: number
 	declare replacedBy?: CID
 	declare meta?: Record<string, unknown>
 }
@@ -150,6 +151,11 @@ export const LocalContent = sequelize.define<localContentClass>(
 
 				this.setDataValue("versions", str);
 			}
+		},
+
+		priority: {
+			type: DataTypes.INTEGER,
+			allowNull: false
 		},
 
 		replacedBy: {

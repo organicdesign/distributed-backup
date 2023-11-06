@@ -86,6 +86,7 @@ export const diskToUploads = async (components: Components) => {
 					encrypt: upload.encrypt,
 					timestamp: new Date(),
 					versionCount: upload.versionCount,
+					priority: upload.priority,
 					autoUpdate: true,
 					versions
 				},

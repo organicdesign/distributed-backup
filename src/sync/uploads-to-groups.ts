@@ -25,7 +25,7 @@ const addUploads = async (components: Components) => {
 				blocks: await components.pinManager.getBlockCount(upload.cid),
 				size: await components.pinManager.getSize(upload.cid),
 				meta: upload.meta,
-				priority: 1
+				priority: upload.priority
 			});
 
 			if (upload.versions.length !== 0) {

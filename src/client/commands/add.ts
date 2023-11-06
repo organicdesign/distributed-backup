@@ -34,6 +34,11 @@ export const builder = createBuilder({
 
 	versionCount: {
 		type: "number"
+	},
+
+	priority: {
+		alias: "p",
+		type: "number"
 	}
 });
 
@@ -48,7 +53,8 @@ export const handler = createHandler<typeof builder>(async argv => {
 		onlyHash: argv.onlyHash,
 		encrypt: argv.encrypt,
 		autoUpdate: argv.autoUpdate,
-		versionCount: argv.versionCount
+		versionCount: argv.versionCount,
+		priority: argv.priority
 	});
 
 	console.log(add);

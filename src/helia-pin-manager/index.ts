@@ -6,4 +6,4 @@ export default async (helia: Helia) => {
 	const components = await setupSequelize();
 
 	return new PinManager({ ...components, helia });
-}
+};
