@@ -5,7 +5,7 @@ import { MemoryDatastore } from "datastore-core";
 import { MemoryBlockstore } from "blockstore-core";
 import yargs from "yargs/yargs";
 import { hideBin } from "yargs/helpers";
-import { createWelo, pubsubReplicator, bootstrapReplicator } from "../../welo/dist/src/index.js";
+import { createWelo, pubsubReplicator, bootstrapReplicator } from "welo";
 import createLibp2p from "./libp2p.js";
 import { Filestore } from "./filestore/index.js";
 import { getConfig } from "./config.js";

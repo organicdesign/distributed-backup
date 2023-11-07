@@ -1,4 +1,4 @@
-import type { Welo, Database, Keyvalue } from "../../welo/dist/src/index.js";
+import type { Welo, Database, Keyvalue } from "welo";
 import type { Libp2p as BaseLibp2p } from "libp2p";
 import type { PubSub } from "@libp2p/interface-pubsub";
 import type { GossipsubEvents } from "@chainsafe/libp2p-gossipsub";
