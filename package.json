@@ -8,7 +8,7 @@
   "scripts": {
     "test": "jest --config=jest.config.cjs ./test/*",
     "generate": "protons src/filestore/pb/dataobj.proto",
-    "build": "mkdir -p dist && touch dist/cleanup && rm dist/* && tsc -b",
+    "build": "mkdir -p dist && touch dist/cleanup && rm -r dist/* && tsc -b tsconfig-build.json",
     "lint": "eslint ./src/* ./test/*",
     "prepublishOnly": "npm run build"
   },
