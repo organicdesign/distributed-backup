@@ -37,7 +37,7 @@ export const downloadLoop = async (components: Components) => {
 	const batchDownload = async function * (itr: AsyncIterable<[CID, RemoteContentClass | undefined]>): AsyncGenerator<() => Promise<{ cid: CID, block: Uint8Array }>, void, undefined> {
 		for await (const [cid, remoteContent] of itr) {
 			const priority = remoteContent?.priority ?? 100;
-			const weight = Math.ceil(linearWeightTranslation(priority / 100) * SLOTS);
+			const weight = Math.floor(linearWeightTranslation(priority / 100) * SLOTS) + 1;
 
 			const downloaders = await components.pinManager.downloadSync(cid, { limit: weight });
 
