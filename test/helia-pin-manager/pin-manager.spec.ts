@@ -4,19 +4,18 @@ import { createHelia } from "helia";
 import { CID } from "multiformats/cid";
 import createDatabase from "../../src/helia-pin-manager/sequelize.js";
 import { PinManager, type Components } from "../../src/helia-pin-manager/pin-manager.js";
+import { addBlocks } from "../utils/blocks.js";
 
 describe("pin manager", () => {
-	const cid = CID.parse("QmdmQXB2mzChmMeKY47C43LxUdg1NDJ5MWcKMKxDu7RgQm").toV1();
 	let components: Components;
 	let pm: PinManager;
 
-	const data = {
-		pins: [
-			{ cid, state: ("COMPLETED" as const), size: 0, depth: 1 }
-		],
-		blocks: [
-			{ cid, size: 0, depth: 1 }
-		]
+	const data: {
+		pins: { cid: CID, state: "COMPLETED", size: number, depth: number }[],
+		blocks: { cid: CID, size: number, depth: number }[]
+	} = {
+		pins: [],
+		blocks: []
 	};
 
 	before(async () => {
@@ -31,6 +30,12 @@ describe("pin manager", () => {
 		};
 
 		pm = new PinManager(components);
+
+		const rb = await addBlocks(helia);
+		const blocks = rb.map(b => ({ ...b, state: "COMPLETED" as const, depth: 1, size: b.block.length }));
+
+		data.blocks = blocks
+		data.pins = blocks
 	});
 
 	after(async () => {
@@ -81,12 +86,11 @@ describe("pin manager", () => {
 
 			await components.pins.create(pin);
 			await components.blocks.bulkCreate(data.blocks.map(b => ({ ...b, pinnedBy: pin.cid })));
-
-			await pm.unpin(cid);
+			await pm.unpin(pin.cid);
 
 			const blocks = await components.blocks.findAll({ where: {} });
 
-			assert(blocks.length === 0);
+			assert.equal(blocks.length, 0);
 		});
 
 		it("destorys all linked downloads", async () => {
@@ -94,12 +98,23 @@ describe("pin manager", () => {
 
 			await components.pins.create(pin);
 			await components.downloads.bulkCreate(data.blocks.map(b => ({ ...b, pinnedBy: pin.cid })));
-
-			await pm.unpin(cid);
+			await pm.unpin(pin.cid);
 
 			const downloads = await components.downloads.findAll({ where: {} });
 
-			assert(downloads.length === 0);
+			assert.equal(downloads.length, 0);
+		});
+
+		it("unpins it from helia", async () => {
+			const pin = data.pins[0];
+
+			await components.helia.pins.add(pin.cid);
+			await components.pins.create(pin);
+			await pm.unpin(pin.cid);
+
+			const isPinned = await components.helia.pins.isPinned(pin.cid);
+
+			assert(isPinned === false);
 		});
 	});
 });
