@@ -3,6 +3,8 @@ import map from "it-map";
 import { NamespaceDatastore as BrokenNamespacedDatastore } from "datastore-core";
 import type { AbortOptions } from 'interface-store'
 
+// This whole file fixes an error in the NamespaceDatastore module:
+// https://github.com/ipfs/js-stores/issues/236
 export class NamespaceDatastore extends BrokenNamespacedDatastore {
 	private readonly iChild: Datastore
 	private readonly iKey: Key
