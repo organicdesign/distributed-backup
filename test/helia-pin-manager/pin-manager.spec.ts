@@ -4,11 +4,18 @@ import { createHelia } from "helia";
 import { CID } from "multiformats/cid";
 import createDatabase from "../../src/helia-pin-manager/sequelize.js";
 import { PinManager, type Components } from "../../src/helia-pin-manager/pin-manager.js";
+import { Op } from "sequelize";
 
-const cid = CID.parse("QmdmQXB2mzChmMeKY47C43LxUdg1NDJ5MWcKMKxDu7RgQm").toV1();
-let components: Components;
+describe("pin manager", () => {
+	const cid = CID.parse("QmdmQXB2mzChmMeKY47C43LxUdg1NDJ5MWcKMKxDu7RgQm").toV1();
+	let components: Components;
 
-describe("tests", () => {
+	const data = {
+		pins: [
+			{ cid, state: ("COMPLETED" as const), size: 0, depth: 1 }
+		]
+	};
+
 	before(async () => {
 		const [helia, database] = await Promise.all([
 			createHelia(),
@@ -28,35 +35,43 @@ describe("tests", () => {
 		]);
 	});
 
-	describe("pin manager", () => {
-		const data = {
-			pins: [
-				{ cid, state: ("COMPLETED" as const), size: 0, depth: 1 }
-			]
-		};
+	afterEach(async () => {
+		await Promise.all([
+			components.blocks.destroy({ where: {} }),
+			components.pins.destroy({ where: {} }),
+			components.downloads.destroy({ where: {} })
+		]);
+	});
 
-		afterEach(async () => {
-			await Promise.all([
-				components.blocks.destroy({ where: {} }),
-				components.pins.destroy({ where: {} }),
-				components.downloads.destroy({ where: {} })
-			]);
-		});
+	it("constructs", () => {
+		new PinManager(components);
+	});
 
-		it("constructs", () => {
-			new PinManager(components);
-		});
+	it("all returns all the pins", async () => {
+		const pm = new PinManager(components);
 
-		it("all returns all the pins", async () => {
+		await components.pins.bulkCreate(data.pins);
+
+		const pins = await pm.all();
+
+		for (const pin of pins) {
+
+			assert(data.pins.find(p => p.cid.equals(pin.cid)));
+		}
+	});
+
+	describe("unpin", () => {
+		it("destorys the pin row", async () => {
 			const pm = new PinManager(components);
 
 			await components.pins.bulkCreate(data.pins);
 
-			const pins = await pm.all();
+			await pm.unpin(cid);
 
-			for (const pin of pins) {
+			for (const pin of data.pins) {
+				const p = await components.pins.findOne({ where: { cid: pin.cid.toString() } });
 
-				assert(data.pins.find(p => p.cid.equals(pin.cid)));
+				assert(p == null);
 			}
 		});
 	});
