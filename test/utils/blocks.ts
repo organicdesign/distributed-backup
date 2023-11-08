@@ -22,7 +22,7 @@ export const addBlock = async  ({ blockstore }: { blockstore: Blockstore }, bloc
 export const createBlocks = async () => {
 	const blocks: { block: Uint8Array, cid: CID }[] = [];
 
-	for (let i = 0; i < 256; i++) {
+	for (let i = 0; i < 100; i++) {
 		const block = new Uint8Array([i, i, i]);
 		const cid = await hashBlock(block);
 

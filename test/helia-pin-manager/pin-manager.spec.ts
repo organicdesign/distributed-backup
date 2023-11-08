@@ -116,5 +116,23 @@ describe("pin manager", () => {
 
 			assert(isPinned === false);
 		});
+
+		it("emits an unpin event", async () => {
+			const pin = data.pins[0];
+
+			await components.helia.pins.add(pin.cid);
+
+			const promise = new Promise<void>((resolve, reject) => {
+				pm.events.addEventListener("pins:removed", () => {
+					resolve();
+				});
+
+				setTimeout(reject, 3000);
+			});
+
+			await pm.unpin(pin.cid);
+
+			await promise;
+		});
 	});
 });
