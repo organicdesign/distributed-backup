@@ -4,15 +4,18 @@ import { createHelia } from "helia";
 import { CID } from "multiformats/cid";
 import createDatabase from "../../src/helia-pin-manager/sequelize.js";
 import { PinManager, type Components } from "../../src/helia-pin-manager/pin-manager.js";
-import { Op } from "sequelize";
 
 describe("pin manager", () => {
 	const cid = CID.parse("QmdmQXB2mzChmMeKY47C43LxUdg1NDJ5MWcKMKxDu7RgQm").toV1();
 	let components: Components;
+	let pm: PinManager;
 
 	const data = {
 		pins: [
 			{ cid, state: ("COMPLETED" as const), size: 0, depth: 1 }
+		],
+		blocks: [
+			{ cid, size: 0, depth: 1 }
 		]
 	};
 
@@ -26,6 +29,8 @@ describe("pin manager", () => {
 			helia,
 			...database
 		};
+
+		pm = new PinManager(components);
 	});
 
 	after(async () => {
@@ -48,8 +53,6 @@ describe("pin manager", () => {
 	});
 
 	it("all returns all the pins", async () => {
-		const pm = new PinManager(components);
-
 		await components.pins.bulkCreate(data.pins);
 
 		const pins = await pm.all();
@@ -62,17 +65,28 @@ describe("pin manager", () => {
 
 	describe("unpin", () => {
 		it("destorys the pin row", async () => {
-			const pm = new PinManager(components);
-
 			await components.pins.bulkCreate(data.pins);
 
-			await pm.unpin(cid);
-
 			for (const pin of data.pins) {
+				await pm.unpin(pin.cid);
+
 				const p = await components.pins.findOne({ where: { cid: pin.cid.toString() } });
 
 				assert(p == null);
 			}
+		});
+
+		it("destorys all linked blocks", async () => {
+			const pin = data.pins[0];
+
+			await components.pins.create(pin);
+			await components.blocks.bulkCreate(data.blocks.map(b => ({ ...b, pinnedBy: pin.cid })));
+
+			await pm.unpin(cid);
+
+			const blocks = await components.blocks.findAll({ where: {} });
+
+			assert(blocks.length === 0);
 		});
 	});
 });
