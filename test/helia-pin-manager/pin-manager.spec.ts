@@ -88,5 +88,18 @@ describe("pin manager", () => {
 
 			assert(blocks.length === 0);
 		});
+
+		it("destorys all linked downloads", async () => {
+			const pin = data.pins[0];
+
+			await components.pins.create(pin);
+			await components.downloads.bulkCreate(data.blocks.map(b => ({ ...b, pinnedBy: pin.cid })));
+
+			await pm.unpin(cid);
+
+			const downloads = await components.downloads.findAll({ where: {} });
+
+			assert(downloads.length === 0);
+		});
 	});
 });
