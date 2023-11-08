@@ -15,6 +15,10 @@ enum keyIndicies {
 	HMAC
 };
 
+/**
+ * The key manager class is responsible for taking the saved output from the
+ * generate keys utility and deriving the specific keys that are required.
+ */
 export class KeyManager {
 	private readonly key: BIP32Interface;
 	private readonly psk: Uint8Array;
