@@ -21,7 +21,7 @@ const getDagWalker = (cid: CID): DAGWalker => {
 	return dagWalker;
 };
 
-interface Components {
+export interface Components {
 	helia: Helia
 	sequelize: Sequelize
 	pins: Pins
