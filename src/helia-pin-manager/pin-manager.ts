@@ -57,13 +57,11 @@ export class PinManager {
 	async unpin (cid: CID) {
 		const pin = await this.components.pins.findOne({ where: { cid: cid.toString() } });
 
-		if (pin == null) {
-			return;
+		if (pin != null) {
+			pin.state = "DESTROYED";
+
+			await pin.save();
 		}
-
-		pin.state = "DESTROYED";
-
-		await pin.save();
 
 		try {
 			await this.components.helia.pins.rm(cid);
@@ -74,7 +72,7 @@ export class PinManager {
 		}
 
 		await this.queue.add(() => this.components.sequelize.transaction(transaction => Promise.all([
-			pin.destroy({ transaction }),
+			pin?.destroy({ transaction }),
 			this.components.downloads.destroy({ where: { pinnedBy: cid.toString() }, transaction }),
 			this.components.blocks.destroy({ where: { pinnedBy: cid.toString() }, transaction })
 		])));
