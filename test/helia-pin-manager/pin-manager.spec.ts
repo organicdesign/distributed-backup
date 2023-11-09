@@ -7,6 +7,9 @@ import { PinManager, type Components } from "../../src/helia-pin-manager/pin-man
 import { addBlocks } from "../utils/blocks.js";
 import { createDag } from "../utils/dag.js";
 
+const DAG_WIDTH = 2;
+const DAG_DEPTH = 3;
+
 describe("pin manager", () => {
 	let components: Components;
 	let pm: PinManager;
@@ -31,7 +34,7 @@ describe("pin manager", () => {
 			...database
 		};
 
-		dag = await createDag(components.helia, 3, 2);
+		dag = await createDag(components.helia, DAG_DEPTH, DAG_WIDTH);
 
 		pm = new PinManager(components);
 
@@ -206,6 +209,17 @@ describe("pin manager", () => {
 			assert(pin);
 			assert(pin.cid.equals(root));
 			assert.equal(pin.state, "DOWNLOADING");
+		});
+
+		it("adds the root as a download", async () => {
+			const root = dag[0];
+
+			await pm.pin(root);
+
+			const downloads = await components.downloads.findAll({ where: { pinnedBy: root.toString() } });
+
+			assert.equal(downloads.length, 1);
+			assert(downloads[0].cid.equals(root));
 		});
 	});
 });
