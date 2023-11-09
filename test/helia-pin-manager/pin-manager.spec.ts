@@ -168,5 +168,15 @@ describe("pin manager", () => {
 				assert(dag.find(b => b.equals(block.cid)));
 			}
 		});
+
+		it("pins the root", async () => {
+			const root = dag[0];
+
+			await pm.pinLocal(root);
+
+			const isPinned = await components.helia.pins.isPinned(root);
+
+			assert(isPinned);
+		});
 	});
 });
