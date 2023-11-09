@@ -4,8 +4,8 @@ import { Event, EventTarget} from "ts-event-target";
 import Queue from "p-queue";
 import { DeferredPromise } from "@open-draft/deferred-promise";
 import type { Blocks } from "./blocks.js";
-import type { Pins } from "./pins.js";
-import type { Downloads } from "./downloads.js";
+import type { Pins, PinModel } from "./pins.js";
+import type { Downloads, DownloadModel } from "./downloads.js";
 import type { DAGWalker } from "../../node_modules/helia/dist/src/index.js";
 import type { CID } from "multiformats/cid";
 import type { Sequelize } from "sequelize";
@@ -29,6 +29,12 @@ export interface Components {
 	blocks: Blocks
 }
 
+interface BlockInfo {
+	block: Uint8Array,
+	cid: CID,
+	links: CID[]
+}
+
 type EventTypes = "pins:removed" | "pins:added" | "pins:adding" | "downloads:added" | "downloads:removed" | "blocks:added" | "blocks:removed";
 
 class CIDEvent extends Event<EventTypes> {
@@ -50,11 +56,11 @@ export class PinManager {
 		this.components = components;
 	}
 
-	async all () {
+	async all (): Promise<PinModel[]> {
 		return await this.components.pins.findAll({ where: {} });
 	}
 
-	async unpin (cid: CID) {
+	async unpin (cid: CID): Promise<void> {
 		const pin = await this.components.pins.findOne({ where: { cid: cid.toString() } });
 
 		if (pin != null) {
@@ -83,7 +89,7 @@ export class PinManager {
 	/**
 	 * Pin a CID without downloading any blocks. This will throw an error if all the blocks don't exist locally.
 	 */
-	async pinLocal (cid: CID) {
+	async pinLocal (cid: CID): Promise<void> {
 		this.events.dispatchEvent(new CIDEvent("pins:adding", cid));
 
 		const data = await this.queue.add(async () => await this.components.pins.findOrCreate({
@@ -145,7 +151,7 @@ export class PinManager {
 	}
 
 	// Add a pin to the downloads.
-	async pin (cid: CID) {
+	async pin (cid: CID): Promise<void> {
 		const pin = await this.components.pins.findOne({
 			where: {
 				cid: cid.toString()
@@ -191,7 +197,7 @@ export class PinManager {
 	/**
 	 * Get all the download heads for a given pin.
 	 */
-	async getHeads (pin: CID, options?: Partial<{ limit: number }>) {
+	async getHeads (pin: CID, options?: Partial<{ limit: number }>): Promise<DownloadModel[]> {
 		const downloads = await this.components.downloads.findAll({
 			where: { pinnedBy: pin.toString() },
 			limit: options?.limit ?? undefined
@@ -203,13 +209,13 @@ export class PinManager {
 	/**
 	 * Get the size on disk for a given pin.
 	 */
-	async getSize (pin: CID) {
+	async getSize (pin: CID): Promise<number> {
 		const blocks = await this.components.blocks.findAll({ where: { pinnedBy: pin.toString() } });
 
 		return blocks.reduce((c, b) => b.size + c, 0);
 	}
 
-	async getBlockCount (pin: CID) {
+	async getBlockCount (pin: CID): Promise<number> {
 		const { count } = await this.components.blocks.findAndCountAll({ where: { pinnedBy: pin.toString() } });
 
 		return count;
@@ -218,7 +224,7 @@ export class PinManager {
 	/**
 	 * Similar to `downloadPin` but only returns pins that are availible now.
 	 */
-	async downloadSync (pin: CID, options?: Partial<{ limit: number }>) {
+	async downloadSync (pin: CID, options?: Partial<{ limit: number }>): Promise<(() => Promise<BlockInfo>)[]> {
 		const pinData = await this.components.pins.findOne({ where: { cid: pin.toString() } });
 
 		if (pinData == null) {
@@ -256,7 +262,7 @@ export class PinManager {
 	}
 
 	// Download an entire pin.
-	async * downloadPin (pin: CID) {
+	async * downloadPin (pin: CID): AsyncGenerator<() => Promise<BlockInfo>> {
 		const pinData = await this.components.pins.findOne({ where: { cid: pin.toString() } });
 
 		if (pinData == null) {
@@ -267,7 +273,7 @@ export class PinManager {
 			return;
 		}
 
-		const queue: Array<() => Promise<{ cid: CID, block: Uint8Array }>> = [];
+		const queue: Array<() => Promise<BlockInfo>> = [];
 
 		const enqueue = (cid: CID, depth: number): void => {
 			queue.push(async () => {
@@ -279,7 +285,7 @@ export class PinManager {
 					}
 				}
 
-				return { cid, block };
+				return { cid, block, links };
 			});
 		};
 
@@ -322,7 +328,7 @@ export class PinManager {
 	}
 
 	// Download an individial block.
-	private async download (cid: CID): Promise<{ block: Uint8Array, cid: CID, links: CID[] }> {
+	private async download (cid: CID): Promise<BlockInfo> {
 		// Check if we are already downloading this.
 		const activePromise = this.activeDownloads.get(cid.toString());
 
