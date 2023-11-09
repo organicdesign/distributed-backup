@@ -5,16 +5,16 @@ import { CID } from "multiformats/cid";
  * This class is for keeping track of blocks that need to be downloaded.
  */
 
-class DownloadsClass extends Model<InferAttributes<DownloadsClass, { omit: "cid" | "pinnedBy" }> & { cid: string, pinnedBy: string }, InferCreationAttributes<DownloadsClass>> {
+export class DownloadModel extends Model<InferAttributes<DownloadModel, { omit: "cid" | "pinnedBy" }> & { cid: string, pinnedBy: string }, InferCreationAttributes<DownloadModel>> {
 	declare cid: CID // Primary
 	declare pinnedBy: CID // Primary
 	declare depth: number
 }
 
-export type Downloads = ModelCtor<DownloadsClass>;
+export type Downloads = ModelCtor<DownloadModel>;
 
 export const setupDownloads = (sequelize: Sequelize): Downloads => {
-	return sequelize.define<DownloadsClass>(
+	return sequelize.define<DownloadModel>(
 		"downloads",
 		{
 			cid: {

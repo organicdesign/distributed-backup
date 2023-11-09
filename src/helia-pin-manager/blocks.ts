@@ -5,17 +5,17 @@ import { CID } from "multiformats/cid";
  * This class is for keeping track of downloaded blocks.
  */
 
-class BlocksClass extends Model<InferAttributes<BlocksClass, { omit: "cid" | "pinnedBy" }> & { cid: string, pinnedBy: string }, InferCreationAttributes<BlocksClass>> {
+export class BlockModel extends Model<InferAttributes<BlockModel, { omit: "cid" | "pinnedBy" }> & { cid: string, pinnedBy: string }, InferCreationAttributes<BlockModel>> {
 	declare cid: CID // Primary
 	declare pinnedBy: CID // Primary
 	declare size: number
 	declare depth: number
 }
 
-export type Blocks = ModelCtor<BlocksClass>;
+export type Blocks = ModelCtor<BlockModel>;
 
 export const setupBlocks = (sequelize: Sequelize): Blocks => {
-	return sequelize.define<BlocksClass>(
+	return sequelize.define<BlockModel>(
 		"blocks",
 		{
 			cid: {
