@@ -197,4 +197,24 @@ describe("pin manager", () => {
 			await promise;
 		});
 	});
+
+	describe("pin", () => {
+		let dag: CID[];
+
+		before(async () => {
+			dag = await createDag(components.helia, 3, 2);
+		});
+
+		it("creates the pin row in a downloading state", async () => {
+			const root = dag[0];
+
+			await pm.pin(root);
+
+			const pin = await components.pins.findOne({ where: { cid: root.toString() } });
+
+			assert(pin);
+			assert(pin.cid.equals(root));
+			assert.equal(pin.state, "DOWNLOADING");
+		});
+	});
 });
