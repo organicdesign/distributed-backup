@@ -5,6 +5,7 @@ import { CID } from "multiformats/cid";
 import createDatabase from "../../src/helia-pin-manager/sequelize.js";
 import { PinManager, type Components } from "../../src/helia-pin-manager/pin-manager.js";
 import { addBlocks } from "../utils/blocks.js";
+import { createDag } from "../utils/dag.js";
 
 describe("pin manager", () => {
 	let components: Components;
@@ -133,6 +134,25 @@ describe("pin manager", () => {
 			await pm.unpin(pin.cid);
 
 			await promise;
+		});
+	});
+
+	describe("pinLocal", () => {
+		let dag: Awaited<ReturnType<typeof createDag>>;
+
+		before(async () => {
+			dag = await createDag(components.helia, 3, 2);
+		});
+
+		it("adds the root as a pin", async () => {
+			const root = dag["level-0"].cid;
+
+			await pm.pinLocal(root);
+
+			const pin = await components.pins.findOne({ where: { cid: root.toString() } });
+
+			assert(pin);
+			assert(pin.cid.equals(root));
 		});
 	});
 });
