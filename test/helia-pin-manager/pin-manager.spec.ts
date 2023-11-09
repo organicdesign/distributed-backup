@@ -10,6 +10,7 @@ import { createDag } from "../utils/dag.js";
 describe("pin manager", () => {
 	let components: Components;
 	let pm: PinManager;
+	let dag: CID[];
 
 	const data: {
 		pins: { cid: CID, state: "COMPLETED", size: number, depth: number }[],
@@ -30,13 +31,15 @@ describe("pin manager", () => {
 			...database
 		};
 
+		dag = await createDag(components.helia, 3, 2);
+
 		pm = new PinManager(components);
 
 		const rb = await addBlocks(helia);
 		const blocks = rb.map(b => ({ ...b, state: "COMPLETED" as const, depth: 1, size: b.block.length }));
 
-		data.blocks = blocks
-		data.pins = blocks
+		data.blocks = blocks;
+		data.pins = blocks;
 	});
 
 	after(async () => {
@@ -138,12 +141,6 @@ describe("pin manager", () => {
 	});
 
 	describe("pinLocal", () => {
-		let dag: CID[];
-
-		before(async () => {
-			dag = await createDag(components.helia, 3, 2);
-		});
-
 		it("adds the root as a pin", async () => {
 			const root = dag[0];
 
@@ -199,12 +196,6 @@ describe("pin manager", () => {
 	});
 
 	describe("pin", () => {
-		let dag: CID[];
-
-		before(async () => {
-			dag = await createDag(components.helia, 3, 2);
-		});
-
 		it("creates the pin row in a downloading state", async () => {
 			const root = dag[0];
 
