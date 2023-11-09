@@ -4,14 +4,14 @@ import * as raw from "multiformats/codecs/raw";
 import type { Blockstore } from "interface-blockstore";
 import type { Helia } from "@helia/interface";
 
-export const hashBlock = async (block: Uint8Array) => {
+export const hashBlock = async (block: Uint8Array, codec?: number) => {
 	const hash = await sha256.digest(block);
 
-	return CID.createV1(raw.code, hash);
+	return CID.createV1(codec ?? raw.code, hash);
 }
 
-export const addBlock = async  ({ blockstore }: { blockstore: Blockstore }, block: Uint8Array): Promise<CID> => {
-	const cid = await hashBlock(block);
+export const addBlock = async  ({ blockstore }: { blockstore: Blockstore }, block: Uint8Array, codec?: number): Promise<CID> => {
+	const cid = await hashBlock(block, codec);
 
 	await blockstore.put(cid, block);
 

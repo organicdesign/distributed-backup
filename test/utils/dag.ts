@@ -1,41 +1,34 @@
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { addBlock } from './blocks.js'
+import * as dagPb from "@ipld/dag-pb";
+import { compare as compareUint8Arrays } from "uint8arrays/compare"
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 
-export interface DAGNode {
-	cid: CID
-	level: number
-	links: CID[]
-}
-
-export async function createDag ({ blockstore }: { blockstore: Blockstore }, depth: number, children: number): Promise<Record<string, DAGNode>> {
-	const dag: Record<string, DAGNode> = {};
-	const root = await addBlock({ blockstore }, uint8arrayFromString('level-0'));
-
-	await addChildren(root, 'level', 0, 0, depth, children, dag, { blockstore });
-
-	return dag;
-}
-
-async function addChildren (cid: CID, name: string, level: number, index: number, depth: number, children: number, dag: Record<string, DAGNode>, { blockstore }: { blockstore: Blockstore }): Promise<void> {
+export const createDag = async ({ blockstore }: { blockstore: Blockstore }, depth: number, children: number): Promise<CID[]> => {
 	if (depth === 0) {
-		return;
+		const block = dagPb.encode({ Data: uint8arrayFromString(`level-${depth}-${Math.random()}`), Links: [] });
+		const cid = await addBlock({ blockstore }, block, dagPb.code);
+
+		return [cid];
 	}
 
-	name = `${name}-${index}`;
-
-	dag[name] = {
-		level,
-		cid,
-		links: []
-	};
+	const childrenNodes: CID[][] = [];
 
 	for (let i = 0; i < children; i++) {
-		const subChild = await addBlock({ blockstore }, uint8arrayFromString(`${name}-${i}`));
-
-		dag[name].links.push(subChild);
-
-		await addChildren(subChild, name, level + 1, index + i, depth - 1, children, dag, { blockstore });
+		childrenNodes.push(await createDag({ blockstore }, depth -1, children));
 	}
-};
+
+	childrenNodes.sort((a, b) => compareUint8Arrays(a[0].bytes, b[0].bytes));
+
+	const block = dagPb.encode({
+		Data: uint8arrayFromString(`level-${depth}-${Math.random()}`),
+		Links:childrenNodes.map(l => ({ Hash: l[0], Name: l[0].toString() }))
+	});
+	const cid = await addBlock({ blockstore }, block, dagPb.code);
+	const allBlocks = childrenNodes.reduce((a, b) => [...a, ...b], []);
+
+	allBlocks.unshift(cid);
+
+	return allBlocks;
+}
