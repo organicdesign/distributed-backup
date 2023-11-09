@@ -138,14 +138,14 @@ describe("pin manager", () => {
 	});
 
 	describe("pinLocal", () => {
-		let dag: Awaited<ReturnType<typeof createDag>>;
+		let dag: CID[];
 
 		before(async () => {
 			dag = await createDag(components.helia, 3, 2);
 		});
 
 		it("adds the root as a pin", async () => {
-			const root = dag["level-0"].cid;
+			const root = dag[0];
 
 			await pm.pinLocal(root);
 
@@ -153,6 +153,20 @@ describe("pin manager", () => {
 
 			assert(pin);
 			assert(pin.cid.equals(root));
+		});
+
+		it("adds all the items in the dag as blocks", async () => {
+			const root = dag[0];
+
+			await pm.pinLocal(root);
+
+			const blocks = await components.blocks.findAll({ where: { pinnedBy: root.toString() } });
+
+			assert.equal(blocks.length, Object.values(dag).length);
+
+			for (const block of blocks) {
+				assert(dag.find(b => b.equals(block.cid)));
+			}
 		});
 	});
 });
