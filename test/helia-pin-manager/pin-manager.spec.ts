@@ -234,5 +234,20 @@ describe("pin manager", () => {
 			assert.equal(downloads.length, 0);
 			assert(pin);
 		});
+
+		it("emits pins:adding event", async () => {
+			const root = dag[0];
+			const promise = new Promise<void>((resolve, reject) => {
+				pm.events.addEventListener("pins:adding", () => {
+					resolve();
+				});
+
+				setTimeout(reject, 3000);
+			});
+
+			await pm.pin(root);
+
+			await promise;
+		});
 	});
 });
