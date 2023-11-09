@@ -221,5 +221,18 @@ describe("pin manager", () => {
 			assert.equal(downloads.length, 1);
 			assert(downloads[0].cid.equals(root));
 		});
+
+		it("does nothing if the pin already exists", async () => {
+			const root = dag[0];
+
+			await components.pins.create({ cid: root, depth: 1, state: "COMPLETED" });
+			await pm.pin(root);
+
+			const downloads = await components.downloads.findAll({ where: { pinnedBy: root.toString() } });
+			const pin = await components.pins.findOne({ where: { cid: root.toString() } });
+
+			assert.equal(downloads.length, 0);
+			assert(pin);
+		});
 	});
 });
