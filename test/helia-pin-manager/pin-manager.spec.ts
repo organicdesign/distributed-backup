@@ -118,7 +118,7 @@ describe("pin manager", () => {
 			assert(isPinned === false);
 		});
 
-		it("emits an unpin event", async () => {
+		it("emits pins:removed event", async () => {
 			const pin = data.pins[0];
 
 			await components.helia.pins.add(pin.cid);
@@ -177,6 +177,24 @@ describe("pin manager", () => {
 			const isPinned = await components.helia.pins.isPinned(root);
 
 			assert(isPinned);
+		});
+
+		it("emits pins:added event", async () => {
+			const pin = data.pins[0];
+
+			await components.helia.pins.add(pin.cid);
+
+			const promise = new Promise<void>((resolve, reject) => {
+				pm.events.addEventListener("pins:added", () => {
+					resolve();
+				});
+
+				setTimeout(reject, 3000);
+			});
+
+			await pm.pinLocal(pin.cid);
+
+			await promise;
 		});
 	});
 });
