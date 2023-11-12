@@ -318,7 +318,24 @@ describe("pin manager", () => {
 	});
 
 	describe("getSize", () => {
-		it("returns the size of all the blocks under a pin", async () => {
+		it("returns the sum of the size of all the blocks under a pin", async () => {
+			const sizePerBlock = 10;
+
+			await components.blocks.bulkCreate(dag.map(c => ({
+				cid: c,
+				pinnedBy: dag[0],
+				size: sizePerBlock,
+				depth: 1
+			})));
+
+			const size = await pm.getSize(dag[0]);
+
+			assert.equal(size, dag.length * sizePerBlock);
+		});
+	});
+
+	describe("getBlockCount", () => {
+		it("returns the number of blocks under a pin", async () => {
 			await components.blocks.bulkCreate(dag.map(c => ({
 				cid: c,
 				pinnedBy: dag[0],
@@ -326,9 +343,9 @@ describe("pin manager", () => {
 				depth: 1
 			})));
 
-			const size = await pm.getSize(dag[0]);
+			const size = await pm.getBlockCount(dag[0]);
 
-			assert.equal(size, dag.length * 10);
+			assert.equal(size, dag.length);
 		});
 	});
 });
