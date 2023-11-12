@@ -285,4 +285,35 @@ describe("pin manager", () => {
 			assert(pins[0].equals(dag[0]));
 		});
 	});
+
+	describe("getHeads", () => {
+		it("returns all the block downloads for a pin", async () => {
+			await components.downloads.bulkCreate(dag.map(c => ({
+				cid: c,
+				pinnedBy: dag[0],
+				depth: DAG_DEPTH
+			})));
+
+			const heads = await pm.getHeads(dag[0]);
+
+			assert.equal(heads.length, dag.length);
+
+			for (const head of heads) {
+				assert(dag.map(d => d.toString()).includes(head.cid.toString()));
+			}
+		});
+
+		it("returns no more than the limit", async () => {
+			await components.downloads.bulkCreate(dag.map(c => ({
+				cid: c,
+				pinnedBy: dag[0],
+				depth: DAG_DEPTH
+			})));
+
+			const limit = 2;
+			const heads = await pm.getHeads(dag[0], { limit });
+
+			assert.equal(heads.length, limit);
+		});
+	});
 });
