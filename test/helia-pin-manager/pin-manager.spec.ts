@@ -348,4 +348,45 @@ describe("pin manager", () => {
 			assert.equal(size, dag.length);
 		});
 	});
+
+	describe("downloadSync", () => {
+		it("throws an error if the pin doesn't exist", async () => {
+			assert.rejects(pm.downloadSync(dag[0]));
+		});
+
+		it("returns an empty array if it is in the COMPLETED state", async () => {
+			await components.pins.create({
+				cid: dag[0],
+				state: "COMPLETED"
+			});
+
+			const downloaders = await pm.downloadSync(dag[0]);
+
+			assert.equal(downloaders.length, 0);
+		});
+
+		it("returns all the downloaders for a pin", async () => {
+			await components.pins.create({
+				cid: dag[0],
+				state: "DOWNLOADING"
+			});
+
+			await components.downloads.bulkCreate(dag.map(c => ({
+				cid: c,
+				pinnedBy: dag[0],
+				size: 10,
+				depth: 1
+			})));
+
+			const downloaders = await pm.downloadSync(dag[0]);
+
+			assert.equal(downloaders.length, dag.length);
+
+			await Promise.all(downloaders.map(async downloader => {
+				const blockInfo = await downloader();
+
+				assert(dag.map(d => d.toString()).includes(blockInfo.cid.toString()));
+			}));
+		});
+	});
 });
