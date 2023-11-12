@@ -316,4 +316,19 @@ describe("pin manager", () => {
 			assert.equal(heads.length, limit);
 		});
 	});
+
+	describe("getSize", () => {
+		it("returns the size of all the blocks under a pin", async () => {
+			await components.blocks.bulkCreate(dag.map(c => ({
+				cid: c,
+				pinnedBy: dag[0],
+				size: 10,
+				depth: 1
+			})));
+
+			const size = await pm.getSize(dag[0]);
+
+			assert.equal(size, dag.length * 10);
+		});
+	});
 });
