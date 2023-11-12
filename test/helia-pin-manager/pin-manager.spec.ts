@@ -250,4 +250,24 @@ describe("pin manager", () => {
 			await promise;
 		});
 	});
+
+	describe("getState", () => {
+		it("returns the pins state", async () => {
+			await Promise.all(
+				[...(["DOWNLOADING", "COMPLETED", "DESTROYED", "UPLOADING"] as const).entries()].map(async ([i, state]) => {
+					await components.pins.create({ cid: dag[i], state });
+					const gotState = await pm.getState(dag[i]);
+
+					assert.equal(gotState, state);
+				})
+			);
+		});
+
+		it("it returns NOTFOUND if the pin doesn't exist", async () => {
+			const root = dag[0];
+			const state = await pm.getState(root);
+
+			assert.equal(state, "NOTFOUND");
+		});
+	});
 });
