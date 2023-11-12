@@ -263,11 +263,26 @@ describe("pin manager", () => {
 			);
 		});
 
-		it("it returns NOTFOUND if the pin doesn't exist", async () => {
+		it("returns NOTFOUND if the pin doesn't exist", async () => {
 			const root = dag[0];
 			const state = await pm.getState(root);
 
 			assert.equal(state, "NOTFOUND");
+		});
+	});
+
+	describe("getActiveDownloads", () => {
+		it("returns only the pins in the DOWNLOADING state", async () => {
+			await Promise.all(
+				[...(["DOWNLOADING", "COMPLETED", "DESTROYED", "UPLOADING"] as const).entries()].map(async ([i, state]) => {
+					await components.pins.create({ cid: dag[i], state });
+				})
+			);
+
+			const pins = await pm.getActiveDownloads();
+
+			assert.equal(pins.length, 1);
+			assert(pins[0].equals(dag[0]));
 		});
 	});
 });
