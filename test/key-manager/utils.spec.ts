@@ -38,9 +38,9 @@ const data = [
 
 	{
 		mnemonic: "bracket raise onion simple hybrid dignity follow observe shoulder bachelor stadium congress",
-		name: `1234567890-=!@#$%^&*()_+"':;,./<?>`,
-		key: "4YqTpHQfT3UmCzvX76HewsaGGHSriVteB2878YGj395x-AB3GiJpFocYGSxu5KwckLVhUerQAuYMFbDaFirJ61ZcF",
-		publicKey: "dHMN5uW7oayJdRPb1xF7HTSwocoxA5v2odhSvPWjqMny-AB3GiJpFocYGSxu5KwckLVhUerQAuYMFbDaFirJ61ZcF",
+		name: `1234567890-=@#$%^&*()_+"':;,./<?>`,
+		key: "wiJxUYpkAu2swgpaYqRANFXNx6qLGunVQ1E13yJ8ex7-4BKoMvWn2RkxXJzQNnH529aonQ1tLroBYKAkqgjery8B",
+		publicKey: "pjbo9WmANYms6WebNJeZTT3NSLARNaeSV1XobPxjzbWY-4BKoMvWn2RkxXJzQNnH529aonQ1tLroBYKAkqgjery8B",
 		psk: "/key/swarm/psk/1.0.0/\n/base16/\n6f3b813e892454b6435e68c51e905d4d707518f7ed80a4f6c3009a2441db4fe2"
 	}
 ];
@@ -141,5 +141,16 @@ describe("encodeKey", { concurrency: 4 }, () => {
 describe("keyToPeerId", () => {
 	it("converts keys to peerIds", async () => {
 		await Promise.all(data.map(d => keyToPeerId(decodeKey(d.key))));
+	});
+});
+
+describe("generateKeyData", () => {
+	it("generates key data", async () => {
+		await Promise.all(data.map(async ({ mnemonic, name, key, psk }) => {
+			const keyData = await generateKeyData(mnemonic, name);
+
+			assert.equal(keyData.key, key);
+			assert.equal(keyData.psk, psk);
+		}));
 	});
 });
