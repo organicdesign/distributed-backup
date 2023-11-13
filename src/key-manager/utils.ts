@@ -7,6 +7,7 @@ import * as ecc from "tiny-secp256k1";
 import { BIP32Factory, type BIP32Interface } from "bip32";
 import bip39 from "bip39";
 import type { PeerId } from "@libp2p/interface-peer-id";
+import type { KeyData, EncodedKeyData } from "../interface.js";
 
 const KEY_SEPARATOR = "-";
 
@@ -62,7 +63,7 @@ export const generateMnemonic = (): string => {
 	return bip39.generateMnemonic();
 };
 
-export const generateKeyFile = async (path: string, mnemonic: string, name: string) => {
+export const generateKeyData = async (mnemonic: string, name: string): Promise<EncodedKeyData> => {
 	const [seed, childPath] = await Promise.all([
 		bip39.mnemonicToSeed(mnemonic),
 		nameToPath(name)
@@ -77,14 +78,27 @@ export const generateKeyFile = async (path: string, mnemonic: string, name: stri
 		throw new Error("key is missing private data");
 	}
 
-	const psk = uint8ArrayToString(networkKey, "base16");
+	const psk = `/key/swarm/psk/1.0.0/\n/base16/\n${uint8ArrayToString(networkKey, "base16")}`;
 
-	await fs.writeFile(path, JSON.stringify({ key, psk: `/key/swarm/psk/1.0.0/\n/base16/\n${psk}` }));
+	return { key, psk };
 };
 
-export const importKeyFile = async (path: string): Promise<{ key: BIP32Interface, psk: Uint8Array }> => {
+export const parseKeyData = (data: EncodedKeyData): KeyData => {
+	return {
+		key: decodeKey(data.key),
+		psk: uint8ArrayFromString(data.psk)
+	};
+};
+
+export const generateKeyFile = async (path: string, mnemonic: string, name: string) => {
+	const keyData = await generateKeyData(mnemonic, name);
+
+	await fs.writeFile(path, JSON.stringify(keyData));
+};
+
+export const importKeyFile = async (path: string): Promise<KeyData> => {
 	const data = await fs.readFile(path, "utf8");
 	const json = JSON.parse(data);
 
-	return { key: decodeKey(json.key), psk: uint8ArrayFromString(json.psk) };
+	return parseKeyData(json);
 };

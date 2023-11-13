@@ -3,6 +3,7 @@ import type { Libp2p as BaseLibp2p } from "libp2p";
 import type { PubSub } from "@libp2p/interface-pubsub";
 import type { GossipsubEvents } from "@chainsafe/libp2p-gossipsub";
 import type { Helia } from "helia";
+import type { BIP32Interface } from "bip32";
 import type { Filestore } from "./filestore/index.js";
 import type { Groups } from "./groups.js";
 import type { RemoteContent, LocalContent } from "./database/index.js";
@@ -66,4 +67,14 @@ export interface ImportOptions {
 	nocopy: boolean
 	encrypt: boolean
 	path: string
+}
+
+export interface KeyData {
+	key: BIP32Interface,
+	psk: Uint8Array
+}
+
+export interface EncodedKeyData {
+	key: string,
+	psk: string
 }
