@@ -1,5 +1,6 @@
 import { describe, it, before, after, afterEach } from "node:test";
 import assert from "assert/strict";
+import all from "it-all";
 import { createHelia } from "helia";
 import { CID } from "multiformats/cid";
 import createDatabase from "../../src/helia-pin-manager/sequelize.js";
@@ -387,6 +388,49 @@ describe("pin manager", () => {
 
 				assert(dag.map(d => d.toString()).includes(blockInfo.cid.toString()));
 			}));
+		});
+	});
+
+	describe("downloadPin", () => {
+		it("throws an error if the pin doesn't exist", async () => {
+			assert.rejects(all(pm.downloadPin(dag[0])));
+		});
+
+		it("returns an empty array if it is in the COMPLETED state", async () => {
+			await components.pins.create({
+				cid: dag[0],
+				state: "COMPLETED"
+			});
+
+			const downloaders = await all(pm.downloadPin(dag[0]));
+
+			assert.equal(downloaders.length, 0);
+		});
+
+		it("returns existing downloads for a pin first", async () => {
+			await components.pins.create({
+				cid: dag[0],
+				state: "DOWNLOADING"
+			});
+
+			await components.downloads.create({
+				cid: dag[0],
+				pinnedBy: dag[0],
+				depth: 1
+			});
+
+			const itr = pm.downloadPin(dag[0]);
+			const downloader = await itr.next();
+
+			assert(!downloader.done);
+
+			await downloader.value();
+
+			const blocks = await components.blocks.findAll();
+			const downloads = await components.downloads.findAll();
+
+			assert.equal(blocks.length, 1);
+			assert.equal(downloads.length, DAG_WIDTH);
 		});
 	});
 });
