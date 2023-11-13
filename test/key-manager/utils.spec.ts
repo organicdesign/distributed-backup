@@ -1,7 +1,7 @@
 import { describe, it, before } from "node:test";
 import assert from "assert/strict";
 import { fromString as uint8ArrayFromString } from "uint8arrays";
-import { nameToPath, decodeKey, encodeKey, bip32 } from "../../src/key-manager/utils.js";
+import { nameToPath, decodeKey, encodeKey, bip32, keyToPeerId } from "../../src/key-manager/utils.js";
 
 const data = {
 	serverNames: ["test", "test2", "server", "a long name with spaces", `1234567890-=!@#$%^&*()_+"':;,./<?>`],
@@ -107,5 +107,11 @@ describe("encodeKey", { concurrency: 4 }, () => {
 
 			assert.rejects(async () => encodeKey(key));
 		}
+	});
+});
+
+describe("keyToPeerId", () => {
+	it("converts keys to peerIds", async () => {
+		await Promise.all(data.keys.map(key => keyToPeerId(decodeKey(key))));
 	});
 });
