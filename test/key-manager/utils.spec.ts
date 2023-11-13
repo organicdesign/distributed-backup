@@ -1,7 +1,15 @@
 import { describe, it, before } from "node:test";
 import assert from "assert/strict";
 import { fromString as uint8ArrayFromString } from "uint8arrays";
-import { nameToPath, decodeKey, encodeKey, bip32, keyToPeerId, generateKeyData } from "../../src/key-manager/utils.js";
+import {
+	nameToPath,
+	decodeKey,
+	encodeKey,
+	bip32,
+	keyToPeerId,
+	generateKeyData,
+	parseKeyData
+} from "../../src/key-manager/utils.js";
 
 const data = [
 	{
@@ -151,6 +159,19 @@ describe("generateKeyData", () => {
 
 			assert.equal(keyData.key, key);
 			assert.equal(keyData.psk, psk);
+		}));
+	});
+});
+
+describe("parseKeyData", () => {
+	it("parses the key data", async () => {
+		await Promise.all(data.map(async ({ key, psk }) => {
+			const keyData = parseKeyData({ key, psk });
+
+			// This should be tested a bit better...
+			assert(keyData);
+			assert(keyData.key);
+			assert(keyData.psk);
 		}));
 	});
 });
