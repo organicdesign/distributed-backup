@@ -39,4 +39,13 @@ describe("key manager", () => {
 			assert.deepEqual(key.privateKey, d.keyManager.getHmacKey());
 		}
 	});
+
+	it("returns a libp2p peerId with a matching private key", async () => {
+		await Promise.all(data.map(async d => {
+			const peerId = await d.keyManager.getPeerId();
+			const key = d.keyData.key.deriveHardened(0);
+
+			assert.deepEqual(new Uint8Array(key.privateKey as Buffer), (peerId.privateKey as Uint8Array).slice(4));
+		}));
+	});
 });
