@@ -23,4 +23,20 @@ describe("key manager", () => {
 			assert.deepEqual(d.keyData.psk, d.keyManager.getPskKey());
 		}
 	});
+
+	it("returns the aes key", () => {
+		for (const d of data) {
+			const key = d.keyData.key.deriveHardened(2);
+
+			assert.deepEqual(key.privateKey, d.keyManager.getAesKey());
+		}
+	});
+
+	it("returns the hmac key", () => {
+		for (const d of data) {
+			const key = d.keyData.key.deriveHardened(3);
+
+			assert.deepEqual(key.privateKey, d.keyManager.getHmacKey());
+		}
+	});
 });
