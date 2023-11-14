@@ -73,10 +73,9 @@ const stores = new Datastores(datastore);
 const blockstore = new Filestore(config.storage === ":memory:" ? new MemoryBlockstore() : new FsBlockstore(Path.join(config.storage, "blockstore")), stores.get("helia/filestore"));
 
 // const references = await createReferences(stores.get("references"));
-
 const peerId = await keyManager.getPeerId();
 const psk = keyManager.getPskKey();
-const libp2p = await createLibp2p({ peerId, psk: argv.private ? psk : undefined });
+const libp2p = await createLibp2p({ peerId, psk: argv.private ? psk : undefined, ...config });
 logger.lifecycle("loaded libp2p");
 
 const helia = await createHelia({ libp2p, blockstore, datastore: stores.get("helia/datastore") });

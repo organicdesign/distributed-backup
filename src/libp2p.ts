@@ -10,7 +10,7 @@ import { bootstrap } from "@libp2p/bootstrap";
 import { preSharedKey } from "libp2p/pnet";
 import type { PeerId } from "@libp2p/interface-peer-id";
 
-export default async ({ peerId, psk }: { peerId?: PeerId, psk?: Uint8Array }) => await createLibp2p({
+export default async ({ peerId, psk, addresses, bootstrap: bs }: { peerId?: PeerId, psk?: Uint8Array, addresses?: string[], bootstrap?: string[] }) => await createLibp2p({
 	peerId,
 	transports: [tcp(), webSockets()],
 	connectionEncryption: [noise()],
@@ -18,7 +18,7 @@ export default async ({ peerId, psk }: { peerId?: PeerId, psk?: Uint8Array }) =>
 	connectionProtector: psk ? preSharedKey({ psk }) : undefined,
 
 	addresses: {
-		listen: [
+		listen: addresses ?? [
 			"/ip4/127.0.0.1/tcp/0",
 			"/ip4/127.0.0.1/tcp/0/ws"
 			// "/ip6/::/tcp/0"
@@ -33,5 +33,11 @@ export default async ({ peerId, psk }: { peerId?: PeerId, psk?: Uint8Array }) =>
 		identify: identifyService(),
 		pubsub: gossipsub({ allowPublishToZeroPeers: true }),
 		dht: kadDHT()
-	}
+	},
+
+	peerDiscovery: bs && bs.length > 0 ? [
+		bootstrap({
+			list: bs ?? []
+		})
+	] : []
 });
