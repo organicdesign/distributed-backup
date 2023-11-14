@@ -4,7 +4,6 @@ import { BlackHoleBlockstore } from "blockstore-core/black-hole";
 import selectChunker from "../fs-importer/select-chunker.js";
 import selectHasher from "../fs-importer/select-hasher.js";
 import * as logger from "../logger.js";
-import { sequelize } from "../database/sequelize.js";
 import { Op } from "sequelize";
 import type { Components } from "../interface.js";
 import type { ImporterConfig } from "../fs-importer/interfaces.js";
@@ -66,7 +65,7 @@ export const diskToUploads = async (components: Components) => {
 		upload.autoUpdate = false;
 		upload.replacedBy = cid;
 
-		await sequelize.transaction(transaction => Promise.all([
+		await components.sequelize.transaction(transaction => Promise.all([
 			components.localContent.findOrCreate({
 				where: {
 					cid: cid.toString(),

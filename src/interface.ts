@@ -4,9 +4,11 @@ import type { PubSub } from "@libp2p/interface-pubsub";
 import type { GossipsubEvents } from "@chainsafe/libp2p-gossipsub";
 import type { Helia } from "helia";
 import type { BIP32Interface } from "bip32";
+import type { Sequelize } from "sequelize";
 import type { Filestore } from "./filestore/index.js";
 import type { Groups } from "./groups.js";
-import type { RemoteContent, LocalContent } from "./database/index.js";
+import type { LocalContent } from "./database/localContent.js";
+import type { RemoteContent } from "./database/remoteContent.js";
 import type { Cipher } from "./cipher.js";
 import type { Datastores } from "./datastores.js";
 import type { Version, CID } from "multiformats/cid";
@@ -44,8 +46,9 @@ export interface Components {
 	cipher: Cipher
 	config: Config
 	stores: Datastores
-	remoteContent: typeof RemoteContent
-	localContent: typeof LocalContent
+	remoteContent: RemoteContent
+	localContent: LocalContent
+	sequelize: Sequelize
 	pinManager: PinManager
 }
 

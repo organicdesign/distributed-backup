@@ -11,7 +11,7 @@ import parallel from "it-parallel";
 import { compare } from "uint8arrays";
 import type { Components } from "./interface.js";
 import type { CID } from "multiformats/cid";
-import type { RemoteContentClass } from "./database/remoteContent.js";
+import type { RemoteContentModel } from "./database/remoteContent.js";
 
 export const syncLoop = async (components: Components) => {
 	// logger.lifecycle("started");
@@ -34,7 +34,7 @@ export const downloadLoop = async (components: Components) => {
 
 	const SLOTS = 50;
 
-	const batchDownload = async function * (itr: AsyncIterable<[CID, RemoteContentClass | undefined]>): AsyncGenerator<() => Promise<{ cid: CID, block: Uint8Array }>, void, undefined> {
+	const batchDownload = async function * (itr: AsyncIterable<[CID, RemoteContentModel | undefined]>): AsyncGenerator<() => Promise<{ cid: CID, block: Uint8Array }>, void, undefined> {
 		for await (const [cid, remoteContent] of itr) {
 			const priority = remoteContent?.priority ?? 100;
 			const weight = Math.floor(linearWeightTranslation(priority / 100) * SLOTS) + 1;
@@ -68,7 +68,7 @@ export const downloadLoop = async (components: Components) => {
 		}
 	}
 
-	const getPins = async function * (loop: AsyncIterable<void>): AsyncGenerator<[CID, RemoteContentClass | undefined]> {
+	const getPins = async function * (loop: AsyncIterable<void>): AsyncGenerator<[CID, RemoteContentModel | undefined]> {
 		for await (const _ of loop) {
 			const pins = [...await components.pinManager.getActiveDownloads()];
 			// logger.tick("GOT ACTIVE");
