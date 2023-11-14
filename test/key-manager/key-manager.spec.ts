@@ -48,4 +48,13 @@ describe("key manager", () => {
 			assert.deepEqual(new Uint8Array(key.privateKey as Buffer), (peerId.privateKey as Uint8Array).slice(4));
 		}));
 	});
+
+	it("returns a welo identity with a matching public key", async () => {
+		await Promise.all(data.map(async d => {
+			const weloId = await d.keyManager.getWeloIdentity();
+			const key = d.keyData.key.deriveHardened(1);
+
+			assert.deepEqual(new Uint8Array(key.publicKey), weloId.pubkey.bytes.slice(4));
+		}));
+	});
 });
