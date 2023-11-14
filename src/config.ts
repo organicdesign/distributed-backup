@@ -9,7 +9,9 @@ export const getConfig = async (): Promise<Config> => {
 
 	const config: Config = {
 		validateInterval: json.validateInterval ?? 60 * 60,
-		tickInterval: json.tickInterval ?? 10 * 60
+		tickInterval: json.tickInterval ?? 10 * 60,
+		storage: json.storage ?? ":memory:",
+		addresses: json.addresses ?? [ { address: "127.0.0.1", port: 0 } ]
 	};
 
 	return config;

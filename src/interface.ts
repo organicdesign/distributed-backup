@@ -17,6 +17,8 @@ export type Libp2p = BaseLibp2p<{ pubsub: PubSub<GossipsubEvents> }>
 export interface Config {
 	validateInterval: number
 	tickInterval: number
+	storage: string
+	addresses: { port: number, address: string }[]
 }
 
 export interface Pair<Key = unknown, Value = unknown> {
