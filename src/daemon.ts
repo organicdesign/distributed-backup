@@ -61,7 +61,9 @@ logger.lifecycle("starting...");
 const config = await getConfig(argv.config);
 logger.lifecycle("loaded config");
 
-const database = await setupDatabase({ storage: config.storage === ":memory:" ? config.storage : Path.join(config.storage, "pin-manager") });
+const storage = config.storage === ":memory:" ? config.storage : Path.join(config.storage, "sqlite");
+
+const database = await setupDatabase({ storage });
 logger.lifecycle("loaded database");
 
 // Setup datastores and blockstores.
@@ -97,7 +99,7 @@ logger.lifecycle("loaded groups");
 const { rpc, close } = await createNetServer(argv.socket);
 logger.lifecycle("loaded server");
 
-const pinManager = await setupPinManager(helia, { storage: config.storage === ":memory:" ? config.storage : Path.join(config.storage, "pin-manager") });
+const pinManager = await setupPinManager(helia, { storage });
 
 pinManager.events.addEventListener("downloads:added", ({ cid }) => logger.downloads(`[+] ${cid}`));
 pinManager.events.addEventListener("pins:added", ({ cid }) => logger.pins(`[+] ${cid}`));
