@@ -1,10 +1,8 @@
 import fs from "fs/promises";
-import Path from "path";
-import { projectPath } from "./utils.js";
 import type { Config } from "./interface.js";
 
-export const getConfig = async (): Promise<Config> => {
-	const raw = await fs.readFile(Path.join(projectPath, "config/config.json"), { encoding: "utf8" });
+export const getConfig = async (path: string): Promise<Config> => {
+	const raw = await fs.readFile(path, { encoding: "utf8" });
 	const json = JSON.parse(raw);
 
 	const config: Config = {

@@ -3,6 +3,8 @@ import { createNetServer } from "@organicdesign/net-rpc";
 import { createHelia } from "helia";
 import { MemoryDatastore } from "datastore-core";
 import { MemoryBlockstore } from "blockstore-core";
+import { FsBlockstore } from "blockstore-fs";
+import { FsDatastore } from "datastore-fs";
 import yargs from "yargs/yargs";
 import { hideBin } from "yargs/helpers";
 import { createWelo, pubsubReplicator, bootstrapReplicator } from "welo";
@@ -16,7 +18,7 @@ import commands from "./rpc/index.js";
 import { createGroups } from "./groups.js";
 import { Datastores } from "./datastores.js";
 import { createCipher } from "./cipher.js";
-import { sequelize, RemoteContent, LocalContent } from "./database/index.js";
+import setupDatabase from "./database/index.js";
 import setupPinManager from "./helia-pin-manager/index.js";
 import { createKeyManager } from "./key-manager/index.js";
 import { projectPath } from "./utils.js";
@@ -38,6 +40,13 @@ const argv = await yargs(hideBin(process.argv))
 		}
 	})
 	.option({
+		config: {
+			alias: "c",
+			type: "string",
+			default: Path.join(projectPath, "config/config.json")
+		}
+	})
+	.option({
 		private: {
 			alias: "p",
 			type: "boolean",
@@ -48,20 +57,20 @@ const argv = await yargs(hideBin(process.argv))
 
 logger.lifecycle("starting...");
 
-await sequelize.sync();
+// Setup all the modules.
+const config = await getConfig(argv.config);
+logger.lifecycle("loaded config");
+
+const database = await setupDatabase({ storage: config.storage === ":memory:" ? config.storage : Path.join(config.storage, "pin-manager") });
 logger.lifecycle("loaded database");
 
 // Setup datastores and blockstores.
 const keyManager = await createKeyManager(Path.resolve(argv.key));
-const datastore = new MemoryDatastore();
+const datastore = config.storage === ":memory:" ? new MemoryDatastore() : new FsDatastore(Path.join(config.storage, "datastore"));
 const stores = new Datastores(datastore);
-const blockstore = new Filestore(new MemoryBlockstore(), stores.get("helia/filestore"));
+const blockstore = new Filestore(config.storage === ":memory:" ? new MemoryBlockstore() : new FsBlockstore(Path.join(config.storage, "blockstore")), stores.get("helia/filestore"));
 
 // const references = await createReferences(stores.get("references"));
-
-// Setup all the modules.
-const config = await getConfig();
-logger.lifecycle("loaded config");
 
 const peerId = await keyManager.getPeerId();
 const psk = keyManager.getPskKey();
@@ -88,7 +97,7 @@ logger.lifecycle("loaded groups");
 const { rpc, close } = await createNetServer(argv.socket);
 logger.lifecycle("loaded server");
 
-const pinManager = await setupPinManager(helia);
+const pinManager = await setupPinManager(helia, { storage: config.storage === ":memory:" ? config.storage : Path.join(config.storage, "pin-manager") });
 
 pinManager.events.addEventListener("downloads:added", ({ cid }) => logger.downloads(`[+] ${cid}`));
 pinManager.events.addEventListener("pins:added", ({ cid }) => logger.pins(`[+] ${cid}`));
@@ -107,8 +116,7 @@ const components: Components = {
 	config,
 	stores,
 	pinManager,
-	remoteContent: RemoteContent,
-	localContent: LocalContent
+	...database
 };
 
 // Register all the RPC commands.
@@ -118,6 +126,12 @@ for (const command of commands) {
 
 // Cleanup on signal interupt.
 let exiting = false;
+
+process.on('uncaughtException', function (err) {
+  console.error(err);
+	global.hasRejectTa = true;
+	debugger;
+});
 
 process.on("SIGINT", async () => {
 	if (exiting) {
