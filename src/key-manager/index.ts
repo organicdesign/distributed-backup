@@ -7,6 +7,7 @@ import { sha256 } from "multiformats/hashes/sha2";
 import { encode as encodeBlock } from "multiformats/block";
 import type { BIP32Interface } from "bip32";
 import type { PeerId } from "@libp2p/interface-peer-id";
+import type { KeyData } from "../interface.js";
 
 enum keyIndicies {
 	LIBP2P,
@@ -23,9 +24,9 @@ export class KeyManager {
 	private readonly key: BIP32Interface;
 	private readonly psk: Uint8Array;
 
-	constructor (keys: { key: BIP32Interface, psk: Uint8Array }) {
-		this.key = keys.key;
-		this.psk = keys.psk;
+	constructor (keyData: KeyData) {
+		this.key = keyData.key;
+		this.psk = keyData.psk;
 	}
 
 	getPskKey (): Uint8Array {
