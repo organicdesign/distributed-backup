@@ -8,7 +8,7 @@ await yargs(hideBin(process.argv))
 	.command(commands)
 	.demandCommand()
 	.middleware(createMiddleware(argv => {
-		argv.client = createNetClient(argv.socket);
+		argv.client = createNetClient(argv.socket ?? "/tmp/server.socket");
 
 		process.on("SIGINT", () => {
 			argv.client?.close();
