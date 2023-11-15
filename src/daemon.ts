@@ -46,13 +46,6 @@ const argv = await yargs(hideBin(process.argv))
 			default: Path.join(projectPath, "config/config.json")
 		}
 	})
-	.option({
-		private: {
-			alias: "p",
-			type: "boolean",
-			default: false
-		}
-	})
 	.parse();
 
 logger.lifecycle("starting...");
@@ -75,7 +68,7 @@ const blockstore = new Filestore(config.storage === ":memory:" ? new MemoryBlock
 // const references = await createReferences(stores.get("references"));
 const peerId = await keyManager.getPeerId();
 const psk = keyManager.getPskKey();
-const libp2p = await createLibp2p({ peerId, psk: argv.private ? psk : undefined, ...config });
+const libp2p = await createLibp2p({ peerId, psk: config.private ? psk : undefined, ...config });
 logger.lifecycle("loaded libp2p");
 
 const helia = await createHelia({ libp2p, blockstore, datastore: stores.get("helia/datastore") });
@@ -128,12 +121,6 @@ for (const command of commands) {
 // Cleanup on signal interupt.
 let exiting = false;
 
-process.on('uncaughtException', function (err) {
-  console.error(err);
-	global.hasRejectTa = true;
-	debugger;
-});
-
 process.on("SIGINT", async () => {
 	if (exiting) {
 		logger.lifecycle("force exiting");
@@ -155,12 +142,10 @@ process.on("SIGINT", async () => {
 	logger.lifecycle("stopped helia");
 	await libp2p.stop();
 	logger.lifecycle("stopped libp2p");
-	// Sequelize will close automatically.
-	// await sequelize.close();
-	// logger.lifecycle("stopped database");
+
 	process.exit();
 });
-//
+
 // Create the loops.
 const loops = [
 	new Looper(() => syncLoop(components), { sleep: config.tickInterval * 1000 }),

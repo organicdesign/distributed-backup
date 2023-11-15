@@ -6,6 +6,7 @@ export const getConfig = async (path: string): Promise<Config> => {
 	const json = JSON.parse(raw);
 
 	const config: Config = {
+		private: json.private ?? false,
 		validateInterval: json.validateInterval ?? 60 * 60,
 		tickInterval: json.tickInterval ?? 10 * 60,
 		storage: json.storage ?? ":memory:",

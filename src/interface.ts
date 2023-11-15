@@ -17,6 +17,7 @@ import type { PinManager } from "./helia-pin-manager/pin-manager.js";
 export type Libp2p = BaseLibp2p<{ pubsub: PubSub<GossipsubEvents> }>
 
 export interface Config {
+	private: boolean
 	validateInterval: number
 	tickInterval: number
 	storage: string

@@ -30,6 +30,7 @@ mkdir config
 Then create a configuration file similar to the following and save it to your config directory:
 ```json
 {
+	"private": false,
 	"validateInterval": 10,
 	"tickInterval": 0.1,
 	"storage": "/path/to/data",
