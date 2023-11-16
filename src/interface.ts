@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { multiaddr } from "@multiformats/multiaddr";
+import { CID } from "multiformats/cid";
 import type { Welo, Database, Keyvalue } from "welo";
 import type { Libp2p as BaseLibp2p } from "libp2p";
 import type { PubSub } from "@libp2p/interface-pubsub";
@@ -12,7 +14,6 @@ import type { LocalContent } from "./database/localContent.js";
 import type { RemoteContent } from "./database/remoteContent.js";
 import type { Cipher } from "./cipher.js";
 import type { Datastores } from "./datastores.js";
-import type { Version, CID } from "multiformats/cid";
 import type { PinManager } from "./helia-pin-manager/pin-manager.js";
 
 export type Libp2p = BaseLibp2p<{ pubsub: PubSub<GossipsubEvents> }>
@@ -88,3 +89,31 @@ export interface EncodedKeyData {
 	key: string,
 	psk: string
 }
+
+export const zMultiaddr = z.custom<string>(val => {
+	if (typeof val !== "string") {
+		return false;
+	}
+
+	try {
+		multiaddr(val);
+	} catch (error) {
+		return false;
+	}
+
+	return true;
+});
+
+export const zCID = z.custom<string>(val => {
+	if (typeof val !== "string") {
+		return false;
+	}
+
+	try {
+		CID.parse(val);
+	} catch (error) {
+		return false;
+	}
+
+	return true;
+});
