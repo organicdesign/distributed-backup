@@ -1,13 +1,13 @@
 import { z } from "zod";
 import { CID } from "multiformats/cid";
 import { addLocal } from "../../sync/upload.js";
-import { Components, ImportOptions } from "../../interface.js";
+import { type Components, zCID, ImportOptions } from "../../interface.js";
 
 export const name = "add";
 
 const Params = ImportOptions.partial().extend(z.object({
 	path: z.string(),
-	group: z.string(),
+	group: zCID,
 	onlyHash: z.boolean().optional(),
 	autoUpdate: z.boolean().optional(),
 	versionCount: z.number().optional(),

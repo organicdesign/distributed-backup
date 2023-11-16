@@ -1,8 +1,15 @@
-import type { Components } from "../../interface.js";
+import { z } from "zod";
+import { type Components, zCID } from "../../interface.js";
 
 export const name = "query-group";
 
-export const method = ({ remoteContent }: Components) => async (params: { group: string }) => {
+const Params = z.object({
+	group: zCID
+});
+
+export const method = ({ remoteContent }: Components) => async (raw: unknown) => {
+	const params = Params.parse(raw);
+
 	const data = await remoteContent.findAll({
 		where: {
 			group: params.group
