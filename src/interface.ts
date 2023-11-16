@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type { Welo, Database, Keyvalue } from "welo";
 import type { Libp2p as BaseLibp2p } from "libp2p";
 import type { PubSub } from "@libp2p/interface-pubsub";
@@ -66,15 +67,17 @@ export interface Entry<T extends Uint8Array | CID = CID> {
 	meta?: Record<string, unknown>
 }
 
-export interface ImportOptions {
-	hash: string
-	cidVersion: Version
-	chunker: string
-	rawLeaves: boolean
-	nocopy: boolean
-	encrypt: boolean
-	path: string
-}
+export const ImportOptions = z.object({
+	hash: z.string(),
+	cidVersion: z.union([z.literal(0), z.literal(1)]),
+	chunker: z.string(),
+	rawLeaves: z.boolean(),
+	nocopy: z.boolean(),
+	encrypt: z.boolean(),
+	path: z.string()
+});
+
+export type ImportOptions = z.infer<typeof ImportOptions>
 
 export interface KeyData {
 	key: BIP32Interface,

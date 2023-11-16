@@ -1,13 +1,25 @@
-import { addLocal } from "../../sync/upload.js";
+import { z } from "zod";
 import { CID } from "multiformats/cid";
-import type { Components, ImportOptions } from "../../interface.js";
+import { addLocal } from "../../sync/upload.js";
+import { Components, ImportOptions } from "../../interface.js";
 
 export const name = "add";
 
-export const method = (components: Components) => async (params: { path: string, group: string, onlyHash?: boolean, encrypt?: boolean, autoUpdate?: boolean, versionCount?: number, priority?: number } & ImportOptions) => {
+const Params = ImportOptions.partial().extend(z.object({
+	path: z.string(),
+	group: z.string(),
+	onlyHash: z.boolean().optional(),
+	autoUpdate: z.boolean().optional(),
+	versionCount: z.number().optional(),
+	priority: z.number().optional()
+}).shape);
+
+export const method = (components: Components) => async (raw: unknown) => {
+	const params = Params.parse(raw);
+
 	const cid = await addLocal(components, {
 		group: CID.parse(params.group),
-		encrypt: params.encrypt,
+		encrypt: !!params.encrypt,
 		path: params.path,
 		hash: "sha2-256",
 		chunker: "size-262144",
