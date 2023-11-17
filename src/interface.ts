@@ -18,14 +18,16 @@ import type { PinManager } from "./helia-pin-manager/pin-manager.js";
 
 export type Libp2p = BaseLibp2p<{ pubsub: PubSub<GossipsubEvents> }>
 
-export interface Config {
-	private: boolean
-	validateInterval: number
-	tickInterval: number
-	storage: string
-	addresses: string[]
-	bootstrap: string[]
-}
+export const Config = z.object({
+	private: z.boolean(),
+	validateInterval: z.number(),
+	tickInterval: z.number(),
+	storage: z.string(),
+	addresses: z.array(z.string()),
+	bootstrap: z.array(z.string())
+});
+
+export type Config = z.infer<typeof Config>
 
 export interface Pair<Key = unknown, Value = unknown> {
 	key: Key,
