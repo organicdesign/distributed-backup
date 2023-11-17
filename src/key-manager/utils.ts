@@ -7,7 +7,7 @@ import * as ecc from "tiny-secp256k1";
 import { BIP32Factory, type BIP32Interface } from "bip32";
 import bip39 from "bip39";
 import type { PeerId } from "@libp2p/interface-peer-id";
-import type { KeyData, EncodedKeyData } from "../interface.js";
+import { KeyData, EncodedKeyData } from "../interface.js";
 
 const KEY_SEPARATOR = "-";
 
@@ -99,6 +99,7 @@ export const generateKeyFile = async (path: string, mnemonic: string, name: stri
 export const importKeyFile = async (path: string): Promise<KeyData> => {
 	const data = await fs.readFile(path, "utf8");
 	const json = JSON.parse(data);
+	const encodedKeyData = EncodedKeyData.parse(json);
 
-	return parseKeyData(json);
+	return parseKeyData(encodedKeyData);
 };

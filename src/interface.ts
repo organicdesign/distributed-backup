@@ -87,10 +87,12 @@ export interface KeyData {
 	psk: Uint8Array
 }
 
-export interface EncodedKeyData {
-	key: string,
-	psk: string
-}
+export const EncodedKeyData = z.object({
+	key: z.string(),
+	psk: z.string()
+});
+
+export type EncodedKeyData = z.infer<typeof EncodedKeyData>
 
 export const zMultiaddr = z.custom<string>(val => {
 	if (typeof val !== "string") {
