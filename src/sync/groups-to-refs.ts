@@ -1,7 +1,7 @@
 import * as dagCbor from "@ipld/dag-cbor";
 import { CID } from "multiformats/cid";
 import * as logger from "../logger.js";
-import type { Entry, Components } from "../interface.js";
+import { type Components, EncodedEntry } from "../interface.js";
 
 export const groupsToRefs = async (components: Components) => {
 	const { groups, remoteContent } = components;
@@ -11,7 +11,7 @@ export const groupsToRefs = async (components: Components) => {
 		const index = await database.store.latest();
 
 		for await (const pair of index.query({})) {
-			const entry = dagCbor.decode(pair.value) as Entry<Uint8Array>;
+			const entry = EncodedEntry.parse(dagCbor.decode(pair.value));
 			const cid = CID.parse(pair.key.baseNamespace());
 			const group = database.address.cid;
 			//logger.validate("syncing item: %s", CID.parse(pair.key.baseNamespace()).toString());

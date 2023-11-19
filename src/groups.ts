@@ -7,7 +7,7 @@ import type { Welo } from "welo";
 import type { ManifestData } from "../node_modules/welo/dist/src/manifest/interface.js";
 import type { Datastore } from "interface-datastore";
 import type { Startable } from "@libp2p/interfaces/startable";
-import type { KeyvalueDB, Pair, Entry, Link } from "./interface.js";
+import { type KeyvalueDB, type Pair, type Entry, type Link, EncodedEntry } from "./interface.js";
 
 export interface Components {
 	datastore: Datastore
@@ -71,7 +71,7 @@ export class Groups implements Startable {
 
 		logger(`[+] ${group.toString()}/${entry.cid.toString()}`);
 
-		const rawEntry: Entry<Uint8Array> = {
+		const rawEntry: EncodedEntry = {
 			cid: entry.cid.bytes,
 			author: entry.author,
 			encrypted: entry.encrypted,
@@ -97,7 +97,7 @@ export class Groups implements Startable {
 		}
 
 		const index = await database.store.latest();
-		const entry = await database.store.selectors.get(index)(cid.toString()) as Entry<Uint8Array> | undefined;
+		const entry = EncodedEntry.optional().parse(await database.store.selectors.get(index)(cid.toString()));
 
 		if (entry == null) {
 			throw new Error("no such item in group");

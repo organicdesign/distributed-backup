@@ -18,6 +18,34 @@ import type { PinManager } from "./helia-pin-manager/pin-manager.js";
 
 export type Libp2p = BaseLibp2p<{ pubsub: PubSub<GossipsubEvents> }>
 
+export const zMultiaddr = z.custom<string>(val => {
+	if (typeof val !== "string") {
+		return false;
+	}
+
+	try {
+		multiaddr(val);
+	} catch (error) {
+		return false;
+	}
+
+	return true;
+});
+
+export const zCID = z.custom<string>(val => {
+	if (typeof val !== "string") {
+		return false;
+	}
+
+	try {
+		CID.parse(val);
+	} catch (error) {
+		return false;
+	}
+
+	return true;
+});
+
 export const Config = z.object({
 	private: z.boolean(),
 	validateInterval: z.number(),
@@ -38,8 +66,8 @@ export interface KeyvalueDB extends Database {
 	store: Keyvalue
 }
 
-export interface Link<T extends Uint8Array | CID = CID> {
-	cid: T,
+export interface Link {
+	cid: CID,
 	type: string
 }
 
@@ -58,12 +86,29 @@ export interface Components {
 	pinManager: PinManager
 }
 
-export interface Entry<T extends Uint8Array | CID = CID> {
-	cid: T
+export const EncodedEntry = z.object({
+	cid: z.instanceof(Uint8Array),
+	author: z.instanceof(Uint8Array),
+	encrypted: z.boolean(),
+	timestamp: z.number(),
+	links: z.array(z.object({
+		cid: z.instanceof(Uint8Array),
+		type: z.string()
+	})),
+	blocks: z.number(),
+	size: z.number(),
+	priority: z.number(),
+	meta: z.record(z.unknown()).optional()
+});
+
+export type EncodedEntry = z.infer<typeof EncodedEntry>
+
+export interface Entry {
+	cid: CID
 	author: Uint8Array
 	encrypted: boolean
 	timestamp: number
-	links: Link<T>[]
+	links: Link[]
 	blocks: number
 	size: number
 	priority: number
@@ -93,31 +138,3 @@ export const EncodedKeyData = z.object({
 });
 
 export type EncodedKeyData = z.infer<typeof EncodedKeyData>
-
-export const zMultiaddr = z.custom<string>(val => {
-	if (typeof val !== "string") {
-		return false;
-	}
-
-	try {
-		multiaddr(val);
-	} catch (error) {
-		return false;
-	}
-
-	return true;
-});
-
-export const zCID = z.custom<string>(val => {
-	if (typeof val !== "string") {
-		return false;
-	}
-
-	try {
-		CID.parse(val);
-	} catch (error) {
-		return false;
-	}
-
-	return true;
-});

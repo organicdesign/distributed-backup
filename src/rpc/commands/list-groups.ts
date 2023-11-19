@@ -1,7 +1,7 @@
 import * as dagCbor from "@ipld/dag-cbor";
 import { CID } from "multiformats/cid";
 import { countPeers } from "../../utils.js";
-import type { Components, Entry } from "../../interface.js";
+import { type Components, EncodedEntry } from "../../interface.js";
 
 export const name = "list-groups";
 
@@ -19,7 +19,7 @@ export const method = (components: Components) => async () => {
 				(async () => {
 					try {
 						for await (const pair of index.query({})) {
-							const entry = dagCbor.decode(pair.value) as Entry<Uint8Array>;
+							const entry = EncodedEntry.parse(dagCbor.decode(pair.value));
 
 							if (entry != null) {
 								items++;
