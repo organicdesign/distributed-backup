@@ -4,11 +4,9 @@ import { diskToUploads } from "./sync/disk-to-uploads.js";
 import { uploadsToGroups } from "./sync/uploads-to-groups.js";
 import { refsToPins } from "./sync/refs-to-pins.js";
 import { linearWeightTranslation } from "./utils.js";
-import * as logger from "./logger.js";
 import { pipe } from "it-pipe";
-import { take, collect, tap, parallelMerge } from "streaming-iterables";
+import { collect, tap } from "streaming-iterables";
 import parallel from "it-parallel";
-import { compare } from "uint8arrays";
 import type { Components } from "./interface.js";
 import type { CID } from "multiformats/cid";
 import type { RemoteContentModel } from "./database/remoteContent.js";
@@ -102,23 +100,3 @@ export const downloadLoop = async (components: Components) => {
 
 	//logger.tick("FINISHED");
 };
-
-/*
-file://node_modules/@libp2p/kad-dht/src/query/query-path.ts:227
-      deferred.reject(new CodeError('Query aborted', 'ERR_QUERY_ABORTED'))
-                      ^
-CodeError: Query aborted
-    at EventTarget.<anonymous> (file://node_modules/@libp2p/kad-dht/src/query/query-path.ts:227:23)
-    at EventTarget.[nodejs.internal.kHybridDispatch] (node:internal/event_target:757:20)
-    at EventTarget.dispatchEvent (node:internal/event_target:692:26)
-    at abortSignal (node:internal/abort_controller:369:10)
-    at AbortController.abort (node:internal/abort_controller:403:5)
-    at EventTarget.onAbort (file://node_modules/any-signal/src/index.ts:14:16)
-    at EventTarget.[nodejs.internal.kHybridDispatch] (node:internal/event_target:757:20)
-    at EventTarget.dispatchEvent (node:internal/event_target:692:26)
-    at abortSignal (node:internal/abort_controller:369:10)
-    at AbortController.abort (node:internal/abort_controller:403:5) {
-  code: 'ERR_QUERY_ABORTED',
-  props: {}
-}
-*/
