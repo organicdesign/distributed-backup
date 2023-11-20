@@ -8,7 +8,7 @@ import { noise } from "@chainsafe/libp2p-noise";
 import { identifyService } from "libp2p/identify";
 import { bootstrap } from "@libp2p/bootstrap";
 import { preSharedKey } from "libp2p/pnet";
-import type { PeerId } from "@libp2p/interface-peer-id";
+import type { PeerId } from "@libp2p/interface/peer-id";
 
 export default async ({ peerId, psk, addresses, bootstrap: bs }: { peerId?: PeerId, psk?: Uint8Array, addresses?: string[], bootstrap?: string[] }) => await createLibp2p({
 	peerId,

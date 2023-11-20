@@ -6,7 +6,7 @@ import * as cbor from "@ipld/dag-cbor";
 import { sha256 } from "multiformats/hashes/sha2";
 import { encode as encodeBlock } from "multiformats/block";
 import type { BIP32Interface } from "bip32";
-import type { PeerId } from "@libp2p/interface-peer-id";
+import type { PeerId } from "@libp2p/interface/peer-id";
 import type { KeyData } from "../interface.js";
 
 enum keyIndicies {
