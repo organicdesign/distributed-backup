@@ -3,7 +3,7 @@ import { logger } from "@libp2p/logger";
 const APP_NAME = "backup";
 
 const createLogger = (name: string) => {
-	return logger(`${APP_NAME}:${name} [${new Date().toISOString().split("T")[1].replace("Z", "")}]`);
+	return logger(`${APP_NAME}:${name} [${new Date().toISOString()}]`);
 };
 
 export const lifecycle = createLogger("lifecycle");
