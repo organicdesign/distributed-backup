@@ -76,6 +76,7 @@ export const diskToUploads = async (components: Components) => {
 					cid,
 					group: upload.group,
 					path: upload.path,
+					remotePath: upload.remotePath,
 					state: "UPLOADING",
 					cidVersion: upload.cidVersion,
 					rawLeaves: upload.rawLeaves,

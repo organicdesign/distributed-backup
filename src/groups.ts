@@ -62,14 +62,14 @@ export class Groups implements Startable {
 		await this.datastore.put(new Key(database.address.cid.toString()), database.manifest.block.bytes);
 	}
 
-	async addTo (group: CID, entry: Entry) {
+	async addTo (group: CID, entry: Entry & { path?: string }) {
 		const database = this.groups.get(group.toString());
 
 		if (database == null) {
 			throw new Error("not a part of group");
 		}
 
-		logger(`[+] ${group.toString()}/${entry.cid.toString()}`);
+		logger(`[+] ${group.toString()}${entry.path ?? ""}`);
 
 		const rawEntry: EncodedEntry = {
 			cid: entry.cid.bytes,
@@ -84,7 +84,7 @@ export class Groups implements Startable {
 		};
 
 		// Update global database.
-		const op = database.store.creators.put(entry.cid.toString(), rawEntry);
+		const op = database.store.creators.put(entry.path ?? "test", rawEntry);
 
 		await database.replica.write(op);
 	}

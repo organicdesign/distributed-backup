@@ -13,9 +13,10 @@ import { CID, Version } from "multiformats/cid";
  */
 
 class LocalContentModel extends Model<InferAttributes<LocalContentModel, { omit: "cid" | "group" | "versions" | "replacedBy" | "meta" }> & { cid: string, group: string, versions?: string, replacedBy?: string, meta?: string }, InferCreationAttributes<LocalContentModel>> {
-	declare cid: CID // Primary
+	declare cid: CID
 	declare group: CID // Primary
 	declare path: string
+	declare remotePath: string // Primary
 	declare state: "UPLOADING" | "COMPLETED" | "DESTROYED"
 	declare cidVersion: Version
 	declare hash: string
@@ -40,7 +41,6 @@ export const setupLocalContent = (sequelize: Sequelize): LocalContent => {
 		{
 			cid: {
 				type: DataTypes.STRING(undefined, true),
-				primaryKey: true,
 				allowNull: false,
 
 				get () {
@@ -72,6 +72,12 @@ export const setupLocalContent = (sequelize: Sequelize): LocalContent => {
 
 			path: {
 				type: DataTypes.STRING,
+				allowNull: false
+			},
+
+			remotePath: {
+				type: DataTypes.STRING,
+				primaryKey: true,
 				allowNull: false
 			},
 

@@ -8,7 +8,7 @@ import type { CID } from "multiformats/cid";
 import type { ImporterConfig } from "../fs-importer/interfaces.js";
 import type { Components, ImportOptions } from "../interface.js";
 
-export const addLocal = async (components: Components, params: ImportOptions & { group: CID, onlyHash?: boolean, autoUpdate?: boolean, versionCount?: number, priority: number }): Promise<CID> => {
+export const addLocal = async (components: Components, params: ImportOptions & { group: CID, onlyHash?: boolean, autoUpdate?: boolean, versionCount?: number, priority: number, remotePath: string }): Promise<CID> => {
 	const { blockstore, cipher, localContent } = components;
 
 	const config: ImporterConfig = {
@@ -40,7 +40,7 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 
 	await localContent.findOrCreate({
 		where: {
-			cid: cid.toString(),
+			remotePath: params.remotePath,
 			group: params.group.toString(),
 		},
 
@@ -49,6 +49,7 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 			group: params.group,
 			cidVersion: params.cidVersion,
 			path: params.path,
+			remotePath: params.remotePath,
 			state: "UPLOADING",
 			rawLeaves: params.rawLeaves,
 			chunker: params.chunker,

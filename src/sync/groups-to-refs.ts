@@ -12,14 +12,15 @@ export const groupsToRefs = async (components: Components) => {
 
 		for await (const pair of index.query({})) {
 			const entry = EncodedEntry.parse(dagCbor.decode(pair.value));
-			const cid = CID.parse(pair.key.baseNamespace());
+			const cid = CID.decode(entry.cid);
 			const group = database.address.cid;
+			const path = pair.key.toString();
 			//logger.validate("syncing item: %s", CID.parse(pair.key.baseNamespace()).toString());
 
 			if (entry == null) {
 				const ref = await remoteContent.findOne({
 					where: {
-						cid: cid.toString(),
+						remotePath: path,
 						group: group.toString()
 					}
 				});
@@ -46,7 +47,7 @@ export const groupsToRefs = async (components: Components) => {
 			}
 
 			// Check if we have uploaded this item...
-			const local = await components.localContent.findOne({ where: { cid: cid.toString() } });
+			const local = await components.localContent.findOne({ where: { remotePath: path } });
 
 			if (local) {
 				// We have uploaded it - no need to download it.
@@ -56,7 +57,7 @@ export const groupsToRefs = async (components: Components) => {
 			// Check if we already have this item...
 			const reference = await remoteContent.findOne({
 				where: {
-					cid: cid.toString(),
+					remotePath: path,
 					group: group.toString()
 				}
 			});
@@ -68,13 +69,14 @@ export const groupsToRefs = async (components: Components) => {
 			await remoteContent.create({
 				cid,
 				group,
+				remotePath: path,
 				timestamp: new Date(entry.timestamp),
 				state: "DOWNLOADING",
 				encrypted: entry.encrypted,
 				priority: entry.priority
 			});
 
-			logger.references(`[+] ${group}/${cid}`);
+			logger.references(`[+] ${group}${path}`);
 
 			/*
 			logger.pins(`[~] ${cid}`);

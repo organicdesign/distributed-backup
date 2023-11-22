@@ -18,6 +18,7 @@ const addUploads = async (components: Components) => {
 		for (const upload of uploads) {
 			await components.groups.addTo(group, {
 				cid: upload.cid,
+				path: upload.remotePath,
 				timestamp: Date.now(),
 				author: components.welo.identity.id,
 				encrypted: upload.encrypt,

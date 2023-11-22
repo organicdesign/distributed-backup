@@ -8,6 +8,7 @@ export const name = "add";
 const Params = ImportOptions.partial().extend(z.object({
 	path: z.string(),
 	group: zCID,
+	remotePath: z.string(),
 	onlyHash: z.boolean().optional(),
 	autoUpdate: z.boolean().optional(),
 	versionCount: z.number().optional(),
@@ -21,6 +22,7 @@ export const method = (components: Components) => async (raw: unknown) => {
 		group: CID.parse(params.group),
 		encrypt: !!params.encrypt,
 		path: params.path,
+		remotePath: params.remotePath,
 		hash: "sha2-256",
 		chunker: "size-262144",
 		rawLeaves: true,

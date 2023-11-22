@@ -13,8 +13,9 @@ import { CID } from "multiformats/cid";
  */
 
 export class RemoteContentModel extends Model<InferAttributes<RemoteContentModel, { omit: "cid" | "group" }> & { cid: string, group: string }, InferCreationAttributes<RemoteContentModel>> {
-	declare cid: CID // Primary
+	declare cid: CID
 	declare group: CID // Primary
+	declare remotePath: string // Primary
 	declare state: "BLOCKED" | "DOWNLOADED" | "DOWNLOADING" | "DESTROYED"
 	declare priority: number
 	declare encrypted: boolean // This can stay since it won't change unless group/cid changes.
@@ -57,6 +58,12 @@ export const setupRemoteContent = (sequelize: Sequelize): RemoteContent => {
 				set (value: CID) {
 					this.setDataValue("group", value.toString());
 				}
+			},
+
+			remotePath: {
+				type: DataTypes.STRING,
+				primaryKey: true,
+				allowNull: false
 			},
 
 			priority: {
