@@ -34,6 +34,7 @@ export const method = (components: Components) => async () => {
 
 			promises.push((async () => {
 				return {
+					path: pair.key.toString(),
 					cid: item.toString(),
 					name: item.toString().slice(0, 8),
 					revisions: 0,

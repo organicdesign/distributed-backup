@@ -2,23 +2,29 @@ import { z } from "zod";
 import { createBuilder, createHandler } from "../utils.js";
 import { zCID } from "../../interface.js";
 
-const Items = z.array(z.object({
+const Item = z.object({
 	path: z.string(),
 	cid: zCID,
 	name: z.string(),
-	revisions: z.number().int().positive(),
-	peers: z.number().int().positive(),
+	revisions: z.number().int(),
+	peers: z.number().int(),
 	group: zCID,
 	groupName: z.string(),
 	encrypted: z.boolean(),
 	state: z.string(),
-	size: z.number().int().positive(),
-	blocks: z.number().int().positive(),
-	totalSize: z.number().int().positive(),
-	totalBlocks: z.number().int().positive(),
-	priority: z.number().int().positive(),
+	size: z.number().int(),
+	blocks: z.number().int(),
+	totalSize: z.number().int(),
+	totalBlocks: z.number().int(),
+	priority: z.number().int(),
 	meta: z.record(z.unknown()).optional()
-}));
+});
+
+type Item = z.infer<typeof Item>
+
+const Items = z.array(Item);
+
+type Items = z.infer<typeof Items>
 
 export const command = "list";
 
@@ -44,11 +50,35 @@ const formatSize = (size: number): string => {
 	}
 
 	return `${size} B`;
-}
+};
+
+type JStruct = { [k in string]: JStruct | Item };
+
+const createJSON = (items: Items): JStruct => {
+	const struct: JStruct = {};
+
+	for (const item of items) {
+		const parts = item.path.split("/").filter(p => p.length !== 0);
+		const last = parts.pop();
+		let itr = struct;
+
+		for (const part of parts) {
+			if (itr[part] == null) {
+				itr[part] = {};
+			}
+
+			itr = itr[part] as JStruct;
+		}
+
+		itr[last ?? ""] = item;
+	}
+
+	return struct;
+};
 
 const formatPercent = (decimal: number): string => {
 	return `${Math.floor(decimal * 1000)  / 10}%`;
-}
+};
 
 export const handler = createHandler<typeof builder>(async argv => {
 	if (argv.client == null) {
@@ -59,6 +89,8 @@ export const handler = createHandler<typeof builder>(async argv => {
 	const items = Items.parse(raw);
 
 	items.sort((a, b) => a.path.localeCompare(b.path));
+
+	console.log(createJSON(items));
 
 	let header = "Name".padEnd(20);
 
@@ -90,6 +122,48 @@ export const handler = createHandler<typeof builder>(async argv => {
 
 		console.log(str);
 	}
+
+	const printTree = (tree: JStruct, depth: number = 0) => {
+		if (depth === 0) {
+			console.log("/");
+			printTree(tree, 1);
+			return;
+		}
+
+		for (const [key, subtree] of Object.entries(tree)) {
+			let item: Item | null = null;
+
+			try {
+				item = Item.parse(subtree);
+			} catch (error) {
+				// Ignore
+			}
+
+			if (item != null) {
+				let str = "";
+
+				str += `${"  ".repeat(depth)}${key}`.slice(0, 18).padEnd(20);
+				str += `${formatSize(item.size)}/${formatSize(item.totalSize)} (${formatPercent(item.size/item.totalSize)})`.slice(0, 25).padEnd(27);
+				str += `${item.blocks}/${item.totalBlocks} (${formatPercent(item.blocks/item.totalBlocks)})`.slice(0, 18).padEnd(20);
+				str += `${item.state}`.slice(0, 13).padEnd(15);
+				str += `${item.priority}`.slice(0, 8).padEnd(10);
+				str += `${item.revisions}`.slice(0, 8).padEnd(10);
+				str += `${item.peers}`.slice(0, 8).padEnd(10);
+				str += `${item.groupName}`.slice(0, 8).padEnd(10);
+				str += `${item.encrypted}`.slice(0, 8).padEnd(10);
+				str += item.cid.padEnd(62);
+
+				console.log(str);
+				continue;
+			}
+
+			console.log(`${"  ".repeat(depth)}${key}/`);
+
+			printTree(subtree as JStruct, depth + 1);
+		}
+	};
+
+	printTree(createJSON(items));
 
 	const totalCount = items.length;
 	const completedCount = items.filter(i => i.state === "COMPLETED").length;
