@@ -63,7 +63,7 @@
     "streaming-iterables": "^8.0.1",
     "tiny-secp256k1": "^2.2.3",
     "ts-event-target": "^0.1.5",
-    "welo": "^3.0.1",
+    "welo": "^3.0.1-ab04f97",
     "yargs": "^17.7.2",
     "zod": "^3.22.4"
   }
