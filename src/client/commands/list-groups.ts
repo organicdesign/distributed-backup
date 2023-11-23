@@ -1,4 +1,13 @@
+import { z } from "zod";
 import { createBuilder, createHandler } from "../utils.js";
+import { zCID } from "../../interface.js";
+
+const Groups = z.array(z.object({
+	cid: zCID,
+	name: z.string(),
+	count: z.number().int().positive(),
+	peers: z.number().int().positive()
+}));
 
 export const command = "list-groups";
 
@@ -11,7 +20,8 @@ export const handler = createHandler<typeof builder>(async argv => {
 		throw new Error("Failed to connect to daemon.");
 	}
 
-	const groups: { cid: string, name: string, count: number, peers: number }[] = await argv.client.rpc.request("list-groups", {});
+	const raw: unknown = await argv.client.rpc.request("list-groups", {});
+	const groups = Groups.parse(raw);
 
 	console.log(`${"Name".padEnd(10)}${"Items".padEnd(10)}${"Peers".padEnd(10)}${"CID".padEnd(62)}`);
 

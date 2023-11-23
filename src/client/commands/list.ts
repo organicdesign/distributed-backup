@@ -1,4 +1,24 @@
+import { z } from "zod";
 import { createBuilder, createHandler } from "../utils.js";
+import { zCID } from "../../interface.js";
+
+const Items = z.array(z.object({
+	path: z.string(),
+	cid: zCID,
+	name: z.string(),
+	revisions: z.number().int().positive(),
+	peers: z.number().int().positive(),
+	group: zCID,
+	groupName: z.string(),
+	encrypted: z.boolean(),
+	state: z.string(),
+	size: z.number().int().positive(),
+	blocks: z.number().int().positive(),
+	totalSize: z.number().int().positive(),
+	totalBlocks: z.number().int().positive(),
+	priority: z.number().int().positive(),
+	meta: z.record(z.unknown()).optional()
+}));
 
 export const command = "list";
 
@@ -35,22 +55,10 @@ export const handler = createHandler<typeof builder>(async argv => {
 		throw new Error("Failed to connect to daemon.");
 	}
 
-	const items: {
-		cid: string,
-		name: string,
-		revisions: number,
-		peers: number,
-		group: string,
-		groupName: string,
-		encrypted: boolean,
-		state: string,
-		size: number,
-		blocks: number,
-		totalSize: number,
-		totalBlocks: number,
-		priority: number,
-		meta?: Record<string, unknown>
-	}[] = await argv.client.rpc.request("list", {});
+	const raw: unknown = await argv.client.rpc.request("list", {});
+	const items = Items.parse(raw);
+
+	items.sort((a, b) => a.path.localeCompare(b.path));
 
 	let header = "Name".padEnd(20);
 
@@ -69,7 +77,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 	for (const item of items) {
 		let str = "";
 
-		str += (item.meta?.name as string | null ?? item.name).slice(0, 18).padEnd(20);
+		str += item.path.slice(0, 18).padEnd(20);
 		str += `${formatSize(item.size)}/${formatSize(item.totalSize)} (${formatPercent(item.size/item.totalSize)})`.slice(0, 25).padEnd(27);
 		str += `${item.blocks}/${item.totalBlocks} (${formatPercent(item.blocks/item.totalBlocks)})`.slice(0, 18).padEnd(20);
 		str += `${item.state}`.slice(0, 13).padEnd(15);
