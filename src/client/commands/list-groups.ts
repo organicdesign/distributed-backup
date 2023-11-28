@@ -5,8 +5,8 @@ import { zCID } from "../../interface.js";
 const Groups = z.array(z.object({
 	cid: zCID,
 	name: z.string(),
-	count: z.number().int().positive(),
-	peers: z.number().int().positive()
+	count: z.number().int(),
+	peers: z.number().int()
 }));
 
 export const command = "list-groups";
