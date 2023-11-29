@@ -80,6 +80,7 @@ const welo = await createWelo({
 	replicators: [bootstrapReplicator(), pubsubReplicator()],
 	identity: await keyManager.getWeloIdentity()
 });
+
 logger.lifecycle("loaded welo");
 
 const cipher = await createCipher({ keyManager });
@@ -99,10 +100,8 @@ pinManager.events.addEventListener("pins:adding", ({ cid }) => logger.pins(`[~] 
 pinManager.events.addEventListener("pins:removed", ({ cid }) => logger.pins(`[-] ${cid}`));
 
 const components: Components = {
-// @ts-ignore
 	libp2p,
 	cipher,
-// @ts-ignores
 	helia,
 	welo,
 	blockstore,

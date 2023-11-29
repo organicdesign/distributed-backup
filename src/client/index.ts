@@ -15,6 +15,7 @@ import * as list from "./commands/list.js";
 import * as pubsub from "./commands/pubsub.js";
 import * as queryGroup from "./commands/query-group.js";
 import * as queryPins from "./commands/query-pins.js";
+import * as sync from "./commands/sync.js";
 import type { Options } from "yargs";
 
 export default [
@@ -34,7 +35,8 @@ export default [
 	list,
 	pubsub,
 	queryGroup,
-	queryPins
+	queryPins,
+	sync
 ] as unknown as {
 	desc: string,
 	command: string,

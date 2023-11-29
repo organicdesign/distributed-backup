@@ -15,6 +15,7 @@ import * as list from "./commands/list.js";
 import * as queryGroup from "./commands/query-group.js";
 import * as queryPins from "./commands/query-pins.js";
 import * as pubsub from "./commands/pubsub.js";
+import * as sync from "./commands/sync.js";
 import type { Components } from "../interface.js";
 
 export default [
@@ -34,7 +35,8 @@ export default [
 	list,
 	queryGroup,
 	queryPins,
-	pubsub
+	pubsub,
+	sync
 ] as {
 	name: string,
 	method: (components: Components) => (params: Record<string, unknown>) => Promise<unknown> | unknown,
