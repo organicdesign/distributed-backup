@@ -397,7 +397,7 @@ export class PinManager {
 			await Promise.all(promises);
 
 			// Delete the download references
-			await Promise.all(downloads.map(d => d.destroy()));
+			await Promise.all(downloads.map(d => this.queue.add(() => d.destroy())));
 
 			this.events.dispatchEvent(new CIDEvent("downloads:added", cid));
 
