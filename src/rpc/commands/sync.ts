@@ -17,5 +17,5 @@ export const method = (components: Components) => async () => {
 		}
 	}
 
-	await Promise.all(promises);
+	await Promise.allSettled(promises);
 };
