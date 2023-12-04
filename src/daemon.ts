@@ -60,7 +60,7 @@ const storage = config.storage === ":memory:" ? config.storage : Path.join(confi
 const database = await setupDatabase({ storage });
 logger.lifecycle("loaded database");
 
-await fs.mkdir(Path.join(config.storage, "datastore"), { recursive: true });
+await fs.mkdir(Path.join(config.storage, "datastore/libp2p"), { recursive: true });
 
 // Setup datastores and blockstores.
 const keyManager = await createKeyManager(Path.resolve(argv.key));
@@ -71,9 +71,10 @@ const blockstore = new Filestore(config.storage === ":memory:" ? new MemoryBlock
 // const references = await createReferences(stores.get("references"));
 const peerId = await keyManager.getPeerId();
 const psk = keyManager.getPskKey();
-const libp2p = await createLibp2p({ datastore: stores.get("libp2p"), peerId, psk: config.private ? psk : undefined, ...config });
+const libp2p = await createLibp2p({ datastore: config.storage === ":memory:" ? new MemoryDatastore() : new FsDatastore(Path.join(config.storage, "datastore/libp2p")), peerId, psk: config.private ? psk : undefined, ...config });
 logger.lifecycle("loaded libp2p");
 
+// @ts-ignore
 const helia = await createHelia({ libp2p, blockstore, datastore: stores.get("helia/datastore") });
 logger.lifecycle("loaded helia");
 
@@ -105,6 +106,7 @@ pinManager.events.addEventListener("pins:removed", ({ cid }) => logger.pins(`[-]
 const components: Components = {
 	libp2p,
 	cipher,
+	// @ts-ignore
 	helia,
 	welo,
 	blockstore,
