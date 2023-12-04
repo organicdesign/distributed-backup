@@ -48,7 +48,7 @@
     "cborg": "^2.0.3",
     "datastore-core": "^9.2.0",
     "datastore-fs": "^9.1.5",
-    "helia": "^2.0.3",
+    "helia": "^2.1.0",
     "ipfs-unixfs-importer": "^15.1.6",
     "it-all": "^3.0.2",
     "it-map": "^3.0.3",
