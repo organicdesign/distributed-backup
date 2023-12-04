@@ -1,4 +1,5 @@
 import Path from "path";
+import fs from "fs/promises";
 import { createNetServer } from "@organicdesign/net-rpc";
 import { createHelia } from "helia";
 import { MemoryDatastore } from "datastore-core";
@@ -59,6 +60,8 @@ const storage = config.storage === ":memory:" ? config.storage : Path.join(confi
 const database = await setupDatabase({ storage });
 logger.lifecycle("loaded database");
 
+await fs.mkdir(Path.join(config.storage, "datastore"), { recursive: true });
+
 // Setup datastores and blockstores.
 const keyManager = await createKeyManager(Path.resolve(argv.key));
 const datastore = config.storage === ":memory:" ? new MemoryDatastore() : new FsDatastore(Path.join(config.storage, "datastore"));
@@ -68,7 +71,7 @@ const blockstore = new Filestore(config.storage === ":memory:" ? new MemoryBlock
 // const references = await createReferences(stores.get("references"));
 const peerId = await keyManager.getPeerId();
 const psk = keyManager.getPskKey();
-const libp2p = await createLibp2p({ peerId, psk: config.private ? psk : undefined, ...config });
+const libp2p = await createLibp2p({ datastore: stores.get("libp2p"), peerId, psk: config.private ? psk : undefined, ...config });
 logger.lifecycle("loaded libp2p");
 
 const helia = await createHelia({ libp2p, blockstore, datastore: stores.get("helia/datastore") });

@@ -35,7 +35,7 @@ export class Groups implements Startable {
 		}
 
 		for await (const pair of this.datastore.query({})) {
-			const block = await decodeCbor<ManifestData>(pair.value)
+			const block = await decodeCbor<ManifestData>(pair.value);
 			const manifest = Manifest.asManifest({ block });
 
 			if (manifest == null) {

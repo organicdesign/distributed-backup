@@ -9,9 +9,11 @@ import { identifyService } from "libp2p/identify";
 import { bootstrap } from "@libp2p/bootstrap";
 import { preSharedKey } from "libp2p/pnet";
 import type { PeerId } from "@libp2p/interface/peer-id";
+import type { Datastore } from "interface-datastore";
 
-export default async ({ peerId, psk, addresses, bootstrap: bs }: { peerId?: PeerId, psk?: Uint8Array, addresses?: string[], bootstrap?: string[] }) => await createLibp2p({
+export default async ({ datastore, peerId, psk, addresses, bootstrap: bs }: { datastore?: Datastore, peerId?: PeerId, psk?: Uint8Array, addresses?: string[], bootstrap?: string[] }) => await createLibp2p({
 	peerId,
+	datastore,
 	transports: [tcp(), webSockets()],
 	connectionEncryption: [noise()],
 	streamMuxers: [yamux()],
