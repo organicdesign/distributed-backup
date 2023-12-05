@@ -9,6 +9,7 @@ import { identify } from "@libp2p/identify";
 import { bootstrap } from "@libp2p/bootstrap";
 import { preSharedKey } from "@libp2p/pnet";
 import { uPnPNAT } from "@libp2p/upnp-nat";
+import { autoNAT } from "@libp2p/autonat";
 import { circuitRelayTransport, circuitRelayServer } from "@libp2p/circuit-relay-v2";
 import { dcutr } from "@libp2p/dcutr";
 import type { PeerId } from "@libp2p/interface/peer-id";
@@ -47,6 +48,7 @@ export default async ({ datastore, peerId, psk, addresses, bootstrap: bs, server
 			identify: identify(),
 			pubsub: gossipsub({ allowPublishToZeroPeers: true }),
 			dht: kadDHT(),
+			autoNAT: autoNAT(),
 			dcutr: dcutr(),
 			upnpNAT: uPnPNAT()
 		},
