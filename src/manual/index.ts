@@ -13,8 +13,8 @@ export const sync = async (libp2p: Libp2p, peer: Peer, database: Database, optio
 	// We need to dial so that libp2p can update multiaddrs.
 	await libp2p.dial(peer.id)
 
-	const stream = await libp2p.dialProtocol(peer.id, `/hldb/replicator/he/1.0.0/${cidstring(database.manifest.address.cid)}`)
-
+	const protocol = `/hldb/replicator/he/1.0.0/${cidstring(database.manifest.address.cid)}`
+	const stream = await libp2p.dialProtocol(peer.id, protocol)
 	const heads = await getHeads(database.replica)
 	const he = new HeadsExchange({
 		stream,
@@ -55,4 +55,4 @@ export const sync = async (libp2p: Libp2p, peer: Peer, database: Database, optio
 
 	he.close()
 	await stream.close()
-}
+};

@@ -8,8 +8,9 @@ import { noise } from "@chainsafe/libp2p-noise";
 import { identify } from "@libp2p/identify";
 import { bootstrap } from "@libp2p/bootstrap";
 import { preSharedKey } from "@libp2p/pnet";
-//import { uPnPNATService } from "libp2p/upnp-nat";
-//import { circuitRelayServer } from "libp2p/circuit-relay";
+import { uPnPNAT } from "@libp2p/upnp-nat";
+import { circuitRelayTransport, circuitRelayServer } from "@libp2p/circuit-relay-v2";
+import { dcutr } from "@libp2p/dcutr";
 import type { PeerId } from "@libp2p/interface/peer-id";
 import type { Datastore } from "interface-datastore";
 import type { Libp2p } from "./interface.js";
@@ -17,7 +18,7 @@ import type { Libp2p } from "./interface.js";
 export default async ({ datastore, peerId, psk, addresses, bootstrap: bs }: { datastore?: Datastore, peerId?: PeerId, psk?: Uint8Array, addresses?: string[], bootstrap?: string[] }): Promise<Libp2p> => await createLibp2p({
 	peerId,
 	datastore,
-	transports: [tcp(), webSockets()],
+	transports: [tcp(), webSockets(), circuitRelayTransport()],
 	connectionEncryption: [noise()],
 	streamMuxers: [yamux()],
 	connectionProtector: psk ? preSharedKey({ psk }) : undefined,
@@ -37,7 +38,10 @@ export default async ({ datastore, peerId, psk, addresses, bootstrap: bs }: { da
 	services: {
 		identify: identify(),
 		pubsub: gossipsub({ allowPublishToZeroPeers: true }),
-		dht: kadDHT()
+		dht: kadDHT(),
+		dcutr: dcutr(),
+		circuitRelay: circuitRelayServer(),
+		upnpNAT: uPnPNAT()
 	},
 
 	peerDiscovery: bs && bs.length > 0 ? [
