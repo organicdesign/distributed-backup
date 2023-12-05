@@ -1,7 +1,7 @@
 import Path from "path";
 import { createBuilder, createHandler } from "../utils.js";
 
-export const command = "add [group] [path] [remotePath]";
+export const command = "add [group] [localPath] [path]";
 
 export const desc = "Add a file or directory to the distributed backup.";
 
@@ -11,15 +11,14 @@ export const builder = createBuilder({
 		type: "string"
 	},
 
-	path: {
+	localPath: {
 		required: true,
 		type: "string"
 	},
 
-	remotePath: {
+	path: {
 		required: false,
-		type: "string",
-		default: "/"
+		type: "string"
 	},
 
 	onlyHash: {
@@ -53,13 +52,19 @@ export const handler = createHandler<typeof builder>(async argv => {
 		throw new Error("Failed to connect to daemon.");
 	}
 
-	const pathParts = argv.path.split("/");
+	const pathParts = argv.localPath.split("/");
 	const name = pathParts[pathParts.length - 1];
+
+	let path = argv.path ? Path.join("/", argv.path) : Path.join("/", name);
+
+	if (path[path.length -1] === "/") {
+		path = Path.join(path, name);
+	}
 
 	const add = await argv.client.rpc.request("add", {
 		group: argv.group,
-		path: Path.resolve(argv.path),
-		remotePath: Path.join(argv.remotePath, name),
+		localPath: Path.resolve(argv.localPath),
+		path,
 		onlyHash: argv.onlyHash,
 		encrypt: argv.encrypt,
 		autoUpdate: argv.autoUpdate,

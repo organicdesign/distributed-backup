@@ -8,8 +8,8 @@ import type { CID } from "multiformats/cid";
 import type { ImporterConfig } from "../fs-importer/interfaces.js";
 import type { Components, ImportOptions } from "../interface.js";
 
-export const addLocal = async (components: Components, params: ImportOptions & { group: CID, onlyHash?: boolean, autoUpdate?: boolean, versionCount?: number, priority: number, remotePath: string }): Promise<CID> => {
-	const { blockstore, cipher, localContent } = components;
+export const addLocal = async (components: Components, params: ImportOptions & { group: CID, onlyHash?: boolean, priority: number, path: string, localPath: string }): Promise<CID> => {
+	const { blockstore, cipher, content } = components;
 
 	const config: ImporterConfig = {
 		chunker: selectChunker(),
@@ -18,50 +18,38 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 	};
 
 	if (!params.onlyHash) {
-		logger.add("importing %s", params.path);
+		logger.add("importing %s", params.localPath);
 	}
 
 	const store = params.onlyHash ? new BlackHoleBlockstore() : blockstore;
 	const load = params.encrypt ? importAnyEncrypted : importAnyPlaintext;
 
-	const { cid } = await load(params.path, config, store, cipher);
+	const { cid } = await load(params.localPath, config, store, cipher);
 
 	if (params.onlyHash) {
 		return cid;
 	}
 
-	const pathParts = params.path.split("/");
-	const filename = pathParts[pathParts.length - 1];
-
-	logger.add("imported %s", params.path);
+	logger.add("imported %s", params.localPath);
 
 	// Save this.
 	await components.pinManager.pinLocal(cid);
 
-	await localContent.findOrCreate({
+	await content.findOrCreate({
 		where: {
-			remotePath: params.remotePath,
+			path: params.path,
 			group: params.group.toString(),
 		},
 
 		defaults: {
 			cid,
 			group: params.group,
-			cidVersion: params.cidVersion,
 			path: params.path,
-			remotePath: params.remotePath,
 			state: "UPLOADING",
-			rawLeaves: params.rawLeaves,
-			chunker: params.chunker,
-			hash: params.hash,
-			nocopy: params.nocopy,
-			encrypt: params.encrypt,
+			encrypted: params.encrypt,
 			timestamp: new Date(),
-			autoUpdate: params.autoUpdate ?? false,
-			versionCount: params.versionCount,
-			versions: [],
-			priority: params.priority,
-			meta: { name: filename }
+			links: [],
+			priority: params.priority
 		}
 	});
 

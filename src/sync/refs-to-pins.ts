@@ -2,7 +2,7 @@ import { Op } from "sequelize";
 import type { Components } from "../interface.js";
 
 export const refsToPins = async (components: Components) => {
-	const refs = await components.remoteContent.findAll({
+	const refs = await components.content.findAll({
 		where: {
 			[Op.or]: [
 				{ state: "DOWNLOADING" },
@@ -17,7 +17,7 @@ export const refsToPins = async (components: Components) => {
 	await Promise.all(downloading.map(async ref => {
 		await components.pinManager.pin(ref.cid);
 
-		ref.state = "DOWNLOADED";
+		ref.state = "COMPLETED";
 
 		await ref.save();
 	}));

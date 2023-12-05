@@ -5,13 +5,13 @@ export const name = "edit";
 
 const Params = z.object({
 	group: zCID,
-	cid: zCID,
+	path: z.string(),
 	priority: z.number()
 });
 
 export const method = (components: Components) => async (raw: unknown) => {
 	const params = Params.parse(raw);
-	const rc = await components.remoteContent.findOne({ where: { group: params.group.toString(), cid: params.cid.toString() } });
+	const rc = await components.content.findOne({ where: { group: params.group.toString(), path: params.path } });
 
 	if (rc == null) {
 		return;
@@ -23,5 +23,5 @@ export const method = (components: Components) => async (raw: unknown) => {
 
 	await rc.save();
 
-	return params.cid.toString();
+	return params.path;
 };

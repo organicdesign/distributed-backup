@@ -4,9 +4,7 @@ import * as logger from "../logger.js";
 import { type Components, EncodedEntry } from "../interface.js";
 
 export const groupsToRefs = async (components: Components) => {
-	const { groups, remoteContent } = components;
-
-	for (const { value: database } of groups.all()) {
+	for (const { value: database } of components.groups.all()) {
 		//logger.validate("syncing group: %s", database.address.cid.toString());
 		const index = await database.store.latest();
 
@@ -18,9 +16,9 @@ export const groupsToRefs = async (components: Components) => {
 			//logger.validate("syncing item: %s", CID.parse(pair.key.baseNamespace()).toString());
 
 			if (entry == null) {
-				const ref = await remoteContent.findOne({
+				const ref = await components.content.findOne({
 					where: {
-						remotePath: path,
+						path,
 						group: group.toString()
 					}
 				});
@@ -33,56 +31,29 @@ export const groupsToRefs = async (components: Components) => {
 					logger.references(`[-] ${group}/${cid}`);
 				}
 
-				const local = await components.localContent.findOne({ where: { cid: cid.toString() } });
-
-				if (local != null) {
-					local.state = "DESTROYED";
-
-					await local.save();
-
-					logger.uploads(`[-] ${group}/${cid}`);
-				}
-
 				continue;
 			}
 
-			// Check if we have uploaded this item...
-			const local = await components.localContent.findOne({ where: { remotePath: path } });
+			// Check if we have a reference...
+			const content = await components.content.findOne({ where: { group: group.toString(), path } });
 
-			if (local) {
-				// We have uploaded it - no need to download it.
+			if (content != null) {
+				// We already have it.
 				continue;
 			}
 
-			// Check if we already have this item...
-			const reference = await remoteContent.findOne({
-				where: {
-					remotePath: path,
-					group: group.toString()
-				}
-			});
-
-			if (reference != null) {
-				continue;
-			}
-
-			await remoteContent.create({
+			await components.content.create({
 				cid,
 				group,
-				remotePath: path,
+				path,
 				timestamp: new Date(entry.timestamp),
 				state: "DOWNLOADING",
 				encrypted: entry.encrypted,
-				priority: entry.priority
+				priority: entry.priority,
+				links: []
 			});
 
 			logger.references(`[+] ${group}${path}`);
-
-			/*
-			logger.pins(`[~] ${cid}`);
-
-			await components.dm.pin(cid);
-			*/
 		}
 	}
 };

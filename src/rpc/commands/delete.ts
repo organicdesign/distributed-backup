@@ -6,7 +6,7 @@ import { zCID, type Components } from "../../interface.js";
 export const name = "delete";
 
 const Params = z.object({
-	cid: zCID,
+	path: z.string(),
 	group: zCID
 });
 
@@ -15,7 +15,7 @@ export const method = (components: Components) => async (raw: unknown) => {
 
 	const cid = await del(components, {
 		group: CID.parse(params.group),
-		cid: CID.parse(params.cid)
+		path: params.path
 	});
 
 	return cid.toString();

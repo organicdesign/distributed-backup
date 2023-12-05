@@ -1,6 +1,5 @@
 import { Sequelize, type Options } from "sequelize";
-import { setupLocalContent } from "./localContent.js";
-import { setupRemoteContent } from "./remoteContent.js";
+import { setupContent } from "./content.js";
 
 export default async (options: Partial<Pick<Options, "storage" | "database">> = {}) => {
 	const sequelize = new Sequelize( {
@@ -10,10 +9,9 @@ export default async (options: Partial<Pick<Options, "storage" | "database">> = 
 		logging: false
 	});
 
-	const localContent = setupLocalContent(sequelize);
-	const remoteContent = setupRemoteContent(sequelize);
+	const content = setupContent(sequelize);
 
 	await sequelize.sync();
 
-	return { sequelize, localContent, remoteContent };
+	return { sequelize, content };
 }

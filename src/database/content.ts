@@ -7,30 +7,31 @@ import {
 	type ModelCtor
 } from "sequelize";
 import { CID } from "multiformats/cid";
+import type { Link } from "../interface.js";
 
 /**
  * This class handles remote data added to IPFS.
  */
 
-export class RemoteContentModel extends Model<InferAttributes<RemoteContentModel, { omit: "cid" | "group" }> & { cid: string, group: string }, InferCreationAttributes<RemoteContentModel>> {
+export class ContentModel extends Model<InferAttributes<ContentModel, { omit: "cid" | "group" | "links" }> & { cid: string, group: string, links: string }, InferCreationAttributes<ContentModel>> {
 	declare cid: CID
 	declare group: CID // Primary
-	declare remotePath: string // Primary
-	declare state: "BLOCKED" | "DOWNLOADED" | "DOWNLOADING" | "DESTROYED"
+	declare path: string // Primary
+	declare state: "COMPLETED" | "DOWNLOADING" | "UPLOADING" | "DESTROYED"
+	declare encrypted: boolean
+	declare timestamp: Date
 	declare priority: number
-	declare encrypted: boolean // This can stay since it won't change unless group/cid changes.
-	declare timestamp: Date // This can also stay..
+	declare links: Link[]
 }
 
-export type RemoteContent = ModelCtor<RemoteContentModel>;
+export type Content = ModelCtor<ContentModel>;
 
-export const setupRemoteContent = (sequelize: Sequelize): RemoteContent => {
-	return sequelize.define<RemoteContentModel>(
-		"references",
+export const setupContent = (sequelize: Sequelize): Content => {
+	return sequelize.define<ContentModel>(
+		"content",
 		{
 			cid: {
 				type: DataTypes.STRING(undefined, true),
-				primaryKey: true,
 				allowNull: false,
 
 				get () {
@@ -60,7 +61,7 @@ export const setupRemoteContent = (sequelize: Sequelize): RemoteContent => {
 				}
 			},
 
-			remotePath: {
+			path: {
 				type: DataTypes.STRING,
 				primaryKey: true,
 				allowNull: false
@@ -80,8 +81,35 @@ export const setupRemoteContent = (sequelize: Sequelize): RemoteContent => {
 
 			state: {
 				type: DataTypes.STRING,
-				allowNull: false,
-				defaultValue: "DOWNLOADING"
+				allowNull: false
+			},
+
+			links: {
+				type: DataTypes.STRING,
+				allowNull: true,
+
+				get () {
+					const str = this.getDataValue("links");
+
+					if (str == null) {
+						return [];
+					}
+
+					const arr: Link[] = JSON.parse(str);
+
+					return arr;
+				},
+
+				set (value?: Link[]) {
+					if (value == null) {
+						this.setDataValue("links", "[]");
+						return;
+					}
+
+					const str = JSON.stringify(value);
+
+					this.setDataValue("links", str);
+				}
 			}
 		}
 	);

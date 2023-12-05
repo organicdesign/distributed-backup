@@ -8,7 +8,7 @@ export const name = "add";
 const Params = ImportOptions.partial().extend(z.object({
 	path: z.string(),
 	group: zCID,
-	remotePath: z.string(),
+	localPath: z.string(),
 	onlyHash: z.boolean().optional(),
 	autoUpdate: z.boolean().optional(),
 	versionCount: z.number().optional(),
@@ -21,16 +21,14 @@ export const method = (components: Components) => async (raw: unknown) => {
 	const cid = await addLocal(components, {
 		group: CID.parse(params.group),
 		encrypt: !!params.encrypt,
+		localPath: params.localPath,
 		path: params.path,
-		remotePath: params.remotePath,
 		hash: "sha2-256",
 		chunker: "size-262144",
 		rawLeaves: true,
 		cidVersion: 1,
 		nocopy: false,
 		onlyHash: params.onlyHash,
-		autoUpdate: params.autoUpdate,
-		versionCount: params.versionCount,
 		priority: params.priority ?? 1
 	});
 

@@ -7,10 +7,10 @@ const Params = z.object({
 	group: zCID
 });
 
-export const method = ({ remoteContent }: Components) => async (raw: unknown) => {
+export const method = ({ content }: Components) => async (raw: unknown) => {
 	const params = Params.parse(raw);
 
-	const data = await remoteContent.findAll({
+	const data = await content.findAll({
 		where: {
 			group: params.group
 		}

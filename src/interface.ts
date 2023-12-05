@@ -10,8 +10,7 @@ import type { BIP32Interface } from "bip32";
 import type { Sequelize } from "sequelize";
 import type { Filestore } from "./filestore/index.js";
 import type { Groups } from "./groups.js";
-import type { LocalContent } from "./database/localContent.js";
-import type { RemoteContent } from "./database/remoteContent.js";
+import type { Content } from "./database/content.js";
 import type { Cipher } from "./cipher.js";
 import type { Datastores } from "./datastores.js";
 import type { PinManager } from "./helia-pin-manager/pin-manager.js";
@@ -81,8 +80,7 @@ export interface Components {
 	cipher: Cipher
 	config: Config
 	stores: Datastores
-	remoteContent: RemoteContent
-	localContent: LocalContent
+	content: Content
 	sequelize: Sequelize
 	pinManager: PinManager
 }
@@ -98,8 +96,7 @@ export const EncodedEntry = z.object({
 	})),
 	blocks: z.number(),
 	size: z.number(),
-	priority: z.number(),
-	meta: z.record(z.unknown()).optional()
+	priority: z.number()
 });
 
 export type EncodedEntry = z.infer<typeof EncodedEntry>

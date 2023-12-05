@@ -3,7 +3,7 @@ import { CID } from "multiformats/cid";
 import type { Components } from "../interface.js";
 
 const addUploads = async (components: Components) => {
-	const uploads = await components.localContent.findAll({ where: { state: "UPLOADING" } });
+	const uploads = await components.content.findAll({ where: { state: "UPLOADING" } });
 
 	if (uploads.length === 0) {
 		// Nothing needs updating.
@@ -18,20 +18,21 @@ const addUploads = async (components: Components) => {
 		for (const upload of uploads) {
 			await components.groups.addTo(group, {
 				cid: upload.cid,
-				path: upload.remotePath,
+				path: upload.path,
 				timestamp: Date.now(),
 				author: components.welo.identity.id,
-				encrypted: upload.encrypt,
-				links: upload.versions.length !== 0 ? [ { type: "prev", cid: upload.versions[0] } ] : [],
+				encrypted: upload.encrypted,
+				links: [],
 				blocks: await components.pinManager.getBlockCount(upload.cid),
 				size: await components.pinManager.getSize(upload.cid),
-				meta: upload.meta,
 				priority: upload.priority
 			});
 
+			/*
 			if (upload.versions.length !== 0) {
 				await components.groups.addLinks(group, upload.versions[0], [ { type: "next", cid: upload.cid } ]);
 			}
+			*/
 
 			upload.state = "COMPLETED";
 
@@ -41,10 +42,10 @@ const addUploads = async (components: Components) => {
 };
 
 const removeUploads = async (components: Components) => {
-	const uploads = await components.localContent.findAll({ where: { state: "DESTROYED" } });
+	const uploads = await components.content.findAll({ where: { state: "DESTROYED" } });
 
 	await Promise.all(uploads.map(async u => {
-		await components.groups.deleteFrom(u.cid, u.group);
+		await components.groups.deleteFrom(u.path, u.group);
 		await components.pinManager.unpin(u.cid);
 		await u.destroy();
 	}));

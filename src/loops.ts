@@ -1,6 +1,5 @@
 import { Op } from "sequelize";
 import { groupsToRefs } from "./sync/groups-to-refs.js";
-import { diskToUploads } from "./sync/disk-to-uploads.js";
 import { uploadsToGroups } from "./sync/uploads-to-groups.js";
 import { refsToPins } from "./sync/refs-to-pins.js";
 import { linearWeightTranslation } from "./utils.js";
@@ -9,11 +8,10 @@ import { collect, tap } from "streaming-iterables";
 import parallel from "it-parallel";
 import type { Components } from "./interface.js";
 import type { CID } from "multiformats/cid";
-import type { RemoteContentModel } from "./database/remoteContent.js";
+import type { ContentModel } from "./database/content.js";
 
 export const syncLoop = async (components: Components) => {
 	// logger.lifecycle("started");
-	await diskToUploads(components);
 	// logger.tick("syncing to groups");
 	await uploadsToGroups(components);
 	// logger.tick("syncing to references");
@@ -32,7 +30,7 @@ export const downloadLoop = async (components: Components) => {
 
 	const SLOTS = 50;
 
-	const batchDownload = async function * (itr: AsyncIterable<[CID, RemoteContentModel | undefined]>): AsyncGenerator<() => Promise<{ cid: CID, block: Uint8Array }>, void, undefined> {
+	const batchDownload = async function * (itr: AsyncIterable<[CID, ContentModel | undefined]>): AsyncGenerator<() => Promise<{ cid: CID, block: Uint8Array }>, void, undefined> {
 		for await (const [cid, remoteContent] of itr) {
 			const priority = remoteContent?.priority ?? 100;
 			const weight = Math.floor(linearWeightTranslation(priority / 100) * SLOTS) + 1;
@@ -66,7 +64,7 @@ export const downloadLoop = async (components: Components) => {
 		}
 	}
 
-	const getPins = async function * (loop: AsyncIterable<void>): AsyncGenerator<[CID, RemoteContentModel | undefined]> {
+	const getPins = async function * (loop: AsyncIterable<void>): AsyncGenerator<[CID, ContentModel | undefined]> {
 		for await (const _ of loop) {
 			const pins = [...await components.pinManager.getActiveDownloads()];
 			// logger.tick("GOT ACTIVE");
@@ -75,16 +73,16 @@ export const downloadLoop = async (components: Components) => {
 				start = Date.now();
 			}
 
-			const remoteContents = await components.remoteContent.findAll({
+			const contents = await components.content.findAll({
 				where: {
 					[Op.or]: pins.map(p => ({ cid: p.toString() }))
 				}
 			});
 
 			for (const cid of pins) {
-				const remoteContent = remoteContents.find(r => cid.equals(r.cid));
+				const content = contents.find(r => cid.equals(r.cid));
 
-				yield [cid, remoteContent];
+				yield [cid, content];
 			}
 		}
 	};

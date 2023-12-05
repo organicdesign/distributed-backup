@@ -12,10 +12,9 @@ const Params = z.object({
 
 export const method = (components: Components) => async (raw: unknown) => {
 	const params = Params.parse(raw);
-	const reference = await components.remoteContent.findOne({ where: { cid: params.cid } });
-	const upload = await components.localContent.findOne({ where: { cid: params.cid } });
+	const content = await components.content.findOne({ where: { cid: params.cid } });
 
-	if (reference == null && upload == null) {
+	if (content == null) {
 		throw new Error("Could not find CID");
 	}
 

@@ -47,8 +47,7 @@ export const method = (components: Components) => async () => {
 					blocks: await components.pinManager.getBlockCount(item),
 					totalSize: entry.size,
 					totalBlocks: entry.blocks,
-					meta: entry.meta,
-					priority: (await components.remoteContent.findOne({ where: { cid: item.toString() } }))?.priority ?? 0
+					priority: (await components.content.findOne({ where: { cid: item.toString() } }))?.priority ?? 0
 				};
 			})());
 		}

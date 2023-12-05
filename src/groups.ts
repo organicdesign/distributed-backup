@@ -75,7 +75,6 @@ export class Groups implements Startable {
 			cid: entry.cid.bytes,
 			author: entry.author,
 			encrypted: entry.encrypted,
-			meta: entry.meta ?? {},
 			timestamp: entry.timestamp,
 			blocks: entry.blocks,
 			size: entry.size,
@@ -110,23 +109,23 @@ export class Groups implements Startable {
 		await database.replica.write(op);
 	}
 
-	async deleteFrom (cid: CID, group: CID) {
+	async deleteFrom (path: string, group: CID) {
 		const database = this.groups.get(group.toString());
 
 		if (database == null) {
 			throw new Error("not a part of group");
 		}
 
-		logger(`[-] ${group.toString()}/${cid.toString()}`);
+		logger(`[-] ${group.toString()}/${path}`);
 
-		const op = database.store.creators.del(cid.toString());
+		const op = database.store.creators.del(path);
 
 		await database.replica.write(op);
 	}
 
-	async replace (group: CID, oldCid: CID, entry: Entry) {
+	async replace (group: CID, oldPath: string, entry: Entry) {
 		await this.addTo(group, entry);
-		await this.deleteFrom(oldCid, group);
+		await this.deleteFrom(oldPath, group);
 	}
 
 	get (group: CID) {
