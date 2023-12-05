@@ -31,6 +31,7 @@ Then create a configuration file similar to the following and save it to your co
 ```json
 {
 	"private": false,
+	"serverMode": false,
 	"validateInterval": 10,
 	"tickInterval": 0.1,
 	"storage": "/path/to/data",

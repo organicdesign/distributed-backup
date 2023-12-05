@@ -15,38 +15,46 @@ import type { PeerId } from "@libp2p/interface/peer-id";
 import type { Datastore } from "interface-datastore";
 import type { Libp2p } from "./interface.js";
 
-export default async ({ datastore, peerId, psk, addresses, bootstrap: bs }: { datastore?: Datastore, peerId?: PeerId, psk?: Uint8Array, addresses?: string[], bootstrap?: string[] }): Promise<Libp2p> => await createLibp2p({
-	peerId,
-	datastore,
-	transports: [tcp(), webSockets(), circuitRelayTransport()],
-	connectionEncryption: [noise()],
-	streamMuxers: [yamux()],
-	connectionProtector: psk ? preSharedKey({ psk }) : undefined,
+export default async ({ datastore, peerId, psk, addresses, bootstrap: bs, serverMode }: { datastore?: Datastore, peerId?: PeerId, psk?: Uint8Array, addresses?: string[], bootstrap?: string[], serverMode?: boolean }): Promise<Libp2p> => {
+	const services: Record<string, unknown> = {};
 
-	addresses: {
-		listen: addresses ?? [
-			"/ip4/127.0.0.1/tcp/0",
-			"/ip4/127.0.0.1/tcp/0/ws"
-			// "/ip6/::/tcp/0"
-		]
-	},
+	if (serverMode === true) {
+		services.circuitRelay = circuitRelayServer();
+	}
 
-	connectionManager: {
-		autoDialInterval: 6e3
-	},
+	return await createLibp2p({
+		peerId,
+		datastore,
+		transports: [tcp(), webSockets(), circuitRelayTransport({ discoverRelays: 2 })],
+		connectionEncryption: [noise()],
+		streamMuxers: [yamux()],
+		connectionProtector: psk ? preSharedKey({ psk }) : undefined,
 
-	services: {
-		identify: identify(),
-		pubsub: gossipsub({ allowPublishToZeroPeers: true }),
-		dht: kadDHT(),
-		dcutr: dcutr(),
-		circuitRelay: circuitRelayServer(),
-		upnpNAT: uPnPNAT()
-	},
+		addresses: {
+			listen: addresses ?? [
+				"/ip4/127.0.0.1/tcp/0",
+				"/ip4/127.0.0.1/tcp/0/ws"
+				// "/ip6/::/tcp/0"
+			]
+		},
 
-	peerDiscovery: bs && bs.length > 0 ? [
-		bootstrap({
-			list: bs ?? []
-		})
-	] : []
-});
+		connectionManager: {
+			autoDialInterval: 6e3
+		},
+
+		services: {
+			...services,
+			identify: identify(),
+			pubsub: gossipsub({ allowPublishToZeroPeers: true }),
+			dht: kadDHT(),
+			dcutr: dcutr(),
+			upnpNAT: uPnPNAT()
+		},
+
+		peerDiscovery: bs && bs.length > 0 ? [
+			bootstrap({
+				list: bs ?? []
+			})
+		] : []
+	});
+};

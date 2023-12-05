@@ -47,6 +47,7 @@ export const zCID = z.custom<string>(val => {
 });
 
 export const Config = z.object({
+	serverMode: z.boolean(),
 	private: z.boolean(),
 	validateInterval: z.number(),
 	tickInterval: z.number(),

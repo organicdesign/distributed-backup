@@ -7,6 +7,7 @@ export const getConfig = async (path: string): Promise<Config> => {
 
 	const defaults: Config = {
 		private: false,
+		serverMode: false,
 		validateInterval: 60 * 60,
 		tickInterval: 10 * 60,
 		storage: ":memory:",
