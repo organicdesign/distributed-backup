@@ -46,6 +46,7 @@ export const groupsToRefs = async (components: Components) => {
 				cid,
 				group,
 				path,
+				sequence: entry.sequence,
 				timestamp: new Date(entry.timestamp),
 				state: "DOWNLOADING",
 				encrypted: entry.encrypted,

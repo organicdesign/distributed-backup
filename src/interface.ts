@@ -96,6 +96,7 @@ export const EncodedEntry = z.object({
 	})),
 	blocks: z.number(),
 	size: z.number(),
+	sequence: z.number().optional(),
 	priority: z.number()
 });
 
@@ -110,6 +111,7 @@ export interface Entry {
 	blocks: number
 	size: number
 	priority: number
+	sequence?: number
 	meta?: Record<string, unknown>
 }
 

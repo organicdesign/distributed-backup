@@ -76,6 +76,7 @@ export class Groups implements Startable {
 			author: entry.author,
 			encrypted: entry.encrypted,
 			timestamp: entry.timestamp,
+			sequence: entry.sequence,
 			blocks: entry.blocks,
 			size: entry.size,
 			links: entry.links.map(l => ({ ...l, cid: l.cid.bytes })),

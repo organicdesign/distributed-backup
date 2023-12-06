@@ -21,6 +21,7 @@ export class ContentModel extends Model<InferAttributes<ContentModel, { omit: "c
 	declare encrypted: boolean
 	declare timestamp: Date
 	declare priority: number
+	declare sequence?: number
 	declare links: Link[]
 }
 
@@ -70,6 +71,11 @@ export const setupContent = (sequelize: Sequelize): Content => {
 			priority: {
 				type: DataTypes.INTEGER,
 				defaultValue: 1
+			},
+
+			sequence: {
+				type: DataTypes.INTEGER,
+				allowNull: true
 			},
 
 			encrypted: {

@@ -1,3 +1,4 @@
+import Path from "path";
 import { BlackHoleBlockstore } from "blockstore-core/black-hole";
 import * as logger from "../logger.js";
 import selectHasher from "../fs-importer/select-hasher.js";
@@ -35,23 +36,37 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 	// Save this.
 	await components.pinManager.pinLocal(cid);
 
+	const root = await content.findOne({ where: {
+		group: params.group.toString(),
+		path: Path.join(params.path, "ROOT")
+	} });
+
+	const sequence = root?.sequence != null ? root.sequence + 1 : 0;
+
 	await content.findOrCreate({
 		where: {
-			path: params.path,
-			group: params.group.toString(),
+			path: Path.join(params.path, components.libp2p.peerId.toString(), sequence.toString()),
+			group: params.group.toString()
 		},
 
 		defaults: {
 			cid,
 			group: params.group,
-			path: params.path,
+			path: Path.join(params.path, components.libp2p.peerId.toString(), sequence.toString()), // SWITCH THIS OUT FOR REVISION COUNTER...
 			state: "UPLOADING",
+			sequence,
 			encrypted: params.encrypt,
 			timestamp: new Date(),
 			links: [],
 			priority: params.priority
 		}
 	});
+
+	if (root != null && (root.sequence ?? 0) < sequence) {
+		root.sequence = sequence;
+
+		await root.save();
+	}
 
 	logger.uploads(`[+] ${params.path}`);
 

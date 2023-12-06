@@ -16,17 +16,24 @@ const addUploads = async (components: Components) => {
 		const group = CID.parse(key);
 
 		for (const upload of uploads) {
-			await components.groups.addTo(group, {
-				cid: upload.cid,
-				path: upload.path,
-				timestamp: Date.now(),
-				author: components.welo.identity.id,
-				encrypted: upload.encrypted,
-				links: [],
-				blocks: await components.pinManager.getBlockCount(upload.cid),
-				size: await components.pinManager.getSize(upload.cid),
-				priority: upload.priority
-			});
+			const parts = upload.path.split("/");
+			const sequence = +parts[parts.length - 1];
+			const copies = [upload.path, [...parts.slice(0, parts.length - 2), "ROOT"].join("/")];
+
+			for (const copy of copies) {
+				await components.groups.addTo(group, {
+					cid: upload.cid,
+					path: copy,
+					sequence,
+					timestamp: Date.now(),
+					author: components.welo.identity.id,
+					encrypted: upload.encrypted,
+					links: [],
+					blocks: await components.pinManager.getBlockCount(upload.cid),
+					size: await components.pinManager.getSize(upload.cid),
+					priority: upload.priority
+				});
+			}
 
 			/*
 			if (upload.versions.length !== 0) {
