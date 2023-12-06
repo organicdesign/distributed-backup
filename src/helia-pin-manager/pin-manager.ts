@@ -152,6 +152,8 @@ export class PinManager {
 
 	// Add a pin to the downloads.
 	async pin (cid: CID): Promise<void> {
+		// TODO: Look into caching the pins so they can be checked synchronously.
+
 		const pin = await this.components.pins.findOne({
 			where: {
 				cid: cid.toString()
@@ -163,16 +165,33 @@ export class PinManager {
 		}
 
 		await this.queue.add(() => this.components.sequelize.transaction(transaction => Promise.all([
-			this.components.pins.create({
-				cid,
-				state: "DOWNLOADING"
-			}, { transaction }),
+			this.components.pins.findOrCreate({
+				where: {
+					cid: cid.toString()
+				},
 
-			this.components.downloads.create({
-				cid,
-				pinnedBy: cid,
-				depth: 0
-			}, { transaction })
+				defaults: {
+					cid,
+					state: "DOWNLOADING"
+				},
+
+				transaction
+			}),
+
+			this.components.downloads.findOrCreate({
+				where: {
+					cid: cid.toString(),
+					pinnedBy: cid.toString()
+				},
+
+				defaults: {
+					cid,
+					pinnedBy: cid,
+					depth: 0
+				},
+
+				transaction
+			})
 		])));
 
 		this.events.dispatchEvent(new CIDEvent("pins:adding", cid));
