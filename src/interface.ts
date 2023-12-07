@@ -10,7 +10,6 @@ import type { BIP32Interface } from "bip32";
 import type { Sequelize } from "sequelize";
 import type { Filestore } from "./filestore/index.js";
 import type { Groups } from "./groups.js";
-import type { Content } from "./database/content.js";
 import type { Cipher } from "./cipher.js";
 import type { Datastores } from "./datastores.js";
 import type { PinManager } from "./helia-pin-manager/pin-manager.js";
@@ -80,7 +79,6 @@ export interface Components {
 	cipher: Cipher
 	config: Config
 	stores: Datastores
-	content: Content
 	sequelize: Sequelize
 	pinManager: PinManager
 }

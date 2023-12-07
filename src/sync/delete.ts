@@ -3,6 +3,8 @@ import type { CID } from "multiformats/cid";
 import type { Components } from "../interface.js";
 
 export const del = async (components: Components, params: { group: CID, path: string }): Promise<string> => {
+	throw new Error("not implemented");
+	/*
 	const upload = await components.content.findOne({
 		where: {
 			path: params.path,
@@ -21,4 +23,5 @@ export const del = async (components: Components, params: { group: CID, path: st
 	await components.groups.deleteFrom(params.path, params.group);
 
 	return params.path;
+	*/
 };

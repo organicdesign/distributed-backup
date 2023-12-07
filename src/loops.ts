@@ -4,9 +4,10 @@ import { linearWeightTranslation } from "./utils.js";
 import { pipe } from "it-pipe";
 import { collect, tap } from "streaming-iterables";
 import parallel from "it-parallel";
-import type { Components } from "./interface.js";
-import type { CID } from "multiformats/cid";
-import type { ContentModel } from "./database/content.js";
+import { CID } from "multiformats/cid";
+import * as logger from "./logger.js";
+import { decodeEntry } from "./utils.js";
+import { Components, EncodedEntry } from "./interface.js";
 
 export const syncLoop = async (components: Components) => {
 	// logger.lifecycle("started");
@@ -26,9 +27,9 @@ export const downloadLoop = async (components: Components) => {
 
 	const SLOTS = 50;
 
-	const batchDownload = async function * (itr: AsyncIterable<[CID, ContentModel | undefined]>): AsyncGenerator<() => Promise<{ cid: CID, block: Uint8Array }>, void, undefined> {
-		for await (const [cid, remoteContent] of itr) {
-			const priority = remoteContent?.priority ?? 100;
+	const batchDownload = async function * (itr: AsyncIterable<[CID, number | undefined]>): AsyncGenerator<() => Promise<{ cid: CID, block: Uint8Array }>, void, undefined> {
+		for await (const [cid, p] of itr) {
+			const priority = p ?? 100;
 			const weight = Math.floor(linearWeightTranslation(priority / 100) * SLOTS) + 1;
 
 			const downloaders = await components.pinManager.downloadSync(cid, { limit: weight });
@@ -60,7 +61,7 @@ export const downloadLoop = async (components: Components) => {
 		}
 	}
 
-	const getPins = async function * (loop: AsyncIterable<void>): AsyncGenerator<[CID, ContentModel | undefined]> {
+	const getPins = async function * (loop: AsyncIterable<void>): AsyncGenerator<[CID, number | undefined]> {
 		for await (const _ of loop) {
 			const pins = [...await components.pinManager.getActiveDownloads()];
 			// logger.tick("GOT ACTIVE");
@@ -69,16 +70,29 @@ export const downloadLoop = async (components: Components) => {
 				start = Date.now();
 			}
 
-			const contents = await components.content.findAll({
-				where: {
-					[Op.or]: pins.map(p => ({ cid: p.toString() }))
-				}
-			});
-
 			for (const cid of pins) {
-				const content = contents.find(r => cid.equals(r.cid));
+				const priorities: number[] = [];
 
-				yield [cid, content];
+				for await (const key of components.stores.get(`reverse-lookup/${cid.toString()}`).queryKeys({})) {
+					const parts = key.toString().split("/");
+					const group = CID.parse(parts[1]);
+					const path = parts.slice(2).join("/");
+
+					const database = components.groups.get(group);
+
+					if (database== null) {
+						logger.warn("Reverse lookup points to non-existant database: ", group);
+						continue;
+					}
+
+					const paily = database.store.index;
+
+					const entry = decodeEntry(EncodedEntry.parse(await database.store.selectors.get(paily)(path)));
+
+					priorities.push(entry.priority);
+				}
+
+				yield [cid, Math.min(100, ...priorities)];
 			}
 		}
 	};

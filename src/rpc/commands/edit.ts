@@ -10,7 +10,8 @@ const Params = z.object({
 });
 
 export const method = (components: Components) => async (raw: unknown) => {
-	const params = Params.parse(raw);
+	throw new Error("not implemented");
+	/*const params = Params.parse(raw);
 	const rc = await components.content.findOne({ where: { group: params.group.toString(), path: params.path } });
 
 	if (rc == null) {
@@ -23,5 +24,5 @@ export const method = (components: Components) => async (raw: unknown) => {
 
 	await rc.save();
 
-	return params.path;
+	return params.path;*/
 };

@@ -1,5 +1,4 @@
 import { Sequelize, type Options } from "sequelize";
-import { setupContent } from "./content.js";
 
 export default async (options: Partial<Pick<Options, "storage" | "database">> = {}) => {
 	const sequelize = new Sequelize( {
@@ -9,9 +8,7 @@ export default async (options: Partial<Pick<Options, "storage" | "database">> = 
 		logging: false
 	});
 
-	const content = setupContent(sequelize);
-
 	await sequelize.sync();
 
-	return { sequelize, content };
+	return { sequelize };
 }
