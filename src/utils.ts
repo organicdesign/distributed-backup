@@ -6,7 +6,7 @@ import * as dagWalkers from "../node_modules/helia/dist/src/utils/dag-walkers.js
 import type { AbortOptions } from "@libp2p/interface";
 import type { Helia } from "@helia/interface";
 import type { Blockstore } from "interface-blockstore";
-import type { Libp2p } from "./interface.js";
+import { Libp2p, EncodedEntry, Entry } from "./interface.js";
 
 export const projectPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -105,3 +105,18 @@ export const countPeers = async ({ libp2p }: { libp2p: Libp2p }, cid: CID, optio
 
 	return count;
 };
+
+
+export const encodeEntry = (entry: Entry): EncodedEntry =>
+	// Parse will strip foreign keys...
+	EncodedEntry.parse({
+		...entry,
+		cid: entry.cid.bytes,
+		links: entry.links.map(l => ({ ...l, cid: l.cid.bytes }))
+	});
+
+export const decodeEntry = (entry: EncodedEntry): Entry => ({
+	...entry,
+	cid: CID.decode(entry.cid),
+	links: entry.links.map(l => ({ ...l, cid: CID.decode(l.cid) }))
+});
