@@ -64,6 +64,7 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 
 	if (root != null && (root.sequence ?? 0) < sequence) {
 		root.sequence = sequence;
+		root.state = "UPLOADING";
 
 		await root.save();
 	}
