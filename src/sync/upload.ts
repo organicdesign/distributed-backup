@@ -38,7 +38,7 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 	// Save this.
 	await components.pinManager.pinLocal(cid);
 
-	console.warn("A crash here would leave the system in an unstable state.");
+	logger.warn("A crash here would leave the system in an unstable state.");
 
 	const root = await content.findOne({ where: {
 		group: params.group.toString(),
@@ -56,7 +56,7 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 		defaults: {
 			cid,
 			group: params.group,
-			path: Path.join(params.path, components.libp2p.peerId.toString(), sequence.toString()), // SWITCH THIS OUT FOR REVISION COUNTER...
+			path: Path.join(params.path, components.libp2p.peerId.toString(), sequence.toString()),
 			state: "UPLOADING",
 			sequence,
 			encrypted: params.encrypt,
@@ -79,7 +79,8 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 	])
 
 	const key = new Key(Path.join(params.group.toString(), params.path));
-	const value = encodeAny(encodeEntry({
+
+	const entry = {
 		cid,
 		sequence,
 		blocks,
@@ -89,11 +90,28 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 		links: [],
 		priority: params.priority,
 		author: components.libp2p.peerId.toBytes()
-	}));
+	};
 
-	await components.stores.get("actions/uploads/put").put(key, value);
+	const value = encodeAny(encodeEntry(entry));
+
+	const aStore = components.stores.get("actions/uploads/put");
+
+	await aStore.put(key, value);
 
 	logger.uploads(`[+] ${params.path}`);
+
+	const paths = [
+		Path.join(params.path, "ROOT"),
+		Path.join(params.path, components.libp2p.peerId.toString(), sequence.toString())
+	];
+
+	//await Promise.all(paths.map(path => components.groups.addTo(group, { ...entry, path })));
+
+	for (const path of paths) {
+		await components.groups.addTo(params.group, { ...entry, path });
+	}
+
+	await aStore.delete(key);
 
 	return cid;
 };

@@ -158,5 +158,7 @@ const loops = [
 
 logger.lifecycle("started");
 
+logger.warn("All exsiting actions need to be processed.");
+
 // Run the main loop.
 await Promise.all(loops.map(l => l.run()))

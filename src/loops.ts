@@ -1,6 +1,5 @@
 import { Op } from "sequelize";
 import { groupsToRefs } from "./sync/groups-to-refs.js";
-import { uploadsToGroups } from "./sync/uploads-to-groups.js";
 import { refsToPins } from "./sync/refs-to-pins.js";
 import { linearWeightTranslation } from "./utils.js";
 import { pipe } from "it-pipe";
@@ -13,7 +12,6 @@ import type { ContentModel } from "./database/content.js";
 export const syncLoop = async (components: Components) => {
 	// logger.lifecycle("started");
 	// logger.tick("syncing to groups");
-	await uploadsToGroups(components);
 	// logger.tick("syncing to references");
 	await groupsToRefs(components);
 	// logger.tick("syncing to pins");

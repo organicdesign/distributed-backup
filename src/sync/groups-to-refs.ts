@@ -18,7 +18,7 @@ export const groupsToRefs = async (components: Components) => {
 			//logger.validate("syncing item: %s", CID.parse(pair.key.baseNamespace()).toString());
 
 			if (entry == null) {
-				console.warn("DELETION DETECTED BUT NOT IMPLEMENTED");
+				logger.warn("Deletion was detected but is not implemented.");
 				continue;
 				/*
 				const ref = await components.content.findOne({
@@ -51,6 +51,7 @@ export const groupsToRefs = async (components: Components) => {
 			const actions = components.stores.get("actions/downloads/put");
 			const key = new Key(Path.join(group.toString(), path));
 
+			logger.warn("duplicate keys might not download correctly.");
 			if (await actions.has(key)) {
 				// Already in the downloads.
 				continue;
