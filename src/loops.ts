@@ -1,6 +1,5 @@
 import { Op } from "sequelize";
 import { groupsToRefs } from "./sync/groups-to-refs.js";
-import { refsToPins } from "./sync/refs-to-pins.js";
 import { linearWeightTranslation } from "./utils.js";
 import { pipe } from "it-pipe";
 import { collect, tap } from "streaming-iterables";
@@ -15,7 +14,6 @@ export const syncLoop = async (components: Components) => {
 	// logger.tick("syncing to references");
 	await groupsToRefs(components);
 	// logger.tick("syncing to pins");
-	await refsToPins(components);
 	// logger.lifecycle("finished");
 };
 

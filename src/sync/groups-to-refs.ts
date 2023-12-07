@@ -60,6 +60,10 @@ export const groupsToRefs = async (components: Components) => {
 			actions.put(new Key(Path.join(group.toString(), path)), pair.value);
 
 			logger.references(`[+] ${group}${path}`);
+
+			await components.pinManager.pin(CID.decode(entry.cid));
+
+			actions.delete(new Key(Path.join(group.toString(), path)));
 		}
 	}
 };
