@@ -1,8 +1,10 @@
+import Path from "path";
 import { Op } from "sequelize";
+import { queryContent } from "../utils.js";
 import type { Components } from "../interface.js";
 
 export const refsToPins = async (components: Components) => {
-	const refs = await components.content.findAll({
+	/*const refs = await components.content.findAll({
 		where: {
 			[Op.or]: [
 				{ state: "DOWNLOADING" },
@@ -31,5 +33,10 @@ export const refsToPins = async (components: Components) => {
 			}
 		}
 		await ref.destroy();
-	}));
+	}));*/
+	for await (const { entry, remove } of queryContent(components, "downloads", "put")) {
+		await components.pinManager.pin(entry.cid);
+
+		await remove();
+	}
 };
