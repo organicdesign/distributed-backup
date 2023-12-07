@@ -200,7 +200,7 @@ export class PinManager {
 	/**
 	 * Get the current state of the pin.
 	 */
-	async getState (cid: CID): Promise<string> {
+	async getState (cid: CID): Promise<"COMPLETED" | "DOWNLOADING" | "DESTROYED" | "UPLOADING" | "NOTFOUND"> {
 		const pin = await this.components.pins.findOne({ where: { cid: cid.toString() } });
 
 		return pin == null ? "NOTFOUND" : pin.state;

@@ -1,5 +1,7 @@
+import Path from "path";
 import * as dagCbor from "@ipld/dag-cbor";
 import { CID } from "multiformats/cid";
+import { Key } from "interface-datastore";
 import * as logger from "../logger.js";
 import { type Components, EncodedEntry } from "../interface.js";
 
@@ -16,6 +18,9 @@ export const groupsToRefs = async (components: Components) => {
 			//logger.validate("syncing item: %s", CID.parse(pair.key.baseNamespace()).toString());
 
 			if (entry == null) {
+				console.warn("DELETION DETECTED BUT NOT IMPLEMENTED");
+				continue;
+				/*
 				const ref = await components.content.findOne({
 					where: {
 						path,
@@ -32,27 +37,26 @@ export const groupsToRefs = async (components: Components) => {
 				}
 
 				continue;
+				*/
 			}
 
 			// Check if we have a reference...
-			const content = await components.content.findOne({ where: { group: group.toString(), path } });
+			const pinState = await components.pinManager.getState(cid);
 
-			if (content != null) {
+			if (!["NOTFOUND", "DESTORYED"].includes(pinState)) {
 				// We already have it.
 				continue;
 			}
 
-			await components.content.create({
-				cid,
-				group,
-				path,
-				sequence: entry.sequence,
-				timestamp: new Date(entry.timestamp),
-				state: "DOWNLOADING",
-				encrypted: entry.encrypted,
-				priority: entry.priority,
-				links: []
-			});
+			const actions = components.stores.get("actions/downloads/put");
+			const key = new Key(Path.join(group.toString(), path));
+
+			if (await actions.has(key)) {
+				// Already in the downloads.
+				continue;
+			}
+
+			actions.put(new Key(Path.join(group.toString(), path)), pair.value);
 
 			logger.references(`[+] ${group}${path}`);
 		}

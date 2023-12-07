@@ -23,6 +23,7 @@ export class NamespaceDatastore extends BrokenNamespacedDatastore {
 
 		query.filters = (query.filters ?? []).map(filter => {
 			return ({ key, value }) => filter({ key: this.transform.convert(key), value })
+			//return ({ key, value }) => filter({ key: this.transform.invert(key), value })
 		})
 
 		const { prefix } = q
@@ -58,7 +59,8 @@ export class NamespaceDatastore extends BrokenNamespacedDatastore {
 		}
 
 		query.filters = (query.filters ?? []).map(filter => {
-			return (key) => filter(this.transform.convert(key))
+			 return (key) => filter(this.transform.convert(key))
+			//return (key) => filter(this.transform.invert(key))
 		})
 
 		const { prefix } = q

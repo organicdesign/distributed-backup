@@ -1,66 +1,18 @@
-import * as logger from "../logger.js";
-import { CID } from "multiformats/cid";
+import Path from "path";
+// import * as logger from "../logger.js";
+import { queryContent } from "../utils.js";
 import type { Components } from "../interface.js";
 
-const addUploads = async (components: Components) => {
-	const uploads = await components.content.findAll({ where: { state: "UPLOADING" } });
-
-	if (uploads.length === 0) {
-		// Nothing needs updating.
-		return;
-	}
-
-	for (const { value: database, key } of components.groups.all()) {
-		logger.validate("syncing group: %s", database.address.cid.toString());
-
-		const group = CID.parse(key);
-
-		for (const upload of uploads) {
-			const parts = upload.path.split("/");
-			const sequence = +parts[parts.length - 1];
-			const copies = [upload.path, [...parts.slice(0, parts.length - 2), "ROOT"].join("/")];
-
-			for (const copy of copies) {
-				await components.groups.addTo(group, {
-					cid: upload.cid,
-					path: copy,
-					sequence,
-					timestamp: Date.now(),
-					author: components.welo.identity.id,
-					encrypted: upload.encrypted,
-					links: [],
-					blocks: await components.pinManager.getBlockCount(upload.cid),
-					size: await components.pinManager.getSize(upload.cid),
-					priority: upload.priority
-				});
-			}
-
-			/*
-			if (upload.versions.length !== 0) {
-				await components.groups.addLinks(group, upload.versions[0], [ { type: "next", cid: upload.cid } ]);
-			}
-			*/
-
-			upload.state = "COMPLETED";
-
-			await upload.save();
-		}
-	}
-};
-
-const removeUploads = async (components: Components) => {
-	const uploads = await components.content.findAll({ where: { state: "DESTROYED" } });
-
-	await Promise.all(uploads.map(async u => {
-		await components.groups.deleteFrom(u.path, u.group);
-		await components.pinManager.unpin(u.cid);
-		await u.destroy();
-	}));
-};
-
 export const uploadsToGroups = async (components: Components) => {
-	await Promise.all([
-		addUploads(components),
-		removeUploads(components)
-	]);
+	// Handle 'put' actions...
+	for await (const { group, entry, path, remove } of queryContent(components, "uploads", "put")) {
+		const paths = [
+			Path.join(path, "ROOT"),
+			Path.join(path, components.libp2p.peerId.toString(), entry.sequence?.toString() ?? "0")
+		];
+
+		await Promise.all(paths.map(path => components.groups.addTo(group, { ...entry, path })));
+
+		await remove();
+	}
 };
