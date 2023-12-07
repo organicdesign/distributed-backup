@@ -61,9 +61,11 @@ export const groupsToRefs = async (components: Components) => {
 
 			logger.references(`[+] ${group}${path}`);
 
-			await components.pinManager.pin(CID.decode(entry.cid));
+			await components.pinManager.pin(cid);
 
-			actions.delete(new Key(Path.join(group.toString(), path)));
+			await components.stores.get("reverse-lookup").put(new Key(Path.join(cid.toString(), group.toString(), path)), new Uint8Array());
+
+			await actions.delete(new Key(Path.join(group.toString(), path)));
 		}
 	}
 };
