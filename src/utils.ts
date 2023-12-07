@@ -6,7 +6,7 @@ import * as dagWalkers from "../node_modules/helia/dist/src/utils/dag-walkers.js
 import type { AbortOptions } from "@libp2p/interface";
 import type { Helia } from "@helia/interface";
 import type { Blockstore } from "interface-blockstore";
-import { Libp2p, EncodedEntry, Entry } from "./interface.js";
+import { Libp2p, EncodedEntry, Entry, Components } from "./interface.js";
 
 export const projectPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -120,3 +120,32 @@ export const decodeEntry = (entry: EncodedEntry): Entry => ({
 	cid: CID.decode(entry.cid),
 	links: entry.links.map(l => ({ ...l, cid: CID.decode(l.cid) }))
 });
+
+export const queryContent = async function * ({ stores }: Pick<Components, "stores">, context?: string, action?: string) {
+	// /content/${context}/${action}/${group}/${path} -> Entry
+
+	let storePath = "/";
+
+	if (context != null) {
+		storePath += `${context}/`;
+	}
+
+	if (action != null) {
+		storePath += `${action}/`;
+	}
+
+	const store = stores.get("actions");
+
+	for await (const pair of store.query({ prefix: storePath })) {
+		const parts = pair.key.toString().split("/");
+
+		yield {
+			context: parts[1], // "download" | "upload" | "reference" | "pin"
+			action: parts[2], // "put" | "delete"
+			group: CID.parse(parts[3]),
+			path: `/${parts.slice(4).join("/")}`,
+			entry: decodeEntry(EncodedEntry.parse(decodeAny(pair.value))),
+			remove: () => store.delete(pair.key)
+		};
+	}
+}
