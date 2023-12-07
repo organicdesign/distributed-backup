@@ -11,7 +11,11 @@ export const uploadsToGroups = async (components: Components) => {
 			Path.join(path, components.libp2p.peerId.toString(), entry.sequence?.toString() ?? "0")
 		];
 
-		await Promise.all(paths.map(path => components.groups.addTo(group, { ...entry, path })));
+		//await Promise.all(paths.map(path => components.groups.addTo(group, { ...entry, path })));
+
+		for (const path of paths) {
+			await components.groups.addTo(group, { ...entry, path });
+		}
 
 		await remove();
 	}
