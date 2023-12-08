@@ -8,8 +8,8 @@ import { importAny as importAnyPlaintext } from "../fs-importer/import-copy-plai
 import { Key } from "interface-datastore";
 import { walkDag, encodeEntry, encodeAny, decodeAny, decodeEntry } from "../utils.js";
 import { CID } from "multiformats/cid";
+import { Components, ImportOptions, EncodedEntry } from "../interface.js";
 import type { ImporterConfig } from "../fs-importer/interfaces.js";
-import type { Components, ImportOptions } from "../interface.js";
 
 export const executeUpload = async (components: Components, key: Key) => {
 	const store = components.stores.get("actions/uploads/put");
@@ -73,7 +73,22 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 	}
 
 	// Create the action record.
-	const sequence = 0;
+	const database = components.groups.get(params.group);
+	let sequence = 0;
+
+	if (database != null) {
+		const data = await database.store.selectors.get(database.store.index)(
+			Path.join(params.path, "ROOT")
+		);
+
+		if (data != null){
+			const entry = decodeEntry(EncodedEntry.parse(data));
+
+			if (entry != null && entry.sequence != null) {
+				sequence = entry.sequence + 1;
+			}
+		}
+	}
 
 	const key = new Key(Path.join(params.group.toString(), params.path));
 
