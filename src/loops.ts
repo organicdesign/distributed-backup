@@ -1,4 +1,3 @@
-import { Op } from "sequelize";
 import { groupsToRefs } from "./sync/groups-to-refs.js";
 import { linearWeightTranslation } from "./utils.js";
 import { pipe } from "it-pipe";

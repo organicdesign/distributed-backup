@@ -3,7 +3,6 @@ import * as cborg from "cborg";
 import { CID } from "multiformats/cid";
 import { fileURLToPath } from "url";
 import * as dagWalkers from "../node_modules/helia/dist/src/utils/dag-walkers.js";
-import * as logger from "./logger.js";
 import type { AbortOptions } from "@libp2p/interface";
 import type { Helia } from "@helia/interface";
 import type { Blockstore } from "interface-blockstore";
@@ -107,19 +106,22 @@ export const countPeers = async ({ libp2p }: { libp2p: Libp2p }, cid: CID, optio
 	return count;
 };
 
-logger.warn("author field in entries should be encoded/decoded");
-
-export const encodeEntry = (entry: Entry): EncodedEntry =>
-	// Parse will strip foreign keys...
-	EncodedEntry.parse({
+export const encodeEntry = (entry: Entry): EncodedEntry => {
+	const ee: EncodedEntry = {
 		...entry,
 		cid: entry.cid.bytes,
+		author: entry.author.bytes,
 		links: entry.links.map(l => ({ ...l, cid: l.cid.bytes }))
-	});
+	};
+
+	// Parse will strip foreign keys...
+	return EncodedEntry.parse(ee);
+};
 
 export const decodeEntry = (entry: EncodedEntry): Entry => ({
 	...entry,
 	cid: CID.decode(entry.cid),
+	author: CID.decode(entry.author),
 	links: entry.links.map(l => ({ ...l, cid: CID.decode(l.cid) }))
 });
 

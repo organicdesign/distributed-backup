@@ -73,7 +73,7 @@ export class Groups implements Startable {
 
 		const rawEntry: EncodedEntry = {
 			cid: entry.cid.bytes,
-			author: entry.author,
+			author: entry.author.bytes,
 			encrypted: entry.encrypted,
 			timestamp: entry.timestamp,
 			sequence: entry.sequence,

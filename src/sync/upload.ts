@@ -58,7 +58,7 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 		timestamp: Date.now(),
 		links: [],
 		priority: params.priority,
-		author: components.libp2p.peerId.toBytes()
+		author: components.libp2p.peerId.toCID()
 	};
 
 	const value = encodeAny(encodeEntry(entry));

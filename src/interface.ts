@@ -100,7 +100,7 @@ export type EncodedEntry = z.infer<typeof EncodedEntry>
 
 export interface Entry {
 	cid: CID
-	author: Uint8Array
+	author: CID
 	encrypted: boolean
 	timestamp: number
 	links: Link[]
