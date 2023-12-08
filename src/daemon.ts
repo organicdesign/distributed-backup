@@ -22,6 +22,7 @@ import { createCipher } from "./cipher.js";
 import setupPinManager from "./helia-pin-manager/index.js";
 import { createKeyManager } from "./key-manager/index.js";
 import { projectPath } from "./utils.js";
+import { executeUpload } from "./sync/upload.js";
 import type { Components } from "./interface.js";
 
 const argv = await yargs(hideBin(process.argv))
@@ -151,9 +152,15 @@ const loops = [
 	new Looper(() => downloadLoop(components), { sleep: config.tickInterval * 1000 })
 ];
 
+for await (const key of stores.get("actions/uploads/put").queryKeys({})) {
+	await executeUpload(components, key)
+}
+
+logger.lifecycle("uploads synced");
+
 logger.lifecycle("started");
 
-logger.warn("All exsiting actions need to be processed.");
+logger.warn("All download actions need to be processed.");
 
 // Run the main loop.
 await Promise.all(loops.map(l => l.run()))
