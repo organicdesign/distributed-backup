@@ -19,7 +19,6 @@ import commands from "./rpc/index.js";
 import { createGroups } from "./groups.js";
 import { Datastores } from "./datastores.js";
 import { createCipher } from "./cipher.js";
-import setupDatabase from "./database/index.js";
 import setupPinManager from "./helia-pin-manager/index.js";
 import { createKeyManager } from "./key-manager/index.js";
 import { projectPath } from "./utils.js";
@@ -56,9 +55,6 @@ const config = await getConfig(argv.config);
 logger.lifecycle("loaded config");
 
 const storage = config.storage === ":memory:" ? config.storage : Path.join(config.storage, "sqlite");
-
-const database = await setupDatabase({ storage });
-logger.lifecycle("loaded database");
 
 await fs.mkdir(Path.join(config.storage, "datastore/libp2p"), { recursive: true });
 
@@ -114,7 +110,6 @@ const components: Components = {
 	config,
 	stores,
 	pinManager,
-	...database
 };
 
 // Register all the RPC commands.

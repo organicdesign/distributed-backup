@@ -7,7 +7,6 @@ import type { PubSub } from "@libp2p/interface/pubsub";
 import type { GossipsubEvents } from "@chainsafe/libp2p-gossipsub";
 import type { Helia } from "helia";
 import type { BIP32Interface } from "bip32";
-import type { Sequelize } from "sequelize";
 import type { Filestore } from "./filestore/index.js";
 import type { Groups } from "./groups.js";
 import type { Cipher } from "./cipher.js";
@@ -79,7 +78,6 @@ export interface Components {
 	cipher: Cipher
 	config: Config
 	stores: Datastores
-	sequelize: Sequelize
 	pinManager: PinManager
 }
 
