@@ -1,5 +1,6 @@
 import Path from "path";
 import fs from "fs/promises";
+import all from "it-all";
 import { createNetServer } from "@organicdesign/net-rpc";
 import { createHelia } from "helia";
 import { MemoryDatastore } from "datastore-core";
@@ -21,7 +22,7 @@ import { Datastores } from "./datastores.js";
 import { createCipher } from "./cipher.js";
 import setupPinManager from "./helia-pin-manager/index.js";
 import { createKeyManager } from "./key-manager/index.js";
-import { projectPath } from "./utils.js";
+import { projectPath, decodeAny, decodeEntry } from "./utils.js";
 import { executeUpload } from "./sync/upload.js";
 import type { Components } from "./interface.js";
 
@@ -152,8 +153,14 @@ const loops = [
 	new Looper(() => downloadLoop(components), { sleep: config.tickInterval * 1000 })
 ];
 
-for await (const key of stores.get("actions/uploads/put").queryKeys({})) {
-	await executeUpload(components, key)
+const pairs = await all(stores.get("actions/uploads/put").query({}));
+
+const dPairs = pairs.map(p => ({ value: decodeEntry(decodeAny(p.value)), key: p.key }));
+
+dPairs.sort((a, b) => a.value.timestamp - b.value.timestamp);
+
+for (const pair of dPairs) {
+	await executeUpload(components, pair.key);
 }
 
 logger.lifecycle("uploads synced");
