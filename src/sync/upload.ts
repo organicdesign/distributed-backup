@@ -53,7 +53,7 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 			Path.join(params.path, "ROOT")
 		);
 
-		if (data != null){
+		if (data != null) {
 			const entry = decodeEntry(EncodedEntry.parse(data));
 
 			if (entry != null && entry.sequence != null) {

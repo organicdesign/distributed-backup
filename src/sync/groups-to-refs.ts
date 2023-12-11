@@ -1,7 +1,5 @@
-import Path from "path";
 import * as dagCbor from "@ipld/dag-cbor";
 import { CID } from "multiformats/cid";
-import { Key } from "interface-datastore";
 import * as logger from "../logger.js";
 import { type Components, EncodedEntry } from "../interface.js";
 
@@ -48,24 +46,7 @@ export const groupsToRefs = async (components: Components) => {
 				continue;
 			}
 
-			const actions = components.stores.get("actions/downloads/put");
-			const key = new Key(Path.join(group.toString(), path));
-
-			logger.warn("duplicate keys might not download correctly.");
-			if (await actions.has(key)) {
-				// Already in the downloads.
-				continue;
-			}
-
-			actions.put(new Key(Path.join(group.toString(), path)), pair.value);
-
-			logger.references(`[+] ${group}${path}`);
-
-			await components.pinManager.pin(cid);
-
-			await components.stores.get("reverse-lookup").put(new Key(Path.join(cid.toString(), group.toString(), path)), new Uint8Array());
-
-			await actions.delete(new Key(Path.join(group.toString(), path)));
+			await components.downloads.add("put", [group.bytes, path, entry]);
 		}
 	}
 };

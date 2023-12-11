@@ -1,6 +1,5 @@
 import Path from "path";
 import fs from "fs/promises";
-import all from "it-all";
 import { createNetServer } from "@organicdesign/net-rpc";
 import { createHelia } from "helia";
 import { MemoryDatastore } from "datastore-core";
@@ -22,8 +21,9 @@ import { Datastores } from "./datastores.js";
 import { createCipher } from "./cipher.js";
 import setupPinManager from "./helia-pin-manager/index.js";
 import { createKeyManager } from "./key-manager/index.js";
-import { projectPath, decodeAny, decodeEntry } from "./utils.js";
+import { projectPath } from "./utils.js";
 import createUploadManager from "./sync/upload-operations.js";
+import createDownloadManager from "./sync/download-operations.js";
 import type { Components } from "./interface.js";
 
 const argv = await yargs(hideBin(process.argv))
@@ -101,6 +101,10 @@ pinManager.events.addEventListener("pins:added", ({ cid }) => logger.pins(`[+] $
 pinManager.events.addEventListener("pins:adding", ({ cid }) => logger.pins(`[~] ${cid}`));
 pinManager.events.addEventListener("pins:removed", ({ cid }) => logger.pins(`[-] ${cid}`));
 
+const downloads = await createDownloadManager({ stores, pinManager });
+
+logger.lifecycle("downloads synced");
+
 const uploads = await createUploadManager({ libp2p, stores, groups, pinManager });
 
 logger.lifecycle("uploads synced");
@@ -116,7 +120,8 @@ const components: Components = {
 	config,
 	stores,
 	pinManager,
-	uploads
+	uploads,
+	downloads
 };
 
 // Register all the RPC commands.
@@ -159,8 +164,6 @@ const loops = [
 ];
 
 logger.lifecycle("started");
-
-logger.warn("All download actions need to be processed.");
 
 // Run the main loop.
 await Promise.all(loops.map(l => l.run()));

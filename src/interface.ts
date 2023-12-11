@@ -2,6 +2,7 @@ import { z } from "zod";
 import { multiaddr } from "@multiformats/multiaddr";
 import { CID } from "multiformats/cid";
 import createUploadManager from "./sync/upload-operations.js";
+import createDownloadManager from "./sync/download-operations.js";
 import type { Welo, Database, Keyvalue } from "welo";
 import type { Libp2p as BaseLibp2p } from "libp2p";
 import type { PubSub } from "@libp2p/interface/pubsub";
@@ -80,7 +81,8 @@ export interface Components {
 	config: Config
 	stores: Datastores
 	pinManager: PinManager,
-	uploads: Awaited<ReturnType<typeof createUploadManager>>
+	uploads: Awaited<ReturnType<typeof createUploadManager>>,
+	downloads: Awaited<ReturnType<typeof createDownloadManager>>
 }
 
 export const EncodedEntry = z.object({
