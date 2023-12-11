@@ -28,13 +28,13 @@ export class OperationManager <T extends OperationMap> {
 		opData.sort((a, b) => +a.key.toString().replace("/", "") - +b.key.toString().replace("/", ""));
 
 		if (opData.length > 0) {
-			this.logical = (+opData[opData.length].key.toString().replace("/", "")) + 1;
+			this.logical = (+opData[opData.length - 1].key.toString().replace("/", "")) + 1;
 		}
 
 		const operations: { key: Key, value: OperationTuples<T> }[] = opData.map(d => ({ key: d.key, value: decodeAny(d.value)}));
 
 		for (const { key, value: [type, params]} of operations) {
-			this.queue.add(async () => {
+			await this.queue.add(async () => {
 				await this.operations[type](...params);
 				await this.datastore.delete(key);
 			});
