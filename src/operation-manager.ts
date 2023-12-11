@@ -1,8 +1,7 @@
 import all from "it-all";
 import Queue from "p-queue";
-import { Key } from "interface-datastore";
 import { encodeAny, decodeAny } from "./utils.js";
-import type { Datastore } from "interface-datastore";
+import { Key, type Datastore } from "interface-datastore";
 
 type ArgumentTypes<F extends Function> = F extends (...args: infer A) => any ? A : never;
 
@@ -28,8 +27,9 @@ export class OperationManager <T extends OperationMap> {
 
 		opData.sort((a, b) => +a.key.toString().replace("/", "") - +b.key.toString().replace("/", ""));
 
-
-		this.logical = (+opData[opData.length].key.toString().replace("/", "")) + 1;
+		if (opData.length > 0) {
+			this.logical = (+opData[opData.length].key.toString().replace("/", "")) + 1;
+		}
 
 		const operations: { key: Key, value: OperationTuples<T> }[] = opData.map(d => ({ key: d.key, value: decodeAny(d.value)}));
 

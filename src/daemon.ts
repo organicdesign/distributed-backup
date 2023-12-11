@@ -23,7 +23,7 @@ import { createCipher } from "./cipher.js";
 import setupPinManager from "./helia-pin-manager/index.js";
 import { createKeyManager } from "./key-manager/index.js";
 import { projectPath, decodeAny, decodeEntry } from "./utils.js";
-import { executeUpload } from "./sync/upload.js";
+import createUploadManager from "./sync/upload-operations.js";
 import type { Components } from "./interface.js";
 
 const argv = await yargs(hideBin(process.argv))
@@ -101,6 +101,10 @@ pinManager.events.addEventListener("pins:added", ({ cid }) => logger.pins(`[+] $
 pinManager.events.addEventListener("pins:adding", ({ cid }) => logger.pins(`[~] ${cid}`));
 pinManager.events.addEventListener("pins:removed", ({ cid }) => logger.pins(`[-] ${cid}`));
 
+const uploads = await createUploadManager({ libp2p, stores, groups, pinManager });
+
+logger.lifecycle("uploads synced");
+
 const components: Components = {
 	libp2p,
 	cipher,
@@ -112,6 +116,7 @@ const components: Components = {
 	config,
 	stores,
 	pinManager,
+	uploads
 };
 
 // Register all the RPC commands.
@@ -153,21 +158,9 @@ const loops = [
 	new Looper(() => downloadLoop(components), { sleep: config.tickInterval * 1000 })
 ];
 
-const pairs = await all(stores.get("actions/uploads/put").query({}));
-
-const dPairs = pairs.map(p => ({ value: decodeEntry(decodeAny(p.value)), key: p.key }));
-
-dPairs.sort((a, b) => a.value.timestamp - b.value.timestamp);
-
-for (const pair of dPairs) {
-	await executeUpload(components, pair.key);
-}
-
-logger.lifecycle("uploads synced");
-
 logger.lifecycle("started");
 
 logger.warn("All download actions need to be processed.");
 
 // Run the main loop.
-await Promise.all(loops.map(l => l.run()))
+await Promise.all(loops.map(l => l.run()));
