@@ -1,6 +1,6 @@
 import { PinManager as HeliaPinManager, type Components } from "../helia-pin-manager/pin-manager.js";
 import { Key, type Datastore } from "interface-datastore";
-import type { CID } from "multiformats/cid";
+import { CID } from "multiformats/cid";
 
 const DEFAULT_TAG = "DEFAULT";
 
@@ -38,5 +38,23 @@ export class PinManager extends HeliaPinManager {
 		}
 
 		await super.unpin(cid);
+	}
+
+	async getCidFromTag (tag: string): Promise<CID | null> {
+		const itr = this.datastore.queryKeys({ filters: [
+			k => {
+				const parts = k.toString().split("/");
+				const keyTag = parts.slice(2).join("/");
+
+				return keyTag === tag;
+			}
+		]});
+
+		for await (const key of itr) {
+			// We only expect each path to return only one CID.
+			return CID.parse(key.toString().split("/")[1]);
+		}
+
+		return null;
 	}
 }
