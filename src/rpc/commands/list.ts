@@ -1,9 +1,8 @@
-import Path from "path";
 import { CID } from "multiformats/cid";
 import * as dagCbor from "@ipld/dag-cbor";
 import { countPeers } from "../../utils.js";
 import * as logger from "../../logger.js";
-import { decodeEntry } from "../../utils.js";
+import { decodeEntry, decodeAny } from "../../utils.js";
 import { type Components, EncodedEntry } from "../../interface.js";
 
 export const name = "list";
@@ -23,6 +22,11 @@ export const method = (components: Components) => async () => {
 		const index = await database.store.latest();
 
 		for await (const pair of index.query({})) {
+			if (decodeAny(pair.value) == null) {
+				logger.warn("ignoring null value")
+				continue;
+			}
+
 			const entry = EncodedEntry.optional().parse(dagCbor.decode(pair.value));
 
 			if (entry == null) {
@@ -38,7 +42,7 @@ export const method = (components: Components) => async () => {
 			promises.push((async () => {
 				const priorities: number[] = [];
 
-				for await (const key of components.stores.get(`reverse-lookup/${item.toString()}`).queryKeys({})) {
+				for await (const key of components.stores.get(`pin-references/${item.toString()}`).queryKeys({})) {
 					const parts = key.toString().split("/");
 					const group = CID.parse(parts[1]);
 					const path = parts.slice(2).join("/");

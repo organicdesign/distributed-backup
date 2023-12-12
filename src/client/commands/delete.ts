@@ -1,6 +1,6 @@
 import { createBuilder, createHandler } from "../utils.js";
 
-export const command = "delete [group] [cid]";
+export const command = "delete [group] [path]";
 
 export const desc = "Delete an item from a group.";
 
@@ -10,7 +10,7 @@ export const builder = createBuilder({
 		type: "string"
 	},
 
-	cid: {
+	path: {
 		required: true,
 		type: "string"
 	}
@@ -23,7 +23,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 
 	const del = await argv.client.rpc.request("delete", {
 		group: argv.group,
-		cid: argv.cid
+		path: argv.path
 	});
 
 	console.log(del);
