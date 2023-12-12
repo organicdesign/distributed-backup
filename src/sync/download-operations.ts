@@ -10,10 +10,17 @@ export default async (components: Pick<Components, "stores" | "pinManager">) => 
 		put: async (groupData: Uint8Array, path: string, encodedEntry: EncodedEntry) => {
 			const group = CID.decode(groupData);
 			const entry = decodeEntry(encodedEntry);
+			const tag = Path.join(group.toString(), path);
 
-			logger.references(`[+] ${group}${path}`);
+			logger.references(`[+] ${tag}`);
 
-			await components.pinManager.pin(entry.cid, Path.join(group.toString(), path));
+			const oldCid = await components.pinManager.getCidFromTag(tag)
+
+			if (oldCid != null) {
+				await components.pinManager.unpin(oldCid, tag);
+			}
+
+			await components.pinManager.pin(entry.cid, tag);
 		}
 	});
 

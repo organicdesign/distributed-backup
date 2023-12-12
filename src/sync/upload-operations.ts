@@ -24,8 +24,6 @@ export default async (components: Pick<Components, "stores" | "pinManager" | "li
 		//await Promise.all(paths.map(path => components.groups.addTo(group, { ...entry, path })));
 
 		for (const path of paths) {
-			//await components.stores.get("cache").put(new Key(Path.join(group.toString(), path)), entry.cid.bytes );
-			console.log("ADDING", path, entry);
 			await components.groups.addTo(group, { ...entry, path });
 		}
 	};
