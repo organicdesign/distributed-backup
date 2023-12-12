@@ -33,10 +33,6 @@ export const method = (components: Components) => async () => {
 				continue;
 			}
 
-			if (entry.links.find(l => l.type === "next")) {
-				continue;
-			}
-
 			const item = CID.decode(entry.cid);
 
 			promises.push((async () => {

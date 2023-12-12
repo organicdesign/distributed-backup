@@ -110,8 +110,7 @@ export const encodeEntry = (entry: Entry): EncodedEntry => {
 	const ee: EncodedEntry = {
 		...entry,
 		cid: entry.cid.bytes,
-		author: entry.author.bytes,
-		links: entry.links.map(l => ({ ...l, cid: l.cid.bytes }))
+		author: entry.author.bytes
 	};
 
 	// Parse will strip foreign keys...
@@ -121,8 +120,7 @@ export const encodeEntry = (entry: Entry): EncodedEntry => {
 export const decodeEntry = (entry: EncodedEntry): Entry => ({
 	...entry,
 	cid: CID.decode(entry.cid),
-	author: CID.decode(entry.author),
-	links: entry.links.map(l => ({ ...l, cid: CID.decode(l.cid) }))
+	author: CID.decode(entry.author)
 });
 
 export const queryContent = async function * ({ stores }: Pick<Components, "stores">, context?: string, action?: string) {

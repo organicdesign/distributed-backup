@@ -7,7 +7,7 @@ import type { Welo } from "welo";
 import type { ManifestData } from "../node_modules/welo/dist/src/manifest/interface.js";
 import type { Datastore } from "interface-datastore";
 import type { Startable } from "@libp2p/interfaces/startable";
-import { type KeyvalueDB, type Pair, type Entry, type Link, EncodedEntry } from "./interface.js";
+import { type KeyvalueDB, type Pair, type Entry, EncodedEntry } from "./interface.js";
 
 export interface Components {
 	datastore: Datastore
@@ -79,7 +79,6 @@ export class Groups implements Startable {
 			sequence: entry.sequence,
 			blocks: entry.blocks,
 			size: entry.size,
-			links: entry.links.map(l => ({ ...l, cid: l.cid.bytes })),
 			priority: entry.priority
 		};
 
@@ -89,7 +88,7 @@ export class Groups implements Startable {
 		await database.replica.write(op);
 	}
 
-	async addLinks (group: CID, cid: CID, links: Link[]) {
+	async addLinks (group: CID, cid: CID) {
 		const database = this.groups.get(group.toString());
 
 		if (database == null) {
@@ -98,12 +97,6 @@ export class Groups implements Startable {
 
 		const index = await database.store.latest();
 		const entry = EncodedEntry.optional().parse(await database.store.selectors.get(index)(cid.toString()));
-
-		if (entry == null) {
-			throw new Error("no such item in group");
-		}
-
-		entry.links = [ ...entry.links, ...links.map(l => ({ ...l, cid: l.cid.bytes })) ];
 
 		const op = database.store.creators.put(cid.toString(), entry);
 

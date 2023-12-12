@@ -90,13 +90,9 @@ export const EncodedEntry = z.object({
 	author: z.instanceof(Uint8Array),
 	encrypted: z.boolean(),
 	timestamp: z.number(),
-	links: z.array(z.object({
-		cid: z.instanceof(Uint8Array),
-		type: z.string()
-	})),
 	blocks: z.number(),
 	size: z.number(),
-	sequence: z.number().optional(),
+	sequence: z.number(),
 	priority: z.number()
 });
 
@@ -107,12 +103,10 @@ export interface Entry {
 	author: CID
 	encrypted: boolean
 	timestamp: number
-	links: Link[]
 	blocks: number
 	size: number
 	priority: number
-	sequence?: number
-	meta?: Record<string, unknown>
+	sequence: number
 }
 
 export const ImportOptions = z.object({

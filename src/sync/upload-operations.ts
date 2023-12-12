@@ -46,7 +46,6 @@ export default async (components: Pick<Components, "stores" | "pinManager" | "li
 				cid,
 				author: components.libp2p.peerId.toCID(),
 				encrypted: false,
-				links: [],
 				blocks: 1,
 				size: 0,
 				timestamp: Date.now(),
