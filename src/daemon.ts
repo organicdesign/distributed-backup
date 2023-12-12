@@ -19,7 +19,8 @@ import commands from "./rpc/index.js";
 import { createGroups } from "./groups.js";
 import { Datastores } from "./datastores.js";
 import { createCipher } from "./cipher.js";
-import setupPinManager from "./helia-pin-manager/index.js";
+import setupPinManagerComponents from "./helia-pin-manager/sequelize.js";
+import { PinManager } from "./pin-manager/index.js";
 import { createKeyManager } from "./key-manager/index.js";
 import { projectPath } from "./utils.js";
 import createUploadManager from "./sync/upload-operations.js";
@@ -94,7 +95,8 @@ logger.lifecycle("loaded groups");
 const { rpc, close } = await createNetServer(argv.socket);
 logger.lifecycle("loaded server");
 
-const pinManager = await setupPinManager(helia, { storage });
+const pinComponents = await setupPinManagerComponents({ storage });
+const pinManager = new PinManager({ helia, datastore: stores.get("pin-references"), ...pinComponents });
 
 pinManager.events.addEventListener("downloads:added", ({ cid }) => logger.downloads(`[+] ${cid}`));
 pinManager.events.addEventListener("pins:added", ({ cid }) => logger.pins(`[+] ${cid}`));

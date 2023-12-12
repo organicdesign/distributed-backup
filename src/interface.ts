@@ -13,7 +13,7 @@ import type { Filestore } from "./filestore/index.js";
 import type { Groups } from "./groups.js";
 import type { Cipher } from "./cipher.js";
 import type { Datastores } from "./datastores.js";
-import type { PinManager } from "./helia-pin-manager/pin-manager.js";
+import type { PinManager } from "./pin-manager/index.js";
 
 export type Libp2p = BaseLibp2p<{ pubsub: PubSub<GossipsubEvents> }>
 
