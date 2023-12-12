@@ -14,21 +14,21 @@ export class PinManager extends HeliaPinManager {
 	}
 
 	async pin (cid: CID, tag?: string): Promise<void> {
-		const key = new Key(`/${cid.toString()}/${tag ?? DEFAULT_TAG}`);
+		const key = new Key(`${cid.toString()}/${tag ?? DEFAULT_TAG}`);
 
 		await this.datastore.put(key, new Uint8Array([]));
 		await super.pin(cid);
 	}
 
 	async pinLocal (cid: CID, tag?: string): Promise<void> {
-		const key = new Key(`/${cid.toString()}/${tag ?? DEFAULT_TAG}`);
+		const key = new Key(`${cid.toString()}/${tag ?? DEFAULT_TAG}`);
 
 		await this.datastore.put(key, new Uint8Array([]));
 		await super.pinLocal(cid);
 	}
 
 	async unpin (cid: CID, tag?: string): Promise<void> {
-		const key = new Key(`/${cid.toString()}/${tag ?? DEFAULT_TAG}`);
+		const key = new Key(`${cid.toString()}/${tag ?? DEFAULT_TAG}`);
 
 		await this.datastore.delete(key);
 

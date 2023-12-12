@@ -1,10 +1,9 @@
 import Path from "path";
 import { CID } from "multiformats/cid";
-import { Key } from "interface-datastore";
 import { sha256 } from "multiformats/hashes/sha2";
 import * as raw from "multiformats/codecs/raw";
 import { OperationManager } from "../operation-manager.js";
-import { decodeEntry, encodeAny, encodeEntry } from "../utils.js";
+import { decodeEntry, encodeEntry } from "../utils.js";
 import * as logger from "../logger.js";
 import { EncodedEntry, Components } from "../interface.js";
 
@@ -13,8 +12,7 @@ export default async (components: Pick<Components, "stores" | "pinManager" | "li
 		const group = CID.decode(groupData);
 		const entry = decodeEntry(encodedEntry);
 
-		await components.stores.get("pin-references").put(new Key(Path.join(entry.cid.toString(), group.toString(), path)), encodeAny(encodedEntry) );
-		await components.pinManager.pinLocal(entry.cid);
+		await components.pinManager.pinLocal(entry.cid, Path.join(group.toString(), path));
 
 		logger.uploads(`[+] ${path}`);
 

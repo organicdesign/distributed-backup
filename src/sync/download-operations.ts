@@ -1,8 +1,7 @@
 import Path from "path";
 import { CID } from "multiformats/cid";
-import { Key } from "interface-datastore";
 import { OperationManager } from "../operation-manager.js";
-import { decodeEntry, encodeAny } from "../utils.js";
+import { decodeEntry } from "../utils.js";
 import * as logger from "../logger.js";
 import type { EncodedEntry, Components } from "../interface.js";
 
@@ -14,8 +13,7 @@ export default async (components: Pick<Components, "stores" | "pinManager">) => 
 
 			logger.references(`[+] ${group}${path}`);
 
-			await components.stores.get("pin-references").put(new Key(Path.join(entry.cid.toString(), group.toString(), path)), encodeAny(encodedEntry));
-			await components.pinManager.pin(entry.cid);
+			await components.pinManager.pin(entry.cid, Path.join(group.toString(), path));
 		}
 	});
 
