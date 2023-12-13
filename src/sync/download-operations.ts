@@ -14,12 +14,6 @@ export default async (components: Pick<Components, "stores" | "pinManager">) => 
 
 			logger.references(`[+] ${tag}`);
 
-			const oldCid = await components.pinManager.getCidFromTag(tag)
-
-			if (oldCid != null) {
-				await components.pinManager.unpin(oldCid, tag);
-			}
-
 			await components.pinManager.pin(entry.cid, tag);
 		}
 	});

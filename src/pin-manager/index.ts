@@ -4,6 +4,8 @@ import { CID } from "multiformats/cid";
 
 const DEFAULT_TAG = "DEFAULT";
 
+// CID <-> TAG
+
 export class PinManager extends HeliaPinManager {
 	private readonly datastore: Datastore;
 
@@ -14,16 +16,12 @@ export class PinManager extends HeliaPinManager {
 	}
 
 	async pin (cid: CID, tag?: string): Promise<void> {
-		const key = new Key(`${cid.toString()}/${tag ?? DEFAULT_TAG}`);
-
-		await this.datastore.put(key, new Uint8Array([]));
+		await this.updateKey(cid, tag ?? DEFAULT_TAG);
 		await super.pin(cid);
 	}
 
 	async pinLocal (cid: CID, tag?: string): Promise<void> {
-		const key = new Key(`${cid.toString()}/${tag ?? DEFAULT_TAG}`);
-
-		await this.datastore.put(key, new Uint8Array([]));
+		await this.updateKey(cid, tag ?? DEFAULT_TAG);
 		await super.pinLocal(cid);
 	}
 
@@ -38,6 +36,18 @@ export class PinManager extends HeliaPinManager {
 		}
 
 		await super.unpin(cid);
+	}
+
+	private async updateKey (cid: CID, tag: string) {
+		const oldCid = await this.getCidFromTag(tag);
+
+		if (oldCid == null) {
+			await this.unpin(cid);
+		}
+
+		const key = new Key(`${cid.toString()}/${tag}`);
+
+		await this.datastore.put(key, new Uint8Array([]));
 	}
 
 	async getCidFromTag (tag: string): Promise<CID | null> {
