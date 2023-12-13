@@ -72,14 +72,14 @@ export const downloadLoop = async (components: Components) => {
 			for (const cid of pins) {
 				const priorities: number[] = [];
 
-				for await (const key of components.stores.get(`reverse-lookup/${cid.toString()}`).queryKeys({})) {
-					const parts = key.toString().split("/");
-					const group = CID.parse(parts[1]);
-					const path = parts.slice(2).join("/");
+				for await (const tag of components.pinManager.getTagsFromCid(cid)) {
+					const parts = tag.split("/");
+					const group = CID.parse(parts[0]);
+					const path = parts.slice(1).join("/");
 
 					const database = components.groups.get(group);
 
-					if (database== null) {
+					if (database == null) {
 						logger.warn("Reverse lookup points to non-existant database: ", group);
 						continue;
 					}

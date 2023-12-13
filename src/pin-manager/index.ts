@@ -67,4 +67,13 @@ export class PinManager extends HeliaPinManager {
 
 		return null;
 	}
+
+	async * getTagsFromCid (cid: CID) {
+		const prefix = `/${cid.toString()}`;
+		const itr = this.datastore.queryKeys({ prefix });
+
+		for await (const key of itr) {
+			yield key.toString().slice(prefix.length + 1);
+		}
+	}
 }
