@@ -1,25 +1,27 @@
 import { z } from "zod";
 import { exportFs } from "../../fs-exporter/index.js";
 import { CID } from "multiformats/cid";
-import all from "it-all";
-import { type Components, zCID } from "../../interface.js";
+import { decodeEntry } from "../../utils.js";
+import { type Components, type EncodedEntry, zCID } from "../../interface.js";
 
 export const name = "export";
 
 const Params = z.object({
 	path: z.string(),
-	cid: zCID
+	outPath: z.string(),
+	group: zCID
 });
 
 export const method = (components: Components) => async (raw: unknown) => {
 	const params = Params.parse(raw);
-	const pair = await all(components.stores.get("reverse-lookup").query({ prefix: params.cid }));
+	const group = components.groups.get(CID.parse(params.group));
 
-	if (pair.length === 0) {
-		throw new Error("Could not find CID");
+	if (group == null) {
+		throw new Error("no such group");
 	}
 
-	const cid = CID.parse(params.cid);
+	const encodedEntry = await group.store.selectors.get(group.store.index)(`${params.path}/ROOT`) as EncodedEntry;
+	const entry = decodeEntry(encodedEntry);
 
-	await exportFs(components, cid, params.path);
+	await exportFs(components, entry.cid, params.outPath);
 };

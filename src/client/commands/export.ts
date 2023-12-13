@@ -1,16 +1,21 @@
 import { createBuilder, createHandler } from "../utils.js";
 
-export const command = "export [cid] [path]";
+export const command = "export [group] [path] [outPath]";
 
 export const desc = "Export files to the filesystem.";
 
 export const builder = createBuilder({
-	cid: {
+	group: {
 		required: true,
 		type: "string"
 	},
 
 	path: {
+		required: true,
+		type: "string"
+	},
+
+	outPath: {
 		required: true,
 		type: "string"
 	}
@@ -22,8 +27,9 @@ export const handler = createHandler<typeof builder>(async argv => {
 	}
 
 	const add = await argv.client.rpc.request("export", {
-		cid: argv.cid,
-		path: argv.path
+		outPath: argv.outPath,
+		path: argv.path,
+		group: argv.group
 	});
 
 	console.log(add);
