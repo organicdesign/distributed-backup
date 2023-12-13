@@ -11,6 +11,24 @@ export default async (components: Pick<Components, "stores" | "pinManager" | "li
 	const put = async (groupData: Uint8Array, path: string, encodedEntry: EncodedEntry) => {
 		const group = CID.decode(groupData);
 		const entry = decodeEntry(encodedEntry);
+		const database = components.groups.get(group);
+		let sequence = 0;
+
+		if (database != null) {
+			const data = await database.store.selectors.get(database.store.index)(
+				Path.join(path, "ROOT")
+			);
+
+			if (data != null) {
+				const entry = decodeEntry(EncodedEntry.parse(data));
+
+				if (entry != null && entry.sequence != null) {
+					sequence = entry.sequence + 1;
+				}
+			}
+		}
+
+		entry.sequence = sequence;
 
 		await components.pinManager.pinLocal(entry.cid, Path.join(group.toString(), path));
 

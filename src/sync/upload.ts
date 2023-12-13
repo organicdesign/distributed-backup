@@ -1,13 +1,12 @@
-import Path from "path";
 import { BlackHoleBlockstore } from "blockstore-core/black-hole";
 import * as logger from "../logger.js";
 import selectHasher from "../fs-importer/select-hasher.js";
 import selectChunker from "../fs-importer/select-chunker.js";
 import { importAny as importAnyEncrypted } from "../fs-importer/import-copy-encrypted.js";
 import { importAny as importAnyPlaintext } from "../fs-importer/import-copy-plaintext.js";
-import { walkDag, encodeEntry, decodeEntry } from "../utils.js";
+import { walkDag, encodeEntry } from "../utils.js";
 import { CID } from "multiformats/cid";
-import { Components, ImportOptions, EncodedEntry } from "../interface.js";
+import { Components, ImportOptions } from "../interface.js";
 import type { ImporterConfig } from "../fs-importer/interfaces.js";
 
 export const addLocal = async (components: Components, params: ImportOptions & { group: CID, onlyHash?: boolean, priority: number, path: string, localPath: string }): Promise<CID> => {
@@ -45,26 +44,9 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 	}
 
 	// Create the action record.
-	const database = components.groups.get(params.group);
-	let sequence = 0;
-
-	if (database != null) {
-		const data = await database.store.selectors.get(database.store.index)(
-			Path.join(params.path, "ROOT")
-		);
-
-		if (data != null) {
-			const entry = decodeEntry(EncodedEntry.parse(data));
-
-			if (entry != null && entry.sequence != null) {
-				sequence = entry.sequence + 1;
-			}
-		}
-	}
-
 	const entry = encodeEntry({
 		cid,
-		sequence,
+		sequence: 0,
 		blocks,
 		size,
 		encrypted: params.encrypt,
