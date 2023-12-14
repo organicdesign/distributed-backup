@@ -11,7 +11,6 @@ export const method = (components: Components) => async () => {
 	const promises: Promise<{
 		cid: string,
 		name: string,
-		revisions: number,
 		peers: number,
 		group: string,
 		groupName: string,
@@ -40,7 +39,6 @@ export const method = (components: Components) => async () => {
 					path: pair.key.toString(),
 					cid: item.toString(),
 					name: item.toString().slice(0, 8),
-					revisions: 0,
 					peers: await countPeers(components, item, { timeout: 3000 }),
 					group: cid,
 					groupName: database.manifest.name,

@@ -6,7 +6,6 @@ const Item = z.object({
 	path: z.string(),
 	cid: zCID,
 	name: z.string(),
-	revisions: z.number().int(),
 	peers: z.number().int(),
 	group: zCID,
 	groupName: z.string(),
@@ -86,11 +85,27 @@ export const handler = createHandler<typeof builder>(async argv => {
 	}
 
 	const raw: unknown = await argv.client.rpc.request("list", {});
+
+	const revisionCounter: Record<string, number> = {};
+
+	for (const item of Items.parse(raw)) {
+		if (!item.path.startsWith("/v")) {
+			continue;
+		}
+
+		const parts = item.path.split("/");
+		const path = `/${parts.slice(2, parts.length - 2).join("/")}`;
+
+		if (revisionCounter[path] == null) {
+			revisionCounter[path] = 0;
+		}
+
+		revisionCounter[path] += 1;
+	}
+
 	const items = Items.parse(raw).filter(i => i.path.startsWith("/r")).map(i => ({ ...i, path: i.path.slice(2)}));
 
 	items.sort((a, b) => a.path.localeCompare(b.path));
-
-	console.log(createJSON(items));
 
 	let header = "Name".padEnd(20);
 
@@ -105,23 +120,6 @@ export const handler = createHandler<typeof builder>(async argv => {
 	header += "CID".padEnd(62);
 
 	console.log(header);
-
-	for (const item of items) {
-		let str = "";
-
-		str += item.path.slice(0, 18).padEnd(20);
-		str += `${formatSize(item.size)}/${formatSize(item.totalSize)} (${formatPercent(item.size/item.totalSize)})`.slice(0, 25).padEnd(27);
-		str += `${item.blocks}/${item.totalBlocks} (${formatPercent(item.blocks/item.totalBlocks)})`.slice(0, 18).padEnd(20);
-		str += `${item.state}`.slice(0, 13).padEnd(15);
-		str += `${item.priority}`.slice(0, 8).padEnd(10);
-		str += `${item.revisions}`.slice(0, 8).padEnd(10);
-		str += `${item.peers}`.slice(0, 8).padEnd(10);
-		str += `${item.groupName}`.slice(0, 8).padEnd(10);
-		str += `${item.encrypted}`.slice(0, 8).padEnd(10);
-		str += item.cid.padEnd(62);
-
-		console.log(str);
-	}
 
 	const printTree = (tree: JStruct, depth: number = 0) => {
 		if (depth === 0) {
@@ -147,7 +145,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 				str += `${item.blocks}/${item.totalBlocks} (${formatPercent(item.blocks/item.totalBlocks)})`.slice(0, 18).padEnd(20);
 				str += `${item.state}`.slice(0, 13).padEnd(15);
 				str += `${item.priority}`.slice(0, 8).padEnd(10);
-				str += `${item.revisions}`.slice(0, 8).padEnd(10);
+				str += `${revisionCounter[item.path] ?? 0}`.slice(0, 8).padEnd(10);
 				str += `${item.peers}`.slice(0, 8).padEnd(10);
 				str += `${item.groupName}`.slice(0, 8).padEnd(10);
 				str += `${item.encrypted}`.slice(0, 8).padEnd(10);
