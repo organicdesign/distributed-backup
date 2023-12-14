@@ -31,7 +31,7 @@ export const downloadLoop = async (components: Components) => {
 			const priority = p ?? 100;
 			const weight = Math.floor(linearWeightTranslation(priority / 100) * SLOTS) + 1;
 
-			const downloaders = await components.pinManager.downloadSync(cid, { limit: weight });
+			const downloaders = await components.pinManager.download(cid, { limit: weight });
 
 			yield* downloaders;
 		}
@@ -62,36 +62,19 @@ export const downloadLoop = async (components: Components) => {
 
 	const getPins = async function * (loop: AsyncIterable<void>): AsyncGenerator<[CID, number | undefined]> {
 		for await (const _ of loop) {
-			const pins = [...await components.pinManager.getActiveDownloads()];
-			// logger.tick("GOT ACTIVE");
+			for await (const { group, path } of components.pinManager.getActive()) {
+				const database = components.groups.get(group);
 
-			if (pins.length !== 0 && start == null) {
-				start = Date.now();
-			}
-
-			for (const cid of pins) {
-				const priorities: number[] = [];
-
-				for await (const tag of components.pinManager.getTagsFromCid(cid)) {
-					const parts = tag.split("/");
-					const group = CID.parse(parts[0]);
-					const path = parts.slice(1).join("/");
-
-					const database = components.groups.get(group);
-
-					if (database == null) {
-						logger.warn("Reverse lookup points to non-existant database: ", group);
-						continue;
-					}
-
-					const paily = database.store.index;
-
-					const entry = decodeEntry(EncodedEntry.parse(await database.store.selectors.get(paily)(path)));
-
-					priorities.push(entry.priority);
+				if (database == null) {
+					logger.warn("Reverse lookup points to non-existant database: ", group);
+					continue;
 				}
 
-				yield [cid, Math.min(100, ...priorities)];
+				const paily = database.store.index;
+				const data = await database.store.selectors.get(paily)(path);
+				const entry = decodeEntry(EncodedEntry.parse(data));
+
+				yield [entry.cid, entry.priority];
 			}
 		}
 	};

@@ -29,7 +29,7 @@ export interface Components {
 	blocks: Blocks
 }
 
-interface BlockInfo {
+export interface BlockInfo {
 	block: Uint8Array,
 	cid: CID,
 	links: CID[]

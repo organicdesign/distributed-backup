@@ -5,7 +5,7 @@ import * as raw from "multiformats/codecs/raw";
 import { OperationManager } from "../operation-manager.js";
 import { decodeEntry, encodeEntry } from "../utils.js";
 import * as logger from "../logger.js";
-import { EncodedEntry, Components } from "../interface.js";
+import { EncodedEntry, Components, VERSION_KEY, DATA_KEY } from "../interface.js";
 
 export default async (components: Pick<Components, "stores" | "pinManager" | "libp2p" | "groups" | "blockstore">) => {
 	const put = async (groupData: Uint8Array, path: string, encodedEntry: EncodedEntry) => {
@@ -30,13 +30,13 @@ export default async (components: Pick<Components, "stores" | "pinManager" | "li
 
 		entry.sequence = sequence;
 
-		await components.pinManager.pinLocal(entry.cid, Path.join(group.toString(), path));
+		await components.pinManager.pinLocal(group, path , entry.cid);
 
 		logger.uploads(`[+] ${path}`);
 
 		const paths = [
-			Path.join(path, "ROOT"),
-			Path.join(path, components.libp2p.peerId.toString(), entry.sequence?.toString() ?? "0")
+			Path.join(DATA_KEY, path),
+			Path.join(VERSION_KEY, path, components.libp2p.peerId.toString(), entry.sequence.toString())
 		];
 
 		//await Promise.all(paths.map(path => components.groups.addTo(group, { ...entry, path })));

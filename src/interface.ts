@@ -17,6 +17,9 @@ import type { PinManager } from "./pin-manager/index.js";
 
 export type Libp2p = BaseLibp2p<{ pubsub: PubSub<GossipsubEvents> }>
 
+export const VERSION_KEY = "v";
+export const DATA_KEY = "r";
+
 export const zMultiaddr = z.custom<string>(val => {
 	if (typeof val !== "string") {
 		return false;

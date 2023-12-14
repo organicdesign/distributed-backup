@@ -19,8 +19,8 @@ import commands from "./rpc/index.js";
 import { createGroups } from "./groups.js";
 import { Datastores } from "./datastores.js";
 import { createCipher } from "./cipher.js";
-import setupPinManagerComponents from "./helia-pin-manager/sequelize.js";
 import { PinManager } from "./pin-manager/index.js";
+import createHeliaPinManager from "./helia-pin-manager/index.js";
 import { createKeyManager } from "./key-manager/index.js";
 import { projectPath } from "./utils.js";
 import createUploadManager from "./sync/upload-operations.js";
@@ -95,13 +95,14 @@ logger.lifecycle("loaded groups");
 const { rpc, close } = await createNetServer(argv.socket);
 logger.lifecycle("loaded server");
 
-const pinComponents = await setupPinManagerComponents({ storage });
-const pinManager = new PinManager({ helia, datastore: stores.get("pin-references"), ...pinComponents });
+const heliaPinManager = await createHeliaPinManager(helia, { storage });
 
-pinManager.events.addEventListener("downloads:added", ({ cid }) => logger.downloads(`[+] ${cid}`));
-pinManager.events.addEventListener("pins:added", ({ cid }) => logger.pins(`[+] ${cid}`));
-pinManager.events.addEventListener("pins:adding", ({ cid }) => logger.pins(`[~] ${cid}`));
-pinManager.events.addEventListener("pins:removed", ({ cid }) => logger.pins(`[-] ${cid}`));
+heliaPinManager.events.addEventListener("downloads:added", ({ cid }) => logger.downloads(`[+] ${cid}`));
+heliaPinManager.events.addEventListener("pins:added", ({ cid }) => logger.pins(`[+] ${cid}`));
+heliaPinManager.events.addEventListener("pins:adding", ({ cid }) => logger.pins(`[~] ${cid}`));
+heliaPinManager.events.addEventListener("pins:removed", ({ cid }) => logger.pins(`[-] ${cid}`));
+
+const pinManager = new PinManager({ pinManager: heliaPinManager, datastore: stores.get("pin-references") });
 
 const downloads = await createDownloadManager({ stores, pinManager });
 

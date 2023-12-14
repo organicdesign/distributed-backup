@@ -1,79 +1,108 @@
-import { PinManager as HeliaPinManager, type Components } from "../helia-pin-manager/pin-manager.js";
+import type { PinManager as HeliaPinManager } from "../helia-pin-manager/pin-manager.js";
+import * as logger from "../logger.js";
 import { Key, type Datastore } from "interface-datastore";
 import { CID } from "multiformats/cid";
 
-const DEFAULT_TAG = "DEFAULT";
-
-// CID <-> TAG
-
-export class PinManager extends HeliaPinManager {
+export class PinManager {
 	private readonly datastore: Datastore;
+	private readonly pinManager: HeliaPinManager;
 
-	constructor (components: Components & { datastore: Datastore }) {
-		super(components);
-
+	constructor (components: { datastore: Datastore, pinManager: HeliaPinManager }) {
 		this.datastore = components.datastore;
+		this.pinManager = components.pinManager;
 	}
 
-	async pin (cid: CID, tag?: string): Promise<void> {
-		await this.updateKey(cid, tag ?? DEFAULT_TAG);
-		await super.pin(cid);
+	async pin (group: CID, path: string, cid: CID): Promise<void> {
+		await this.updateKey(group, path, cid);
+		await this.pinManager.pin(cid);
 	}
 
-	async pinLocal (cid: CID, tag?: string): Promise<void> {
-		await this.updateKey(cid, tag ?? DEFAULT_TAG);
-		await super.pinLocal(cid);
+	async pinLocal (group: CID, path: string, cid: CID): Promise<void> {
+		await this.updateKey(group, path, cid);
+		await this.pinManager.pinLocal(cid);
 	}
 
-	async unpin (cid: CID, tag?: string): Promise<void> {
-		const key = new Key(`${cid.toString()}/${tag ?? DEFAULT_TAG}`);
+	async * getActive () {
+		for (const pin of await this.pinManager.getActiveDownloads()) {
+			yield * this.getByPin(pin);
+		}
+	}
 
-		await this.datastore.delete(key);
+	download (pin: CID, options?: { limit: number }) {
+		return this.pinManager.downloadSync(pin, options);
+	}
 
-		for await (const _ of this.datastore.queryKeys({ prefix: `/${cid.toString()}` })) {
-			// If we have another reference then just stop.
+	async getState (cid: CID) {
+		return await this.pinManager.getState(cid);
+	}
+
+	async getSize (cid: CID) {
+		return await this.pinManager.getSize(cid);
+	}
+
+	async getBlockCount (cid: CID) {
+		return await this.pinManager.getBlockCount(cid);
+	}
+
+	private async * getByPin (pin: CID) {
+		const itr = this.datastore.queryKeys({ filters: [ key => {
+			const cidStr = key.list().pop();
+
+			if (cidStr == null) {
+				logger.warn("Invalid key: ", key);
+				return false;
+			}
+
+			const cid = CID.parse(cidStr);
+
+			return cid.equals(pin);
+		} ] });
+
+		for await (const key of itr) {
+			const parts = key.list();
+
+			yield {
+				group: CID.parse(parts[0]),
+				cid: CID.parse(parts[parts.length - 1]),
+				path: `${parts.slice(1, parts.length - 1).join("/")}`
+			};
+		}
+	}
+
+	private async updateKey (group: CID, path: string, cid: CID) {
+		const key = new Key(`/${group.toString()}/${path}/${cid.toString()}`);
+
+		// Prune old keys...
+		await this.prune(key);
+
+		// Check if this has been handled...
+		if (await this.datastore.has(key)) {
+			// Already handled this one.
 			return;
 		}
 
-		await super.unpin(cid);
+		// Add the new reference.
+		await this.datastore.put(key, new Uint8Array());
 	}
 
-	private async updateKey (cid: CID, tag: string) {
-		const oldCid = await this.getCidFromTag(tag);
-
-		if (oldCid == null) {
-			await this.unpin(cid);
-		}
-
-		const key = new Key(`${cid.toString()}/${tag}`);
-
-		await this.datastore.put(key, new Uint8Array([]));
-	}
-
-	async getCidFromTag (tag: string): Promise<CID | null> {
-		const itr = this.datastore.queryKeys({ filters: [
-			k => {
-				const parts = k.toString().split("/");
-				const keyTag = parts.slice(2).join("/");
-
-				return keyTag === tag;
+	private async prune (key: Key): Promise<void> {
+		for await (const otherKey of this.datastore.queryKeys({ prefix: key.parent().toString() })) {
+			if (otherKey.toString() === key.toString()) {
+				// Ignore the one we are querying.
+				continue;
 			}
-		]});
 
-		for await (const key of itr) {
-			// We only expect each path to return only one CID.
-			return CID.parse(key.toString().split("/")[1]);
-		}
+			const cidStr = otherKey.list().pop();
 
-		return null;
-	}
+			if (cidStr == null) {
+				logger.warn("Invalid key: ", otherKey);
+				continue;
+			}
 
-	async * getTagsFromCid (cid: CID) {
-		const prefix = `/${cid.toString()}`;
-		const itr = this.datastore.queryKeys({ prefix });
+			const cid = CID.parse(cidStr);
 
-		for await (const key of itr) {
-			yield key.toString().slice(prefix.length + 1);
+			await this.pinManager.unpin(cid);
+			await this.datastore.delete(otherKey);
 		}
 	}
 }

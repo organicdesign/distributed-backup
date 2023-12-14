@@ -14,7 +14,7 @@ export default async (components: Pick<Components, "stores" | "pinManager">) => 
 
 			logger.references(`[+] ${tag}`);
 
-			await components.pinManager.pin(entry.cid, tag);
+			await components.pinManager.pin(group, path, entry.cid);
 		}
 	});
 

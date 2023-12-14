@@ -2,7 +2,7 @@ import { CID } from "multiformats/cid";
 import * as dagCbor from "@ipld/dag-cbor";
 import { countPeers } from "../../utils.js";
 import * as logger from "../../logger.js";
-import { decodeEntry, decodeAny } from "../../utils.js";
+import { decodeAny } from "../../utils.js";
 import { type Components, EncodedEntry } from "../../interface.js";
 
 export const name = "list";
@@ -36,32 +36,6 @@ export const method = (components: Components) => async () => {
 			const item = CID.decode(entry.cid);
 
 			promises.push((async () => {
-				const priorities: number[] = [];
-
-				for await (const tag of components.pinManager.getTagsFromCid(item)) {
-					const parts = tag.split("/");
-					const group = CID.parse(parts[0]);
-					const path = parts.slice(1).join("/");
-
-					const database = components.groups.get(group);
-
-					if (database == null) {
-						logger.warn("Reverse lookup points to non-existant database: ", group);
-						continue;
-					}
-
-					const paily = database.store.index;
-					const data = await database.store.selectors.get(paily)(path);
-
-					if (data == null) {
-						continue;
-					}
-
-					const entry = decodeEntry(EncodedEntry.parse(data));
-
-					priorities.push(entry.priority);
-				}
-
 				return {
 					path: pair.key.toString(),
 					cid: item.toString(),
@@ -76,7 +50,7 @@ export const method = (components: Components) => async () => {
 					blocks: await components.pinManager.getBlockCount(item),
 					totalSize: entry.size,
 					totalBlocks: entry.blocks,
-					priority: Math.min(100, ...priorities)
+					priority: entry.priority
 				};
 			})());
 		}
