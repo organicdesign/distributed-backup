@@ -86,7 +86,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 	}
 
 	const raw: unknown = await argv.client.rpc.request("list", {});
-	const items = Items.parse(raw);
+	const items = Items.parse(raw).filter(i => i.path.startsWith("/r")).map(i => ({ ...i, path: i.path.slice(2)}));
 
 	items.sort((a, b) => a.path.localeCompare(b.path));
 
