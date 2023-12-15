@@ -16,7 +16,7 @@ export default async (components: Pick<Components, "stores" | "pinManager" | "li
 
 		if (database != null) {
 			const data = await database.store.selectors.get(database.store.index)(
-				Path.join(path, "ROOT")
+				Path.join(DATA_KEY, path)
 			);
 
 			if (data != null) {
