@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CID } from "multiformats/cid";
 import { type Components, zCID } from "../../interface.js";
 
 export const name = "edit";
@@ -10,19 +11,9 @@ const Params = z.object({
 });
 
 export const method = (components: Components) => async (raw: unknown) => {
-	throw new Error("not implemented");
-	/*const params = Params.parse(raw);
-	const rc = await components.content.findOne({ where: { group: params.group.toString(), path: params.path } });
+	const params = Params.parse(raw);
 
-	if (rc == null) {
-		return;
-	}
+	await components.references.set(CID.parse(params.group), params.path, { priority: params.priority });
 
-	if (params.priority != null) {
-		rc.priority = params.priority;
-	}
-
-	await rc.save();
-
-	return params.path;*/
+	return params.path;
 };

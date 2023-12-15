@@ -25,6 +25,7 @@ import { createKeyManager } from "./key-manager/index.js";
 import { projectPath } from "./utils.js";
 import createUploadManager from "./sync/upload-operations.js";
 import createDownloadManager from "./sync/download-operations.js";
+import { EntryReferences } from "./entry-references.js";
 import type { Components } from "./interface.js";
 
 const argv = await yargs(hideBin(process.argv))
@@ -89,6 +90,8 @@ logger.lifecycle("loaded welo");
 const cipher = await createCipher({ keyManager });
 logger.lifecycle("loaded cipher");
 
+const references = new EntryReferences({ datastore: stores.get("references") });
+
 const groups = await createGroups({ datastore: stores.get("groups"), welo });
 logger.lifecycle("loaded groups");
 
@@ -124,7 +127,8 @@ const components: Components = {
 	stores,
 	pinManager,
 	uploads,
-	downloads
+	downloads,
+	references
 };
 
 // Register all the RPC commands.

@@ -1,7 +1,6 @@
-import Path from "path";
 import { createBuilder, createHandler } from "../utils.js";
 
-export const command = "edit [group] [cid]";
+export const command = "edit [group] [path]";
 
 export const desc = "Edit an item in the distributed backup.";
 
@@ -11,7 +10,7 @@ export const builder = createBuilder({
 		type: "string"
 	},
 
-	cid: {
+	path: {
 		required: true,
 		type: "string"
 	},
@@ -29,7 +28,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 
 	const add = await argv.client.rpc.request("edit", {
 		group: argv.group,
-		cid: argv.cid,
+		path: argv.path,
 		priority: argv.priority
 	});
 

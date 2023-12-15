@@ -14,6 +14,7 @@ import type { Groups } from "./groups.js";
 import type { Cipher } from "./cipher.js";
 import type { Datastores } from "./datastores.js";
 import type { PinManager } from "./pin-manager/index.js";
+import type { EntryReferences } from "./entry-references.js";
 
 export type Libp2p = BaseLibp2p<{ pubsub: PubSub<GossipsubEvents> }>
 
@@ -86,6 +87,7 @@ export interface Components {
 	pinManager: PinManager,
 	uploads: Awaited<ReturnType<typeof createUploadManager>>,
 	downloads: Awaited<ReturnType<typeof createDownloadManager>>
+	references: EntryReferences
 }
 
 export const EncodedEntry = z.object({

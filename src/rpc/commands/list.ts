@@ -34,6 +34,12 @@ export const method = (components: Components) => async () => {
 
 			const item = CID.decode(entry.cid);
 
+			let ref: { priority: number } | null = null;
+
+			if (pair.key.toString().startsWith("/r")) {
+				ref = await components.references.get(CID.parse(cid), pair.key.toString().slice(2));
+			}
+
 			promises.push((async () => {
 				return {
 					path: pair.key.toString(),
@@ -48,7 +54,7 @@ export const method = (components: Components) => async () => {
 					blocks: await components.pinManager.getBlockCount(item),
 					totalSize: entry.size,
 					totalBlocks: entry.blocks,
-					priority: entry.priority
+					priority: ref?.priority ?? entry.priority
 				};
 			})());
 		}
