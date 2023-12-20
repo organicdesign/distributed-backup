@@ -359,7 +359,7 @@ export class PinManager {
 			// Download the block and fetch the downloads referencing it.
 			const [ downloads, block ] = await Promise.all([
 				this.components.downloads.findAll({ where: { cid: cid.toString() } }),
-				this.components.helia.blockstore.get(cid)
+				this.components.helia.blockstore.get(cid, { signal: AbortSignal.timeout(10000) })
 			]);
 
 			for (const d of downloads) {
@@ -425,10 +425,15 @@ export class PinManager {
 
 		this.activeDownloads.set(cid.toString(), promise);
 
-		const data = await promise;
+		try {
+			const data = await promise;
 
-		this.activeDownloads.delete(cid.toString());
+			this.activeDownloads.delete(cid.toString());
 
-		return data;
+			return data;
+		} catch (error) {
+			this.activeDownloads.delete(cid.toString());
+			throw error;
+		}
 	}
 }

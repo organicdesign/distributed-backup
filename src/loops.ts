@@ -53,6 +53,15 @@ export const downloadLoop = async (components: Components) => {
 		}
 	});
 
+	const catcher = async function* <T = unknown>(itr: AsyncIterable<T>): AsyncIterable<T> {
+		try {
+			yield* itr;
+		} catch (error) {
+			logger.warn("downloader threw: ", error)
+			yield* catcher(itr);
+		}
+	};
+
 	const loop = async function * () {
 		for (;;) {
 			await new Promise(resolve => setTimeout(resolve, 100));
@@ -90,6 +99,7 @@ export const downloadLoop = async (components: Components) => {
 		getPins,
 		batchDownload,
 		i => parallel(i, { concurrency: SLOTS, ordered: false }),
+		i => catcher(i),
 		logSpeed,
 		i => collect(i)
 	);
