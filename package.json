@@ -61,11 +61,12 @@
     "streaming-iterables": "^8.0.1",
     "tiny-secp256k1": "^2.2.3",
     "ts-event-target": "^0.1.5",
-    "welo": "^3.0.1-7dfa4dd",
+    "welo": "^3.0.1-2dcd474",
     "yargs": "^17.7.2",
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@helia/interface": "^3.0.0",
     "@libp2p/interface": "^1.1.1",
     "@swc/core": "^1.3.102",
     "@typescript-eslint/eslint-plugin": "^6.18.0",
