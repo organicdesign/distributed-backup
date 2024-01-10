@@ -1,7 +1,7 @@
 import { createLibp2p } from "libp2p";
 import { yamux } from "@chainsafe/libp2p-yamux";
 import { tcp } from "@libp2p/tcp";
-import { kadDHT } from "@libp2p/kad-dht";
+import { kadDHT, removePrivateAddressesMapper, removePublicAddressesMapper } from "@libp2p/kad-dht";
 import { webSockets } from "@libp2p/websockets";
 import { gossipsub } from "@chainsafe/libp2p-gossipsub";
 import { noise } from "@chainsafe/libp2p-noise";
@@ -47,10 +47,20 @@ export default async ({ datastore, peerId, psk, addresses, bootstrap: bs, server
 			...services,
 			identify: identify(),
 			pubsub: gossipsub({ allowPublishToZeroPeers: true }),
-			dht: kadDHT(),
 			autoNAT: autoNAT(),
 			dcutr: dcutr(),
-			upnpNAT: uPnPNAT()
+			upnpNAT: uPnPNAT(),
+
+			dht: kadDHT({
+				protocol: "/ipfs/kad/1.0.0",
+				peerInfoMapper: removePrivateAddressesMapper
+			}),
+
+			lanDHT: kadDHT({
+				protocol: "/ipfs/lan/kad/1.0.0",
+				peerInfoMapper: removePublicAddressesMapper,
+				clientMode: false
+			})
 		},
 
 		peerDiscovery: bs && bs.length > 0 ? [
