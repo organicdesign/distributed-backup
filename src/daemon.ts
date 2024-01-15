@@ -24,7 +24,7 @@ import createHeliaPinManager from "./helia-pin-manager/index.js";
 import { createKeyManager } from "./key-manager/index.js";
 import { projectPath } from "./utils.js";
 import createUploadManager from "./sync/upload-operations.js";
-import createDownloadManager from "./sync/download-operations.js";
+import createSyncManager from "./sync/sync-operations.js";
 import { EntryReferences } from "./entry-references.js";
 import type { Components } from "./interface.js";
 
@@ -107,7 +107,7 @@ heliaPinManager.events.addEventListener("pins:removed", ({ cid }) => logger.pins
 
 const pinManager = new PinManager({ pinManager: heliaPinManager, datastore: stores.get("pin-references") });
 
-const downloads = await createDownloadManager({ stores, pinManager });
+const sync = await createSyncManager({ stores, pinManager, groups });
 
 logger.lifecycle("downloads synced");
 
@@ -127,7 +127,7 @@ const components: Components = {
 	stores,
 	pinManager,
 	uploads,
-	downloads,
+	sync,
 	references
 };
 

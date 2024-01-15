@@ -28,3 +28,4 @@ export const uploads = createLogger("uploads");
 export const downloads = createLogger("downloads");
 export const debug = createLogger("debug");
 export const warn = createLogger("warning");
+export const entry = createLogger("entry");
