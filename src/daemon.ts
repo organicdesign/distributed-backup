@@ -22,7 +22,7 @@ import { createCipher } from "./cipher.js";
 import { PinManager } from "./pin-manager/index.js";
 import createHeliaPinManager from "./helia-pin-manager/index.js";
 import { createKeyManager } from "./key-manager/index.js";
-import { projectPath } from "./utils.js";
+import { projectPath, isMemory } from "./utils.js";
 import createUploadManager from "./sync/upload-operations.js";
 import createSyncManager from "./sync/sync-operations.js";
 import { EntryReferences } from "./entry-references.js";
@@ -58,23 +58,21 @@ logger.lifecycle("starting...");
 const config = await getConfig(argv.config);
 logger.lifecycle("loaded config");
 
-const storage = config.storage === ":memory:" ? config.storage : Path.join(config.storage, "sqlite");
-
-if (config.storage !== ":memory:") {
+if (!isMemory(config.storage)) {
 	await fs.mkdir(Path.join(config.storage, "datastore/libp2p"), { recursive: true });
 }
 
 // Setup datastores and blockstores.
 const keyManager = await createKeyManager(Path.resolve(argv.key));
-const datastore = config.storage === ":memory:" ? new MemoryDatastore() : new FsDatastore(Path.join(config.storage, "datastore"));
+const datastore = isMemory(config.storage) ? new MemoryDatastore() : new FsDatastore(Path.join(config.storage, "datastore"));
 const stores = new Datastores(datastore);
-const blockstore = new Filestore(config.storage === ":memory:" ? new MemoryBlockstore() : new FsBlockstore(Path.join(config.storage, "blockstore")), stores.get("helia/filestore"));
+const blockstore = new Filestore(isMemory(config.storage) ? new MemoryBlockstore() : new FsBlockstore(Path.join(config.storage, "blockstore")), stores.get("helia/filestore"));
 
 // const references = await createReferences(stores.get("references"));
 const peerId = await keyManager.getPeerId();
 const psk = keyManager.getPskKey();
 
-const libp2pDatastore = config.storage === ":memory:" ? new MemoryDatastore() : new FsDatastore(Path.join(config.storage, "datastore/libp2p"));
+const libp2pDatastore = isMemory(config.storage) ? new MemoryDatastore() : new FsDatastore(Path.join(config.storage, "datastore/libp2p"));
 
 const libp2p = await createLibp2p({ datastore: libp2pDatastore, peerId, psk: config.private ? psk : undefined, ...config });
 logger.lifecycle("loaded libp2p");
@@ -103,7 +101,9 @@ logger.lifecycle("loaded groups");
 const { rpc, close } = await createNetServer(argv.socket);
 logger.lifecycle("loaded server");
 
-const heliaPinManager = await createHeliaPinManager(helia, { storage });
+
+
+const heliaPinManager = await createHeliaPinManager(helia, { storage: isMemory(config.storage) ? ":memory:" : Path.join(config.storage, "sqlite") });
 
 heliaPinManager.events.addEventListener("downloads:added", ({ cid }) => logger.downloads(`[+] ${cid}`));
 heliaPinManager.events.addEventListener("pins:added", ({ cid }) => logger.pins(`[+] ${cid}`));

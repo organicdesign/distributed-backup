@@ -7,9 +7,11 @@ import * as dagWalkers from "../node_modules/helia/dist/src/utils/dag-walkers.js
 import type { AbortOptions } from "@libp2p/interface";
 import type { Helia } from "@helia/interface";
 import type { Blockstore } from "interface-blockstore";
-import { Libp2p, EncodedEntry, Entry, Components } from "./interface.js";
+import { Libp2p, EncodedEntry, Entry, Components, MEMORY_MAGIC } from "./interface.js";
 
 export const projectPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), "..");
+
+export const isMemory = (storage?: string): boolean => storage === MEMORY_MAGIC;
 
 export const safePin = async (helia: Helia, cid: CID) => {
 	if (!await helia.pins.isPinned(cid)) {

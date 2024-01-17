@@ -18,6 +18,7 @@ import type { EntryReferences } from "./entry-references.js";
 
 export type Libp2p = BaseLibp2p<{ pubsub: PubSub<GossipsubEvents> }>
 
+export const MEMORY_MAGIC = ":memory:";
 export const VERSION_KEY = "v";
 export const DATA_KEY = "r";
 
