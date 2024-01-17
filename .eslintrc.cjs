@@ -1,9 +1,4 @@
 module.exports = {
-	env: {
-		commonjs: true,
-		es2021: true,
-		node: true,
-	},
 	parserOptions: {
 		ecmaVersion: "latest"
 	},
@@ -11,6 +6,8 @@ module.exports = {
 	extends: [
 		"eslint:recommended"
 	],
+	plugins: ['@typescript-eslint'],
+	root: true,
 	rules: {
 		curly: [1, "all"],
 		// disallow single quotes
@@ -23,7 +20,7 @@ module.exports = {
 		indent: [1, "tab", {
 			SwitchCase: 1
 		}],
-		// prevent commar dangles
+		// prevent comma dangles
 		"comma-dangle": [1, "never"],
 		// allow paren-less arrow functions
 		"arrow-parens": 0,
