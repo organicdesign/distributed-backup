@@ -106,7 +106,8 @@ export const EncodedEntry = z.object({
 	blocks: z.number(),
 	size: z.number(),
 	sequence: z.number(),
-	priority: z.number()
+	priority: z.number(),
+	revisionStrategy: RevisionStrategies
 });
 
 export type EncodedEntry = z.infer<typeof EncodedEntry>
@@ -119,7 +120,8 @@ export interface Entry {
 	blocks: number
 	size: number
 	priority: number
-	sequence: number
+	sequence: number,
+	revisionStrategy: RevisionStrategies
 }
 
 export const LocalEntryData = z.object({

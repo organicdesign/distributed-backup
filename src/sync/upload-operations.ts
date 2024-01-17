@@ -64,7 +64,8 @@ export default async (components: Pick<Components, "stores" | "pinManager" | "li
 				size: 0,
 				timestamp: Date.now(),
 				priority: 100,
-				sequence: 0
+				sequence: 0,
+				revisionStrategy: "none"
 			});
 
 			await put(groupData, path, entry);

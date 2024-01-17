@@ -3,7 +3,7 @@ import * as dagCbor from "@ipld/dag-cbor";
 import { countPeers } from "../../utils.js";
 import * as logger from "../../logger.js";
 import { decodeAny } from "../../utils.js";
-import { type Components, EncodedEntry } from "../../interface.js";
+import { type Components, EncodedEntry, LocalEntryData } from "../../interface.js";
 
 export const name = "list";
 
@@ -34,7 +34,7 @@ export const method = (components: Components) => async () => {
 
 			const item = CID.decode(entry.cid);
 
-			let ref: { priority: number } | null = null;
+			let ref: Partial<LocalEntryData> | null = null;
 
 			if (pair.key.toString().startsWith("/r")) {
 				ref = await components.references.get(CID.parse(cid), pair.key.toString().slice(2));
@@ -54,7 +54,8 @@ export const method = (components: Components) => async () => {
 					blocks: await components.pinManager.getBlockCount(item),
 					totalSize: entry.size,
 					totalBlocks: entry.blocks,
-					priority: ref?.priority ?? entry.priority
+					priority: ref?.priority ?? entry.priority,
+					revisionStrategy: ref?.revisionStrategy ?? entry.revisionStrategy
 				};
 			})());
 		}

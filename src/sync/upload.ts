@@ -44,7 +44,8 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 		encrypted: params.encrypt,
 		timestamp: Date.now(),
 		priority: params.priority,
-		author: components.libp2p.peerId.toCID()
+		author: components.libp2p.peerId.toCID(),
+		revisionStrategy: components.config.defaultRevisionStrategy
 	});
 
 	await components.uploads.add("put", [params.group.bytes, params.path, entry]);

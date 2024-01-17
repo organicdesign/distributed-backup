@@ -79,7 +79,8 @@ export class Groups implements Startable {
 			sequence: entry.sequence,
 			blocks: entry.blocks,
 			size: entry.size,
-			priority: entry.priority
+			priority: entry.priority,
+			revisionStrategy: entry.revisionStrategy
 		};
 
 		// Update global database.
