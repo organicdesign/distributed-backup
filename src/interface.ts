@@ -15,6 +15,7 @@ import type { Cipher } from "./cipher.js";
 import type { Datastores } from "./datastores.js";
 import type { PinManager } from "./pin-manager/index.js";
 import type { EntryReferences } from "./entry-references.js";
+import type { DatabaseMonitor } from "./database-monitor.js";
 
 export type Libp2p = BaseLibp2p<{ pubsub: PubSub<GossipsubEvents> }>
 
@@ -88,7 +89,8 @@ export interface Components {
 	pinManager: PinManager,
 	uploads: Awaited<ReturnType<typeof createUploadManager>>,
 	sync: Awaited<ReturnType<typeof createSyncManager>>
-	references: EntryReferences
+	references: EntryReferences,
+	monitor: DatabaseMonitor
 }
 
 export const EncodedEntry = z.object({

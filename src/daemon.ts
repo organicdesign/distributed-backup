@@ -25,6 +25,7 @@ import { createKeyManager } from "./key-manager/index.js";
 import { projectPath, isMemory } from "./utils.js";
 import createUploadManager from "./sync/upload-operations.js";
 import createSyncManager from "./sync/sync-operations.js";
+import { DatabaseMonitor } from "./database-monitor.js";
 import { EntryReferences } from "./entry-references.js";
 import type { Components } from "./interface.js";
 
@@ -112,7 +113,9 @@ heliaPinManager.events.addEventListener("pins:removed", ({ cid }) => logger.pins
 
 const pinManager = new PinManager({ pinManager: heliaPinManager, datastore: stores.get("pin-references") });
 
-const sync = await createSyncManager({ stores, pinManager, groups });
+const monitor = new DatabaseMonitor({ datastore: stores.get("database-monitor") });
+
+const sync = await createSyncManager({ stores, pinManager, groups, monitor });
 
 logger.lifecycle("downloads synced");
 
@@ -123,7 +126,6 @@ logger.lifecycle("uploads synced");
 const components: Components = {
 	libp2p,
 	cipher,
-	// @ts-ignore
 	helia,
 	welo,
 	blockstore,
@@ -133,7 +135,8 @@ const components: Components = {
 	pinManager,
 	uploads,
 	sync,
-	references
+	references,
+	monitor
 };
 
 // Register all the RPC commands.

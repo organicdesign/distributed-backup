@@ -2,20 +2,19 @@ import Path from "path";
 import * as dagCbor from "@ipld/dag-cbor";
 import all from "it-all";
 import { CID } from "multiformats/cid";
-import { Key } from "interface-datastore";
 import { OperationManager } from "../operation-manager.js";
 import { decodeEntry } from "../utils.js";
 import * as logger from "../logger.js";
 import selectRevisions from "../select-revisions.js";
 import { EncodedEntry, Components, DATA_KEY, VERSION_KEY } from "../interface.js";
 
-export default async (components: Pick<Components, "stores" | "pinManager"| "groups">) => {
+export default async (components: Pick<Components, "stores" | "pinManager"| "groups" | "monitor">) => {
 	const om = new OperationManager(components.stores.get("download-operations"), {
-		put: async (groupData: Uint8Array, path: string, encodedEntry: EncodedEntry, digest: Uint8Array) => {
+		put: async (groupData: Uint8Array, path: string, rawEntry: Uint8Array) => {
+			const encodedEntry = EncodedEntry.parse(dagCbor.decode(rawEntry));
 			const groupCid = CID.decode(groupData);
 			const entry = decodeEntry(encodedEntry);
 			const tag = Path.join(groupCid.toString(), path);
-			const store = components.stores.get("parsed-entries");
 
 			logger.references(`[+] ${tag}`);
 
@@ -64,19 +63,19 @@ export default async (components: Pick<Components, "stores" | "pinManager"| "gro
 				}
 
 				for (const { key: path, value: revision } of selectedRevisions) {
-					if (!(await store.has(new Key(path)))) {
+					if (!(await components.monitor.check(groupCid, path, new Uint8Array()))) {
 						console.log("adding revision", path);
 						await components.pinManager.pin(groupCid, path, CID.decode(revision.cid));
 
-						await store.put(new Key(path), new Uint8Array());
+						await components.monitor.add(groupCid, path, new Uint8Array());
 					}
 				}
 			}
 
-			////////////////////////////////////////////////////////////////////////
+			//////////////////////////////////////////////////////////////////////////
 
 			// Create a reference now that we have processed it.
-			await store.put(new Key(path), digest);
+			await components.monitor.add(groupCid, path, rawEntry);
 		}
 	});
 
