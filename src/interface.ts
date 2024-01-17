@@ -51,6 +51,10 @@ export const zCID = z.custom<string>(val => {
 	return true;
 });
 
+export const RevisionStrategies = z.enum(["all", "none", "log"]);
+
+export type RevisionStrategies = z.infer<typeof RevisionStrategies>;
+
 export const Config = z.object({
 	serverMode: z.boolean(),
 	private: z.boolean(),
@@ -59,7 +63,7 @@ export const Config = z.object({
 	storage: z.string(),
 	addresses: z.array(z.string()),
 	bootstrap: z.array(z.string()),
-	defaultRevisionStrategy: z.enum(["all", "none", "log"])
+	defaultRevisionStrategy: RevisionStrategies
 });
 
 export type Config = z.infer<typeof Config>
@@ -117,6 +121,13 @@ export interface Entry {
 	priority: number
 	sequence: number
 }
+
+export const LocalEntryData = z.object({
+	priority: z.number().min(0).max(100),
+	revisionStrategy: RevisionStrategies
+});
+
+export type LocalEntryData = z.infer<typeof LocalEntryData>;
 
 export const ImportOptions = z.object({
 	hash: z.string(),

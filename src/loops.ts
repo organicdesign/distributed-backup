@@ -83,13 +83,17 @@ export const downloadLoop = async (components: Components) => {
 				const data = await database.store.selectors.get(paily)(path);
 				const entry = decodeEntry(EncodedEntry.parse(data));
 
-				let ref: { priority: number } | null = null;
+				let priority: number = entry.priority;
 
 				if (path.startsWith("/r")) {
-					ref = await components.references.get(group, path.slice(2));
+					const localRef = await components.references.get(group, path.slice(2));
+
+					if (localRef?.priority != null) {
+						priority = localRef.priority;
+					}
 				}
 
-				yield [entry.cid, ref?.priority ?? entry.priority];
+				yield [entry.cid, priority];
 			}
 		}
 	};
