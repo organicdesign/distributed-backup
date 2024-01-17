@@ -35,6 +35,7 @@ Then create a configuration file similar to the following and save it to your co
 	"validateInterval": 10,
 	"tickInterval": 0.1,
 	"storage": "/path/to/data",
+	"defaultRevisionStrategy": "log",
 	"addresses": [ "/ip4/0.0.0.0/tcp/0" ],
 	"bootstrap": []
 }

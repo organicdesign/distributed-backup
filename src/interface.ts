@@ -58,7 +58,8 @@ export const Config = z.object({
 	tickInterval: z.number(),
 	storage: z.string(),
 	addresses: z.array(z.string()),
-	bootstrap: z.array(z.string())
+	bootstrap: z.array(z.string()),
+	defaultRevisionStrategy: z.enum(["all", "none", "log"])
 });
 
 export type Config = z.infer<typeof Config>

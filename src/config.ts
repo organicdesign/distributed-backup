@@ -12,6 +12,7 @@ export const getConfig = async (path: string): Promise<Config> => {
 		tickInterval: 10 * 60,
 		storage: ":memory:",
 		bootstrap: [],
+		defaultRevisionStrategy: "log",
 
 		addresses: [
 			"/ip4/127.0.0.1/tcp/0",

@@ -53,7 +53,7 @@ export default async (components: Pick<Components, "stores" | "pinManager"| "gro
 						continue;
 					}
 
-					const hasPinned = await components.pinManager.has(groupCid, path, CID.decode(revision.cid))
+					const hasPinned = await components.pinManager.has(groupCid, path, CID.decode(revision.cid));
 
 					if (!hasPinned) {
 						continue;
