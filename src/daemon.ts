@@ -60,7 +60,9 @@ logger.lifecycle("loaded config");
 
 const storage = config.storage === ":memory:" ? config.storage : Path.join(config.storage, "sqlite");
 
-await fs.mkdir(Path.join(config.storage, "datastore/libp2p"), { recursive: true });
+if (config.storage !== ":memory:") {
+	await fs.mkdir(Path.join(config.storage, "datastore/libp2p"), { recursive: true });
+}
 
 // Setup datastores and blockstores.
 const keyManager = await createKeyManager(Path.resolve(argv.key));
@@ -71,7 +73,10 @@ const blockstore = new Filestore(config.storage === ":memory:" ? new MemoryBlock
 // const references = await createReferences(stores.get("references"));
 const peerId = await keyManager.getPeerId();
 const psk = keyManager.getPskKey();
-const libp2p = await createLibp2p({ datastore: config.storage === ":memory:" ? new MemoryDatastore() : new FsDatastore(Path.join(config.storage, "datastore/libp2p")), peerId, psk: config.private ? psk : undefined, ...config });
+
+const libp2pDatastore = config.storage === ":memory:" ? new MemoryDatastore() : new FsDatastore(Path.join(config.storage, "datastore/libp2p"));
+
+const libp2p = await createLibp2p({ datastore: libp2pDatastore, peerId, psk: config.private ? psk : undefined, ...config });
 logger.lifecycle("loaded libp2p");
 
 // @ts-ignore
