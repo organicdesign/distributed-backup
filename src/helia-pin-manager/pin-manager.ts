@@ -1,5 +1,6 @@
 import * as dagWalkers from "../../node_modules/helia/dist/src/utils/dag-walkers.js";
 import { addBlockRef, addPinRef } from "./utils.js";
+import all from "it-all";
 import { Event, EventTarget} from "ts-event-target";
 import Queue from "p-queue";
 import { DeferredPromise } from "@open-draft/deferred-promise";
@@ -70,7 +71,7 @@ export class PinManager {
 		}
 
 		try {
-			await this.components.helia.pins.rm(cid);
+			await all(this.components.helia.pins.rm(cid));
 		} catch (error) {
 			if ((error as Error)["code"] !== "ERR_NOT_FOUND") {
 				throw error;
