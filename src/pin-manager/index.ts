@@ -12,6 +12,12 @@ export class PinManager {
 		this.pinManager = components.pinManager;
 	}
 
+	async has (group: CID, path: string, cid: CID): Promise<boolean> {
+		const key = new Key(`/${group.toString()}/${path}/${cid.toString()}`);
+
+		return await this.datastore.has(key);
+	}
+
 	async pin (group: CID, path: string, cid: CID): Promise<void> {
 		await this.updateKey(group, path, cid);
 		await this.pinManager.pin(cid);

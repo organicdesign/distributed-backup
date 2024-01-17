@@ -50,9 +50,17 @@ export default async (components: Pick<Components, "stores" | "pinManager"| "gro
 				for (const { key: path, value: revision } of revisions) {
 					const hasSelectedOld = selectedRevisions.find(r => r.key === path) != null;
 
-					if (!hasSelectedOld) {
-						logger.warn("Need to delete old revision but not implemented yet.", revision);
+					if (hasSelectedOld) {
+						continue;
 					}
+
+					const hasPinned = await components.pinManager.has(groupCid, path, CID.decode(revision.cid))
+
+					if (!hasPinned) {
+						continue;
+					}
+
+					logger.warn("revision needs to be deleted but it's not implemented");
 				}
 
 				for (const { key: path, value: revision } of selectedRevisions) {
