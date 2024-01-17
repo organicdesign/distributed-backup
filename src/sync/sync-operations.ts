@@ -1,21 +1,13 @@
 import Path from "path";
 import * as dagCbor from "@ipld/dag-cbor";
+import all from "it-all";
 import { CID } from "multiformats/cid";
 import { Key } from "interface-datastore";
 import { OperationManager } from "../operation-manager.js";
 import { decodeEntry } from "../utils.js";
 import * as logger from "../logger.js";
+import selectRevisions from "../select-revisions.js";
 import { EncodedEntry, Components, DATA_KEY, VERSION_KEY } from "../interface.js";
-
-const REVISIONS_PER_INTERVAL = 3;
-const MS_IN_DAY = 1000 * 60 * 60 * 24;
-const MS_IN_WEEK = MS_IN_DAY * 7;
-const MS_IN_FORTNIGHT = MS_IN_WEEK * 2;
-const MS_IN_MONTH = MS_IN_FORTNIGHT * 2;
-
-const roundTo = (timestamp: number, mod: number) => {
-	return timestamp - (timestamp % mod);
-}
 
 export default async (components: Pick<Components, "stores" | "pinManager"| "groups">) => {
 	const om = new OperationManager(components.stores.get("download-operations"), {
@@ -45,63 +37,30 @@ export default async (components: Pick<Components, "stores" | "pinManager"| "gro
 
 				pathParts[1] = VERSION_KEY;
 
-				const revisions: (EncodedEntry & { path: string })[] = [];
+				const rawRevisions = await all(index.query({ prefix: pathParts.join("/") }));
 
-				for await (const { key, value } of index.query({ prefix: pathParts.join("/") })) {
-					const entry = EncodedEntry.parse(dagCbor.decode(value));
-
-					revisions.push({ path: key.toString(), ...entry });
-				}
+				const revisions = rawRevisions.map(r => ({
+					value: EncodedEntry.parse(dagCbor.decode(r.value)),
+					key: r.key.toString()
+				}));
 
 				// Filter revisions.
+				const selectedRevisions = selectRevisions(revisions);
 
-				// Get a list of target dates:
-				const dates: number[] = [roundTo(Date.now(), MS_IN_DAY)];
-
-				for (const interval of [MS_IN_DAY, MS_IN_WEEK, MS_IN_FORTNIGHT, MS_IN_MONTH]) {
-					for (let i = 0; i < REVISIONS_PER_INTERVAL; i++) {
-						dates.push(roundTo(dates[dates.length - 1], interval) - interval);
-					}
-				}
-
-				const getRevisionClosestTo = (date: number) => {
-					let selected = revisions[0];
-
-					for (const revision of revisions) {
-						if (Math.abs(date - revision.timestamp) < Math.abs(date - selected.timestamp)) {
-							selected = revision;
-						}
-					}
-
-					return selected;
-				}
-
-				const selectedRevisions: (EncodedEntry & { path: string })[] = [];
-
-				for (const date of dates) {
-					const revision = getRevisionClosestTo(date)
-
-					if (selectedRevisions.includes(revision)) {
-						continue;
-					}
-
-					selectedRevisions.push(revision);
-				}
-
-				for (const revision of revisions) {
-					const hasSelectedOld = selectedRevisions.find(r => r.path === revision.path) != null;
+				for (const { key: path, value: revision } of revisions) {
+					const hasSelectedOld = selectedRevisions.find(r => r.key === path) != null;
 
 					if (!hasSelectedOld) {
-						logger.warn("Need to delete old revision but not implemented yet.");
+						logger.warn("Need to delete old revision but not implemented yet.", revision);
 					}
 				}
 
-				for (const revision of selectedRevisions) {
-					if (!(await store.has(new Key(revision.path)))) {
-						console.log("adding revision", revision.path);
-						await components.pinManager.pin(groupCid, revision.path, CID.decode(revision.cid));
+				for (const { key: path, value: revision } of selectedRevisions) {
+					if (!(await store.has(new Key(path)))) {
+						console.log("adding revision", path);
+						await components.pinManager.pin(groupCid, path, CID.decode(revision.cid));
 
-						await store.put(new Key(revision.path), new Uint8Array());
+						await store.put(new Key(path), new Uint8Array());
 					}
 				}
 			}
