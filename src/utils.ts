@@ -83,6 +83,20 @@ export const walkDag = async function * (blockstore: Blockstore, cid: CID, maxDe
 	}
 };
 
+export const getDagSize = async (blockstore: Blockstore, cid: CID) => {
+	let size = 0;
+	let blocks = 0;
+
+	for await (const getBlock of walkDag(blockstore, cid)) {
+		const { block } = await getBlock();
+
+		blocks++;
+		size += block.length;
+	}
+
+	return { size, blocks };
+};
+
 export const linearWeightTranslation = (p: number) => {
 	return 1 - p;
 };

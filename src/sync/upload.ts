@@ -4,7 +4,7 @@ import selectHasher from "../fs-importer/select-hasher.js";
 import selectChunker from "../fs-importer/select-chunker.js";
 import { importAny as importAnyEncrypted } from "../fs-importer/import-copy-encrypted.js";
 import { importAny as importAnyPlaintext } from "../fs-importer/import-copy-plaintext.js";
-import { walkDag, encodeEntry } from "../utils.js";
+import { encodeEntry, getDagSize } from "../utils.js";
 import { CID } from "multiformats/cid";
 import { Components, ImportOptions } from "../interface.js";
 import type { ImporterConfig } from "../fs-importer/interfaces.js";
@@ -33,15 +33,7 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 
 	logger.add("imported %s", params.localPath);
 
-	let size = 0;
-	let blocks = 0;
-
-	for await (const getBlock of walkDag(blockstore, cid)) {
-		const { block } = await getBlock();
-
-		blocks++;
-		size += block.length;
-	}
+	const { size, blocks } = await getDagSize(blockstore, cid);
 
 	// Create the action record.
 	const entry = encodeEntry({
