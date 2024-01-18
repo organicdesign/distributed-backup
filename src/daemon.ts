@@ -10,7 +10,6 @@ import yargs from "yargs/yargs";
 import { hideBin } from "yargs/helpers";
 import { createWelo, pubsubReplicator, bootstrapReplicator } from "welo";
 import createLibp2p from "./libp2p.js";
-import { Filestore } from "./filestore/index.js";
 import { getConfig } from "./config.js";
 import * as logger from "./logger.js";
 import { Looper } from "./looper.js";
@@ -67,7 +66,7 @@ if (!isMemory(config.storage)) {
 const keyManager = await createKeyManager(Path.resolve(argv.key));
 const datastore = isMemory(config.storage) ? new MemoryDatastore() : new FsDatastore(Path.join(config.storage, "datastore"));
 const stores = new Datastores(datastore);
-const blockstore = new Filestore(isMemory(config.storage) ? new MemoryBlockstore() : new FsBlockstore(Path.join(config.storage, "blockstore")), stores.get("helia/filestore"));
+const blockstore = isMemory(config.storage) ? new MemoryBlockstore() : new FsBlockstore(Path.join(config.storage, "blockstore"));
 
 // const references = await createReferences(stores.get("references"));
 const peerId = await keyManager.getPeerId();

@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-message DataObj {
-  string FilePath = 1;
-  uint64 Offset = 2;
-  uint64 Size = 3;
-  optional bytes IV = 4;
-}
