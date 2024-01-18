@@ -126,10 +126,9 @@ describe("parseKeyData", () => {
 		await Promise.all(data.map(async ({ key, psk }) => {
 			const keyData = parseKeyData({ key, psk });
 
-			// This should be tested a bit better...
 			assert(keyData);
-			assert(keyData.key);
-			assert(keyData.psk);
+			assert.deepEqual(keyData.key, decodeKey(key));
+			assert.deepEqual(keyData.psk, uint8ArrayFromString(psk));
 		}));
 	});
 });
