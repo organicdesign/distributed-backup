@@ -13,7 +13,12 @@ export interface ImportResult {
 	size: number
 }
 
+export interface EncryptionParams {
+	iv: Uint8Array,
+	salt: Uint8Array
+}
+
 export interface Cipher {
-	encrypt: (data: Iterable<Uint8Array> | AsyncIterable<Uint8Array>, params: { iv: Uint8Array, salt: Uint8Array }) => AsyncIterable<Uint8Array>
-	generate: (data: Iterable<Uint8Array> | AsyncIterable<Uint8Array>) => Promise<{ iv: Uint8Array, salt: Uint8Array }>
+	encrypt: (data: Iterable<Uint8Array> | AsyncIterable<Uint8Array>, params: EncryptionParams) => AsyncIterable<Uint8Array>
+	generate: (data: Iterable<Uint8Array> | AsyncIterable<Uint8Array>) => Promise<EncryptionParams>
 }

@@ -59,7 +59,7 @@ export const importFile = async (
 	await blockstore.put(cid, block);
 
 	return { cid, size };
-}
+};
 
 export const importDir = async (
 	path: string,
@@ -104,11 +104,11 @@ export const importDir = async (
 	await blockstore.put(cid, block);
 
 	return { cid, size };
-}
+};
 
-export const importAny = async (path: string, config: ImporterConfig, blockstore: Blockstore, cipher: Cipher): Promise<ImportResult> => {
+export default async (blockstore: Blockstore, path: string, config: ImporterConfig, cipher: Cipher): Promise<ImportResult> => {
 	const stat = await fs.promises.stat(path);
 	const load = stat.isDirectory() ? importDir : importFile;
 
 	return await load(path, config, blockstore, cipher);
-}
+};

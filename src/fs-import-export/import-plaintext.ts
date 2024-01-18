@@ -48,7 +48,7 @@ export const importFile = async (path: string, config: ImporterConfig, blockstor
 	await blockstore.put(cid, block);
 
 	return { cid, size };
-}
+};
 
 export const importDir = async (path: string, config: ImporterConfig, blockstore: Blockstore): Promise<ImportResult> => {
 	const dirents = await fs.promises.readdir(path, { withFileTypes: true });
@@ -75,11 +75,11 @@ export const importDir = async (path: string, config: ImporterConfig, blockstore
 	await blockstore.put(cid, block);
 
 	return { cid, size };
-}
+};
 
-export const importAny = async (path: string, config: ImporterConfig, blockstore: Blockstore): Promise<ImportResult> => {
+export default async (blockstore: Blockstore, path: string, config: ImporterConfig): Promise<ImportResult> => {
 	const stat = await fs.promises.stat(path);
 	const load = stat.isDirectory() ? importDir : importFile;
 
 	return await load(path, config, blockstore);
-}
+};

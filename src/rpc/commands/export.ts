@@ -1,6 +1,6 @@
 import Path from "path";
 import { z } from "zod";
-import { exportFs } from "../../fs-exporter/index.js";
+import { fsExport } from "../../fs-import-export/index.js";
 import { CID } from "multiformats/cid";
 import { decodeEntry } from "../../utils.js";
 import { DATA_KEY } from "../../interface.js"
@@ -30,5 +30,5 @@ export const method = (components: Components) => async (raw: unknown) => {
 
 	const entry = decodeEntry(encodedEntry);
 
-	await exportFs(components, entry.cid, params.outPath);
+	await fsExport(components.blockstore, params.outPath, entry.cid);
 };

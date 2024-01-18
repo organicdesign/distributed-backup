@@ -5,9 +5,9 @@ import * as dagPb from "@ipld/dag-pb";
 import { UnixFS } from "ipfs-unixfs";
 import Path from "path";
 import fs from "fs/promises";
-import type { Components } from "../interface.js";
+import type { Blockstore } from "interface-blockstore";
 
-export const exportFs = async ({ blockstore }: Components, cid: CID, path: string) => {
+export default async (blockstore: Blockstore, path: string, cid: CID): Promise<void> => {
 	const walk = async (cid: CID, path: string) => {
 		const dagWalker = Object.values(dagWalkers).find(dw => dw.codec === cid.code);
 

@@ -1,17 +1,11 @@
 import { BlackHoleBlockstore } from "blockstore-core/black-hole";
-import * as logger from "../logger.js";
-import selectHasher from "../fs-importer/select-hasher.js";
-import selectChunker from "../fs-importer/select-chunker.js";
-import { importAny as importAnyEncrypted } from "../fs-importer/import-copy-encrypted.js";
-import { importAny as importAnyPlaintext } from "../fs-importer/import-copy-plaintext.js";
-import { encodeEntry, getDagSize } from "../utils.js";
 import { CID } from "multiformats/cid";
+import * as logger from "../logger.js";
+import { encodeEntry, getDagSize } from "../utils.js";
 import { Components, ImportOptions } from "../interface.js";
-import type { ImporterConfig } from "../fs-importer/interfaces.js";
+import { selectHasher, selectChunker, fsImport, type ImporterConfig } from "../fs-import-export/index.js";
 
 export const addLocal = async (components: Components, params: ImportOptions & { group: CID, onlyHash?: boolean, priority: number, path: string, localPath: string }): Promise<CID> => {
-	const { blockstore, cipher } = components;
-
 	const config: ImporterConfig = {
 		chunker: selectChunker(),
 		hasher: selectHasher(),
@@ -22,10 +16,9 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 		logger.add("importing %s", params.localPath);
 	}
 
-	const store = params.onlyHash ? new BlackHoleBlockstore() : blockstore;
-	const load = params.encrypt ? importAnyEncrypted : importAnyPlaintext;
-
-	const { cid } = await load(params.localPath, config, store, cipher);
+	const store = params.onlyHash ? new BlackHoleBlockstore() : components.blockstore;
+	const cipher = params.encrypt ? components.cipher : undefined;
+	const { cid } = await fsImport(store, params.localPath, config, cipher);
 
 	if (params.onlyHash) {
 		return cid;
@@ -33,7 +26,7 @@ export const addLocal = async (components: Components, params: ImportOptions & {
 
 	logger.add("imported %s", params.localPath);
 
-	const { size, blocks } = await getDagSize(blockstore, cid);
+	const { size, blocks } = await getDagSize(components.blockstore, cid);
 
 	// Create the action record.
 	const entry = encodeEntry({
