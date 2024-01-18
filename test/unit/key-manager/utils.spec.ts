@@ -8,7 +8,7 @@ import {
 	keyToPeerId,
 	generateKeyData,
 	parseKeyData
-} from "../../src/key-manager/utils.js";
+} from "../../../src/key-manager/utils.js";
 import data from "./data.js";
 
 describe("nameToPath", () => {

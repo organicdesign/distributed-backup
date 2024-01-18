@@ -2,7 +2,7 @@ import assert from "assert/strict";
 import all from "it-all";
 import { createHelia, Helia } from "helia";
 import { CID } from "multiformats/cid";
-import { addPinRef, addBlockRef } from "../../src/helia-pin-manager/utils.js";
+import { addPinRef, addBlockRef } from "../../../src/helia-pin-manager/utils.js";
 
 const cid = CID.parse("QmdmQXB2mzChmMeKY47C43LxUdg1NDJ5MWcKMKxDu7RgQm").toV1();
 let helia: Helia;

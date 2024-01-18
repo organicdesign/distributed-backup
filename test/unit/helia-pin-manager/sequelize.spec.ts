@@ -1,6 +1,6 @@
 import assert from "assert/strict";
 import { CID } from "multiformats/cid";
-import createDatabase from "../../src/helia-pin-manager/sequelize.js";
+import createDatabase from "../../../src/helia-pin-manager/sequelize.js";
 
 const cid = CID.parse("QmdmQXB2mzChmMeKY47C43LxUdg1NDJ5MWcKMKxDu7RgQm").toV1();
 
