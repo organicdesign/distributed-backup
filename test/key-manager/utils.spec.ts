@@ -1,4 +1,3 @@
-import { describe, it, before } from "node:test";
 import assert from "assert/strict";
 import { fromString as uint8ArrayFromString } from "uint8arrays";
 import {
@@ -12,7 +11,7 @@ import {
 } from "../../src/key-manager/utils.js";
 import data from "./data.js";
 
-describe("nameToPath", { concurrency: 4 }, () => {
+describe("nameToPath", () => {
 	let hardenedPaths: string[];
 	let unhardenedPaths: string[];
 	let allPaths: string[];
@@ -88,7 +87,7 @@ describe("decodeKey", () => {
 	});
 });
 
-describe("encodeKey", { concurrency: 4 }, () => {
+describe("encodeKey", () => {
 	it("encodes valid keys", () => {
 		for (const { key } of data) {
 			assert.equal(encodeKey(decodeKey(key)), key);

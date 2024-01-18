@@ -25,7 +25,10 @@ export const createDag = async ({ blockstore }: { blockstore: Blockstore }, dept
 		childrenNodes.push(await createDag({ blockstore }, depth -1, children));
 	}
 
-	childrenNodes.sort((a, b) => compareUint8Arrays(a[0].bytes, b[0].bytes));
+	childrenNodes.sort((a, b) => compareUint8Arrays(
+		uint8arrayFromString(a[0].toString()),
+		uint8arrayFromString(b[0].toString()))
+	);
 
 	const block = dagPb.encode({
 		Data: uint8arrayFromString(`level-${depth}-${uniqueNumber()}`),

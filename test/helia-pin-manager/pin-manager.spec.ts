@@ -1,5 +1,5 @@
-import { describe, it, before, after, afterEach } from "node:test";
 import assert from "assert/strict";
+import EventEmitter from "events";
 import all from "it-all";
 import { createHelia } from "helia";
 import { CID } from "multiformats/cid";
@@ -10,6 +10,8 @@ import { createDag } from "../utils/dag.js";
 
 const DAG_WIDTH = 2;
 const DAG_DEPTH = 3;
+
+EventEmitter.setMaxListeners(100);
 
 describe("pin manager", () => {
 	let components: Components;
