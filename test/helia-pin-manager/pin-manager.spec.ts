@@ -116,7 +116,7 @@ describe("pin manager", () => {
 		it("unpins it from helia", async () => {
 			const pin = data.pins[0];
 
-			await components.helia.pins.add(pin.cid);
+			await all(components.helia.pins.add(pin.cid));
 			await components.pins.create(pin);
 			await pm.unpin(pin.cid);
 
@@ -128,7 +128,7 @@ describe("pin manager", () => {
 		it("emits pins:removed event", async () => {
 			const pin = data.pins[0];
 
-			await components.helia.pins.add(pin.cid);
+			await all(components.helia.pins.add(pin.cid));
 
 			const promise = new Promise<void>((resolve, reject) => {
 				pm.events.addEventListener("pins:removed", () => {
@@ -183,7 +183,7 @@ describe("pin manager", () => {
 		it("emits pins:added event", async () => {
 			const pin = data.pins[0];
 
-			await components.helia.pins.add(pin.cid);
+			await all(components.helia.pins.add(pin.cid));
 
 			const promise = new Promise<void>((resolve, reject) => {
 				pm.events.addEventListener("pins:added", () => {
