@@ -168,6 +168,8 @@ process.on("SIGINT", async () => {
 	await libp2p.stop();
 	logger.lifecycle("stopped libp2p");
 
+	logger.lifecycle("exiting...");
+
 	process.exit();
 });
 

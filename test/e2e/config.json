@@ -1,0 +1,12 @@
+{
+	"private": false,
+	"validateInterval": 10,
+	"tickInterval": 1,
+	"serverMode": false,
+	"storage": ":memory:",
+
+	"addresses": [
+		"/ip4/127.0.0.1/tcp/0",
+		"/ip4/127.0.0.1/tcp/0/ws"
+	]
+}
