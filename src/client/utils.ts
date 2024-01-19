@@ -35,5 +35,11 @@ export const globalOptions = createRawBuilder({
 		type: "string",
 		describe: "The path to the daemon socket.",
 		default: "/tmp/server.socket"
+	},
+
+	json: {
+		type: "boolean",
+		describe: "Output the result as JSON.",
+		default: "false"
 	}
 });
