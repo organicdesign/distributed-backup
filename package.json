@@ -7,6 +7,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "mocha --timeout 5000 --parallel 'test/**/*.spec.ts'",
+    "test:coverage": "c8 mocha --timeout 5000 --parallel 'test/**/*.spec.ts'",
     "test:e2e": "mocha --timeout 5000 --parallel ./test/e2e/**/*.spec.ts",
     "test:unit": "mocha --timeout 5000 --parallel ./test/unit/**/*.spec.ts",
     "generate": "protons src/filestore/pb/dataobj.proto",
@@ -74,6 +75,7 @@
     "@types/mocha": "^10.0.6",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
+    "c8": "^9.1.0",
     "eslint": "^8.56.0",
     "interface-blockstore": "^5.2.9",
     "interface-store": "^5.1.7",
