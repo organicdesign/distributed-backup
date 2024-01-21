@@ -89,21 +89,6 @@ export class Groups implements Startable {
 		await database.replica.write(op);
 	}
 
-	async addLinks (group: CID, cid: CID) {
-		const database = this.groups.get(group.toString());
-
-		if (database == null) {
-			throw new Error("not a part of group");
-		}
-
-		const index = await database.store.latest();
-		const entry = EncodedEntry.optional().parse(await database.store.selectors.get(index)(cid.toString()));
-
-		const op = database.store.creators.put(cid.toString(), entry);
-
-		await database.replica.write(op);
-	}
-
 	async deleteFrom (path: string, group: CID) {
 		const database = this.groups.get(group.toString());
 
