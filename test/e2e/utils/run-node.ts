@@ -69,7 +69,7 @@ export default async (name: string) => {
 			// Kill it if it fails to do it cleanly.
 			setTimeout(async () => {
 				await forceQuit();
-				promise.reject();
+				promise.reject(new Error("process did not exit cleanly"));
 			}, 3000);
 
 			await promise;

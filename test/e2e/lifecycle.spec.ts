@@ -7,10 +7,6 @@ describe("lifecycle", () => {
 		proc = await runNode("lifecycle");
 	});
 
-	after(async () => {
-		proc.stop();
-	});
-
 	it("starts cleanly", async () => {
 		await proc.start();
 	});

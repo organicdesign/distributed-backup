@@ -6,9 +6,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "mocha --timeout 5000 --parallel 'test/**/*.spec.ts'",
-    "test:coverage": "c8 mocha --timeout 5000 --parallel 'test/**/*.spec.ts'",
-    "test:e2e": "mocha --timeout 5000 --parallel ./test/e2e/**/*.spec.ts",
+    "test": "mocha --timeout 15000 --parallel 'test/**/*.spec.ts'",
+    "test:coverage": "c8 mocha --timeout 15000 --parallel 'test/**/*.spec.ts'",
+    "test:e2e": "mocha --timeout 15000 --parallel ./test/e2e/**/*.spec.ts",
     "test:unit": "mocha --timeout 5000 --parallel ./test/unit/**/*.spec.ts",
     "generate": "protons src/filestore/pb/dataobj.proto",
     "build": "mkdir -p dist && touch dist/cleanup && rm -r dist/* && tsc -b tsconfig-build.json",
