@@ -9,7 +9,7 @@ const tsNode = Path.join(projectPath, "node_modules/ts-node/dist/bin.js");
 
 export default async (name: string, command: string, ...args: string[]): Promise<string> => {
 	const socketArgs = [
-		Path.join(projectPath, "src/client.ts"),
+		Path.join(projectPath, "src/client/index.ts"),
 		"-s", Path.join(projectPath, `test/${name}.socket`),
 		"--json", "true"
 	];
