@@ -24,7 +24,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 	const groups = Groups.parse(raw);
 
 	if (argv.json) {
-		console.log(raw);
+		console.log(JSON.stringify(raw));
 
 		argv.client.close();
 		return;

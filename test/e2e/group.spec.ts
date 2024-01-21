@@ -29,4 +29,23 @@ describe("group", () => {
 
 		assert.deepEqual(data, []);
 	});
+
+	it("creates a group", async () => {
+		const raw = await runClient(nodes[0], "create-group", "test-group");
+		const data = JSON.parse(raw);
+
+		assert.deepEqual(data, { address: "bafyreigtyvdxwzhnrui24r2btjmgvwegcz3tmxs5k5tfny4apqxxm23quq" });
+	});
+
+	it("lists the created group", async () => {
+		const raw = await runClient(nodes[0], "list-groups");
+		const data = JSON.parse(raw);
+
+		assert.deepEqual(data, [{
+			cid: "bafyreigtyvdxwzhnrui24r2btjmgvwegcz3tmxs5k5tfny4apqxxm23quq",
+			count: 0,
+			name: "test-group",
+			peers: 1
+		}]);
+	});
 });
