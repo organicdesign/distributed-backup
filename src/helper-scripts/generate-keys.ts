@@ -1,7 +1,7 @@
 import { resolve } from "path";
 import yargs from "yargs/yargs";
 import { hideBin } from "yargs/helpers";
-import { generateMnemonic, generateKeyFile } from "./key-manager/utils.js";
+import { generateMnemonic, generateKeyFile } from "../key-manager/utils.js";
 
 const argv = await yargs(hideBin(process.argv))
 	.option({
