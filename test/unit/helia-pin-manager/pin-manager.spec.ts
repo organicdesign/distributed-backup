@@ -5,8 +5,8 @@ import { createHelia } from "helia";
 import { CID } from "multiformats/cid";
 import createDatabase from "../../../src/helia-pin-manager/sequelize.js";
 import { PinManager, type Components } from "../../../src/helia-pin-manager/pin-manager.js";
-import { addBlocks } from "../../utils/blocks.js";
-import { createDag } from "../../utils/dag.js";
+import { addBlocks } from "../utils/blocks.js";
+import { createDag } from "../utils/dag.js";
 
 const DAG_WIDTH = 2;
 const DAG_DEPTH = 3;
