@@ -1,7 +1,6 @@
 import assert from "assert/strict";
 import { createHelia, type Helia  } from "helia";
 import { MemoryBlockstore } from "blockstore-core";
-import all from "it-all";
 import { CID } from "multiformats/cid";
 import * as raw from "multiformats/codecs/raw";
 import { sha256 } from "multiformats/hashes/sha2";
@@ -14,7 +13,8 @@ import {
 	safeReplace,
 	encodeAny,
 	decodeAny,
-	walkDag
+	walkDag,
+	getDagSize
 } from "../../src/utils.js";
 
 describe("isMemory", () => {
@@ -189,5 +189,30 @@ describe("walkDag", () => {
 		}
 
 		assert.equal(count, dag.length);
+	});
+});
+
+describe("getDagSize", () => {
+	let dag: CID[];
+	let blockstore: MemoryBlockstore;
+
+	before(async () => {
+		blockstore = new MemoryBlockstore();
+
+		dag = await createDag({ blockstore }, 3, 3);
+	});
+
+	it("returns the correct block count for the dag", async () => {
+		const { blocks } = await getDagSize(blockstore, dag[0]);
+
+		assert.equal(blocks, dag.length);
+	});
+
+	it("returns the correct size for the dag", async () => {
+		const blocks = await Promise.all(dag.map(cid => blockstore.get(cid)));
+		const totalSize = blocks.reduce((p, c) => p + c.length, 0);
+		const { size } = await getDagSize(blockstore, dag[0]);
+
+		assert.equal(size, totalSize);
 	});
 });
