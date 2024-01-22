@@ -1,8 +1,11 @@
 import assert from "assert/strict";
 import { createHelia, type Helia  } from "helia";
+import { MemoryBlockstore } from "blockstore-core";
+import all from "it-all";
 import { CID } from "multiformats/cid";
 import * as raw from "multiformats/codecs/raw";
 import { sha256 } from "multiformats/hashes/sha2";
+import { createDag } from "./utils/dag.js";
 import { MEMORY_MAGIC } from "../../src/interface.js";
 import {
 	isMemory,
@@ -10,7 +13,8 @@ import {
 	safeUnpin,
 	safeReplace,
 	encodeAny,
-	decodeAny
+	decodeAny,
+	walkDag
 } from "../../src/utils.js";
 
 describe("isMemory", () => {
@@ -160,5 +164,30 @@ describe("cbor encoding and decoding", () => {
 		for (const { encoded, decoded } of data) {
 			assert.deepEqual(decodeAny(encoded), decoded);
 		}
+	});
+});
+
+describe("walkDag", () => {
+	let dag: CID[];
+	let blockstore: MemoryBlockstore;
+
+	before(async () => {
+		blockstore = new MemoryBlockstore();
+
+		dag = await createDag({ blockstore }, 3, 3);
+	});
+
+	it("walks over every value of the dag", async () => {
+		let count = 0;
+
+		for await (const getData of walkDag(blockstore, dag[0])) {
+			const data = await getData();
+
+			assert(dag.find(cid => cid.equals(data.cid)));
+
+			count++;
+		}
+
+		assert.equal(count, dag.length);
 	});
 });
