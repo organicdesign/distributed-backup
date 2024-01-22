@@ -20,19 +20,19 @@ describe("group", () => {
 	});
 
 	it("lists no groups", async () => {
-		const data = JSON.parse(await runClient(nodes[0], "list-groups"));
+		const data = await runClient(nodes[0], "list-groups");
 
 		assert.deepEqual(data, []);
 	});
 
 	it("creates a group", async () => {
-		const data = JSON.parse(await runClient(nodes[0], "create-group", "test-group"));
+		const data = await runClient(nodes[0], "create-group", "test-group");
 
 		assert.deepEqual(data, { group: GROUP });
 	});
 
 	it("lists the created group", async () => {
-		const data = JSON.parse(await runClient(nodes[0], "list-groups"));
+		const data = await runClient(nodes[0], "list-groups");
 
 		assert.deepEqual(data, [{
 			cid: GROUP,
@@ -44,23 +44,23 @@ describe("group", () => {
 
 	it("joins a group", async () => {
 		// Connect the nodes.
-		const peerAData: string[] = JSON.parse(await runClient(nodes[0], "addresses"));
+		const peerAData: string[] = await runClient(nodes[0], "addresses");
 		const tcp = peerAData.find(d => d.startsWith("/ip4/127.0.0.1/tcp"));
 
 		assert(tcp);
 
-		const peerBData = JSON.parse(await runClient(nodes[1], "connect", tcp));
+		const peerBData = await runClient(nodes[1], "connect", tcp);
 
 		assert.deepEqual(peerBData, { success: true });
 
 		// Joins the group.
-		const joinData = JSON.parse(await runClient(nodes[1], "join-group", GROUP));
+		const joinData = await runClient(nodes[1], "join-group", GROUP);
 
 		assert.deepEqual(joinData, { success: true, group: GROUP })
 	});
 
 	it("lists the joined group", async () => {
-		const data = JSON.parse(await runClient(nodes[1], "list-groups"));
+		const data = await runClient(nodes[1], "list-groups");
 
 		assert.deepEqual(data, [{
 			cid: GROUP,

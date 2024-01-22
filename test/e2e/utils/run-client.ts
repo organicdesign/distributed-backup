@@ -7,7 +7,7 @@ const execFile = promisify(execFileCb);
 
 const tsNode = Path.join(projectPath, "node_modules/ts-node/dist/bin.js");
 
-export default async (name: string, command: string, ...args: string[]): Promise<string> => {
+export default async (name: string, command: string, ...args: string[]): Promise<any> => {
 	const socketArgs = [
 		Path.join(projectPath, "src/client/index.ts"),
 		"-s", Path.join(projectPath, `test/${name}.socket`),
@@ -18,5 +18,9 @@ export default async (name: string, command: string, ...args: string[]): Promise
 
 	const { stdout } = await run(command, ...args);
 
-	return stdout;
+	try {
+		return JSON.parse(stdout);
+	} catch (error) {
+		throw new Error(`invalid json: ${stdout}`);
+	}
 };

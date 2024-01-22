@@ -18,37 +18,32 @@ describe("connectivity", () => {
 	});
 
 	it("dispalys a tcp address", async () => {
-		const raw = await runClient(nodes[0], "addresses");
-		const data: string[] = JSON.parse(raw);
+		const data: string[] = await runClient(nodes[0], "addresses");
 		const tcp = data.find(d => d.startsWith("/ip4/127.0.0.1/tcp"));
 
 		assert(tcp);
 	});
 
 	it("displays no connections on startup", async () => {
-		const raw = await runClient(nodes[0], "connections");
-		const data: string[] = JSON.parse(raw);
+		const data = await runClient(nodes[0], "connections");
 
 		assert.deepEqual(data, []);
 	});
 
 	it("can connect to another node over tcp", async () => {
-		const peerARaw = await runClient(nodes[0], "addresses");
-		const peerAData: string[] = JSON.parse(peerARaw);
+		const peerAData: string[] = await runClient(nodes[0], "addresses");
 		const tcp = peerAData.find(d => d.startsWith("/ip4/127.0.0.1/tcp"));
 
 		assert(tcp);
 
-		const peerBRaw = await runClient(nodes[1], "connect", tcp);
-		const peerBData = JSON.parse(peerBRaw);
+		const peerBData = await runClient(nodes[1], "connect", tcp);
 
 		assert.deepEqual(peerBData, { success: true });
 	});
 
 	it("shows the connection on both nodes", async () => {
 		await Promise.all(nodes.map(async node => {
-			const raw = await runClient(node, "connections");
-			const data: string[] = JSON.parse(raw);
+			const data: string[] = await runClient(node, "connections");
 
 			assert(Array.isArray(data));
 			assert.equal(data.length, 1);

@@ -16,7 +16,7 @@ describe("import/export", () => {
 
 		await proc.start();
 
-		group = JSON.parse(await runClient(node, "create-group", "test")).group;
+		group = (await runClient(node, "create-group", "test")).group;
 	});
 
 	after(async () => {
@@ -25,7 +25,7 @@ describe("import/export", () => {
 
 	it("imports a file", async () => {
 		const file = Path.join(testDataDir, "file-1.txt");
-		const data = JSON.parse(await runClient(node, "add", group, file, "/file"));
+		const data = await runClient(node, "add", group, file, "/file");
 
 		assert.deepEqual(data, {
 			success: true,
