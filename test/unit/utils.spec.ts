@@ -4,7 +4,7 @@ import { CID } from "multiformats/cid";
 import * as raw from "multiformats/codecs/raw";
 import { sha256 } from "multiformats/hashes/sha2";
 import { MEMORY_MAGIC } from "../../src/interface.js";
-import { isMemory, safePin, safeUnpin } from "../../src/utils.js";
+import { isMemory, safePin, safeUnpin, safeReplace } from "../../src/utils.js";
 
 describe("isMemory", () => {
 	it("returns true if the memory magic is passed", () => {
@@ -34,12 +34,12 @@ describe("safe pinning", () => {
 		new Uint8Array([255, 255, 255, 255])
 	];
 
-	const cids: CID[] = [];
-
+	let cids: CID[];
 	let helia: Helia;
 
 	beforeEach(async () => {
 		helia = await createHelia();
+		cids = [];
 
 		for (const data of blockData) {
 			const digest = await sha256.digest(data);
@@ -87,5 +87,35 @@ describe("safe pinning", () => {
 		for (const cid of cids) {
 			assert(!await helia.pins.isPinned(cid));
 		}
+	});
+
+	it("safeReplace replaces a cid with another", async () => {
+		const rCid = cids.pop();
+
+		await Promise.all(cids.map(cid => helia.pins.add(cid)));
+
+		assert(rCid);
+
+		await Promise.all(cids.map(cid => safeReplace(helia, cid, rCid)));
+
+		for (const cid of cids) {
+			assert(!await helia.pins.isPinned(cid));
+		}
+
+		assert(await helia.pins.isPinned(rCid));
+	});
+
+	it("safeReplace does not throw an error if the replaced cid is not pinned", async () => {
+		const rCid = cids.pop();
+
+		assert(rCid);
+
+		await Promise.all(cids.map(cid => safeReplace(helia, cid, rCid)));
+
+		for (const cid of cids) {
+			assert(!await helia.pins.isPinned(cid));
+		}
+
+		assert(await helia.pins.isPinned(rCid));
 	});
 });
