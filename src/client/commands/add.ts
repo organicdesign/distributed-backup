@@ -73,6 +73,4 @@ export const handler = createHandler<typeof builder>(async argv => {
 	});
 
 	console.log(add);
-
-	argv.client.close();
 });

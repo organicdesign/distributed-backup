@@ -20,6 +20,4 @@ export const handler = createHandler<typeof builder>(async argv => {
 	}
 
 	console.log(addresses);
-
-	argv.client.close();
 });

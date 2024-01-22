@@ -25,12 +25,8 @@ export const handler = createHandler<typeof builder>(async argv => {
 
 	if (argv.json) {
 		console.log(JSON.stringify({ address }));
-
-		argv.client.close();
 		return;
 	}
 
 	console.log(address);
-
-	argv.client.close();
 });

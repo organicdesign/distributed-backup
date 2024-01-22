@@ -24,11 +24,8 @@ export const handler = createHandler<typeof builder>(async argv => {
 			group: connect
 		}));
 
-		argv.client.close();
 		return;
 	}
 
 	console.log(connect);
-
-	argv.client.close();
 });

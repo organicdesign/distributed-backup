@@ -14,6 +14,4 @@ export const handler = createHandler<typeof builder>(async argv => {
 	const uploads = await argv.client.rpc.request("list-uploads", {});
 
 	console.log(uploads);
-
-	argv.client.close();
 });

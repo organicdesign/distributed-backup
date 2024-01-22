@@ -19,6 +19,4 @@ export const handler = createHandler<typeof builder>(async argv => {
 	const query = await argv.client.rpc.request("query-group", { group: argv.group });
 
 	console.log(query);
-
-	argv.client.close();
 });
