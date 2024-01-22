@@ -61,7 +61,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 		path = Path.join(path, name);
 	}
 
-	const add = await argv.client.rpc.request("add", {
+	const cid = await argv.client.rpc.request("add", {
 		group: argv.group,
 		localPath: Path.resolve(argv.localPath),
 		path,
@@ -72,5 +72,12 @@ export const handler = createHandler<typeof builder>(async argv => {
 		priority: argv.priority
 	});
 
-	return add;
+	if (argv.json) {
+		return JSON.stringify({
+			success: true,
+			cid
+		});
+	}
+
+	return cid;
 });
