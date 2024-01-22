@@ -21,11 +21,11 @@ export const handler = createHandler<typeof builder>(async argv => {
 		throw new Error("Failed to connect to daemon.");
 	}
 
-	const address = await argv.client.rpc.request("create-group", { name: argv.name, peers: argv.peers });
+	const group = await argv.client.rpc.request("create-group", { name: argv.name, peers: argv.peers });
 
 	if (argv.json) {
-		return JSON.stringify({ address });
+		return JSON.stringify({ group });
 	}
 
-	return address;
+	return group;
 });

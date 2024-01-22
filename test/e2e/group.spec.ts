@@ -28,7 +28,7 @@ describe("group", () => {
 	it("creates a group", async () => {
 		const data = JSON.parse(await runClient(nodes[0], "create-group", "test-group"));
 
-		assert.deepEqual(data, { address: GROUP });
+		assert.deepEqual(data, { group: GROUP });
 	});
 
 	it("lists the created group", async () => {
