@@ -1,6 +1,5 @@
 import crypto from "crypto";
 import type { KeyManager } from "./key-manager/index.js";
-import type { Startable } from "@libp2p/interfaces/startable";
 
 interface Components {
 	keyManager: KeyManager
@@ -11,28 +10,11 @@ interface EncryptionParams {
 	iv: Uint8Array
 }
 
-export class Cipher implements Startable {
+export class Cipher {
 	private readonly keyManager: KeyManager;
-	private started: boolean = false;
 
 	constructor (components: Components) {
 		this.keyManager = components.keyManager;
-	}
-
-	isStarted (): boolean {
-		return this.started;
-	}
-
-	async start (): Promise<void> {
-		if (this.started) {
-			return;
-		}
-
-		this.started = true;
-	}
-
-	async stop (): Promise<void> {
-		this.started = false;
 	}
 
 	async generate (data: Iterable<Uint8Array> | AsyncIterable<Uint8Array>): Promise<EncryptionParams> {
@@ -103,11 +85,3 @@ export class Cipher implements Startable {
 		return hmac.digest();
 	}
 }
-
-export const createCipher = async (components: Components): Promise<Cipher> => {
-	const cipher = new Cipher(components);
-
-	await cipher.start();
-
-	return cipher;
-};
