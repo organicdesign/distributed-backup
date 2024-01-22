@@ -1,8 +1,12 @@
 import assert from "assert/strict";
 import Path from "path";
+import { promisify } from "util";
+import { exec as execCb } from "child_process";
 import runNode from "./utils/run-node.js";
 import runClient from "./utils/run-client.js";
 import { projectPath } from "../../src/utils.js";
+
+const exec = promisify(execCb);
 
 const node = "import-export";
 const testDataDir = Path.join(projectPath, "test/e2e/test-data");
@@ -50,5 +54,18 @@ describe("import/export", () => {
 			success: true,
 			cid: "bafybeighjftxut4i5csm55azb4eewvae25brsdglngcidk5a2zlxqeg7zq"
 		});
+	});
+
+	it("exports a file", async () => {
+		const data = await runClient(node, "export", group, "/file", Path.join(projectPath, "test/file-1.txt"));
+
+		assert.deepEqual(data, {
+			success: true
+		});
+
+		const { stdout: hash1 } = await exec(`sha256sum ${Path.join(testDataDir, "file-1.txt")} | head -c 64`);
+		const { stdout: hash2 } = await exec(`sha256sum ${Path.join(projectPath, "test/file-1.txt")} | head -c 64`);
+
+		assert.equal(hash1, hash2);
 	});
 });

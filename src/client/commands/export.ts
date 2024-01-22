@@ -26,11 +26,15 @@ export const handler = createHandler<typeof builder>(async argv => {
 		throw new Error("Failed to connect to daemon.");
 	}
 
-	const add = await argv.client.rpc.request("export", {
+	await argv.client.rpc.request("export", {
 		outPath: argv.outPath,
 		path: argv.path,
 		group: argv.group
 	});
 
-	return add;
+	if (argv.json) {
+		return JSON.stringify({ success: true });
+	}
+
+	return "success";
 });
