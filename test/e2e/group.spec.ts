@@ -58,4 +58,15 @@ describe("group", () => {
 
 		assert.deepEqual(joinData, { success: true, group: GROUP })
 	});
+
+	it("lists the joined group", async () => {
+		const data = JSON.parse(await runClient(nodes[1], "list-groups"));
+
+		assert.deepEqual(data, [{
+			cid: GROUP,
+			count: 0,
+			name: "test-group",
+			peers: 2
+		}]);
+	});
 });
