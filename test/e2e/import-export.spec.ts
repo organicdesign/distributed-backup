@@ -32,4 +32,23 @@ describe("import/export", () => {
 			cid: "bafybeihoqexapn3tusc4rrkqztzzemz7y57esnzg7eutsua4ehjkylmjqe"
 		});
 	});
+
+	it("imports a directory", async () => {
+		const data = await runClient(node, "add", group, testDataDir, "/directory");
+
+		assert.deepEqual(data, {
+			success: true,
+			cid: "bafybeibcmg65b33noyeskjeg2q4gar5i6jlvitjbqrvrv6dspdqxzgx2ma"
+		});
+	});
+
+	it("imports a sub directory", async () => {
+		const dir = Path.join(testDataDir, "dir-1");
+		const data = await runClient(node, "add", group, dir, "/directory-2");
+
+		assert.deepEqual(data, {
+			success: true,
+			cid: "bafybeighjftxut4i5csm55azb4eewvae25brsdglngcidk5a2zlxqeg7zq"
+		});
+	});
 });
