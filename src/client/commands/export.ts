@@ -32,5 +32,5 @@ export const handler = createHandler<typeof builder>(async argv => {
 		group: argv.group
 	});
 
-	console.log(add);
+	return add;
 });

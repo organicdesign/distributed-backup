@@ -13,5 +13,5 @@ export const handler = createHandler<typeof builder>(async argv => {
 
 	const id = await argv.client.rpc.request("id", {});
 
-	console.log(id);
+	return id;
 });

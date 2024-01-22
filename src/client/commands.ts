@@ -18,7 +18,7 @@ import * as queryPins from "./commands/query-pins.js";
 import * as sync from "./commands/sync.js";
 import type { Options } from "yargs";
 
-export default [
+const commands = [
 	add,
 	addresses,
 	connect,
@@ -41,5 +41,11 @@ export default [
 	desc: string,
 	command: string,
 	builder: Record<string, Options>,
-	handler: (argc: Record<string, unknown>) => void | Promise<void>
+	handler: (argc: Record<string, unknown>) => string | Promise<string>
 }[];
+
+export default commands.map(c => ({...c, handler: async (argc: Record<string, unknown>) => {
+	const result = await c.handler(argc);
+
+	console.log(result);
+}}));

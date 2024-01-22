@@ -13,5 +13,5 @@ export const handler = createHandler<typeof builder>(async argv => {
 
 	const pins = await argv.client.rpc.request("list-helia-pins", {});
 
-	console.log(pins);
+	return pins;
 });

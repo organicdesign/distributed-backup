@@ -19,13 +19,11 @@ export const handler = createHandler<typeof builder>(async argv => {
 	const connect = await argv.client.rpc.request("join-group", { group: argv.group });
 
 	if (argv.json) {
-		console.log(JSON.stringify({
+		return JSON.stringify({
 			success: true,
 			group: connect
-		}));
-
-		return;
+		});
 	}
 
-	console.log(connect);
+	return connect;
 });

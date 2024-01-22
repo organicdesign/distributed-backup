@@ -24,9 +24,8 @@ export const handler = createHandler<typeof builder>(async argv => {
 	const address = await argv.client.rpc.request("create-group", { name: argv.name, peers: argv.peers });
 
 	if (argv.json) {
-		console.log(JSON.stringify({ address }));
-		return;
+		return JSON.stringify({ address });
 	}
 
-	console.log(address);
+	return address;
 });

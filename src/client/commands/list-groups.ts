@@ -24,13 +24,10 @@ export const handler = createHandler<typeof builder>(async argv => {
 	const groups = Groups.parse(raw);
 
 	if (argv.json) {
-		console.log(JSON.stringify(raw));
-
-		argv.client.close();
-		return;
+		return JSON.stringify(raw);
 	}
 
-	console.log(`${"Name".padEnd(10)}${"Items".padEnd(10)}${"Peers".padEnd(10)}${"CID".padEnd(62)}`);
+	let out = `${"Name".padEnd(10)}${"Items".padEnd(10)}${"Peers".padEnd(10)}${"CID".padEnd(62)}\n`;
 
 	for (const group of groups) {
 		let str = "";
@@ -40,6 +37,8 @@ export const handler = createHandler<typeof builder>(async argv => {
 		str += `${group.peers}`.slice(0, 8).padEnd(10);
 		str += group.cid.padEnd(62);
 
-		console.log(str);
+		out += `${str}\n`;
 	}
+
+	return out;
 });

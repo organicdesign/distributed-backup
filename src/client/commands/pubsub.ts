@@ -13,5 +13,5 @@ export const handler = createHandler<typeof builder>(async argv => {
 
 	const topics = await argv.client.rpc.request("pubsub", {});
 
-	console.log(topics);
+	return topics;
 });

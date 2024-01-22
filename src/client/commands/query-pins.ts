@@ -13,5 +13,5 @@ export const handler = createHandler<typeof builder>(async argv => {
 
 	const query = await argv.client.rpc.request("query-pins", {});
 
-	console.log(query);
+	return query;
 });

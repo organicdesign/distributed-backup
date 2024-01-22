@@ -72,5 +72,5 @@ export const handler = createHandler<typeof builder>(async argv => {
 		priority: argv.priority
 	});
 
-	console.log(add);
+	return add;
 });

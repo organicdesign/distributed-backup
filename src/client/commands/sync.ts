@@ -13,5 +13,5 @@ export const handler = createHandler<typeof builder>(async argv => {
 
 	const result = await argv.client.rpc.request("sync", {});
 
-	console.log(result);
+	return result;
 });

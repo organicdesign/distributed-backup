@@ -7,7 +7,7 @@ export type ToArgs<T extends Builder> =
 	ArgumentsCamelCase<InferredOptionTypes<T & typeof globalOptions>> &
 	Partial<AdditionalTypes>
 
-export type Handler<T extends Builder> = (argv: ToArgs<T>) => void | Promise<void>
+export type Handler<T extends Builder> = (argv: ToArgs<T>) => string | Promise<string>
 export type Middleware<T extends Builder> = MiddlewareFunction<ToArgs<T>>
 
 export const createRawBuilder = <T extends Builder>(options: T): T => options;

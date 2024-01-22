@@ -19,10 +19,8 @@ export const handler = createHandler<typeof builder>(async argv => {
 	await argv.client.rpc.request("connect", { address: argv.address });
 
 	if (argv.json) {
-		console.log(JSON.stringify({ success: true }));
-		argv.client.close();
-		return;
+		return JSON.stringify({ success: true });
 	}
 
-	console.log("success");
+	return "success";
 });

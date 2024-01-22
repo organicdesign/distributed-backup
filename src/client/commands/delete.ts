@@ -26,5 +26,5 @@ export const handler = createHandler<typeof builder>(async argv => {
 		path: argv.path
 	});
 
-	console.log(del);
+	return del;
 });

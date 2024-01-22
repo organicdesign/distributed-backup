@@ -180,5 +180,5 @@ export const handler = createHandler<typeof builder>(async argv => {
 	footer += `${formatSize(size)}/${formatSize(totalSize)} (${formatPercent(size/totalSize)})`.slice(0, 23).padEnd(25);
 	footer += `${blocks}/${totalBlocks} (${formatPercent(blocks/totalBlocks)})`.slice(0, 18).padEnd(20);
 
-	console.log(footer);
+	return footer;
 });
