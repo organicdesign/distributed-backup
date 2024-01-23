@@ -64,4 +64,30 @@ describe("synchronization", () => {
 		assert.equal(listRes.items[0].group, group);
 		assert.equal(listRes.items[0].path, virtualPath);
 	});
+
+	it("syncs a new file", async () => {
+		const virtualPath = "/file-2";
+		const addRes = await runClient(nodes[0], "add", group, files[1], virtualPath);
+
+		assert(addRes.success);
+
+		// Give it a couple seconds to sync.
+		await new Promise(r => setTimeout(r, 5000));
+
+		const listRes = await runClient(nodes[1], "list");
+
+		assert(listRes);
+		assert.equal(typeof listRes, "object");
+		assert(listRes.items);
+		assert(listRes.total);
+		assert(listRes.completed);
+		assert(Array.isArray(listRes.items));
+		assert.equal(listRes.items.length, 2);
+
+		const item = listRes.items.find((i: { cid: string }) => i.cid === addRes.cid);
+
+		assert(item);
+		assert.equal(item.group, group);
+		assert.equal(item.path, virtualPath);
+	});
 });
