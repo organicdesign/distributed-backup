@@ -18,7 +18,7 @@ import commands from "./rpc/index.js";
 import { createGroups } from "./groups.js";
 import { Datastores } from "./datastores.js";
 import { Cipher } from "./cipher.js";
-import { PinManager } from "./pin-manager/index.js";
+import { PinManager } from "./pin-manager.js";
 import createHeliaPinManager from "./helia-pin-manager/index.js";
 import { createKeyManager } from "./key-manager/index.js";
 import { projectPath, isMemory } from "./utils.js";

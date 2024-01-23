@@ -13,7 +13,7 @@ import type { Blockstore } from "interface-blockstore";
 import type { Groups } from "./groups.js";
 import type { Cipher } from "./cipher.js";
 import type { Datastores } from "./datastores.js";
-import type { PinManager } from "./pin-manager/index.js";
+import type { PinManager } from "./pin-manager.js";
 import type { EntryReferences } from "./entry-references.js";
 import type { DatabaseMonitor } from "./database-monitor.js";
 
