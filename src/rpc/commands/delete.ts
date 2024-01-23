@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { del } from "../../sync/delete.js";
 import { CID } from "multiformats/cid";
 import { zCID, type Components } from "../../interface.js";
 
@@ -13,10 +12,7 @@ const Params = z.object({
 export const method = (components: Components) => async (raw: unknown) => {
 	const params = Params.parse(raw);
 
-	const cid = await del(components, {
-		group: CID.parse(params.group),
-		path: params.path
-	});
+	await components.uploads.add("delete", [ CID.parse(params.group).bytes, params.path ]);
 
-	return cid.toString();
+	return params.path;
 };
