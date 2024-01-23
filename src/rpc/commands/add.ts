@@ -1,6 +1,9 @@
 import { z } from "zod";
 import { CID } from "multiformats/cid";
-import { addLocal } from "../../sync/upload.js";
+import { BlackHoleBlockstore } from "blockstore-core/black-hole";
+import { selectHasher, selectChunker, fsImport, type ImporterConfig } from "../../fs-import-export/index.js";
+import { encodeEntry, getDagSize } from "../../utils.js";
+import * as logger from "../../logger.js";
 import { type Components, zCID, ImportOptions } from "../../interface.js";
 
 export const name = "add";
@@ -17,20 +20,44 @@ const Params = ImportOptions.partial().extend(z.object({
 
 export const method = (components: Components) => async (raw: unknown) => {
 	const params = Params.parse(raw);
+	const encrypt = !!params.encrypt;
 
-	const cid = await addLocal(components, {
-		group: CID.parse(params.group),
-		encrypt: !!params.encrypt,
-		localPath: params.localPath,
-		path: params.path,
-		hash: "sha2-256",
-		chunker: "size-262144",
-		rawLeaves: true,
-		cidVersion: 1,
-		nocopy: false,
-		onlyHash: params.onlyHash,
-		priority: params.priority ?? 1
+	const config: ImporterConfig = {
+		chunker: selectChunker(),
+		hasher: selectHasher(),
+		cidVersion: 1
+	};
+
+	if (!params.onlyHash) {
+		logger.add("importing %s", params.localPath);
+	}
+
+	const store = params.onlyHash ? new BlackHoleBlockstore() : components.blockstore;
+	const cipher = encrypt ? components.cipher : undefined;
+	const { cid } = await fsImport(store, params.localPath, config, cipher);
+
+	if (params.onlyHash) {
+		return cid;
+	}
+
+	logger.add("imported %s", params.localPath);
+
+	const { size, blocks } = await getDagSize(components.blockstore, cid);
+
+	// Create the action record.
+	const entry = encodeEntry({
+		cid,
+		sequence: 0,
+		blocks,
+		size,
+		encrypted: encrypt,
+		timestamp: Date.now(),
+		priority: params.priority ?? 1,
+		author: components.libp2p.peerId.toCID(),
+		revisionStrategy: components.config.defaultRevisionStrategy
 	});
+
+	await components.uploads.add("put", [CID.parse(params.group).bytes, params.path, entry]);
 
 	return cid.toString();
 };
