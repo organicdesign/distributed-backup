@@ -107,6 +107,26 @@ export const handler = createHandler<typeof builder>(async argv => {
 
 	items.sort((a, b) => a.path.localeCompare(b.path));
 
+	const completed = {
+		blocks: items.reduce((a, b) => a + b.blocks, 0),
+		size: items.reduce((a, b) => a + b.size, 0),
+		count: items.filter(i => i.state === "COMPLETED").length
+	};
+
+	const total = {
+		blocks: items.reduce((a, b) => a + b.totalBlocks, 0),
+		size: items.reduce((a, b) => a + b.totalSize, 0),
+		count: items.length
+	};
+
+	if (argv.json) {
+		return JSON.stringify({
+			items,
+			completed,
+			total
+		});
+	}
+
 	let header = "Name".padEnd(20);
 
 	header += "Size".padEnd(27);
@@ -163,22 +183,15 @@ export const handler = createHandler<typeof builder>(async argv => {
 
 	printTree(createJSON(items));
 
-	const totalCount = items.length;
-	const completedCount = items.filter(i => i.state === "COMPLETED").length;
-	const size = items.reduce((a, b) => a + b.size, 0);
-	const totalSize = items.reduce((a, b) => a + b.totalSize, 0);
-	const blocks = items.reduce((a, b) => a + b.blocks, 0);
-	const totalBlocks = items.reduce((a, b) => a + b.totalBlocks, 0);
-
 	let footer = "\n";
 
 	footer += "Total".padEnd(15);
 	footer += "Size".padEnd(25);
 	footer += "Blocks".padEnd(20);
 	footer += "\n";
-	footer += `${completedCount}/${totalCount} (${formatPercent(completedCount/totalCount)})`.slice(0, 13).padEnd(15);
-	footer += `${formatSize(size)}/${formatSize(totalSize)} (${formatPercent(size/totalSize)})`.slice(0, 23).padEnd(25);
-	footer += `${blocks}/${totalBlocks} (${formatPercent(blocks/totalBlocks)})`.slice(0, 18).padEnd(20);
+	footer += `${completed.count}/${total.count} (${formatPercent(completed.count/total.count)})`.slice(0, 13).padEnd(15);
+	footer += `${formatSize(completed.size)}/${formatSize(total.size)} (${formatPercent(completed.size/total.size)})`.slice(0, 23).padEnd(25);
+	footer += `${completed.blocks}/${total.blocks} (${formatPercent(completed.blocks/total.blocks)})`.slice(0, 18).padEnd(20);
 
 	return footer;
 });
