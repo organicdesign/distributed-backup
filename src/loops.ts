@@ -1,4 +1,4 @@
-import { groupsToRefs } from "./sync/groups-to-refs.js";
+import syncGroups from "./sync-groups.js";
 import { linearWeightTranslation } from "./utils.js";
 import { pipe } from "it-pipe";
 import { collect, tap } from "streaming-iterables";
@@ -9,12 +9,7 @@ import { decodeEntry } from "./utils.js";
 import { Components, EncodedEntry } from "./interface.js";
 
 export const syncLoop = async (components: Components) => {
-	// logger.lifecycle("started");
-	// logger.tick("syncing to groups");
-	// logger.tick("syncing to references");
-	await groupsToRefs(components);
-	// logger.tick("syncing to pins");
-	// logger.lifecycle("finished");
+	await syncGroups(components);
 };
 
 let size = 0n;

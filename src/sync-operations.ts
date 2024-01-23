@@ -2,14 +2,14 @@ import Path from "path";
 import * as dagCbor from "@ipld/dag-cbor";
 import all from "it-all";
 import { CID } from "multiformats/cid";
-import { OperationManager } from "../operation-manager.js";
-import { decodeEntry } from "../utils.js";
-import * as logger from "../logger.js";
-import selectRevisions from "../select-revisions.js";
-import { EncodedEntry, Components, DATA_KEY, VERSION_KEY } from "../interface.js";
+import { OperationManager } from "./operation-manager.js";
+import { decodeEntry } from "./utils.js";
+import * as logger from "./logger.js";
+import selectRevisions from "./select-revisions.js";
+import { EncodedEntry, Components, DATA_KEY, VERSION_KEY } from "./interface.js";
 
 export default async (components: Pick<Components, "stores" | "pinManager"| "groups" | "monitor">) => {
-	const om = new OperationManager(components.stores.get("download-operations"), {
+	const om = new OperationManager(components.stores.get("sync-operations"), {
 		put: async (groupData: Uint8Array, path: string, rawEntry: Uint8Array) => {
 			const encodedEntry = EncodedEntry.parse(dagCbor.decode(rawEntry));
 			const groupCid = CID.decode(groupData);

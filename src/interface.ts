@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { multiaddr } from "@multiformats/multiaddr";
 import { CID } from "multiformats/cid";
-import createUploadManager from "./sync/upload-operations.js";
-import createSyncManager from "./sync/sync-operations.js";
+import createUploadManager from "./upload-operations.js";
+import createSyncManager from "./sync-operations.js";
 import type { Welo, Database, Keyvalue } from "welo";
 import type { Libp2p as BaseLibp2p } from "libp2p";
 import type { PubSub } from "@libp2p/interface/pubsub";

@@ -2,10 +2,10 @@ import Path from "path";
 import { CID } from "multiformats/cid";
 import { sha256 } from "multiformats/hashes/sha2";
 import * as raw from "multiformats/codecs/raw";
-import { OperationManager } from "../operation-manager.js";
-import { decodeEntry, encodeEntry } from "../utils.js";
-import * as logger from "../logger.js";
-import { EncodedEntry, Components, VERSION_KEY, DATA_KEY } from "../interface.js";
+import { OperationManager } from "./operation-manager.js";
+import { decodeEntry, encodeEntry } from "./utils.js";
+import * as logger from "./logger.js";
+import { EncodedEntry, Components, VERSION_KEY, DATA_KEY } from "./interface.js";
 
 export default async (components: Pick<Components, "stores" | "pinManager" | "libp2p" | "groups" | "blockstore">) => {
 	const put = async (groupData: Uint8Array, path: string, encodedEntry: EncodedEntry) => {
