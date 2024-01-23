@@ -1,7 +1,7 @@
 import Path from "path";
 import { promisify } from "util";
 import { execFile as execFileCb } from "child_process";
-import { projectPath } from "../../../src/utils.js";
+import { projectPath } from "../../../src/daemon/utils.js";
 
 const execFile = promisify(execFileCb);
 

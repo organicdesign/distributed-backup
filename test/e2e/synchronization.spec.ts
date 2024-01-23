@@ -2,7 +2,7 @@ import Path from "path";
 import assert from "assert/strict";
 import runNode from "./utils/run-node.js";
 import runClient from "./utils/run-client.js";
-import { projectPath } from "../../src/utils.js";
+import { projectPath } from "../../src/daemon/utils.js";
 
 const nodes = ["synchronization-peer-a", "synchronization-peer-b"] as const;
 

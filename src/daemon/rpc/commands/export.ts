@@ -1,6 +1,6 @@
 import Path from "path";
 import { z } from "zod";
-import { fsExport } from "../../fs-import-export/index.js";
+import { fsExport } from "../../../fs-import-export/index.js";
 import { CID } from "multiformats/cid";
 import { decodeEntry } from "../../utils.js";
 import { DATA_KEY } from "../../interface.js"

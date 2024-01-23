@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { createBuilder, createHandler } from "../utils.js";
-import { zCID } from "../../interface.js";
+import { zCID } from "../../daemon/interface.js";
 
 const Item = z.object({
 	path: z.string(),

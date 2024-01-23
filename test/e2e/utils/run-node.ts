@@ -4,7 +4,7 @@ import { spawn, ChildProcessWithoutNullStreams } from "child_process";
 import { DeferredPromise } from "@open-draft/deferred-promise";
 import { toString as uint8ArrayToString } from "uint8arrays";
 import { generateKeyFile } from "../../../src/key-manager/utils.js";
-import { projectPath } from "../../../src/utils.js";
+import { projectPath } from "../../../src/daemon/utils.js";
 
 const mnemonic = "result dune cream slogan oil sock seminar either strong girl athlete jacket";
 
@@ -17,7 +17,7 @@ export default async (name: string) => {
 	await generateKeyFile(keyPath, mnemonic, name);
 
 	const args = [
-		Path.join(projectPath, "src/daemon.ts"),
+		Path.join(projectPath, "src/daemon/index.ts"),
 		"-k", keyPath,
 		"-c", Path.join(projectPath, "test/e2e/utils/config.json"),
 		"-s", socket

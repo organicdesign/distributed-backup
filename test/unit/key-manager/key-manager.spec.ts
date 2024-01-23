@@ -2,7 +2,7 @@ import assert from "assert/strict";
 import { generateKeyData, parseKeyData } from "../../../src/key-manager/utils.js";
 import { KeyManager } from "../../../src/key-manager/index.js";
 import rawData from "./data.js";
-import type { KeyData } from "../../../src/interface.js";
+import type { KeyData } from "../../../src/key-manager/interface.js";
 
 let data: (typeof rawData[0] & { keyManager: KeyManager } & { keyData: KeyData })[];
 

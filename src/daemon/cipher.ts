@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import type { KeyManager } from "./key-manager/index.js";
+import type { KeyManager } from "../key-manager/index.js";
 
 interface Components {
 	keyManager: KeyManager

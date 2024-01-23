@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { createBuilder, createHandler } from "../utils.js";
-import { zCID } from "../../interface.js";
+import { zCID } from "../../daemon/interface.js";
 
 const Groups = z.array(z.object({
 	cid: zCID,

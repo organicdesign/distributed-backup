@@ -1,10 +1,10 @@
 import { Key } from "interface-datastore";
-import { decodeCbor } from "../node_modules/welo/dist/src/utils/block.js";
-import { Manifest } from "../node_modules/welo/dist/src/manifest/index.js";
+import { decodeCbor } from "../../node_modules/welo/dist/src/utils/block.js";
+import { Manifest } from "../../node_modules/welo/dist/src/manifest/index.js";
 import { groups as logger } from "./logger.js";
 import type { CID } from "multiformats/cid";
 import type { Welo } from "welo";
-import type { ManifestData } from "../node_modules/welo/dist/src/manifest/interface.js";
+import type { ManifestData } from "../../node_modules/welo/dist/src/manifest/interface.js";
 import type { Datastore } from "interface-datastore";
 import type { Startable } from "@libp2p/interfaces/startable";
 import { type KeyvalueDB, type Pair, type Entry, EncodedEntry } from "./interface.js";

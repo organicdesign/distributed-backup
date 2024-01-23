@@ -64,7 +64,7 @@ You can also add the `-s /path/to/socket` to configure where the socket file is 
 Start the daemon with:
 
 ```
-DEBUG=backup* node dist/daemon.js -k config/key1.json -c config/config.json
+DEBUG=backup* node dist/daemon/index.js -k config/key1.json -c config/config.json
 ```
 
 ### Client
@@ -72,35 +72,35 @@ DEBUG=backup* node dist/daemon.js -k config/key1.json -c config/config.json
 #### Create a Group
 
 ```
-GROUP=$(node dist/client.js create-group GROUP_NAME)
+GROUP=$(node dist/client/index.js create-group GROUP_NAME)
 ```
 
 #### Join a Group
 
 ```
-node dist/client.js join-group $GROUP
+node dist/client/index.js join-group $GROUP
 ```
 
 #### Add Content to a Group
 
 ```
-CID=$(node dist/client.js add $GROUP <FILE OR DIRECTORY>)
+CID=$(node dist/client/index.js add $GROUP <FILE OR DIRECTORY>)
 ```
 
 #### Export Content from a Group
 
 ```
-node dist/client.js export $CID <PATH TO EXPORT TO>
+node dist/client/index.js export $CID <PATH TO EXPORT TO>
 ```
 
 #### List All Content
 
 ```
-node dist/client.js list
+node dist/client/index.js list
 ```
 
 #### List All Groups
 
 ```
-node dist/client.js list-groups
+node dist/client/index.js list-groups
 ```

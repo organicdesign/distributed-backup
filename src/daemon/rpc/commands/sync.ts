@@ -1,7 +1,7 @@
 import { type Components } from "../../interface.js";
-import { cidstring } from "../../../node_modules/welo/dist/src/utils/index.js";
-import { HeadsExchange } from "../../../node_modules/welo/dist/src/utils/heads-exchange.js";
-import { getHeads, addHeads } from "../../../node_modules/welo/dist/src/utils/replicator.js";
+import { cidstring } from "../../../../node_modules/welo/dist/src/utils/index.js";
+import { HeadsExchange } from "../../../../node_modules/welo/dist/src/utils/heads-exchange.js";
+import { getHeads, addHeads } from "../../../../node_modules/welo/dist/src/utils/replicator.js";
 import type { Database } from "welo";
 import type { Peer } from "@libp2p/interface/peer-store";
 import type { Libp2p } from "@libp2p/interface";

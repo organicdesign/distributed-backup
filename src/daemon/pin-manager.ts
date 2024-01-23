@@ -1,4 +1,4 @@
-import type { PinManager as HeliaPinManager } from "./helia-pin-manager/pin-manager.js";
+import type { PinManager as HeliaPinManager } from "../helia-pin-manager/pin-manager.js";
 import * as logger from "./logger.js";
 import { Key, type Datastore } from "interface-datastore";
 import { CID } from "multiformats/cid";

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { CID } from "multiformats/cid";
 import { BlackHoleBlockstore } from "blockstore-core/black-hole";
-import { selectHasher, selectChunker, fsImport, type ImporterConfig } from "../../fs-import-export/index.js";
+import { selectHasher, selectChunker, fsImport, type ImporterConfig } from "../../../fs-import-export/index.js";
 import { encodeEntry, getDagSize } from "../../utils.js";
 import * as logger from "../../logger.js";
 import { type Components, zCID, ImportOptions } from "../../interface.js";

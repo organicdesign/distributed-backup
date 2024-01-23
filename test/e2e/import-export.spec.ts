@@ -5,7 +5,7 @@ import { promisify } from "util";
 import { exec as execCb } from "child_process";
 import runNode from "./utils/run-node.js";
 import runClient from "./utils/run-client.js";
-import { projectPath } from "../../src/utils.js";
+import { projectPath } from "../../src/daemon/utils.js";
 
 const exec = promisify(execCb);
 

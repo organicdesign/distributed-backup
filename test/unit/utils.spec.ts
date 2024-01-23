@@ -5,7 +5,7 @@ import { CID } from "multiformats/cid";
 import * as raw from "multiformats/codecs/raw";
 import { sha256 } from "multiformats/hashes/sha2";
 import { createDag } from "./utils/dag.js";
-import { MEMORY_MAGIC } from "../../src/interface.js";
+import { MEMORY_MAGIC } from "../../src/daemon/interface.js";
 import {
 	isMemory,
 	safePin,
@@ -15,7 +15,7 @@ import {
 	decodeAny,
 	walkDag,
 	getDagSize
-} from "../../src/utils.js";
+} from "../../src/daemon/utils.js";
 
 describe("isMemory", () => {
 	it("returns true if the memory magic is passed", () => {
