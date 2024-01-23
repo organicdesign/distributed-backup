@@ -8,7 +8,6 @@ import type { Libp2p as BaseLibp2p } from "libp2p";
 import type { PubSub } from "@libp2p/interface/pubsub";
 import type { GossipsubEvents } from "@chainsafe/libp2p-gossipsub";
 import type { Helia } from "helia";
-import type { BIP32Interface } from "bip32";
 import type { Blockstore } from "interface-blockstore";
 import type { Groups } from "./groups.js";
 import type { Cipher } from "./cipher.js";
@@ -142,15 +141,3 @@ export const ImportOptions = z.object({
 });
 
 export type ImportOptions = z.infer<typeof ImportOptions>
-
-export interface KeyData {
-	key: BIP32Interface,
-	psk: Uint8Array
-}
-
-export const EncodedKeyData = z.object({
-	key: z.string(),
-	psk: z.string()
-});
-
-export type EncodedKeyData = z.infer<typeof EncodedKeyData>

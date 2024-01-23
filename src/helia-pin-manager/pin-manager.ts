@@ -7,6 +7,8 @@ import { DeferredPromise } from "@open-draft/deferred-promise";
 import type { Blocks } from "./blocks.js";
 import type { Pins, PinModel } from "./pins.js";
 import type { Downloads, DownloadModel } from "./downloads.js";
+// Replace the dag walker import with this when the next helia version is released.
+// import type { DAGWalker } from "@helia/interface";
 import type { DAGWalker } from "../../node_modules/helia/dist/src/index.js";
 import type { CID } from "multiformats/cid";
 import type { Sequelize } from "sequelize";

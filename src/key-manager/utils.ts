@@ -7,7 +7,7 @@ import * as ecc from "tiny-secp256k1";
 import { BIP32Factory, type BIP32Interface } from "bip32";
 import bip39 from "bip39";
 import type { PeerId } from "@libp2p/interface/peer-id";
-import { KeyData, EncodedKeyData } from "../interface.js";
+import { KeyData, EncodedKeyData } from "./interface.js";
 
 const KEY_SEPARATOR = "-";
 
