@@ -47,7 +47,7 @@ You can use `:memory:` if you want all data to be stored in memory instead of th
 
 You first need to generate a key for this server:
 ```
-node dist/generate-keys.js -p config/key.json
+node dist/scripts/generate-keys.js -p config/key.json
 ```
 
 Write down your mnemonic and name since this is what you will need to recover the server.
