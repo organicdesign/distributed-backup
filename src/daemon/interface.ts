@@ -11,7 +11,6 @@ import type { Helia } from "helia";
 import type { Blockstore } from "interface-blockstore";
 import type { Groups } from "./groups.js";
 import type { Cipher } from "../cipher/index.js";
-import type { Datastores } from "./datastores.js";
 import type { PinManager } from "./pin-manager.js";
 import type { EntryReferences } from "./entry-references.js";
 
@@ -87,7 +86,6 @@ export interface Components {
 	groups: Groups
 	cipher: Cipher
 	config: Config
-	stores: Datastores
 	pinManager: PinManager,
 	uploads: Awaited<ReturnType<typeof createUploadManager>>,
 	sync: Awaited<ReturnType<typeof createSyncManager>>

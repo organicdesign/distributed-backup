@@ -16,15 +16,14 @@ import { Looper } from "./looper.js";
 import { syncLoop, downloadLoop } from "./loops.js";
 import commands from "./rpc/index.js";
 import { createGroups } from "./groups.js";
-import { Datastores } from "./datastores.js";
 import { Cipher } from "../cipher/index.js";
 import { PinManager } from "./pin-manager.js";
 import createHeliaPinManager from "../helia-pin-manager/index.js";
 import { createKeyManager } from "../key-manager/index.js";
-import { projectPath, isMemory } from "./utils.js";
 import createUploadManager from "./upload-operations.js";
 import createSyncManager from "./sync-operations.js";
 import { EntryReferences } from "./entry-references.js";
+import { projectPath, isMemory, extendDatastore } from "./utils.js";
 import type { Components } from "./interface.js";
 
 const argv = await yargs(hideBin(process.argv))
@@ -64,10 +63,8 @@ if (!isMemory(config.storage)) {
 // Setup datastores and blockstores.
 const keyManager = await createKeyManager(Path.resolve(argv.key));
 const datastore = isMemory(config.storage) ? new MemoryDatastore() : new FsDatastore(Path.join(config.storage, "datastore"));
-const stores = new Datastores(datastore);
 const blockstore = isMemory(config.storage) ? new MemoryBlockstore() : new FsBlockstore(Path.join(config.storage, "blockstore"));
 
-// const references = await createReferences(stores.get("references"));
 const peerId = await keyManager.getPeerId();
 const psk = keyManager.getPskKey();
 
@@ -77,7 +74,7 @@ const libp2p = await createLibp2p({ datastore: libp2pDatastore, peerId, psk: con
 logger.lifecycle("loaded libp2p");
 
 // @ts-ignore
-const helia = await createHelia({ libp2p, blockstore, datastore: stores.get("helia/datastore") });
+const helia = await createHelia({ libp2p, blockstore, datastore: extendDatastore(datastore, "helia/datastore") });
 logger.lifecycle("loaded helia");
 
 const welo = await createWelo({
@@ -92,9 +89,9 @@ logger.lifecycle("loaded welo");
 const cipher = new Cipher(keyManager);
 logger.lifecycle("loaded cipher");
 
-const references = new EntryReferences({ datastore: stores.get("references") });
+const references = new EntryReferences({ datastore: extendDatastore(datastore, "references") });
 
-const groups = await createGroups({ datastore: stores.get("groups"), welo });
+const groups = await createGroups({ datastore: extendDatastore(datastore, "groups"), welo });
 logger.lifecycle("loaded groups");
 
 const { rpc, close } = await createNetServer(argv.socket);
@@ -109,15 +106,15 @@ heliaPinManager.events.addEventListener("pins:added", ({ cid }) => logger.pins(`
 heliaPinManager.events.addEventListener("pins:adding", ({ cid }) => logger.pins(`[~] ${cid}`));
 heliaPinManager.events.addEventListener("pins:removed", ({ cid }) => logger.pins(`[-] ${cid}`));
 
-const pinManager = new PinManager({ pinManager: heliaPinManager, datastore: stores.get("pin-references") });
+const pinManager = new PinManager({ pinManager: heliaPinManager, datastore: extendDatastore(datastore, "pin-references") });
 
-const sync = await createSyncManager({ stores, pinManager, groups });
+const sync = await createSyncManager({ datastore: extendDatastore(datastore, "sync-operations"), pinManager, groups });
 
 logger.lifecycle("downloads synced");
 
 const uploads = await createUploadManager({
 	libp2p,
-	stores,
+	datastore: extendDatastore(datastore, "upload-operations"),
 	groups,
 	pinManager,
 	blockstore,
@@ -133,7 +130,6 @@ const components: Components = {
 	blockstore,
 	groups,
 	config,
-	stores,
 	pinManager,
 	uploads,
 	sync,

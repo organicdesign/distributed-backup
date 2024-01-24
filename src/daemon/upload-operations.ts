@@ -8,8 +8,9 @@ import selectRevisions from "./select-revisions.js";
 import { OperationManager } from "./operation-manager.js";
 import { decodeEntry, encodeEntry } from "./utils.js";
 import { EncodedEntry, Components, VERSION_KEY, DATA_KEY } from "./interface.js";
+import type { Datastore } from "interface-datastore";
 
-export default async (components: Pick<Components, "stores" | "pinManager" | "libp2p" | "groups" | "blockstore">) => {
+export default async (components: Pick<Components, "pinManager" | "libp2p" | "groups" | "blockstore"> & { datastore: Datastore }) => {
 	const put = async (groupData: Uint8Array, path: string, encodedEntry: EncodedEntry) => {
 		const group = CID.decode(groupData);
 		const entry = decodeEntry(encodedEntry);
@@ -73,7 +74,7 @@ export default async (components: Pick<Components, "stores" | "pinManager" | "li
 		}
 	};
 
-	const om = new OperationManager(components.stores.get("upload-operations"), {
+	const om = new OperationManager(components.datastore, {
 		put,
 
 		delete: async (groupData: Uint8Array, path: string) => {

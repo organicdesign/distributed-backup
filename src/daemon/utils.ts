@@ -3,11 +3,13 @@ import * as cborg from "cborg";
 import { CID } from "multiformats/cid";
 import { fileURLToPath } from "url";
 import all from "it-all";
+import { NamespaceDatastore } from "./namespace-datastore.js";
 import * as dagWalkers from "../../node_modules/helia/dist/src/utils/dag-walkers.js";
+import { Libp2p, EncodedEntry, Entry, MEMORY_MAGIC } from "./interface.js";
 import type { AbortOptions } from "@libp2p/interface";
 import type { Helia } from "@helia/interface";
 import type { Blockstore } from "interface-blockstore";
-import { Libp2p, EncodedEntry, Entry, Components, MEMORY_MAGIC } from "./interface.js";
+import { type Datastore, Key } from "interface-datastore";
 
 export const projectPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -29,6 +31,8 @@ export const safeReplace = async (helia: Helia, oldCid: CID, newCid: CID) => {
 	await safePin(helia, newCid);
 	await safeUnpin(helia, oldCid);
 };
+
+export const extendDatastore = (datastore: Datastore, name: string) => new NamespaceDatastore(datastore, new Key(name));
 
 export const encodeAny = <T = unknown>(data: T): Uint8Array => {
 	return cborg.encode(data);
@@ -139,32 +143,3 @@ export const decodeEntry = (entry: EncodedEntry): Entry => ({
 	cid: CID.decode(entry.cid),
 	author: CID.decode(entry.author)
 });
-
-export const queryContent = async function * ({ stores }: Pick<Components, "stores">, context?: string, action?: string) {
-	// /content/${context}/${action}/${group}/${path} -> Entry
-
-	let storePath = "/";
-
-	if (context != null) {
-		storePath += `${context}/`;
-	}
-
-	if (action != null) {
-		storePath += `${action}/`;
-	}
-
-	const store = stores.get("actions");
-
-	for await (const pair of store.query({ prefix: storePath })) {
-		const parts = pair.key.toString().split("/");
-
-		yield {
-			context: parts[1], // "download" | "upload" | "reference" | "pin"
-			action: parts[2], // "put" | "delete"
-			group: CID.parse(parts[3]),
-			path: `/${parts.slice(4).join("/")}`,
-			entry: decodeEntry(EncodedEntry.parse(decodeAny(pair.value))),
-			remove: () => store.delete(pair.key)
-		};
-	}
-}
