@@ -1,7 +1,6 @@
 import { CID } from "multiformats/cid";
 import * as dagCbor from "@ipld/dag-cbor";
 import { countPeers } from "../../utils.js";
-import * as logger from "../../logger.js";
 import { decodeAny } from "../../utils.js";
 import { type Components, EncodedEntry, LocalEntryData } from "../../interface.js";
 
@@ -21,8 +20,8 @@ export const method = (components: Components) => async () => {
 		const index = await database.store.latest();
 
 		for await (const pair of index.query({})) {
+			// Ignore null values...
 			if (decodeAny(pair.value) == null) {
-				logger.warn("ignoring null value")
 				continue;
 			}
 

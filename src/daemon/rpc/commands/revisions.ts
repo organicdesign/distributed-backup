@@ -3,7 +3,6 @@ import { z } from "zod";
 import { CID } from "multiformats/cid";
 import * as dagCbor from "@ipld/dag-cbor";
 import { countPeers } from "../../utils.js";
-import * as logger from "../../logger.js";
 import { decodeAny } from "../../utils.js";
 import { VERSION_KEY, zCID, type Components, EncodedEntry } from "../../interface.js";
 export const name = "revisions";
@@ -33,8 +32,8 @@ export const method = (components: Components) => async (raw: unknown) => {
 	const index = await database.store.latest();
 
 	for await (const pair of index.query({ prefix: Path.join("/", VERSION_KEY, params.path)})) {
+		// Ignore null values...
 		if (decodeAny(pair.value) == null) {
-			logger.warn("ignoring null value")
 			continue;
 		}
 
