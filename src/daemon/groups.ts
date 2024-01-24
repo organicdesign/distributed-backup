@@ -1,3 +1,4 @@
+import Path from "path";
 import { Key } from "interface-datastore";
 import { decodeCbor } from "../../node_modules/welo/dist/src/utils/block.js";
 import { Manifest } from "../../node_modules/welo/dist/src/manifest/index.js";
@@ -63,14 +64,14 @@ export class Groups implements Startable {
 		logger(`[join] ${manifest.address.cid.toString()}`);
 	}
 
-	async addTo (group: CID, entry: Entry & { path?: string }) {
+	async addTo (group: CID, entry: Entry & { path: string }) {
 		const database = this.groups.get(group.toString());
 
 		if (database == null) {
 			throw new Error("not a part of group");
 		}
 
-		logger(`[+] ${group.toString()}${entry.path ?? ""}`);
+		logger(`[+] ${Path.join(group.toString(), entry.path)}`);
 
 		const rawEntry: EncodedEntry = {
 			cid: entry.cid.bytes,
@@ -85,7 +86,7 @@ export class Groups implements Startable {
 		};
 
 		// Update global database.
-		const op = database.store.creators.put(entry.path ?? "test", rawEntry);
+		const op = database.store.creators.put(entry.path, rawEntry);
 
 		await database.replica.write(op);
 	}
@@ -97,7 +98,7 @@ export class Groups implements Startable {
 			throw new Error("not a part of group");
 		}
 
-		logger(`[-] ${group.toString()}/${path}`);
+		logger(`[-] ${Path.join(group.toString(), path)}`);
 
 		const op = database.store.creators.del(path);
 
@@ -105,7 +106,7 @@ export class Groups implements Startable {
 	}
 
 	async replace (group: CID, oldPath: string, entry: Entry) {
-		await this.addTo(group, entry);
+		await this.addTo(group, { ...entry, path: oldPath});
 		await this.deleteFrom(group, oldPath);
 	}
 
