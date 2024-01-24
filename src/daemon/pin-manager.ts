@@ -50,6 +50,13 @@ export class PinManager {
 		return await this.pinManager.getBlockCount(cid);
 	}
 
+	async remove (group: CID, path: string, cid: CID) {
+		const key = new Key(`/${group.toString()}/${path}/${cid.toString()}`);
+
+		await this.pinManager.unpin(cid);
+		await this.datastore.delete(key);
+	}
+
 	private async * getByPin (pin: CID) {
 		const itr = this.datastore.queryKeys({ filters: [ key => {
 			const cidStr = key.list().pop();
