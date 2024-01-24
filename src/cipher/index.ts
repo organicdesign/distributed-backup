@@ -1,22 +1,21 @@
 import crypto from "crypto";
-import type { KeyManager } from "../key-manager/index.js";
+import type { Components, EncryptionParams } from "./interface.js";
 
-interface Components {
-	keyManager: KeyManager
-}
-
-interface EncryptionParams {
-	salt: Uint8Array
-	iv: Uint8Array
-}
-
+/**
+ * This class handles deterministic aes encryption of data.
+ */
 export class Cipher {
-	private readonly keyManager: KeyManager;
+	private readonly aesKey: Uint8Array;
+	private readonly hmacKey: Uint8Array;
 
 	constructor (components: Components) {
-		this.keyManager = components.keyManager;
+		this.aesKey = components.aesKey;
+		this.hmacKey = components.hmacKey;
 	}
 
+	/**
+	 * Generate the encryption params (iv and salt).
+	 */
 	async generate (data: Iterable<Uint8Array> | AsyncIterable<Uint8Array>): Promise<EncryptionParams> {
 		const hmac = await this.generateHmac(data);
 		const iv = hmac.subarray(0, 16);
@@ -25,7 +24,14 @@ export class Cipher {
 		return { iv, salt };
 	}
 
-	async * encrypt (data: Iterable<Uint8Array> | AsyncIterable<Uint8Array>, params: EncryptionParams) {
+	/**
+	 * Encrypt data optionally using encryption parameters.
+	 */
+	async * encrypt (data: Iterable<Uint8Array> | AsyncIterable<Uint8Array>, params?: EncryptionParams) {
+		if (params == null) {
+			params = await this.generate(data);
+		}
+
 		const key = await this.deriveKey(params.salt);
 		const cipher = crypto.createCipheriv("aes-256-cbc", key, params.iv, { encoding: "binary" });
 
@@ -44,7 +50,7 @@ export class Cipher {
 		return await new Promise((resolve, reject) => {
 			crypto.hkdf(
 				"sha256",
-				this.keyManager.getAesKey(),
+				this.aesKey,
 				salt,
 				new Uint8Array(),
 				32,
@@ -62,7 +68,7 @@ export class Cipher {
 
 	private async generateHmac (data: Iterable<Uint8Array> | AsyncIterable<Uint8Array>) {
 		const max: number | null = null;
-		const hmac = crypto.createHmac("sha256", this.keyManager.getHmacKey());
+		const hmac = crypto.createHmac("sha256", this.hmacKey);
 		let len = 0;
 
 		for await (const chunk of data) {

@@ -72,11 +72,11 @@ export class KeyManager {
 		});
 	}
 
-	getAesKey (): Uint8Array {
+	get aesKey (): Uint8Array {
 		return this.derivePrivate(keyIndicies.AES);
 	}
 
-	getHmacKey (): Uint8Array {
+	get hmacKey (): Uint8Array {
 		return this.derivePrivate(keyIndicies.HMAC);
 	}
 

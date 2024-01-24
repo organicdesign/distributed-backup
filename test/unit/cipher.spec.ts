@@ -2,7 +2,7 @@ import assert from "assert/strict";
 import all from "it-all";
 //import { concat } from "streaming-iterables";
 import { concat } from "uint8arrays/concat";
-import { Cipher } from "../../src/daemon/cipher.js";
+import { Cipher } from "../../src/cipher/index.js";
 import { KeyManager } from "../../src/key-manager/index.js";
 import { parseKeyData } from "../../src/key-manager/utils.js";
 
@@ -25,7 +25,7 @@ describe("cipher", () => {
 
 	before(() => {
 		const keyManager = new KeyManager(parseKeyData(rawKeyData));
-		cipher = new Cipher({ keyManager });
+		cipher = new Cipher(keyManager);
 	});
 
 	it("generates the IV and salt", async () => {

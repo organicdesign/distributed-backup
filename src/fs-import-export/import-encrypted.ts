@@ -22,9 +22,8 @@ export const importFile = async (
 	const loadData = () => fs.createReadStream(path, { highWaterMark: 16 * 1024 });
 	const { size } = await fs.promises.stat(path);
 	const links: { cid: CID, size: number, chunk: Uint8Array }[] = [];
-	const params = await cipher.generate(loadData());
 
-	for await (const chunk of config.chunker(cipher.encrypt(loadData(), params))) {
+	for await (const chunk of config.chunker(cipher.encrypt(loadData()))) {
 		const block = dagPb.encode({
 			Data: chunk,
 			Links: []

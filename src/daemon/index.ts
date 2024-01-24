@@ -17,7 +17,7 @@ import { syncLoop, downloadLoop } from "./loops.js";
 import commands from "./rpc/index.js";
 import { createGroups } from "./groups.js";
 import { Datastores } from "./datastores.js";
-import { Cipher } from "./cipher.js";
+import { Cipher } from "../cipher/index.js";
 import { PinManager } from "./pin-manager.js";
 import createHeliaPinManager from "../helia-pin-manager/index.js";
 import { createKeyManager } from "../key-manager/index.js";
@@ -89,7 +89,7 @@ const welo = await createWelo({
 
 logger.lifecycle("loaded welo");
 
-const cipher = new Cipher({ keyManager });
+const cipher = new Cipher(keyManager);
 logger.lifecycle("loaded cipher");
 
 const references = new EntryReferences({ datastore: stores.get("references") });

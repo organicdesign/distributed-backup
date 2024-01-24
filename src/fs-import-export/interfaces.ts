@@ -19,6 +19,6 @@ export interface EncryptionParams {
 }
 
 export interface Cipher {
-	encrypt: (data: Iterable<Uint8Array> | AsyncIterable<Uint8Array>, params: EncryptionParams) => AsyncIterable<Uint8Array>
+	encrypt: (data: Iterable<Uint8Array> | AsyncIterable<Uint8Array>, params?: EncryptionParams) => AsyncIterable<Uint8Array>
 	generate: (data: Iterable<Uint8Array> | AsyncIterable<Uint8Array>) => Promise<EncryptionParams>
 }

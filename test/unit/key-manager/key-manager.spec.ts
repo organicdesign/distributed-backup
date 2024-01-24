@@ -27,7 +27,7 @@ describe("key manager", () => {
 		for (const d of data) {
 			const key = d.keyData.key.deriveHardened(2);
 
-			assert.deepEqual(key.privateKey, d.keyManager.getAesKey());
+			assert.deepEqual(key.privateKey, d.keyManager.aesKey);
 		}
 	});
 
@@ -35,7 +35,7 @@ describe("key manager", () => {
 		for (const d of data) {
 			const key = d.keyData.key.deriveHardened(3);
 
-			assert.deepEqual(key.privateKey, d.keyManager.getHmacKey());
+			assert.deepEqual(key.privateKey, d.keyManager.hmacKey);
 		}
 	});
 
