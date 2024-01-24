@@ -17,21 +17,25 @@ export class DatabaseMonitor {
 		await this.datastore.put(new Key(Path.join(group.toString(), path)), digest.bytes);
 	}
 
+	async remove (group: CID, path: string): Promise<void> {
+		await this.datastore.delete(new Key(Path.join(group.toString(), path)));
+	}
+
 	/**
 	 * Check for the existance of an item and optionally check the data hasn't changed.
 	 */
 	async check (group: CID, path: string, data?: Uint8Array): Promise<boolean> {
 		try {
-			const oldData = await this.datastore.get(new Key(Path.join(group.toString(), path)));
+			const key = new Key(Path.join(group.toString(), path));
+			const oldDigest = await this.datastore.get(key);
 
 			if (data == null) {
 				return true;
 			}
 
-			const oldDigest = await sha256.digest(oldData);
 			const digest = await sha256.digest(data);
 
-			return uint8ArrayCompare(digest.bytes, oldDigest.bytes) === 0;
+			return uint8ArrayCompare(digest.bytes, oldDigest) === 0;
 		} catch (error) {
 			return false;
 		}
