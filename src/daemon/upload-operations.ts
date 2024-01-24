@@ -9,7 +9,7 @@ import { OperationManager } from "./operation-manager.js";
 import { decodeEntry, encodeEntry } from "./utils.js";
 import { EncodedEntry, Components, VERSION_KEY, DATA_KEY } from "./interface.js";
 
-export default async (components: Pick<Components, "stores" | "pinManager" | "libp2p" | "groups" | "blockstore" | "monitor">) => {
+export default async (components: Pick<Components, "stores" | "pinManager" | "libp2p" | "groups" | "blockstore">) => {
 	const put = async (groupData: Uint8Array, path: string, encodedEntry: EncodedEntry) => {
 		const group = CID.decode(groupData);
 		const entry = decodeEntry(encodedEntry);
@@ -32,7 +32,7 @@ export default async (components: Pick<Components, "stores" | "pinManager" | "li
 
 		entry.sequence = sequence;
 
-		await components.pinManager.pinLocal(group, path, entry.cid);
+		await components.pinManager.process(group, path, dagCbor.encode(encodeEntry(entry)), true);
 
 		const paths = [
 			Path.join(DATA_KEY, path),
@@ -70,7 +70,6 @@ export default async (components: Pick<Components, "stores" | "pinManager" | "li
 
 			await components.groups.deleteFrom(group, path);
 			await components.pinManager.remove(group, path);
-			await components.monitor.remove(group, path);
 		}
 	};
 

@@ -11,8 +11,7 @@ export default async (components: Components) => {
 			const path = pair.key.toString();
 
 			// All we really want to do here is check for dirty entries.
-			if (await components.monitor.check(group, path, pair.value)) {
-				// We have already processed this entry.
+			if (await components.pinManager.validate(group, path, pair.value)) {
 				continue;
 			}
 

@@ -14,7 +14,6 @@ import type { Cipher } from "./cipher.js";
 import type { Datastores } from "./datastores.js";
 import type { PinManager } from "./pin-manager.js";
 import type { EntryReferences } from "./entry-references.js";
-import type { DatabaseMonitor } from "./database-monitor.js";
 
 export type Libp2p = BaseLibp2p<{ pubsub: PubSub<GossipsubEvents> }>
 
@@ -93,7 +92,6 @@ export interface Components {
 	uploads: Awaited<ReturnType<typeof createUploadManager>>,
 	sync: Awaited<ReturnType<typeof createSyncManager>>
 	references: EntryReferences,
-	monitor: DatabaseMonitor
 }
 
 export const EncodedEntry = z.object({
@@ -134,9 +132,20 @@ export const ImportOptions = z.object({
 	cidVersion: z.union([z.literal(0), z.literal(1)]),
 	chunker: z.string(),
 	rawLeaves: z.boolean(),
-	nocopy: z.boolean(),
 	encrypt: z.boolean(),
 	path: z.string()
 });
 
 export type ImportOptions = z.infer<typeof ImportOptions>
+
+export const EncodedPinInfo = z.object({
+	hash: z.instanceof(Uint8Array),
+	cid: z.instanceof(Uint8Array)
+});
+
+export type EncodedPinInfo = z.infer<typeof EncodedPinInfo>;
+
+export interface PinInfo {
+	hash: Uint8Array,
+	cid: CID
+}

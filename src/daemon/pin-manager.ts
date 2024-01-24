@@ -1,8 +1,38 @@
 import Path from "path";
 import { Key, type Datastore } from "interface-datastore";
+import { sha256 } from "multiformats/hashes/sha2";
+import * as dagCbor from "@ipld/dag-cbor";
 import { CID } from "multiformats/cid";
 import all from "it-all";
+import { compare as uint8ArrayCompare } from "uint8arrays/compare";
+import { encodeAny, decodeAny, decodeEntry } from "./utils.js";
+import * as logger from "./logger.js";
+import { EncodedEntry, EncodedPinInfo, PinInfo } from "./interface.js";
 import type { PinManager as HeliaPinManager } from "../helia-pin-manager/pin-manager.js";
+
+// Get the hash data from raw data.
+const hashEntry = async (data: Uint8Array) => {
+	const digest = await sha256.digest(data);
+
+	return digest.bytes;
+};
+
+// Decode an entry from raw data.
+const decodeEntryFromRaw = (data: Uint8Array) => {
+	const obj = dagCbor.decode(data);
+
+	if (obj == null) {
+		return null;
+	}
+
+	const encodedEntry = EncodedEntry.parse(obj);
+	const entry = decodeEntry(encodedEntry);
+
+	return entry;
+};
+
+// Generate the key to store data under.
+const makeKey = (group: CID, path: string) => new Key(Path.join(group.toString(), path));
 
 // This class is responsible for keeping track of what is pinned uner what group/path and automatically unpinning if there are no more references to a pin.
 export class PinManager {
@@ -15,31 +45,52 @@ export class PinManager {
 	}
 
 	async has (group: CID, path: string, cid: CID): Promise<boolean> {
-		const key = new Key(Path.join(group.toString(), path));
+		const pinInfo = await this.getPinInfo(group, path);
 
-		if (!await this.datastore.has(key)) {
+		if (pinInfo == null) {
 			return false;
 		}
 
-		const savedCid = CID.decode(await this.datastore.get(key));
-
-		return savedCid.equals(cid);
+		return pinInfo.cid.equals(cid);
 	}
 
-	async pin (group: CID, path: string, cid: CID): Promise<void> {
-		const key = new Key(Path.join(group.toString(), path));
+	// Process an entry.
+	async process (group: CID, path: string, rawEntry: Uint8Array, local?: boolean): Promise<void> {
+		const hash = await hashEntry(rawEntry);
+		const entry = decodeEntryFromRaw(rawEntry);
 
-		await this.removeIfOld(group, path, cid);
-		await this.datastore.put(key, cid.bytes);
-		await this.pinManager.pin(cid);
+		if (entry == null) {
+			await this.remove(group, path);
+			return;
+		}
+
+		await this.removeIfOld(group, path, entry.cid);
+		await this.putPinInfo(group, path, { hash, cid: entry.cid });
+
+		logger.references(`[+] ${makeKey(group, path).toString()}`);
+
+		if (local === true) {
+			await this.pinManager.pinLocal(entry.cid);
+		} else {
+			await this.pinManager.pin(entry.cid);
+		}
 	}
 
-	async pinLocal (group: CID, path: string, cid: CID): Promise<void> {
-		const key = new Key(Path.join(group.toString(), path));
+	// Validate an entry against the last seen data.
+	async validate (group: CID, path: string, rawEntry: Uint8Array): Promise<boolean> {
+		const pinInfo = await this.getPinInfo(group, path);
 
-		await this.removeIfOld(group, path, cid);
-		await this.datastore.put(key, cid.bytes);
-		await this.pinManager.pinLocal(cid);
+		if (pinInfo == null) {
+			return decodeEntryFromRaw(rawEntry) == null;
+		}
+
+		if (pinInfo.hash == null) {
+			return false;
+		}
+
+		const hash = await hashEntry(rawEntry);
+
+		return uint8ArrayCompare(pinInfo.hash, hash) === 0;
 	}
 
 	async * getActive () {
@@ -73,24 +124,48 @@ export class PinManager {
 	}
 
 	async remove (group: CID, path: string) {
-		const key = new Key(Path.join(group.toString(), path));
+		const key = makeKey(group, path);
+		const pinInfo = await this.getPinInfo(group, path);
 
-		if (!await this.datastore.has(key)) {
+		if (pinInfo == null) {
 			return;
 		}
 
-		const cid = CID.decode(await this.datastore.get(key));
-
-		const keys = await all(this.getByPin(cid));
+		const keys = await all(this.getByPin(pinInfo.cid));
 
 		if (keys.length <= 1) {
-			await this.pinManager.unpin(cid);
+			await this.pinManager.unpin(pinInfo.cid);
 		}
+
+		logger.references(`[-] ${key.toString()}`);
+
+		await this.datastore.delete(key);
+	}
+
+	private async getPinInfo (group: CID, path: string) {
+		const key = makeKey(group, path);
+
+		if (!await this.datastore.has(key)) {
+			return null;
+		}
+
+		const data = await this.datastore.get(key);
+		const pinInfo = EncodedPinInfo.parse(decodeAny(data));
+
+		return { ...pinInfo, cid: CID.decode(pinInfo.cid) };
+	}
+
+	private async putPinInfo (group: CID, path: string, pinInfo: PinInfo) {
+		const key = makeKey(group, path);
+		const encoded = encodeAny<EncodedPinInfo>({ ...pinInfo, cid: pinInfo.cid.bytes });
+
+		await this.datastore.put(key, encoded);
 	}
 
 	private async * getByPin (pin: CID) {
 		yield * this.datastore.query({ filters: [ ({ value }) => {
-			const cid = CID.decode(value);
+			const pinInfo = EncodedPinInfo.parse(decodeAny(value));
+			const cid = CID.decode(pinInfo.cid);
 
 			return cid.equals(pin);
 		} ] });
@@ -98,15 +173,10 @@ export class PinManager {
 
 	// Unpins the old key if it does not matched the pass cid.
 	private async removeIfOld (group: CID, path: string, cid: CID) {
-		const key = new Key(Path.join(group.toString(), path));
+		const pinInfo = await this.getPinInfo(group, path);
 
-		// Prune old keys...
-		if (await this.datastore.has(key)) {
-			const savedCid = CID.decode(await this.datastore.get(key));
-
-			if (!savedCid.equals(cid)) {
-				await this.remove(group, path);
-			}
+		if (pinInfo?.cid.equals(cid) === false) {
+			await this.remove(group, path);
 		}
 	}
 }
