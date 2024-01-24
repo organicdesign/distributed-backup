@@ -27,12 +27,12 @@ export const handler = createHandler<typeof builder>(async argv => {
 		return JSON.stringify(raw);
 	}
 
-	let out = `${"Name".padEnd(10)}${"Items".padEnd(10)}${"Peers".padEnd(10)}${"CID".padEnd(62)}\n`;
+	let out = `${"Name".padEnd(34)}${"Items".padEnd(10)}${"Peers".padEnd(10)}${"CID".padEnd(62)}\n`;
 
 	for (const group of groups) {
 		let str = "";
 
-		str += group.name.slice(0, 8).padEnd(10);
+		str += group.name.slice(0, 32).padEnd(34);
 		str += `${group.count}`.slice(0, 8).padEnd(10);
 		str += `${group.peers}`.slice(0, 8).padEnd(10);
 		str += group.cid.padEnd(62);
