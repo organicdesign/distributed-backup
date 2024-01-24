@@ -3,8 +3,8 @@ import { Key, type Datastore } from "interface-datastore";
 import { CID } from "multiformats/cid";
 import all from "it-all";
 import type { PinManager as HeliaPinManager } from "../helia-pin-manager/pin-manager.js";
-import * as logger from "./logger.js";
 
+// This class is responsible for keeping track of what is pinned uner what group/path and automatically unpinning if there are no more references to a pin.
 export class PinManager {
 	private readonly datastore: Datastore;
 	private readonly pinManager: HeliaPinManager;
@@ -15,24 +15,44 @@ export class PinManager {
 	}
 
 	async has (group: CID, path: string, cid: CID): Promise<boolean> {
-		const key = new Key(Path.join(group.toString(), path, cid.toString()));
+		const key = new Key(Path.join(group.toString(), path));
 
-		return await this.datastore.has(key);
+		if (!await this.datastore.has(key)) {
+			return false;
+		}
+
+		const savedCid = CID.decode(await this.datastore.get(key));
+
+		return savedCid.equals(cid);
 	}
 
 	async pin (group: CID, path: string, cid: CID): Promise<void> {
-		await this.updateKey(group, path, cid);
+		const key = new Key(Path.join(group.toString(), path));
+
+		await this.removeIfOld(group, path, cid);
+		await this.datastore.put(key, cid.bytes);
 		await this.pinManager.pin(cid);
 	}
 
 	async pinLocal (group: CID, path: string, cid: CID): Promise<void> {
-		await this.updateKey(group, path, cid);
+		const key = new Key(Path.join(group.toString(), path));
+
+		await this.removeIfOld(group, path, cid);
+		await this.datastore.put(key, cid.bytes);
 		await this.pinManager.pinLocal(cid);
 	}
 
 	async * getActive () {
 		for (const pin of await this.pinManager.getActiveDownloads()) {
-			yield * this.getByPin(pin);
+			for await (const { key } of this.getByPin(pin)) {
+				const parts = key.list();
+
+				yield {
+					group: CID.parse(parts[0]),
+					cid: pin,
+					path: `${parts.slice(1).join("/")}`
+				};
+			}
 		}
 	}
 
@@ -53,81 +73,40 @@ export class PinManager {
 	}
 
 	async remove (group: CID, path: string) {
-		const keys = await all(this.datastore.queryKeys({ prefix: Path.join(group.toString(), path) }));
+		const key = new Key(Path.join(group.toString(), path));
 
-		const cids = keys.map(key => CID.parse(key.toString().split("/").pop() as string));
-
-		await Promise.all(keys.map(key => this.datastore.delete(key)));
-
-		// Unpin all cids that are no longer referenced.
-		await Promise.all(cids.map(async cid => {
-			const keys = await all(this.getByPin(cid));
-
-			if (keys.length === 0) {
-				await this.pinManager.unpin(cid);
-			}
-		}));
-	}
-
-	private async * getByPin (pin: CID) {
-		const itr = this.datastore.queryKeys({ filters: [ key => {
-			const cidStr = key.list().pop();
-
-			if (cidStr == null) {
-				logger.warn("Invalid key: ", key);
-				return false;
-			}
-
-			const cid = CID.parse(cidStr);
-
-			return cid.equals(pin);
-		} ] });
-
-		for await (const key of itr) {
-			const parts = key.list();
-
-			yield {
-				group: CID.parse(parts[0]),
-				cid: CID.parse(parts[parts.length - 1]),
-				path: `${parts.slice(1, parts.length - 1).join("/")}`
-			};
-		}
-	}
-
-	private async updateKey (group: CID, path: string, cid: CID) {
-		const key = new Key(Path.join(group.toString(), path, cid.toString()));
-
-		// Prune old keys...
-		await this.prune(key);
-
-		// Check if this has been handled...
-		if (await this.datastore.has(key)) {
-			// Already handled this one.
+		if (!await this.datastore.has(key)) {
 			return;
 		}
 
-		// Add the new reference.
-		await this.datastore.put(key, new Uint8Array());
+		const cid = CID.decode(await this.datastore.get(key));
+
+		const keys = await all(this.getByPin(cid));
+
+		if (keys.length <= 1) {
+			await this.pinManager.unpin(cid);
+		}
 	}
 
-	private async prune (key: Key): Promise<void> {
-		for await (const otherKey of this.datastore.queryKeys({ prefix: key.parent().toString() })) {
-			if (otherKey.toString() === key.toString()) {
-				// Ignore the one we are querying.
-				continue;
+	private async * getByPin (pin: CID) {
+		yield * this.datastore.query({ filters: [ ({ value }) => {
+			const cid = CID.decode(value);
+
+			return cid.equals(pin);
+		} ] });
+	}
+
+	// Unpins the old key if it does not matched the pass cid.
+	private async removeIfOld (group: CID, path: string, cid: CID) {
+		const key = new Key(Path.join(group.toString(), path));
+
+		// Prune old keys...
+		if (await this.datastore.has(key)) {
+			const savedCid = CID.decode(await this.datastore.get(key));
+
+			if (!savedCid.equals(cid)) {
+				await this.remove(group, path);
 			}
-
-			const cidStr = otherKey.list().pop();
-
-			if (cidStr == null) {
-				logger.warn("Invalid key: ", otherKey);
-				continue;
-			}
-
-			const cid = CID.parse(cidStr);
-
-			await this.pinManager.unpin(cid);
-			await this.datastore.delete(otherKey);
 		}
 	}
 }
