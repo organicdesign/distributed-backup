@@ -21,7 +21,7 @@ export const method = (components: Components) => async (raw: unknown) => {
 		peers: number,
 		encrypted: boolean,
 		peerId: string,
-		sequence: string
+		sequence: number
 	}>[] = [];
 
 	const database = components.groups.get(CID.parse(params.group));
@@ -60,7 +60,7 @@ export const method = (components: Components) => async (raw: unknown) => {
 				peers: await countPeers(components, item, { timeout: 3000 }),
 				encrypted: entry.encrypted,
 				peerId,
-				sequence
+				sequence: +sequence
 			};
 		})());
 	}
