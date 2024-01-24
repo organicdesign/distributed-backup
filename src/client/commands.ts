@@ -47,7 +47,13 @@ const commands = [
 }[];
 
 export default commands.map(c => ({...c, handler: async (argc: Record<string, unknown>) => {
-	const result = await c.handler(argc);
+	try {
+		console.log(await c.handler(argc));
+	} catch (error: any) {
+		if (!(error?.code === 0)) {
+			throw error;
+		}
 
-	console.log(result);
+		console.error(`Error: ${error.message}`);
+	}
 }}));

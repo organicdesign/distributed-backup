@@ -12,7 +12,15 @@ export const method = (components: Components) => async (raw: unknown) => {
 	const params = Params.parse(raw);
 	const manifest = await components.welo.fetch(Address.fromString(`/hldb/${params.group}`));
 
-	await components.groups.add(manifest);
+	try {
+		await components.groups.add(manifest);
+	} catch (error) {
+		if ((error as Error).message.includes("is already open")) {
+			throw new Error("group has already been joined");
+		}
+
+		throw error;
+	}
 
 	return manifest.address.cid.toString();
 };

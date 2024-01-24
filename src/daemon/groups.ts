@@ -54,12 +54,13 @@ export class Groups implements Startable {
 	}
 
 	async add (manifest: Manifest) {
-		logger(`[join] ${manifest.address.cid.toString()}`);
 		const database = await this.welo.open(manifest) as KeyvalueDB;
 
 		this.groups.set(manifest.address.cid.toString(), database);
 
 		await this.datastore.put(new Key(database.address.cid.toString()), database.manifest.block.bytes);
+
+		logger(`[join] ${manifest.address.cid.toString()}`);
 	}
 
 	async addTo (group: CID, entry: Entry & { path?: string }) {
