@@ -82,13 +82,13 @@ describe("pin manager", () => {
 		it("destorys the pin row", async () => {
 			await components.pins.bulkCreate(data.pins);
 
-			for (const pin of data.pins) {
+			await Promise.all(data.pins.map(async pin => {
 				await pm.unpin(pin.cid);
 
 				const p = await components.pins.findOne({ where: { cid: pin.cid.toString() } });
 
 				assert(p == null);
-			}
+			}));
 		});
 
 		it("destorys all linked blocks", async () => {
