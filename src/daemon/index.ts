@@ -118,7 +118,14 @@ const sync = await createSyncManager({ stores, pinManager, groups, monitor });
 
 logger.lifecycle("downloads synced");
 
-const uploads = await createUploadManager({ libp2p, stores, groups, pinManager, blockstore });
+const uploads = await createUploadManager({
+	libp2p,
+	stores,
+	groups,
+	pinManager,
+	blockstore,
+	monitor
+});
 
 logger.lifecycle("uploads synced");
 

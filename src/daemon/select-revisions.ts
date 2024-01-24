@@ -12,7 +12,7 @@ const roundTo = (timestamp: number, mod: number) => {
 
 const dist = (a: number, b: number) => Math.abs(a - b);
 
-export default (revisions: Pair<string, EncodedEntry>[]): Pair<string, EncodedEntry>[] => {
+export default (revisions: Pair<string, EncodedEntry>[]): Pair<string, EncodedEntry>[] => {	
 	// Get a list of target dates:
 	const dates: number[] = [roundTo(Date.now(), MS_IN_DAY)];
 

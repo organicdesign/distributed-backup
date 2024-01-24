@@ -1,13 +1,15 @@
 import Path from "path";
+import all from "it-all";
 import { CID } from "multiformats/cid";
 import { sha256 } from "multiformats/hashes/sha2";
+import * as dagCbor from "@ipld/dag-cbor";
 import * as raw from "multiformats/codecs/raw";
+import selectRevisions from "./select-revisions.js";
 import { OperationManager } from "./operation-manager.js";
 import { decodeEntry, encodeEntry } from "./utils.js";
-import * as logger from "./logger.js";
 import { EncodedEntry, Components, VERSION_KEY, DATA_KEY } from "./interface.js";
 
-export default async (components: Pick<Components, "stores" | "pinManager" | "libp2p" | "groups" | "blockstore">) => {
+export default async (components: Pick<Components, "stores" | "pinManager" | "libp2p" | "groups" | "blockstore" | "monitor">) => {
 	const put = async (groupData: Uint8Array, path: string, encodedEntry: EncodedEntry) => {
 		const group = CID.decode(groupData);
 		const entry = decodeEntry(encodedEntry);
@@ -30,19 +32,47 @@ export default async (components: Pick<Components, "stores" | "pinManager" | "li
 
 		entry.sequence = sequence;
 
-		await components.pinManager.pinLocal(group, path , entry.cid);
-
-		logger.uploads(`[+] ${path}`);
+		await components.pinManager.pinLocal(group, path, entry.cid);
 
 		const paths = [
 			Path.join(DATA_KEY, path),
 			Path.join(VERSION_KEY, path, components.libp2p.peerId.toString(), entry.sequence.toString())
 		];
 
-		//await Promise.all(paths.map(path => components.groups.addTo(group, { ...entry, path })));
-
 		for (const path of paths) {
 			await components.groups.addTo(group, { ...entry, path });
+		}
+
+		// Handle revisions.
+
+		if (database == null) {
+			throw new Error("unable to get group");
+		}
+
+		const index = database.store.index;
+
+		const rawRevisions = await all(index.query({ prefix: Path.join("/", VERSION_KEY, path) }));
+
+		const revisions = rawRevisions.filter(r => dagCbor.decode(r.value) != null).map(r => ({
+			value: EncodedEntry.parse(dagCbor.decode(r.value)),
+			key: r.key.toString()
+		}));
+
+		// Filter revisions.
+		const selectedRevisions = selectRevisions(revisions);
+
+		for (const { key: path, value: revision } of revisions) {
+			const hasSelectedOld = selectedRevisions.find(r => r.key === path) != null;
+
+			if (hasSelectedOld) {
+				continue;
+			}
+
+			const rCid = CID.decode(revision.cid);
+
+			await components.groups.deleteFrom(path, group);
+			await components.pinManager.remove(group, path, rCid);
+			await components.monitor.remove(group, path);
 		}
 	};
 
