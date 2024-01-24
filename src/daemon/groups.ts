@@ -105,11 +105,6 @@ export class Groups implements Startable {
 		await database.replica.write(op);
 	}
 
-	async replace (group: CID, oldPath: string, entry: Entry) {
-		await this.addTo(group, oldPath, entry);
-		await this.deleteFrom(group, oldPath);
-	}
-
 	get (group: CID) {
 		return this.groups.get(group.toString());
 	}
