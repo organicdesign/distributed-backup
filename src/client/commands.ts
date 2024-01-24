@@ -15,6 +15,7 @@ import * as list from "./commands/list.js";
 import * as pubsub from "./commands/pubsub.js";
 import * as queryGroup from "./commands/query-group.js";
 import * as queryPins from "./commands/query-pins.js";
+import * as revisions from "./commands/revisions.js";
 import * as sync from "./commands/sync.js";
 import type { Options } from "yargs";
 
@@ -36,6 +37,7 @@ const commands = [
 	pubsub,
 	queryGroup,
 	queryPins,
+	revisions,
 	sync
 ] as unknown as {
 	desc: string,
