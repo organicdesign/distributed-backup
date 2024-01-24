@@ -18,7 +18,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 
 	const connect = await argv.client.rpc.request("join-group", { group: argv.group });
 
-	if (argv.json) {
+	if (argv.json === true) {
 		return JSON.stringify({
 			success: true,
 			group: connect

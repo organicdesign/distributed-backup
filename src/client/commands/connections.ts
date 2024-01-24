@@ -13,7 +13,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 
 	const connections = await argv.client.rpc.request("connections", {});
 
-	if (argv.json) {
+	if (argv.json === true) {
 		return JSON.stringify(connections);
 	}
 

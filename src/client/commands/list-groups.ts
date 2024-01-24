@@ -23,7 +23,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 	const raw: unknown = await argv.client.rpc.request("list-groups", {});
 	const groups = Groups.parse(raw);
 
-	if (argv.json) {
+	if (argv.json === true) {
 		return JSON.stringify(raw);
 	}
 

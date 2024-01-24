@@ -72,7 +72,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 		priority: argv.priority
 	});
 
-	if (argv.json) {
+	if (argv.json === true) {
 		return JSON.stringify({
 			success: true,
 			cid

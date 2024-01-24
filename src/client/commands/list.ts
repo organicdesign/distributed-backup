@@ -119,7 +119,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 		count: items.length
 	};
 
-	if (argv.json) {
+	if (argv.json === true) {
 		return JSON.stringify({
 			items,
 			completed,

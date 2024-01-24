@@ -32,7 +32,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 		group: argv.group
 	});
 
-	if (argv.json) {
+	if (argv.json === true) {
 		return JSON.stringify({ success: true });
 	}
 
