@@ -90,7 +90,7 @@ export class Groups implements Startable {
 		await database.replica.write(op);
 	}
 
-	async deleteFrom (path: string, group: CID) {
+	async deleteFrom (group: CID, path: string) {
 		const database = this.groups.get(group.toString());
 
 		if (database == null) {
@@ -106,7 +106,7 @@ export class Groups implements Startable {
 
 	async replace (group: CID, oldPath: string, entry: Entry) {
 		await this.addTo(group, entry);
-		await this.deleteFrom(oldPath, group);
+		await this.deleteFrom(group, oldPath);
 	}
 
 	get (group: CID) {

@@ -61,17 +61,15 @@ export default async (components: Pick<Components, "stores" | "pinManager" | "li
 		// Filter revisions.
 		const selectedRevisions = selectRevisions(revisions);
 
-		for (const { key: path, value: revision } of revisions) {
+		for (const { key: path } of revisions) {
 			const hasSelectedOld = selectedRevisions.find(r => r.key === path) != null;
 
 			if (hasSelectedOld) {
 				continue;
 			}
 
-			const rCid = CID.decode(revision.cid);
-
-			await components.groups.deleteFrom(path, group);
-			await components.pinManager.remove(group, path, rCid);
+			await components.groups.deleteFrom(group, path);
+			await components.pinManager.remove(group, path);
 			await components.monitor.remove(group, path);
 		}
 	};

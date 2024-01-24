@@ -1,7 +1,9 @@
-import type { PinManager as HeliaPinManager } from "../helia-pin-manager/pin-manager.js";
-import * as logger from "./logger.js";
+import Path from "path";
 import { Key, type Datastore } from "interface-datastore";
 import { CID } from "multiformats/cid";
+import all from "it-all";
+import type { PinManager as HeliaPinManager } from "../helia-pin-manager/pin-manager.js";
+import * as logger from "./logger.js";
 
 export class PinManager {
 	private readonly datastore: Datastore;
@@ -13,7 +15,7 @@ export class PinManager {
 	}
 
 	async has (group: CID, path: string, cid: CID): Promise<boolean> {
-		const key = new Key(`/${group.toString()}/${path}/${cid.toString()}`);
+		const key = new Key(Path.join(group.toString(), path, cid.toString()));
 
 		return await this.datastore.has(key);
 	}
@@ -50,11 +52,21 @@ export class PinManager {
 		return await this.pinManager.getBlockCount(cid);
 	}
 
-	async remove (group: CID, path: string, cid: CID) {
-		const key = new Key(`/${group.toString()}/${path}/${cid.toString()}`);
+	async remove (group: CID, path: string) {
+		const keys = await all(this.datastore.queryKeys({ prefix: Path.join(group.toString(), path) }));
 
-		await this.pinManager.unpin(cid);
-		await this.datastore.delete(key);
+		const cids = keys.map(key => CID.parse(key.toString().split("/").pop() as string));
+
+		await Promise.all(keys.map(key => this.datastore.delete(key)));
+
+		// Unpin all cids that are no longer referenced.
+		await Promise.all(cids.map(async cid => {
+			const keys = await all(this.getByPin(cid));
+
+			if (keys.length === 0) {
+				await this.pinManager.unpin(cid);
+			}
+		}));
 	}
 
 	private async * getByPin (pin: CID) {
@@ -83,7 +95,7 @@ export class PinManager {
 	}
 
 	private async updateKey (group: CID, path: string, cid: CID) {
-		const key = new Key(`/${group.toString()}/${path}/${cid.toString()}`);
+		const key = new Key(Path.join(group.toString(), path, cid.toString()));
 
 		// Prune old keys...
 		await this.prune(key);
