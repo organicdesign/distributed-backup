@@ -63,7 +63,6 @@ if (isYes(useBootStrap)) {
 
 const config = JSON.stringify({
 	private: usePsk,
-	validateInterval: 10,
 	tickInterval: 0.1,
 	storage,
 	addresses,
