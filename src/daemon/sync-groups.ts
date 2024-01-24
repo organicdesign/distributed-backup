@@ -1,3 +1,4 @@
+import Path from "path";
 import * as logger from "./logger.js";
 import { type Components } from "./interface.js";
 
@@ -15,7 +16,7 @@ export default async (components: Components) => {
 				continue;
 			}
 
-			logger.entry("syncing update:", path)
+			logger.entry("syncing update:", Path.join(group.toString(), path));
 
 			await components.sync.add("put", [group.bytes, path, pair.value]);
 		}
