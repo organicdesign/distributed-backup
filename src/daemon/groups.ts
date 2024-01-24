@@ -64,14 +64,14 @@ export class Groups implements Startable {
 		logger(`[join] ${manifest.address.cid.toString()}`);
 	}
 
-	async addTo (group: CID, entry: Entry & { path: string }) {
+	async addTo (group: CID, path: string, entry: Entry) {
 		const database = this.groups.get(group.toString());
 
 		if (database == null) {
 			throw new Error("not a part of group");
 		}
 
-		logger(`[+] ${Path.join(group.toString(), entry.path)}`);
+		logger(`[+] ${Path.join(group.toString(), path)}`);
 
 		const rawEntry: EncodedEntry = {
 			cid: entry.cid.bytes,
@@ -86,7 +86,7 @@ export class Groups implements Startable {
 		};
 
 		// Update global database.
-		const op = database.store.creators.put(entry.path, rawEntry);
+		const op = database.store.creators.put(path, rawEntry);
 
 		await database.replica.write(op);
 	}
@@ -106,7 +106,7 @@ export class Groups implements Startable {
 	}
 
 	async replace (group: CID, oldPath: string, entry: Entry) {
-		await this.addTo(group, { ...entry, path: oldPath});
+		await this.addTo(group, oldPath, entry);
 		await this.deleteFrom(group, oldPath);
 	}
 

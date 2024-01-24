@@ -40,7 +40,7 @@ export default async (components: Pick<Components, "stores" | "pinManager" | "li
 		];
 
 		for (const path of paths) {
-			await components.groups.addTo(group, { ...entry, path });
+			await components.groups.addTo(group, path, entry);
 		}
 
 		// Handle revisions.
