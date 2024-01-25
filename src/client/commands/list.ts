@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { createBuilder, createHandler } from "../utils.js";
-import { zCID } from "../../daemon/interface.js";
+import { zCID, RevisionStrategies } from "../../daemon/interface.js";
 
 const Item = z.object({
 	path: z.string(),
@@ -16,6 +16,7 @@ const Item = z.object({
 	totalSize: z.number().int(),
 	totalBlocks: z.number().int(),
 	priority: z.number().int(),
+	revisionStrategy: RevisionStrategies,
 	meta: z.record(z.unknown()).optional()
 });
 
@@ -137,6 +138,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 	header += "Peers".padEnd(10);
 	header += "Group".padEnd(10);
 	header += "Encrypted".padEnd(10);
+	header += "R-Strategy".padEnd(12);
 	header += "CID".padEnd(62);
 
 	console.log(header);
@@ -169,6 +171,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 				str += `${item.peers}`.slice(0, 8).padEnd(10);
 				str += `${item.groupName}`.slice(0, 8).padEnd(10);
 				str += `${item.encrypted}`.slice(0, 8).padEnd(10);
+				str += `${item.revisionStrategy}`.slice(0, 8).padEnd(12);
 				str += item.cid.padEnd(62);
 
 				console.log(str);
