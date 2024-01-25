@@ -25,6 +25,7 @@
     "@chainsafe/libp2p-gossipsub": "^11.0.1",
     "@chainsafe/libp2p-noise": "^14.1.0",
     "@chainsafe/libp2p-yamux": "^6.0.1",
+    "@cocalc/fuse-native": "^2.4.0",
     "@libp2p/autonat": "^1.0.7",
     "@libp2p/bootstrap": "^10.0.10",
     "@libp2p/circuit-relay-v2": "^1.0.10",
