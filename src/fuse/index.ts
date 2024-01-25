@@ -84,8 +84,7 @@ const opts: FuseOpts = {
 			buffer.write(str);
 		}
 
-		// Needs to throw here due to how the api works :(
-		throw str.length;
+		return str.length;
 	}
 };
 

@@ -36,6 +36,11 @@ export const convertOpts = (opts: FuseOpts): FuseCBOpts => {
 			const cb = args.pop();
 
 			opts[key].apply(null, args).then(function (r: unknown) {
+				if (key === "read") {
+					cb(r);
+					return;
+				}
+
 				cb(0, r);
 			}).catch((e: number) => cb(e));
 		}
