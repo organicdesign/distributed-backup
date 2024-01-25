@@ -3,7 +3,7 @@ import { promisify } from "util";
 import yargs from "yargs/yargs";
 import { hideBin } from "yargs/helpers";
 import Fuse from "@cocalc/fuse-native";
-import { createNetClient, NetClient } from "@organicdesign/net-rpc";
+import { createNetClient } from "@organicdesign/net-rpc";
 import { stat, convertOpts } from "./utils.js";
 import type { FuseOpts } from "./interface.js";
 
@@ -50,14 +50,15 @@ const opts: FuseOpts = {
 
 	async getattr (path) {
 		const list = await net.rpc.request("list", {});
+		const file = list.find((l: { path: string }) => l.path === Path.join("/r", path));
 
 		// Exact match is a file.
-		if (list.find(l => l.path === Path.join("/r", path))) {
-			return stat({ mode: 'file', size: 11 });
+		if (file != null) {
+			return stat({ mode: 'file', size: file.size });
 		}
 
 		// Partial match is a directory.
-		if (list.find(l => l.path.startsWith(Path.join("/r", path)))) {
+		if (list.find((l: { path: string }) => l.path.startsWith(Path.join("/r", path)))) {
 			return stat({ mode: 'dir', size: 4096 });
 		}
 
@@ -66,20 +67,22 @@ const opts: FuseOpts = {
 	},
 
 	async open () {
-		return 42;
+		return 42; // arbitrary handle
 	},
 
 	async release () {},
 
-	//@ts-ignore
-	async read (_, __, buf, len, pos) {
-		const str = 'hello world'.slice(pos, pos + len);
+	async read (path, _, buf, len, pos) {
+		const list = await net.rpc.request("list", {});
+		const file = list.find((l: { path: string }) => l.path === Path.join("/r", path));
+		const str = file.cid.slice(pos, pos + len);
 
 		if (str.length !== 0) {
 			buf.write(str);
 		}
 
-		return str.length;
+		// Needs to throw here due to how the api works :(
+		throw str.length;
 	}
 };
 
