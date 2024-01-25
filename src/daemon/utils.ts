@@ -3,7 +3,7 @@ import * as cborg from "cborg";
 import { CID } from "multiformats/cid";
 import { fileURLToPath } from "url";
 import all from "it-all";
-import { NamespaceDatastore } from "./namespace-datastore.js";
+import { NamespaceDatastore } from "../namespace-datastore/index.js";
 import * as dagWalkers from "../../node_modules/helia/dist/src/utils/dag-walkers.js";
 import { Libp2p, EncodedEntry, Entry, MEMORY_MAGIC } from "./interface.js";
 import type { AbortOptions } from "@libp2p/interface";
