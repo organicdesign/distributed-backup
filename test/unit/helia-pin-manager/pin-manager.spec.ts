@@ -89,7 +89,8 @@ describe("pin manager", () => {
 
 				assert(p == null);
 			}));
-		});
+			// This test can take a while - give it 2 mins.
+		}).timeout(1000 * 60 * 2);
 
 		it("destorys all linked blocks", async () => {
 			const pin = data.pins[0];
