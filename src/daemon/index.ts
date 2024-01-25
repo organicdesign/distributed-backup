@@ -56,25 +56,44 @@ logger.lifecycle("starting...");
 const config = await getConfig(argv.config);
 logger.lifecycle("loaded config");
 
+// Stops the error thrown by libp2p.
 if (!isMemory(config.storage)) {
 	await fs.mkdir(Path.join(config.storage, "datastore/libp2p"), { recursive: true });
 }
 
 // Setup datastores and blockstores.
 const keyManager = await createKeyManager(Path.resolve(argv.key));
-const datastore = isMemory(config.storage) ? new MemoryDatastore() : new FsDatastore(Path.join(config.storage, "datastore"));
-const blockstore = isMemory(config.storage) ? new MemoryBlockstore() : new FsBlockstore(Path.join(config.storage, "blockstore"));
+
+const datastore = isMemory(config.storage) ?
+	new MemoryDatastore() :
+	new FsDatastore(Path.join(config.storage, "datastore"));
+
+const blockstore = isMemory(config.storage) ?
+	new MemoryBlockstore() :
+	new FsBlockstore(Path.join(config.storage, "blockstore"));
 
 const peerId = await keyManager.getPeerId();
 const psk = keyManager.getPskKey();
 
-const libp2pDatastore = isMemory(config.storage) ? new MemoryDatastore() : new FsDatastore(Path.join(config.storage, "datastore/libp2p"));
+const libp2pDatastore = isMemory(config.storage) ?
+	new MemoryDatastore() :
+	new FsDatastore(Path.join(config.storage, "datastore/libp2p"));
 
-const libp2p = await createLibp2p({ datastore: libp2pDatastore, peerId, psk: config.private ? psk : undefined, ...config });
+const libp2p = await createLibp2p({
+	datastore: libp2pDatastore,
+	psk: config.private ? psk : undefined,
+	peerId,
+	...config
+});
+
 logger.lifecycle("loaded libp2p");
 
-// @ts-ignore
-const helia = await createHelia({ libp2p, blockstore, datastore: extendDatastore(datastore, "helia/datastore") });
+const helia = await createHelia({
+	datastore: extendDatastore(datastore, "helia/datastore"),
+	libp2p,
+	blockstore
+});
+
 logger.lifecycle("loaded helia");
 
 const welo = await createWelo({
@@ -87,34 +106,60 @@ const welo = await createWelo({
 logger.lifecycle("loaded welo");
 
 const cipher = new Cipher(keyManager);
+
 logger.lifecycle("loaded cipher");
 
-const references = new EntryReferences({ datastore: extendDatastore(datastore, "references") });
+const references = new EntryReferences({
+	datastore: extendDatastore(datastore, "references")
+});
 
-const groups = await createGroups({ datastore: extendDatastore(datastore, "groups"), welo });
+const groups = await createGroups({
+	datastore: extendDatastore(datastore, "groups"),
+	welo
+});
+
 logger.lifecycle("loaded groups");
 
 const { rpc, close } = await createNetServer(argv.socket);
+
 logger.lifecycle("loaded server");
 
+const heliaPinManager = await createHeliaPinManager(helia, {
+	storage: isMemory(config.storage) ? ":memory:" : Path.join(config.storage, "sqlite")
+});
 
+heliaPinManager.events.addEventListener("downloads:added", ({ cid }) => {
+	logger.downloads(`[+] ${cid}`);
+});
 
-const heliaPinManager = await createHeliaPinManager(helia, { storage: isMemory(config.storage) ? ":memory:" : Path.join(config.storage, "sqlite") });
+heliaPinManager.events.addEventListener("pins:added", ({ cid }) =>{
+	logger.pins(`[+] ${cid}`);
+});
 
-heliaPinManager.events.addEventListener("downloads:added", ({ cid }) => logger.downloads(`[+] ${cid}`));
-heliaPinManager.events.addEventListener("pins:added", ({ cid }) => logger.pins(`[+] ${cid}`));
-heliaPinManager.events.addEventListener("pins:adding", ({ cid }) => logger.pins(`[~] ${cid}`));
-heliaPinManager.events.addEventListener("pins:removed", ({ cid }) => logger.pins(`[-] ${cid}`));
+heliaPinManager.events.addEventListener("pins:adding", ({ cid }) => {
+	logger.pins(`[~] ${cid}`);
+});
 
-const pinManager = new PinManager({ pinManager: heliaPinManager, datastore: extendDatastore(datastore, "pin-references") });
+heliaPinManager.events.addEventListener("pins:removed", ({ cid }) => {
+	logger.pins(`[-] ${cid}`);
+});
 
-const sync = await createSyncManager({ datastore: extendDatastore(datastore, "sync-operations"), pinManager, groups });
+const pinManager = new PinManager({
+	pinManager: heliaPinManager,
+	datastore: extendDatastore(datastore, "pin-references")
+});
+
+const sync = await createSyncManager({
+	datastore: extendDatastore(datastore, "sync-operations"),
+	pinManager,
+	groups
+});
 
 logger.lifecycle("downloads synced");
 
 const uploads = await createUploadManager({
-	libp2p,
 	datastore: extendDatastore(datastore, "upload-operations"),
+	libp2p,
 	groups,
 	pinManager,
 	blockstore,
