@@ -15,13 +15,13 @@ const argv = await yargs(hideBin(process.argv))
 			default: "/tmp/server.socket"
 		}
 	})
-	/*.option({
+	.option({
 		group: {
 			alias: "g",
 			type: "string",
 			required: true
 		}
-	})*/
+	})
 	.parse();
 
 const net = createNetClient(argv.socket);
@@ -72,13 +72,16 @@ const opts: FuseOpts = {
 
 	async release () {},
 
-	async read (path, _, buf, len, pos) {
-		const list = await net.rpc.request("list", {});
-		const file = list.find((l: { path: string }) => l.path === Path.join("/r", path));
-		const str = file.cid.slice(pos, pos + len);
+	async read (path, _, buffer, length, position) {
+		const str = await net.rpc.request("read", {
+			group: argv.group,
+			path: path,
+			position: position,
+			length: length
+		});
 
 		if (str.length !== 0) {
-			buf.write(str);
+			buffer.write(str);
 		}
 
 		// Needs to throw here due to how the api works :(
