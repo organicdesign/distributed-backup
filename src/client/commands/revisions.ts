@@ -23,5 +23,9 @@ export const handler = createHandler<typeof builder>(async argv => {
 
 	const result = await argv.client.rpc.request("revisions", { group: argv.group, path: argv.path });
 
+	if (argv.json === true) {
+		return JSON.stringify(result);
+	}
+
 	return result;
 });
