@@ -15,6 +15,7 @@ import * as list from "./commands/list.js";
 import * as queryGroup from "./commands/query-group.js";
 import * as queryPins from "./commands/query-pins.js";
 import * as pubsub from "./commands/pubsub.js";
+import * as read from "./commands/read.js";
 import * as revisions from "./commands/revisions.js";
 import * as sync from "./commands/sync.js";
 import type { Components } from "../interface.js";
@@ -37,6 +38,7 @@ export default [
 	queryGroup,
 	queryPins,
 	pubsub,
+	read,
 	revisions,
 	sync
 ] as {
