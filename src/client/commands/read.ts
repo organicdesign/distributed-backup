@@ -1,4 +1,3 @@
-import { toString as uint8ArrayToString } from "uint8arrays/to-string";
 import { createBuilder, createHandler } from "../utils.js";
 
 export const command = "read [group] [path] [position] [length]";
