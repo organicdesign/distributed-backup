@@ -22,7 +22,7 @@ import createHeliaPinManager from "../helia-pin-manager/index.js";
 import { createKeyManager } from "../key-manager/index.js";
 import createUploadManager from "./upload-operations.js";
 import createSyncManager from "./sync-operations.js";
-import { EntryReferences } from "./entry-references.js";
+import { LocalSettings } from "./local-settings.js";
 import { projectPath, isMemory, extendDatastore } from "./utils.js";
 import type { Components } from "./interface.js";
 
@@ -109,7 +109,7 @@ const cipher = new Cipher(keyManager);
 
 logger.lifecycle("loaded cipher");
 
-const references = new EntryReferences({
+const localSettings = new LocalSettings({
 	datastore: extendDatastore(datastore, "references")
 });
 
@@ -178,7 +178,7 @@ const components: Components = {
 	pinManager,
 	uploads,
 	sync,
-	references
+	localSettings
 };
 
 // Register all the RPC commands.

@@ -13,7 +13,7 @@ const Params = z.object({
 export const method = (components: Components) => async (raw: unknown) => {
 	const params = Params.parse(raw);
 
-	await components.references.set(CID.parse(params.group), params.path, { priority: params.priority });
+	await components.localSettings.set(CID.parse(params.group), params.path, { priority: params.priority });
 
 	return params.path;
 };

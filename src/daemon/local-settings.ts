@@ -3,7 +3,11 @@ import { CID } from "multiformats/cid";
 import { encodeAny, decodeAny } from "./utils.js";
 import { LocalEntryData } from "./interface.js";
 
-export class EntryReferences {
+/**
+ * This class handles storing the local settings for entries that overwrite the
+ * network ones.
+ */
+export class LocalSettings {
 	private readonly datastore: Datastore;
 
 	constructor (components: { datastore: Datastore }) {

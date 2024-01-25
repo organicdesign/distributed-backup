@@ -12,7 +12,7 @@ import type { Blockstore } from "interface-blockstore";
 import type { Groups } from "./groups.js";
 import type { Cipher } from "../cipher/index.js";
 import type { PinManager } from "./pin-manager.js";
-import type { EntryReferences } from "./entry-references.js";
+import type { LocalSettings } from "./local-settings.js";
 
 export type Libp2p = BaseLibp2p<{ pubsub: PubSub<GossipsubEvents> }>
 
@@ -89,7 +89,7 @@ export interface Components {
 	pinManager: PinManager,
 	uploads: Awaited<ReturnType<typeof createUploadManager>>,
 	sync: Awaited<ReturnType<typeof createSyncManager>>
-	references: EntryReferences,
+	localSettings: LocalSettings,
 }
 
 export const EncodedEntry = z.object({

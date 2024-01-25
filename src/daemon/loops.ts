@@ -81,7 +81,7 @@ export const downloadLoop = async (components: Components) => {
 				let priority: number = entry.priority;
 
 				if (path.startsWith("/r")) {
-					const localRef = await components.references.get(group, path.slice(2));
+					const localRef = await components.localSettings.get(group, path.slice(2));
 
 					if (localRef?.priority != null) {
 						priority = localRef.priority;

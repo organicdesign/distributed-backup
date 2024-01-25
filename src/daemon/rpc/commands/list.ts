@@ -36,7 +36,7 @@ export const method = (components: Components) => async () => {
 			let ref: Partial<LocalEntryData> | null = null;
 
 			if (pair.key.toString().startsWith("/r")) {
-				ref = await components.references.get(CID.parse(cid), pair.key.toString().slice(2));
+				ref = await components.localSettings.get(CID.parse(cid), pair.key.toString().slice(2));
 			}
 
 			promises.push((async () => {
