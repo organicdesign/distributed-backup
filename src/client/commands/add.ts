@@ -44,6 +44,10 @@ export const builder = createBuilder({
 	priority: {
 		alias: "p",
 		type: "number"
+	},
+
+	revisionStrategy: {
+		type: "string"
 	}
 });
 
@@ -69,7 +73,8 @@ export const handler = createHandler<typeof builder>(async argv => {
 		encrypt: argv.encrypt,
 		autoUpdate: argv.autoUpdate,
 		versionCount: argv.versionCount,
-		priority: argv.priority
+		priority: argv.priority,
+		revisionStrategy: argv.revisionStrategy
 	});
 
 	if (argv.json === true) {

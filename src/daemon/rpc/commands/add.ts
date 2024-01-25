@@ -4,7 +4,7 @@ import { BlackHoleBlockstore } from "blockstore-core/black-hole";
 import { selectHasher, selectChunker, fsImport, type ImporterConfig } from "../../../fs-import-export/index.js";
 import { encodeEntry, getDagSize } from "../../utils.js";
 import * as logger from "../../logger.js";
-import { type Components, zCID, ImportOptions } from "../../interface.js";
+import { type Components, zCID, ImportOptions, RevisionStrategies } from "../../interface.js";
 
 export const name = "add";
 
@@ -15,7 +15,8 @@ const Params = ImportOptions.partial().extend(z.object({
 	onlyHash: z.boolean().optional(),
 	autoUpdate: z.boolean().optional(),
 	versionCount: z.number().optional(),
-	priority: z.number().optional()
+	priority: z.number().optional(),
+	revisionStrategy: RevisionStrategies.optional()
 }).shape);
 
 export const method = (components: Components) => async (raw: unknown) => {
@@ -54,7 +55,7 @@ export const method = (components: Components) => async (raw: unknown) => {
 		timestamp: Date.now(),
 		priority: params.priority ?? 1,
 		author: components.libp2p.peerId.toCID(),
-		revisionStrategy: components.config.defaultRevisionStrategy
+		revisionStrategy: params.revisionStrategy ?? components.config.defaultRevisionStrategy
 	});
 
 	await components.uploads.add("put", [CID.parse(params.group).bytes, params.path, entry]);
