@@ -78,4 +78,31 @@ describe("revisions", () => {
 		assert.equal(response[1].sequence, 2);
 		assert.equal(response[2].sequence, 3);
 	});
+
+	it("reduces to 2 revisions after overwrite with strategy 'log'", async () => {
+		const add = await runClient(node, "add", group, testDataDir, virtualDir, "--revisionStrategy", "log");
+
+		assert(add.success);
+
+		const response = await runClient(node, "revisions", group, virtualDir);
+
+		assert(response);
+		assert(Array.isArray(response));
+		assert.equal(response.length, 2);
+		assert.equal(response[0].sequence, 1);
+		assert.equal(response[1].sequence, 4);
+	});
+
+	it("reduces to 1 revision after overwrite with strategy 'none'", async () => {
+		const add = await runClient(node, "add", group, testDataDir, virtualDir, "--revisionStrategy", "none");
+
+		assert(add.success);
+
+		const response = await runClient(node, "revisions", group, virtualDir);
+
+		assert(response);
+		assert(Array.isArray(response));
+		assert.equal(response.length, 1);
+		assert.equal(response[0].sequence, 5);
+	});
 });
