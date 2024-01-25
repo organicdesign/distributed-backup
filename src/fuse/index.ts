@@ -1,27 +1,67 @@
+import Path from "path";
 import { promisify } from "util";
+import yargs from "yargs/yargs";
+import { hideBin } from "yargs/helpers";
 import Fuse from "@cocalc/fuse-native";
 import { createNetClient, NetClient } from "@organicdesign/net-rpc";
 import { stat, convertOpts } from "./utils.js";
 import type { FuseOpts } from "./interface.js";
 
+const argv = await yargs(hideBin(process.argv))
+	.option({
+		socket: {
+			alias: "s",
+			type: "string",
+			default: "/tmp/server.socket"
+		}
+	})
+	/*.option({
+		group: {
+			alias: "g",
+			type: "string",
+			required: true
+		}
+	})*/
+	.parse();
+
+const net = createNetClient(argv.socket);
+
 const opts: FuseOpts = {
 	async readdir (path: string) {
-		if (path === '/') {
-			return ['test'];
-		}
+		try {
+			const list = await net.rpc.request("list", {});
+			const pathParts = path.split("/").filter(p => !!p);
 
-		throw Fuse.ENOENT
+			const data = list
+				.map((l: { path: string }) => l.path)
+				.filter((p: string) => p.startsWith("/r"))
+				.map((p: string) => p.slice("/r".length))
+				.filter((p: string) => p.startsWith(path))
+				.map((p: string) => p.split("/").filter(p => !!p))
+				.map((p: string) => p.slice(pathParts.length))
+				.map((p: string) => p[0])
+				.filter((p: string) => !!p);
+
+			return data;
+		} catch (error) {
+			throw Fuse.ENOENT
+		}
 	},
 
 	async getattr (path) {
-		if (path === '/') {
-			return stat({ mode: 'dir', size: 4096 });
-		}
+		const list = await net.rpc.request("list", {});
 
-		if (path === '/test') {
+		// Exact match is a file.
+		if (list.find(l => l.path === Path.join("/r", path))) {
 			return stat({ mode: 'file', size: 11 });
 		}
 
+		// Partial match is a directory.
+		if (list.find(l => l.path.startsWith(Path.join("/r", path)))) {
+			return stat({ mode: 'dir', size: 4096 });
+		}
+
+		// No match
 		throw Fuse.ENOENT;
 	},
 
@@ -33,13 +73,13 @@ const opts: FuseOpts = {
 
 	//@ts-ignore
 	async read (_, __, buf, len, pos) {
-		const str = 'hello world'.slice(pos, pos + len)
+		const str = 'hello world'.slice(pos, pos + len);
 
 		if (str.length !== 0) {
-			buf.write(str)
-		};
+			buf.write(str);
+		}
 
-		return str.length
+		return str.length;
 	}
 };
 
