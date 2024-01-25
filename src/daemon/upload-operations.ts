@@ -60,7 +60,7 @@ export default async (components: Pick<Components, "pinManager" | "libp2p" | "gr
 		}));
 
 		// Filter revisions.
-		const selectedRevisions = selectRevisions(revisions);
+		const selectedRevisions = selectRevisions(revisions, entry.revisionStrategy);
 
 		for (const { key: path } of revisions) {
 			const hasSelectedOld = selectedRevisions.find(r => r.key === path) != null;

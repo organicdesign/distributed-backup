@@ -1,4 +1,4 @@
-import type { Pair, EncodedEntry } from "./interface.js";
+import { Pair, EncodedEntry, type RevisionStrategies } from "./interface.js";
 
 const REVISIONS_PER_INTERVAL = 3;
 const MS_IN_DAY = 1000 * 60 * 60 * 24;
@@ -12,7 +12,19 @@ const roundTo = (timestamp: number, mod: number) => {
 
 const dist = (a: number, b: number) => Math.abs(a - b);
 
-export default (revisions: Pair<string, EncodedEntry>[]): Pair<string, EncodedEntry>[] => {	
+export default (revisions: Pair<string, EncodedEntry>[], strategy: RevisionStrategies): Pair<string, EncodedEntry>[] => {
+	if (strategy === "none") {
+		return [];
+	}
+
+	if (strategy === "all") {
+		return revisions;
+	}
+
+	if (strategy !== "log") {
+		throw new Error("unknow revision strategy");
+	}
+
 	// Get a list of target dates:
 	const dates: number[] = [roundTo(Date.now(), MS_IN_DAY)];
 
