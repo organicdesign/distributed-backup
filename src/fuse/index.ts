@@ -26,10 +26,24 @@ const argv = await yargs(hideBin(process.argv))
 
 const net = createNetClient(argv.socket);
 
+const queryGroup = (() => {
+	let ts = 0;
+	let data: any;
+
+	return async () => {
+		if (Date.now() - ts > 5000) {
+			ts = Date.now();
+			data = await net.rpc.request("query-group", { group: argv.group });
+		}
+
+		return data;
+	};
+})()
+
 const opts: FuseOpts = {
 	async readdir (path: string) {
 		try {
-			const list = await net.rpc.request("query-group", { group: argv.group });
+			const list = await queryGroup();
 			const pathParts = path.split("/").filter(p => !!p);
 
 			const filteredList = list
@@ -69,7 +83,7 @@ const opts: FuseOpts = {
 	},
 
 	async getattr (path) {
-		const list = await net.rpc.request("query-group", { group: argv.group });
+		const list = await queryGroup();
 		const file = list.find((l: { path: string }) => l.path === Path.join("/r", path));
 
 		// Exact match is a file.
