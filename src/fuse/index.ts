@@ -29,7 +29,7 @@ const net = createNetClient(argv.socket);
 const opts: FuseOpts = {
 	async readdir (path: string) {
 		try {
-			const list = await net.rpc.request("list", {});
+			const list = await net.rpc.request("query-group", { group: argv.group });
 			const pathParts = path.split("/").filter(p => !!p);
 
 			const data = list
@@ -49,7 +49,7 @@ const opts: FuseOpts = {
 	},
 
 	async getattr (path) {
-		const list = await net.rpc.request("list", {});
+		const list = await net.rpc.request("query-group", { group: argv.group });
 		const file = list.find((l: { path: string }) => l.path === Path.join("/r", path));
 
 		// Exact match is a file.
