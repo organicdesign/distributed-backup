@@ -9,7 +9,7 @@ export interface FuseCBOpts {
 }
 
 export interface FuseOpts {
-	readdir (path: string): Promise<string[]>
+	readdir (path: string): Promise<{ names: string[], stats?: Fuse.Stats[] }>
 	getattr (path: string): Promise<Fuse.Stats>
 	open (path: string, mode: number): Promise<number>
 	release (path: string, fd: number): Promise<void>

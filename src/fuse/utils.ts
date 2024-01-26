@@ -41,6 +41,10 @@ export const convertOpts = (opts: FuseOpts): FuseCBOpts => {
 					return;
 				}
 
+				if (key === "readdir") {
+					cb(0, (r as any).names, (r as any).stats)
+				}
+
 				cb(0, r);
 			}).catch((e: number) => cb(e));
 		}

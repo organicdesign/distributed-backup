@@ -42,7 +42,7 @@ const opts: FuseOpts = {
 				.map((p: string) => p[0])
 				.filter((p: string) => !!p);
 
-			return data;
+			return { names: data };
 		} catch (error) {
 			throw Fuse.ENOENT
 		}
