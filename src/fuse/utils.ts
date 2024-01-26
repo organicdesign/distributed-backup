@@ -41,6 +41,11 @@ export const convertOpts = (opts: FuseOpts): FuseCBOpts => {
 					return;
 				}
 
+				if (key === "write") {
+					cb(r);
+					return;
+				}
+
 				if (key === "readdir") {
 					cb(0, (r as any).names, (r as any).stats)
 				}
