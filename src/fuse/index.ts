@@ -32,17 +32,37 @@ const opts: FuseOpts = {
 			const list = await net.rpc.request("query-group", { group: argv.group });
 			const pathParts = path.split("/").filter(p => !!p);
 
-			const data = list
-				.map((l: { path: string }) => l.path)
-				.filter((p: string) => p.startsWith("/r"))
-				.map((p: string) => p.slice("/r".length))
-				.filter((p: string) => p.startsWith(path))
-				.map((p: string) => p.split("/").filter(p => !!p))
-				.map((p: string) => p.slice(pathParts.length))
-				.map((p: string) => p[0])
-				.filter((p: string) => !!p);
+			const filteredList = list
+				.filter((l: { path: string }) => l.path.startsWith(Path.join("/r", path)))
+				.map((l: { path: string }) => ({
+					...l,
+					path: l.path.slice("/r".length)
+				}))
+				.map((l: { path: string }) => ({
+					...l,
+					name: l.path.split("/").filter(p => !!p).slice(pathParts.length)[0]
+				}))
+				.filter((l: { name: string }) => !!l.name)
 
-			return { names: data };
+			const names = filteredList.map(l => l.name);
+			const stats = filteredList.map(l => {
+				let mode: "file" | "dir" | null = null;
+
+				if (l.path === path) {
+					mode = "file";
+				} else if (l.path.startsWith(path)) {
+					mode = "dir";
+				} else {
+					throw Fuse.ENOENT;
+				}
+
+				return stat({
+					mode,
+					size: l.size
+				})
+			});
+
+			return { names, stats };
 		} catch (error) {
 			throw Fuse.ENOENT
 		}
