@@ -26,17 +26,19 @@ const argv = await yargs(hideBin(process.argv))
 
 const net = createNetClient(argv.socket);
 
+const additionalData: { path: string, size: number }[] = [];
+
 const queryGroup = (() => {
 	let ts = 0;
 	let data: any;
 
-	return async () => {
+	return async (): Promise<{ path: string, size: number, timestamp: number }[]> => {
 		if (Date.now() - ts > 5000) {
 			ts = Date.now();
 			data = await net.rpc.request("query-group", { group: argv.group });
 		}
 
-		return data;
+		return [...data, ...additionalData];
 	};
 })()
 
@@ -72,7 +74,14 @@ const opts: FuseOpts = {
 
 				return stat({
 					mode,
-					size: l.size
+					// @ts-ignore
+					size: l.size,
+					// @ts-ignore
+					atime: l.timestamp,
+					// @ts-ignore
+					ctime: l.timestamp,
+					// @ts-ignore
+					mtime: l.timestamp
 				})
 			});
 
@@ -88,7 +97,13 @@ const opts: FuseOpts = {
 
 		// Exact match is a file.
 		if (file != null) {
-			return stat({ mode: 'file', size: file.size });
+			return stat({ mode: 'file', size: file.size,
+			// @ts-ignore
+			atime: file.timestamp,
+			// @ts-ignore
+			ctime: file.timestamp,
+			// @ts-ignore
+			mtime: file.timestamp });
 		}
 
 		// Partial match is a directory.
