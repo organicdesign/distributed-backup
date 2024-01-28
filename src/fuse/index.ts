@@ -49,16 +49,16 @@ const opts: FuseOpts = {
 			const pathParts = path.split("/").filter(p => !!p);
 
 			const filteredList = list
-				.filter((l: { path: string }) => l.path.startsWith(Path.join("/r", path)))
-				.map((l: { path: string }) => ({
+				.filter(l => l.path.startsWith(Path.join("/r", path)))
+				.map(l => ({
 					...l,
 					path: l.path.slice("/r".length)
 				}))
-				.map((l: { path: string }) => ({
+				.map(l => ({
 					...l,
 					name: l.path.split("/").filter(p => !!p).slice(pathParts.length)[0]
 				}))
-				.filter((l: { name: string }) => !!l.name)
+				.filter(l => !!l.name)
 
 			const names = filteredList.map(l => l.name);
 			const stats = filteredList.map(l => {
@@ -74,14 +74,10 @@ const opts: FuseOpts = {
 
 				return stat({
 					mode,
-					// @ts-ignore
 					size: l.size,
-					// @ts-ignore
-					atime: l.timestamp,
-					// @ts-ignore
-					ctime: l.timestamp,
-					// @ts-ignore
-					mtime: l.timestamp
+					atime: new Date(l.timestamp),
+					ctime: new Date(l.timestamp),
+					mtime: new Date(l.timestamp)
 				})
 			});
 
@@ -97,13 +93,13 @@ const opts: FuseOpts = {
 
 		// Exact match is a file.
 		if (file != null) {
-			return stat({ mode: 'file', size: file.size,
-			// @ts-ignore
-			atime: file.timestamp,
-			// @ts-ignore
-			ctime: file.timestamp,
-			// @ts-ignore
-			mtime: file.timestamp });
+			return stat({
+				mode: "file",
+				size: file.size,
+				atime: new Date(file.timestamp),
+				ctime: new Date(file.timestamp),
+				mtime: new Date(file.timestamp)
+			});
 		}
 
 		// Partial match is a directory.
