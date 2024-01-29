@@ -2,6 +2,7 @@ import Path from "path";
 import { promisify } from "util";
 import yargs from "yargs/yargs";
 import { hideBin } from "yargs/helpers";
+import { toString as uint8ArrayToString } from "uint8arrays";
 import Fuse from "@cocalc/fuse-native";
 import { createNetClient } from "@organicdesign/net-rpc";
 import { stat, convertOpts } from "./utils.js";
@@ -130,6 +131,57 @@ const opts: FuseOpts = {
 		}
 
 		return str.length;
+	},
+
+	async write (path, _, buffer, length, position) {
+		try {
+			await net.rpc.request("write", {
+				group: argv.group,
+				data: uint8ArrayToString(buffer),
+				path,
+				position,
+				length
+			});
+		} catch (error) {
+			console.error(error);
+		}
+
+		return length;
+	},
+
+	async create (path) {
+		// Need to create a null CID at this path or make a cache?...
+		additionalData.push({ path: Path.join("/r", path), size: 0 });
+		//throw new Error("not implemented");
+	},
+
+	async unlink (path: string) {
+		await net.rpc.request("delete", {
+			group: argv.group,
+			path
+		});
+	},
+
+	async rename (src, dest) {
+		const str = await net.rpc.request("read", {
+			group: argv.group,
+			path: src,
+			position: 0,
+			length: 99999
+		});
+
+		await net.rpc.request("write", {
+			group: argv.group,
+			dest,
+			position: 0,
+			length: str.length,
+			data: uint8ArrayToString(Buffer.from(str))
+		});
+
+		await net.rpc.request("delete", {
+			group: argv.group,
+			path: src
+		});
 	}
 };
 
