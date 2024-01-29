@@ -19,13 +19,12 @@ const hashEntry = async (data: Uint8Array) => {
 
 // Decode an entry from raw data.
 const decodeEntryFromRaw = (data: Uint8Array) => {
-	const obj = dagCbor.decode(data);
+	const encodedEntry = EncodedEntry.parse(dagCbor.decode(data));
 
-	if (obj == null) {
+	if (encodedEntry == null) {
 		return null;
 	}
 
-	const encodedEntry = EncodedEntry.parse(obj);
 	const entry = decodeEntry(encodedEntry);
 
 	return entry;

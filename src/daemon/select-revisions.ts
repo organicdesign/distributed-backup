@@ -34,7 +34,9 @@ export default (revisions: Pair<string, EncodedEntry>[], strategy: RevisionStrat
 		}
 	}
 
-	const getClosestRevision = (ts: number) => revisions.reduce((p, c) => dist(ts, p.value.timestamp) < dist(ts, c.value.timestamp) ? p : c, revisions[0]);
+	const nonNullRevisions = revisions.filter(({ value }) => !!value) as Pair<string, NonNullable<EncodedEntry>>[];
+
+	const getClosestRevision = (ts: number) => nonNullRevisions.reduce((p, c) => dist(ts, p.value.timestamp) < dist(ts, c.value.timestamp) ? p : c, nonNullRevisions[0]);
 
 	return [...new Set(dates.map(getClosestRevision))];;
 };

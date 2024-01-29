@@ -92,17 +92,20 @@ export interface Components {
 	localSettings: LocalSettings,
 }
 
-export const EncodedEntry = z.object({
-	cid: z.instanceof(Uint8Array),
-	author: z.instanceof(Uint8Array),
-	encrypted: z.boolean(),
-	timestamp: z.number(),
-	blocks: z.number(),
-	size: z.number(),
-	sequence: z.number(),
-	priority: z.number(),
-	revisionStrategy: RevisionStrategies
-});
+export const EncodedEntry = z.union([
+	z.object({
+		cid: z.instanceof(Uint8Array),
+		author: z.instanceof(Uint8Array),
+		encrypted: z.boolean(),
+		timestamp: z.number(),
+		blocks: z.number(),
+		size: z.number(),
+		sequence: z.number(),
+		priority: z.number(),
+		revisionStrategy: RevisionStrategies
+	}),
+	z.null()
+]);
 
 export type EncodedEntry = z.infer<typeof EncodedEntry>
 

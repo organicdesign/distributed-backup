@@ -9,19 +9,21 @@ import { EncodedEntry, Components, VERSION_KEY, DATA_KEY } from "./interface.js"
 import type { Datastore } from "interface-datastore";
 
 export default async (components: Pick<Components, "pinManager" | "libp2p" | "groups" | "blockstore"> & { datastore: Datastore }) => {
-	const put = async (groupData: Uint8Array, path: string, encodedEntry: EncodedEntry) => {
+	const put = async (groupData: Uint8Array, path: string, encodedEntry: NonNullable<EncodedEntry>) => {
 		const group = CID.decode(groupData);
 		const entry = decodeEntry(encodedEntry);
 		const database = components.groups.get(group);
 		let sequence = 0;
 
 		if (database != null) {
-			const data = await database.store.selectors.get(database.store.index)(
+			const obj = await database.store.selectors.get(database.store.index)(
 				Path.join(DATA_KEY, path)
 			);
 
+			const data = EncodedEntry.parse(obj ?? null);
+
 			if (data != null) {
-				const entry = decodeEntry(EncodedEntry.parse(data));
+				const entry = decodeEntry(data);
 
 				if (entry != null && entry.sequence != null) {
 					sequence = entry.sequence + 1;

@@ -76,7 +76,13 @@ export const downloadLoop = async (components: Components) => {
 
 				const paily = database.store.index;
 				const data = await database.store.selectors.get(paily)(path);
-				const entry = decodeEntry(EncodedEntry.parse(data));
+				const encodedEntry = EncodedEntry.parse(data);
+
+				if (encodedEntry == null) {
+					continue;
+				}
+
+				const entry = decodeEntry(encodedEntry);
 
 				let priority: number = entry.priority;
 
