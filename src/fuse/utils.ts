@@ -51,7 +51,13 @@ export const convertOpts = (opts: FuseOpts): Fuse.OPERATIONS => {
 				}
 
 				cb(0, r);
-			}).catch((e: number) => cb(e));
+			}).catch((error: number | Error) => {
+				if (typeof error === "number") {
+					cb(error);
+				} else {
+					console.error(error);
+				}
+			});
 		}
 	}
 
