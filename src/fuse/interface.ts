@@ -1,77 +1,46 @@
 import type Fuse from "@cocalc/fuse-native";
 
-export interface FuseCBOpts {
-	readdir (
-		path: string,
-		cb: (err: number, names: string[], stats?: Fuse.Stats[]) => void
-	): void
+type Reverse<T extends readonly any[], U extends any[] = []> =
+	T extends readonly [infer F, ...infer R] ? Reverse<R, [F, ...U]> : U
 
-	getattr (
-		path: string,
-		cb: (err: number, stats?: Fuse.Stats) => void
-	): void
+type At<T extends readonly any[], I extends number> =
+	`${I}` extends `-${infer J}` ?
+		[never, ...Reverse<T>] extends infer R ?
+			J extends keyof R ?
+				R[J] :
+				undefined :
+			never :
+		T[I]
 
-	open (
-		path: string,
-		mode: number,
-		cb: (err: number, fd: number) => void
-	): void
+type DropLastItem<T extends unknown[]> = T extends [...infer U, any] ? U : []
 
-	release (
-		path: string,
-		fd: number,
-		cb: (err: number) => void
-	): void
+type GetParams<T extends undefined | ((...args: any[]) => any)> = Parameters<NonNullable<T>>
 
-	read (
-		path: string,
-		fd: number,
-		buffer: Buffer,
-		length: number,
-		position: number,
-		cb: (bytesRead?: number) => void
-	): void
+type GetLastParam<T extends undefined | ((...args: any[]) => any)> = At<GetParams<T>, -1>
 
-	write? (
-		path: string,
-		fd: number,
-		buffer: Buffer,
-		length: number,
-		position: number,
-		cb: (bytesWritten?: number) => void
-	): void
+type NullToVoid<T> = T extends null | undefined ? void : T
 
-	create? (
-		path: string,
-		mode: number,
-		cb: (error: number, modePassedOn?: number) => void
-	): void
+type AugmentReturns<T extends Partial<Record<keyof Fuse.OPERATIONS, unknown>>> = {
+	[P in keyof Fuse.OPERATIONS]: (...args: DropLastItem<GetParams<Fuse.OPERATIONS[P]>>) => Promise<T[P]>
 }
 
-export interface FuseOpts {
-	readdir (path: string): Promise<{ names: string[], stats?: Fuse.Stats[] }>
-	getattr (path: string): Promise<Fuse.Stats>
-	open (path: string, mode: number): Promise<number>
-	release (path: string, fd: number): Promise<void>
+type Override <T extends Record<string, unknown>, R extends Record<string, unknown>> = Omit<T, keyof R> & R;
 
-	read (
-		path: string,
-		fd: number,
-		buffer: Buffer,
-		length: number,
-		position: number
-	): Promise<number | void>
-
-	write? (
-		path: string,
-		fd: number,
-		buffer: Buffer,
-		length: number,
-		position: number
-	): Promise<number | void>
-
-	create? (
-		path: string,
-		mode: number,
-	): Promise<number | void>
-}
+export type FuseOpts = Override<
+	{
+		[P in keyof Fuse.OPERATIONS]:
+			(...args: DropLastItem<GetParams<Fuse.OPERATIONS[P]>>) =>
+				Promise<
+					NullToVoid<At<
+						GetParams<GetLastParam<Fuse.OPERATIONS[P]>>,
+						1
+					>>
+				>
+	},
+	AugmentReturns<{
+		readdir: { stats?: Fuse.Stats[], names: string[] }
+		read: number | void
+		write: number | void
+		create: number | void
+	}>
+>

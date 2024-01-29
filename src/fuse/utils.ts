@@ -1,5 +1,5 @@
 import type Fuse from "@cocalc/fuse-native";
-import type { FuseCBOpts, FuseOpts } from "./interface.js";
+import type { FuseOpts } from "./interface.js";
 
 export const stat = (st: {
 	mtime?: Date
@@ -27,8 +27,8 @@ export const stat = (st: {
 	}
 };
 
-export const convertOpts = (opts: FuseOpts): FuseCBOpts => {
-	const out: Partial<FuseCBOpts> = {};
+export const convertOpts = (opts: FuseOpts): Fuse.OPERATIONS => {
+	const out: Partial<Fuse.OPERATIONS> = {};
 
 	for (const key of Object.keys(opts)) {
 		out[key] = function () {
@@ -55,5 +55,5 @@ export const convertOpts = (opts: FuseOpts): FuseCBOpts => {
 		}
 	}
 
-	return out as FuseCBOpts;
+	return out as Fuse.OPERATIONS;
 };
