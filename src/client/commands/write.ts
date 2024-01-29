@@ -1,6 +1,6 @@
 import { createBuilder, createHandler } from "../utils.js";
 
-export const command = "read [group] [path] [position] [length]";
+export const command = "write [group] [path] [data] [position] [length]";
 
 export const desc = "Export files to the filesystem.";
 
@@ -23,6 +23,10 @@ export const builder = createBuilder({
 	length: {
 		type: "number",
 		default: 1024
+	},
+
+	data: {
+		type: "string"
 	}
 });
 
@@ -31,11 +35,12 @@ export const handler = createHandler<typeof builder>(async argv => {
 		throw new Error("Failed to connect to daemon.");
 	}
 
-	const data = await argv.client.rpc.request("read", {
+	const data = await argv.client.rpc.request("write", {
 		group: argv.group,
 		path: argv.path,
 		position: argv.position,
-		length: argv.length
+		length: argv.length,
+		data: argv.data
 	});
 
 	if (argv.json === true) {

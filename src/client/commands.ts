@@ -18,6 +18,7 @@ import * as queryPins from "./commands/query-pins.js";
 import * as read from "./commands/read.js";
 import * as revisions from "./commands/revisions.js";
 import * as sync from "./commands/sync.js";
+import * as write from "./commands/write.js";
 import type { Options } from "yargs";
 
 const commands = [
@@ -40,7 +41,8 @@ const commands = [
 	queryPins,
 	read,
 	revisions,
-	sync
+	sync,
+	write
 ] as unknown as {
 	desc: string,
 	command: string,

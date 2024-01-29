@@ -18,6 +18,7 @@ import * as pubsub from "./commands/pubsub.js";
 import * as read from "./commands/read.js";
 import * as revisions from "./commands/revisions.js";
 import * as sync from "./commands/sync.js";
+import * as write from "./commands/write.js";
 import type { Components } from "../interface.js";
 
 export default [
@@ -40,7 +41,8 @@ export default [
 	pubsub,
 	read,
 	revisions,
-	sync
+	sync,
+	write
 ] as {
 	name: string,
 	method: (components: Components) => (params: Record<string, unknown>) => Promise<unknown> | unknown,
