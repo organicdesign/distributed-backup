@@ -1,9 +1,7 @@
 import Path from "path";
 import all from "it-all";
 import { CID } from "multiformats/cid";
-import { sha256 } from "multiformats/hashes/sha2";
 import * as dagCbor from "@ipld/dag-cbor";
-import * as raw from "multiformats/codecs/raw";
 import selectRevisions from "./select-revisions.js";
 import { OperationManager } from "./operation-manager.js";
 import { decodeEntry, encodeEntry } from "./utils.js";
@@ -78,25 +76,11 @@ export default async (components: Pick<Components, "pinManager" | "libp2p" | "gr
 		put,
 
 		delete: async (groupData: Uint8Array, path: string) => {
-			const block = new Uint8Array([]);
-			const multihash = await sha256.digest(block);
-			const cid = CID.createV1(raw.code, multihash);
+			const group = CID.decode(groupData);
+			const key = Path.join("/", DATA_KEY, path);
 
-			await components.blockstore.put(cid, block);
-
-			const entry = encodeEntry({
-				cid,
-				author: components.libp2p.peerId.toCID(),
-				encrypted: false,
-				blocks: 1,
-				size: 0,
-				timestamp: Date.now(),
-				priority: 100,
-				sequence: 0,
-				revisionStrategy: "none"
-			});
-
-			await put(groupData, path, entry);
+			await components.groups.deleteFrom(group, key);
+			await components.pinManager.remove(group, key);
 		}
 	});
 
