@@ -27,7 +27,7 @@ const argv = await yargs(hideBin(process.argv))
 
 const net = createNetClient(argv.socket);
 
-const additionalData: { path: string, size: number }[] = [];
+const additionalData = new Map<string, { path: string, size: number }>();
 
 const queryGroup = (() => {
 	let ts = 0;
@@ -39,7 +39,7 @@ const queryGroup = (() => {
 			data = await net.rpc.request("query-group", { group: argv.group });
 		}
 
-		return [...data, ...additionalData];
+		return [...data, ...additionalData.values()];
 	};
 })()
 
@@ -134,28 +134,27 @@ const opts: FuseOpts = {
 	},
 
 	async write (path, _, buffer, length, position) {
-		try {
-			await net.rpc.request("write", {
-				group: argv.group,
-				data: uint8ArrayToString(buffer),
-				path,
-				position,
-				length
-			});
-		} catch (error) {
-			console.error(error);
-		}
+		await net.rpc.request("write", {
+			group: argv.group,
+			data: uint8ArrayToString(buffer),
+			path,
+			position,
+			length
+		});
 
 		return length;
 	},
 
 	async create (path) {
-		// Need to create a null CID at this path or make a cache?...
-		additionalData.push({ path: Path.join("/r", path), size: 0 });
-		//throw new Error("not implemented");
+		// We should make an empty file here...
+		const prefixedPath = Path.join("/r", path);
+
+		additionalData.set(path, { path: prefixedPath, size: 0 });
 	},
 
 	async unlink (path: string) {
+		additionalData.delete(path);
+
 		await net.rpc.request("delete", {
 			group: argv.group,
 			path
@@ -172,12 +171,13 @@ const opts: FuseOpts = {
 
 		await net.rpc.request("write", {
 			group: argv.group,
-			dest,
+			path: dest,
 			position: 0,
 			length: str.length,
 			data: uint8ArrayToString(Buffer.from(str))
 		});
 
+		additionalData.delete(src);
 		await net.rpc.request("delete", {
 			group: argv.group,
 			path: src

@@ -2,7 +2,9 @@ import Path from "path";
 import { z } from "zod";
 import { fromString as uint8ArrayFromString } from "uint8arrays/from-string";
 import { CID } from "multiformats/cid";
-import { unixfs } from '@helia/unixfs';
+import { unixfs } from "@helia/unixfs";
+import * as dagCbor from "@ipld/dag-cbor";
+import * as logger from "../../logger.js";
 import { decodeEntry, encodeEntry, getDagSize } from "../../utils.js";
 import { type Components, type EncodedEntry, type Entry, zCID, DATA_KEY } from "../../interface.js";
 
@@ -18,21 +20,22 @@ const Params = z.object({
 
 export const method = (components: Components) => async (raw: unknown) => {
 	const params = Params.parse(raw);
-	const group = components.groups.get(CID.parse(params.group));
+	const group = CID.parse(params.group);
+	const database = components.groups.get(group);
 
-	if (group == null) {
+	if (database == null) {
 		throw new Error("no such group");
 	}
 
-	const key = Path.join(DATA_KEY, params.path);
-	const encodedEntry = await group.store.selectors.get(group.store.index)(key) as EncodedEntry;
+	const key = Path.join("/", DATA_KEY, params.path);
+	const encodedEntry = await database.store.selectors.get(database.store.index)(key) as EncodedEntry;
 
 	const entry: Partial<Entry> = encodedEntry == null ? {} : decodeEntry(encodedEntry);
 	const fs = unixfs(components.helia);
 	const cid = await fs.addBytes(uint8ArrayFromString(params.data));
 	const { blocks, size } = await getDagSize(components.blockstore, cid);
 
-	const put = group.store.creators.put(key, encodeEntry({
+	const newEncodedEntry = encodeEntry({
 		cid,
 		author: components.libp2p.peerId.toCID(),
 		encrypted: false,
@@ -42,7 +45,13 @@ export const method = (components: Components) => async (raw: unknown) => {
 		priority: entry?.priority ?? 100,
 		sequence: entry?.sequence ? entry.sequence + 1 : 0,
 		revisionStrategy: entry.revisionStrategy ?? components.config.defaultRevisionStrategy
-	}));
+	});
 
-	await group.replica.write(put);
+	const put = database.store.creators.put(key, newEncodedEntry);
+
+	await database.replica.write(put);
+	await components.pinManager.process(group, key, dagCbor.encode(newEncodedEntry), true);
+
+	logger.warn("awaiting to get around database write time");
+	await new Promise(r => setTimeout(r, 1000));
 };
