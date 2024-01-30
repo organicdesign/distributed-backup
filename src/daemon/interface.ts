@@ -109,16 +109,8 @@ export const EncodedEntry = z.union([
 
 export type EncodedEntry = z.infer<typeof EncodedEntry>
 
-export interface Entry {
-	cid: CID
-	author: CID
-	encrypted: boolean
-	timestamp: number
-	blocks: number
-	size: number
-	priority: number
-	sequence: number,
-	revisionStrategy: RevisionStrategies
+export type Entry = {
+	[P in keyof NonNullable<EncodedEntry>]: NonNullable<EncodedEntry>[P] extends Uint8Array ? CID : NonNullable<EncodedEntry>[P]
 }
 
 export const LocalEntryData = z.object({
