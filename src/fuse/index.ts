@@ -207,6 +207,11 @@ const opts: FuseOpts = {
 			mode: "dir",
 			timestamp: Date.now()
 		})
+	},
+
+	async rmdir (path) {
+		console.warn("this will not work recursively");
+		additionalData.delete(path);
 	}
 };
 
