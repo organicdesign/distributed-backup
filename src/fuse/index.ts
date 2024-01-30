@@ -29,24 +29,31 @@ const net = createNetClient(argv.socket);
 
 const additionalData = new Map<string, { path: string, size: number }>();
 
-const queryGroup = (() => {
+const group = (() => {
 	let ts = 0;
 	let data: any;
 
-	return async (): Promise<{ path: string, size: number, timestamp: number }[]> => {
-		if (Date.now() - ts > 5000) {
-			ts = Date.now();
-			data = await net.rpc.request("query-group", { group: argv.group });
-		}
+	return {
+		query: async (): Promise<{ path: string, size: number, timestamp: number }[]> => {
+			if (Date.now() - ts > 5000) {
+				ts = Date.now();
+				data = await net.rpc.request("query-group", { group: argv.group });
+			}
 
-		return [...data, ...additionalData.values()];
+			return [...data, ...additionalData.values()];
+		},
+
+		reset () {
+			ts = 0;
+		}
 	};
+
 })()
 
 const opts: FuseOpts = {
 	async readdir (path: string) {
 		try {
-			const list = await queryGroup();
+			const list = await group.query();
 			const pathParts = path.split("/").filter(p => !!p);
 
 			const filteredList = list
@@ -89,7 +96,7 @@ const opts: FuseOpts = {
 	},
 
 	async getattr (path) {
-		const list = await queryGroup();
+		const list = await group.query();
 		const file = list.find((l: { path: string }) => l.path === Path.join("/r", path));
 
 		// Exact match is a file.
@@ -146,10 +153,15 @@ const opts: FuseOpts = {
 	},
 
 	async create (path) {
-		// We should make an empty file here...
-		const prefixedPath = Path.join("/r", path);
+		await net.rpc.request("write", {
+			group: argv.group,
+			data: uint8ArrayToString(new Uint8Array([])),
+			path,
+			position: 0,
+			length: 0
+		});
 
-		additionalData.set(path, { path: prefixedPath, size: 0 });
+		group.reset();
 	},
 
 	async unlink (path: string) {
