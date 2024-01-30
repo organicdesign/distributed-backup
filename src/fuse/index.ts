@@ -115,6 +115,10 @@ const opts: FuseOpts = {
 			return stat({ mode: 'dir', size: 4096 });
 		}
 
+		if (path === "/") {
+			return stat({ mode: 'dir', size: 4096 });
+		}
+
 		// No match
 		throw Fuse.ENOENT;
 	},
