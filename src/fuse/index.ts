@@ -27,20 +27,20 @@ const argv = await yargs(hideBin(process.argv))
 
 const net = createNetClient(argv.socket);
 
-const additionalData = new Map<string, { path: string, size: number }>();
+const additionalData = new Map<string, { timestamp: number, path: string, size: number, mode: "file" | "dir" }>();
 
 const group = (() => {
 	let ts = 0;
 	let data: any;
 
 	return {
-		query: async (): Promise<{ path: string, size: number, timestamp: number }[]> => {
+		query: async (): Promise<{ path: string, size: number, timestamp: number, mode: "file" }[]> => {
 			if (Date.now() - ts > 5000) {
 				ts = Date.now();
 				data = await net.rpc.request("query-group", { group: argv.group });
 			}
 
-			return [...data, ...additionalData.values()];
+			return [...data.map(d => ({ ...d, mode: "file" })), ...additionalData.values()];
 		},
 
 		reset () {
@@ -73,7 +73,7 @@ const opts: FuseOpts = {
 				let mode: "file" | "dir" | null = null;
 
 				if (l.path === path) {
-					mode = "file";
+					mode = l.mode;
 				} else if (l.path.startsWith(path)) {
 					mode = "dir";
 				} else {
@@ -86,7 +86,7 @@ const opts: FuseOpts = {
 					atime: new Date(l.timestamp),
 					ctime: new Date(l.timestamp),
 					mtime: new Date(l.timestamp)
-				})
+				});
 			});
 
 			return { names, stats };
@@ -102,7 +102,7 @@ const opts: FuseOpts = {
 		// Exact match is a file.
 		if (file != null) {
 			return stat({
-				mode: "file",
+				mode: file.mode,
 				size: file.size,
 				atime: new Date(file.timestamp),
 				ctime: new Date(file.timestamp),
@@ -198,6 +198,15 @@ const opts: FuseOpts = {
 			group: argv.group,
 			path: src
 		});
+	},
+
+	async mkdir (path) {
+		additionalData.set(path, {
+			path: Path.join("/r", path),
+			size: 4096,
+			mode: "dir",
+			timestamp: Date.now()
+		})
 	}
 };
 
