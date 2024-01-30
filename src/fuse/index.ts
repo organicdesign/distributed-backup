@@ -178,6 +178,14 @@ const opts: FuseOpts = {
 	},
 
 	async rename (src, dest) {
+		console.warn("directories don't work recursively");
+		const dir = additionalData.get(src);
+
+		if (dir != null) {
+			dir.path = Path.join("/r", dest);
+			return;
+		}
+
 		const str = await net.rpc.request("read", {
 			group: argv.group,
 			path: src,
