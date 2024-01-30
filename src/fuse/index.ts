@@ -181,6 +181,21 @@ const opts: FuseOpts = {
 		console.warn("directories don't work recursively");
 		const dir = additionalData.get(src);
 
+		for (const key of additionalData.keys()) {
+			if (key.startsWith(src)) {
+				const value = additionalData.get(key);
+
+				if (value == null) {
+					continue;
+				}
+
+				additionalData.delete(key);
+				additionalData.set(key.replace(src, dest), {
+					...value,
+					path: value.path.replace(src, dest)
+				});
+			}
+		}
 		if (dir != null) {
 			dir.path = Path.join("/r", dest);
 			return;
@@ -214,12 +229,15 @@ const opts: FuseOpts = {
 			size: 4096,
 			mode: "dir",
 			timestamp: Date.now()
-		})
+		});
 	},
 
 	async rmdir (path) {
-		console.warn("this will not work recursively");
-		additionalData.delete(path);
+		for (const key of additionalData.keys()) {
+			if (key.startsWith(path)) {
+				additionalData.delete(key);
+			}
+		}
 	}
 };
 
