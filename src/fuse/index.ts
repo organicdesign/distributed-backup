@@ -30,8 +30,8 @@ const net = createNetClient(argv.socket);
 const additionalData = new Map<string, { timestamp: number, path: string, size: number, mode: "file" | "dir" }>();
 
 const group = (() => {
-	let ts = 0;
 	let data: any;
+	let ts = 0;
 
 	return {
 		query: async (): Promise<{ path: string, size: number, timestamp: number, mode: "file" }[]> => {
@@ -60,7 +60,8 @@ const opts: FuseOpts = {
 			const pathParts = path.split("/").filter(p => !!p);
 
 			const filteredList = list
-				.filter(l => l.path.startsWith(Path.join("/r", path)) || l.path.startsWith(Path.join("/d", path)))
+				.filter(l => l.path.startsWith(Path.join("/r", path, "/")) || l.path.startsWith(Path.join("/d", path, "/")) ||
+				l.path === Path.join("/d", path))
 				.map(l => ({
 					...l,
 					path: l.path.slice("/r".length)
@@ -70,12 +71,25 @@ const opts: FuseOpts = {
 					name: l.path.split("/").filter(p => !!p).slice(pathParts.length)[0]
 				}))
 				.filter(l => !!l.name)
+				// Remove duplicates
+				.filter((() => {
+					let f = new Set<string>();
+
+					return (l: { name: string }) => {
+						if (f.has(l.name)) {
+							return false;
+						}
+
+						f.add(l.name);
+						return true;
+					}
+				})())
 
 			const names = filteredList.map(l => l.name);
 			const stats = filteredList.map(l => {
 				let mode: "file" | "dir" | null = null;
 
-				if (l.path === path) {
+				if (l.path === Path.join(path, l.name)) {
 					mode = l.mode;
 				} else if (l.path.startsWith(path)) {
 					mode = "dir";
@@ -177,8 +191,6 @@ const opts: FuseOpts = {
 	},
 
 	async unlink (path: string) {
-		additionalData.delete(path);
-
 		await net.rpc.request("delete", {
 			group: argv.group,
 			path
@@ -187,28 +199,6 @@ const opts: FuseOpts = {
 
 	async rename (src, dest) {
 		console.warn("directories don't work recursively");
-		const dir = additionalData.get(src);
-
-		for (const key of additionalData.keys()) {
-			if (key.startsWith(src)) {
-				const value = additionalData.get(key);
-
-				if (value == null) {
-					continue;
-				}
-
-				additionalData.delete(key);
-				additionalData.set(key.replace(src, dest), {
-					...value,
-					path: value.path.replace(src, dest)
-				});
-			}
-		}
-		if (dir != null) {
-			dir.path = Path.join("/r", dest);
-			return;
-		}
-
 		const str = await net.rpc.request("read", {
 			group: argv.group,
 			path: src,
@@ -224,7 +214,6 @@ const opts: FuseOpts = {
 			data: uint8ArrayToString(Buffer.from(str))
 		});
 
-		additionalData.delete(src);
 		await net.rpc.request("delete", {
 			group: argv.group,
 			path: src
@@ -232,20 +221,19 @@ const opts: FuseOpts = {
 	},
 
 	async mkdir (path) {
-		additionalData.set(path, {
-			path: Path.join("/r", path),
-			size: 4096,
-			mode: "dir",
-			timestamp: Date.now()
+		await net.rpc.request("mkdir", {
+			group: argv.group,
+			path
 		});
+		group.reset();
 	},
 
 	async rmdir (path) {
-		for (const key of additionalData.keys()) {
-			if (key.startsWith(path)) {
-				additionalData.delete(key);
-			}
-		}
+		await net.rpc.request("delete", {
+			group: argv.group,
+			path
+		});
+		group.reset();
 	}
 };
 
