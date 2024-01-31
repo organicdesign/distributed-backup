@@ -51,7 +51,4 @@ export const method = (components: Components) => async (raw: unknown) => {
 
 	await database.replica.write(put);
 	await components.pinManager.process(group, key, dagCbor.encode(newEncodedEntry), true);
-
-	logger.warn("awaiting to get around database write time");
-	await new Promise(r => setTimeout(r, 1000));
 };

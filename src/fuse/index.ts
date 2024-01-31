@@ -214,6 +214,9 @@ const opts: FuseOpts = {
 			data: uint8ArrayToString(Buffer.from(str))
 		});
 
+		console.warn("awaiting to get around database write time");
+		await new Promise(r => setTimeout(r, 1000));
+
 		await net.rpc.request("delete", {
 			group: argv.group,
 			path: src
