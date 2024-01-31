@@ -4,6 +4,7 @@ import { UnixFS } from "ipfs-unixfs";
 import { CID } from "multiformats/cid";
 import * as dagPb from "@ipld/dag-pb";
 import * as raw from "multiformats/codecs/raw";
+import { parallelMerge } from "streaming-iterables"
 import type { Blockstore } from "interface-blockstore";
 import type { ImportResult, ImporterConfig } from "./interfaces.js";
 
@@ -49,7 +50,7 @@ export const importFile = async (blockstore: Blockstore, path: string, config: I
 	return { cid, size };
 };
 
-export const importDir = async function * (blockstore: Blockstore, path: string, config: ImporterConfig): AsyncGenerator<ImportResult & { path: string }> {
+export const importDir = async function * (blockstore: Blockstore, path: string, config: ImporterConfig): AsyncIterable<ImportResult & { path: string }> {
 	const stat = await fs.promises.stat(path);
 
 	if (!stat.isDirectory()) {
@@ -61,11 +62,13 @@ export const importDir = async function * (blockstore: Blockstore, path: string,
 
 	const dirents = await fs.promises.readdir(path, { withFileTypes: true });
 
-	for (const dirent of dirents) {
+	const itrs = dirents.map(dirent => {
 		const subPath = Path.join(path, dirent.name);
 
-		yield * importDir(blockstore, subPath, config);
-	}
+		return importDir(blockstore, subPath, config);
+	})
+
+	yield * parallelMerge(...itrs);
 };
 
 export default importDir;
