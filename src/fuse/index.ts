@@ -224,18 +224,28 @@ const opts: FuseOpts = {
 	},
 
 	async mkdir (path) {
-		await net.rpc.request("mkdir", {
+		await net.rpc.request("write", {
 			group: argv.group,
-			path
+			data: uint8ArrayToString(new Uint8Array([])),
+			path: Path.join(path, ".PLACE_HOLDER"),
+			position: 0,
+			length: 0
 		});
+
 		group.reset();
 	},
 
 	async rmdir (path) {
-		await net.rpc.request("delete", {
-			group: argv.group,
-			path
-		});
+		const list = await group.query();
+		const files = list.filter((l: { path: string }) => l.path.startsWith(Path.join("/r", path, "/")));
+
+		for (const file of files) {
+			await net.rpc.request("delete", {
+				group: argv.group,
+				path: file.path.replace("/r", "")
+			});
+		}
+
 		group.reset();
 	}
 };
