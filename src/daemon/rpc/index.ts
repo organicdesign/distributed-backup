@@ -12,7 +12,9 @@ import * as listGroups from "./commands/list-groups.js";
 import * as listHeliaPins from "./commands/list-helia-pins.js";
 import * as listUploads from "./commands/list-uploads.js";
 import * as list from "./commands/list.js";
+import * as mkdir from "./commands/mkdir.js";
 import * as queryGroup from "./commands/query-group.js";
+import * as queryGroupDirs from "./commands/query-group-dirs.js";
 import * as queryPins from "./commands/query-pins.js";
 import * as pubsub from "./commands/pubsub.js";
 import * as read from "./commands/read.js";
@@ -36,7 +38,9 @@ export default [
 	listHeliaPins,
 	listUploads,
 	list,
+	mkdir,
 	queryGroup,
+	queryGroupDirs,
 	queryPins,
 	pubsub,
 	read,
