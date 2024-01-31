@@ -79,10 +79,25 @@ export default async (components: Pick<Components, "pinManager" | "libp2p" | "gr
 
 		delete: async (groupData: Uint8Array, path: string) => {
 			const group = CID.decode(groupData);
-			const key = Path.join("/", DATA_KEY, path);
+			const database = components.groups.get(group);
 
-			await components.groups.deleteFrom(group, key);
-			await components.pinManager.remove(group, key);
+			if (database == null) {
+				throw new Error("no such group")
+			}
+
+			const index = database.store.index;
+
+			for await (const { key } of index.query({ filters: [f => {
+				const str = f.key.toString();
+
+				return str.startsWith(Path.join("/", DATA_KEY, path, "/")) ||
+					str === Path.join("/", DATA_KEY, path) ||
+					str.startsWith(Path.join("/", "d", path, "/")) ||
+					str === (Path.join("/", "d", path));
+			}] })) {
+				await components.groups.deleteFrom(group, key.toString());
+				await components.pinManager.remove(group, key.toString());
+			}
 		}
 	});
 
