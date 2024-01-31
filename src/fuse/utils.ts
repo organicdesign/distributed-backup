@@ -6,7 +6,7 @@ export const stat = (st: {
 	atime?: Date
 	ctime?: Date
 	size?: number,
-	mode: string | number,
+	mode: string,
 	uid?: number
 	gid?: number
 }): Fuse.Stats => {
