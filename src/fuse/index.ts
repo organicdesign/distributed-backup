@@ -70,7 +70,7 @@ const opts: FuseOpts = {
 					...l,
 					name: l.path.split("/").filter(p => !!p).slice(pathParts.length)[0]
 				}))
-				.filter(l => !!l.name)
+				.filter(l => !!l.name && l.name !== ".PLACE_HOLDER")
 				// Remove duplicates
 				.filter((() => {
 					let f = new Set<string>();
