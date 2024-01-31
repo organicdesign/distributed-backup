@@ -29,7 +29,6 @@ export const method = (components: Components) => async (raw: unknown) => {
 
 	const key = Path.join("/", DATA_KEY, params.path);
 	const encodedEntry = await database.store.selectors.get(database.store.index)(key) as EncodedEntry;
-
 	const entry: Partial<Entry> = encodedEntry == null ? {} : decodeEntry(encodedEntry);
 	const fs = unixfs(components.helia);
 	const cid = await fs.addBytes(uint8ArrayFromString(params.data));

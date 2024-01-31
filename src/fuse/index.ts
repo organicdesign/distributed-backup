@@ -198,29 +198,37 @@ const opts: FuseOpts = {
 	},
 
 	async rename (src, dest) {
-		console.warn("directories don't work recursively");
-		const str = await net.rpc.request("read", {
-			group: argv.group,
-			path: src,
-			position: 0,
-			length: 99999
-		});
+		const list = await group.query();
+		const files = list.filter((l: { path: string }) => l.path.startsWith(Path.join("/r", src, "/")) || l.path === Path.join("/r", src)).map(f => ({ ...f, path: f.path.replace("/r", "") }));
 
-		await net.rpc.request("write", {
-			group: argv.group,
-			path: dest,
-			position: 0,
-			length: str.length,
-			data: uint8ArrayToString(Buffer.from(str))
-		});
+		for (const file of files) {
+			const str = await net.rpc.request("read", {
+				group: argv.group,
+				path: file.path,
+				position: 0,
+				length: 99999
+			});
+
+			await net.rpc.request("write", {
+				group: argv.group,
+				path: file.path.replace(src, dest),
+				position: 0,
+				length: str.length,
+				data: uint8ArrayToString(Buffer.from(str))
+			});
+		}
 
 		console.warn("awaiting to get around database write time");
 		await new Promise(r => setTimeout(r, 1000));
 
-		await net.rpc.request("delete", {
-			group: argv.group,
-			path: src
-		});
+		await Promise.all(files.map(async file => {
+			await net.rpc.request("delete", {
+				group: argv.group,
+				path: file.path
+			});
+		}));
+
+		group.reset();
 	},
 
 	async mkdir (path) {
