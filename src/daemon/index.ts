@@ -162,7 +162,8 @@ const uploads = await createUploadManager({
 	libp2p,
 	groups,
 	pinManager,
-	blockstore
+	blockstore,
+	helia
 });
 
 logger.lifecycle("uploads synced");

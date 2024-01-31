@@ -1,14 +1,16 @@
 import Path from "path";
 import all from "it-all";
+import { take } from "streaming-iterables";
 import { CID } from "multiformats/cid";
 import * as dagCbor from "@ipld/dag-cbor";
+import { unixfs } from "@helia/unixfs";
 import selectRevisions from "./select-revisions.js";
 import { OperationManager } from "./operation-manager.js";
-import { decodeEntry, encodeEntry } from "./utils.js";
+import { decodeEntry, encodeEntry, getDagSize } from "./utils.js";
 import { EncodedEntry, Components, VERSION_KEY, DATA_KEY } from "./interface.js";
 import type { Datastore } from "interface-datastore";
 
-export default async (components: Pick<Components, "pinManager" | "libp2p" | "groups" | "blockstore"> & { datastore: Datastore }) => {
+export default async (components: Pick<Components, "pinManager" | "libp2p" | "groups" | "blockstore" | "helia"> & { datastore: Datastore }) => {
 	const put = async (groupData: Uint8Array, path: string, encodedEntry: NonNullable<EncodedEntry>) => {
 		const group = CID.decode(groupData);
 		const entry = decodeEntry(encodedEntry);
@@ -83,28 +85,29 @@ export default async (components: Pick<Components, "pinManager" | "libp2p" | "gr
 			}
 
 			const index = database.store.index;
-			const parentPath = Path.join("/", "d", path).split("/").slice(0, -1).join("/");
+			const key = Path.join("/", DATA_KEY, path);
+			const parentPath = key.split("/").slice(0, -2).join("/");
+			const fs = unixfs(components.helia);
+			const cid = await fs.addBytes(new Uint8Array([]));
+			const { blocks, size } = await getDagSize(components.blockstore, cid);
 
-			console.log("PARENTS PATH", parentPath);
+			await components.groups.deleteFrom(group, key);
+			await components.pinManager.remove(group, key);
 
-			const parent = await database.store.selectors.get(index)(parentPath);
+			const values = await all(take(1)(index.query({ prefix: parentPath })));
 
-			if (parent == null) {
-				const op = database.store.creators.put(parentPath, { timestamp: Date.now() })
-
-				await database.replica.write(op);
-			}
-
-			for await (const { key } of index.query({ filters: [f => {
-				const str = f.key.toString();
-
-				return str.startsWith(Path.join("/", DATA_KEY, path, "/")) ||
-					str === Path.join("/", DATA_KEY, path) ||
-					str.startsWith(Path.join("/", "d", path, "/")) ||
-					str === (Path.join("/", "d", path));
-			}] })) {
-				await components.groups.deleteFrom(group, key.toString());
-				await components.pinManager.remove(group, key.toString());
+			if (values.filter(v => v.key.toString() !== key).length === 0) {
+				await put(groupData, Path.join(parentPath.replace(`/${DATA_KEY}`, ""), ".PLACE_HOLDER"), encodeEntry({
+					cid,
+					author: components.libp2p.peerId.toCID(),
+					encrypted: false,
+					blocks,
+					size,
+					timestamp: Date.now(),
+					priority: 100,
+					sequence: 0,
+					revisionStrategy: "none"
+				}));
 			}
 		}
 	});
