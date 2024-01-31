@@ -15,19 +15,21 @@ export default async (components: Pick<Components, "pinManager" | "libp2p" | "gr
 		const database = components.groups.get(group);
 		let sequence = 0;
 
-		if (database != null) {
-			const obj = await database.store.selectors.get(database.store.index)(
-				Path.join(DATA_KEY, path)
-			);
+		if (database == null) {
+			throw new Error("unable to get group");
+		}
 
-			const data = EncodedEntry.parse(obj ?? null);
+		const obj = await database.store.selectors.get(database.store.index)(
+			Path.join(DATA_KEY, path)
+		);
 
-			if (data != null) {
-				const entry = decodeEntry(data);
+		const data = EncodedEntry.parse(obj ?? null);
 
-				if (entry != null && entry.sequence != null) {
-					sequence = entry.sequence + 1;
-				}
+		if (data != null) {
+			const entry = decodeEntry(data);
+
+			if (entry != null && entry.sequence != null) {
+				sequence = entry.sequence + 1;
 			}
 		}
 
@@ -45,11 +47,6 @@ export default async (components: Pick<Components, "pinManager" | "libp2p" | "gr
 		}
 
 		// Handle revisions.
-
-		if (database == null) {
-			throw new Error("unable to get group");
-		}
-
 		const index = database.store.index;
 
 		const rawRevisions = await all(index.query({ prefix: Path.join("/", VERSION_KEY, path) }));
@@ -86,6 +83,17 @@ export default async (components: Pick<Components, "pinManager" | "libp2p" | "gr
 			}
 
 			const index = database.store.index;
+			const parentPath = Path.join("/", "d", path).split("/").slice(0, -1).join("/");
+
+			console.log("PARENTS PATH", parentPath);
+
+			const parent = await database.store.selectors.get(index)(parentPath);
+
+			if (parent == null) {
+				const op = database.store.creators.put(parentPath, { timestamp: Date.now() })
+
+				await database.replica.write(op);
+			}
 
 			for await (const { key } of index.query({ filters: [f => {
 				const str = f.key.toString();
