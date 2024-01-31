@@ -37,10 +37,13 @@ const group = (() => {
 		query: async (): Promise<{ path: string, size: number, timestamp: number, mode: "file" }[]> => {
 			if (Date.now() - ts > 5000) {
 				ts = Date.now();
-				data = await net.rpc.request("query-group", { group: argv.group });
+				data = [
+					...(await net.rpc.request("query-group", { group: argv.group })).map(d => ({ ...d, mode: "file" })),
+					...(await net.rpc.request("query-group-dirs", { group: argv.group })).map(d => ({ ...d, mode: "dir" })),
+				];
 			}
 
-			return [...data.map(d => ({ ...d, mode: "file" })), ...additionalData.values()];
+			return [...data, ...additionalData.values()];
 		},
 
 		reset () {
@@ -57,7 +60,7 @@ const opts: FuseOpts = {
 			const pathParts = path.split("/").filter(p => !!p);
 
 			const filteredList = list
-				.filter(l => l.path.startsWith(Path.join("/r", path)))
+				.filter(l => l.path.startsWith(Path.join("/r", path)) || l.path.startsWith(Path.join("/d", path)))
 				.map(l => ({
 					...l,
 					path: l.path.slice("/r".length)
@@ -112,6 +115,11 @@ const opts: FuseOpts = {
 
 		// Partial match is a directory.
 		if (list.find((l: { path: string }) => l.path.startsWith(Path.join("/r", path)))) {
+			return stat({ mode: 'dir', size: 4096 });
+		}
+
+		// Partial match is a directory.
+		if (list.find((l: { path: string }) => l.path.startsWith(Path.join("/d", path)))) {
 			return stat({ mode: 'dir', size: 4096 });
 		}
 

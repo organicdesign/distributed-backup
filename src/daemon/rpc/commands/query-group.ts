@@ -32,9 +32,9 @@ export const method = (components: Components) => async (raw: unknown) => {
 	return filteredValues
 		.map(pair => ({ ...pair, value: decodeEntry(pair.value) }))
 		.map(pair => ({
-		...pair.value,
-		cid: pair.value.cid.toString(),
-		author: pair.value.author.toString(),
-		path: pair.key.toString()
-	}));
+			...pair.value,
+			cid: pair.value.cid.toString(),
+			author: pair.value.author.toString(),
+			path: pair.key.toString()
+		}));
 };
