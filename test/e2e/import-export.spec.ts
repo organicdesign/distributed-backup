@@ -54,16 +54,36 @@ describe("import/export", () => {
 
 		assert.deepEqual(response, {
 			success: true,
-			cid: "bafybeihoqexapn3tusc4rrkqztzzemz7y57esnzg7eutsua4ehjkylmjqe"
+			imports: [
+				{
+					cid: "bafybeihoqexapn3tusc4rrkqztzzemz7y57esnzg7eutsua4ehjkylmjqe",
+					path: data[0].virtual
+				}
+			]
 		});
 	});
 
 	it("imports a directory", async () => {
 		const response = await runClient(node, "add", group, data[1].import, data[1].virtual);
 
+		response.imports.sort();
+
 		assert.deepEqual(response, {
 			success: true,
-			cid: "bafybeibcmg65b33noyeskjeg2q4gar5i6jlvitjbqrvrv6dspdqxzgx2ma"
+			imports: [
+				{
+					cid: "bafybeihoqexapn3tusc4rrkqztzzemz7y57esnzg7eutsua4ehjkylmjqe",
+					path: Path.join(data[1].virtual, "file-1.txt")
+				},
+				{
+					cid: "bafybeibac7pp5mcxkj7s55bjdbr7tj3pj7col4janvm36y4fjvxqs67fsi",
+					path: Path.join(data[1].virtual, "file-2.txt")
+				},
+				{
+					cid: "bafybeihxa6uyvmdl6wdjxnwpluocix2csrq3ifunemjr2jxy35wjkl2v64",
+					path: Path.join(data[1].virtual, "dir-1/file-3.txt")
+				}
+			]
 		});
 	});
 
@@ -72,7 +92,12 @@ describe("import/export", () => {
 
 		assert.deepEqual(response, {
 			success: true,
-			cid: "bafybeighjftxut4i5csm55azb4eewvae25brsdglngcidk5a2zlxqeg7zq"
+			imports: [
+				{
+					cid: "bafybeihxa6uyvmdl6wdjxnwpluocix2csrq3ifunemjr2jxy35wjkl2v64",
+					path: Path.join(data[2].virtual, "file-3.txt")
+				}
+			]
 		});
 	});
 
