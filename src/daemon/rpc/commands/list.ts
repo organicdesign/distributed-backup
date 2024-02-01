@@ -25,10 +25,6 @@ export const method = (components: Components) => async () => {
 				continue;
 			}
 
-			if (pair.key.toString().startsWith("/d")) {
-				continue;
-			}
-
 			const entry = EncodedEntry.optional().parse(dagCbor.decode(pair.value));
 
 			if (entry == null) {

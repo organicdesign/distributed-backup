@@ -11,10 +11,6 @@ export default async (components: Components) => {
 			const group = database.address.cid;
 			const path = pair.key.toString();
 
-			if (path.startsWith("/d")) {
-				continue;
-			}
-
 			// All we really want to do here is check for dirty entries.
 			if (await components.pinManager.validate(group, path, pair.value)) {
 				continue;

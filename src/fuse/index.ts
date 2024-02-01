@@ -27,8 +27,6 @@ const argv = await yargs(hideBin(process.argv))
 
 const net = createNetClient(argv.socket);
 
-const additionalData = new Map<string, { timestamp: number, path: string, size: number, mode: "file" | "dir" }>();
-
 const group = (() => {
 	let data: any;
 	let ts = 0;
@@ -37,13 +35,10 @@ const group = (() => {
 		query: async (): Promise<{ path: string, size: number, timestamp: number, mode: "file" }[]> => {
 			if (Date.now() - ts > 5000) {
 				ts = Date.now();
-				data = [
-					...(await net.rpc.request("query-group", { group: argv.group })).map(d => ({ ...d, mode: "file" })),
-					...(await net.rpc.request("query-group-dirs", { group: argv.group })).map(d => ({ ...d, mode: "dir" })),
-				];
+				data = (await net.rpc.request("query-group", { group: argv.group })).map(d => ({ ...d, mode: "file" }));
 			}
 
-			return [...data, ...additionalData.values()];
+			return data;
 		},
 
 		reset () {
