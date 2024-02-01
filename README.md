@@ -10,6 +10,8 @@ nodejs will need to be installed to run this project, it has been tested on v18,
 
 ### Compile
 
+Note for Mac users: you should first install Macfuse - see instructions later this section
+
 Install dependencies:
 ```
 npm i
@@ -50,6 +52,13 @@ node dist/scripts/generate-keys.js -p config/key.json
 ```
 
 Write down your mnemonic and name since this is what you will need to recover the server.
+
+### Setting up FUSE on Mac with Apple Silicon
+
+Do this before attempting to install the distributed backup or you will see errors at the install stage
+1. Install macfuse. Eg. using homebrew: `brew install macfuse`
+2. Enable and Activate Kernel Extensions: instructions can be found here https://www.makeuseof.com/how-to-enable-third-party-kernel-extensions-apple-silicon-mac/
+
 
 ## Running
 
