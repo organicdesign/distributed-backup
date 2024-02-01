@@ -60,7 +60,7 @@ describe("synchronization", () => {
 		assert(listRes.completed);
 		assert(Array.isArray(listRes.items));
 		assert.equal(listRes.items.length, 1);
-		assert.equal(listRes.items[0].cid, addRes.cid);
+		assert.equal(listRes.items[0].cid, addRes.imports[0].cid);
 		assert.equal(listRes.items[0].group, group);
 		assert.equal(listRes.items[0].path, virtualPath);
 	});
@@ -84,7 +84,7 @@ describe("synchronization", () => {
 		assert(Array.isArray(listRes.items));
 		assert.equal(listRes.items.length, 2);
 
-		const item = listRes.items.find((i: { cid: string }) => i.cid === addRes.cid);
+		const item = listRes.items.find((i: { cid: string }) => i.cid === addRes.imports[0].cid);
 
 		assert(item);
 		assert.equal(item.group, group);
