@@ -66,24 +66,27 @@ describe("import/export", () => {
 	it("imports a directory", async () => {
 		const response = await runClient(node, "add", group, data[1].import, data[1].virtual);
 
-		response.imports.sort();
+		const expectedImports = [
+			{
+				cid: "bafybeihoqexapn3tusc4rrkqztzzemz7y57esnzg7eutsua4ehjkylmjqe",
+				path: Path.join(data[1].virtual, "file-1.txt")
+			},
+			{
+				cid: "bafybeibac7pp5mcxkj7s55bjdbr7tj3pj7col4janvm36y4fjvxqs67fsi",
+				path: Path.join(data[1].virtual, "file-2.txt")
+			},
+			{
+				cid: "bafybeihxa6uyvmdl6wdjxnwpluocix2csrq3ifunemjr2jxy35wjkl2v64",
+				path: Path.join(data[1].virtual, "dir-1/file-3.txt")
+			}
+		];
+
+		response.imports.sort((a, b) => a.path.localeCompare(b.path));
+		expectedImports.sort((a, b) => a.path.localeCompare(b.path));
 
 		assert.deepEqual(response, {
 			success: true,
-			imports: [
-				{
-					cid: "bafybeihoqexapn3tusc4rrkqztzzemz7y57esnzg7eutsua4ehjkylmjqe",
-					path: Path.join(data[1].virtual, "file-1.txt")
-				},
-				{
-					cid: "bafybeibac7pp5mcxkj7s55bjdbr7tj3pj7col4janvm36y4fjvxqs67fsi",
-					path: Path.join(data[1].virtual, "file-2.txt")
-				},
-				{
-					cid: "bafybeihxa6uyvmdl6wdjxnwpluocix2csrq3ifunemjr2jxy35wjkl2v64",
-					path: Path.join(data[1].virtual, "dir-1/file-3.txt")
-				}
-			]
+			imports: expectedImports
 		});
 	});
 
