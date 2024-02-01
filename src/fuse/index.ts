@@ -1,4 +1,5 @@
 import Path from "path";
+import fs from "fs/promises";
 import { promisify } from "util";
 import yargs from "yargs/yargs";
 import { hideBin } from "yargs/helpers";
@@ -19,6 +20,13 @@ const argv = await yargs(hideBin(process.argv))
 	.option({
 		group: {
 			alias: "g",
+			type: "string",
+			required: true
+		}
+	})
+	.option({
+		path: {
+			alias: "p",
 			type: "string",
 			required: true
 		}
@@ -253,7 +261,9 @@ const opts: FuseOpts = {
 	}
 };
 
-const fuse = new Fuse("/tmp/fuse", convertOpts(opts), { debug: true });
+await fs.mkdir(argv.path, { recursive: true });
+
+const fuse = new Fuse(argv.path, convertOpts(opts), { debug: true });
 
 process.on("uncaughtException", async (error) => {
 	console.error("PANIC!", error);
