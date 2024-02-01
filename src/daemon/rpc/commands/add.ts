@@ -1,7 +1,9 @@
+import Path from "path";
 import { z } from "zod";
 import { CID } from "multiformats/cid";
 import { BlackHoleBlockstore } from "blockstore-core/black-hole";
-import { selectHasher, selectChunker, fsImport, type ImporterConfig } from "../../../fs-import-export/index.js";
+import { selectHasher, selectChunker, type ImporterConfig } from "../../../fs-import-export/index.js";
+import fsImportRecursive from "../../../fs-import-export/import-recursive.js";
 import { encodeEntry, getDagSize } from "../../utils.js";
 import * as logger from "../../logger.js";
 import { type Components, zCID, ImportOptions, RevisionStrategies } from "../../interface.js";
@@ -34,31 +36,44 @@ export const method = (components: Components) => async (raw: unknown) => {
 	}
 
 	const store = params.onlyHash ? new BlackHoleBlockstore() : components.blockstore;
-	const cipher = encrypt ? components.cipher : undefined;
+	/*const cipher = encrypt ? components.cipher : undefined;
 	const { cid } = await fsImport(store, params.localPath, config, cipher);
 
 	if (params.onlyHash) {
 		return cid;
+	}*/
+
+	const cids: { cid: string, path: string }[] = [];
+
+	for await (const r of fsImportRecursive(store, params.localPath, config)) {
+		logger.add("imported %s", params.localPath);
+
+		const { size, blocks } = await getDagSize(components.blockstore, r.cid);
+
+		// Create the action record.
+		const entry = encodeEntry({
+			cid: r.cid,
+			sequence: 0,
+			blocks,
+			size,
+			encrypted: encrypt,
+			timestamp: Date.now(),
+			priority: params.priority ?? 1,
+			author: components.libp2p.peerId.toCID(),
+			revisionStrategy: params.revisionStrategy ?? components.config.defaultRevisionStrategy
+		});
+
+		const path = Path.join(params.path, r.path.replace(params.localPath, ""));
+
+		cids.push({
+			path,
+			cid: r.cid.toString()
+		});
+
+		await components.uploads.add("put", [CID.parse(params.group).bytes, path, entry]);
 	}
 
-	logger.add("imported %s", params.localPath);
+	return cids;
 
-	const { size, blocks } = await getDagSize(components.blockstore, cid);
-
-	// Create the action record.
-	const entry = encodeEntry({
-		cid,
-		sequence: 0,
-		blocks,
-		size,
-		encrypted: encrypt,
-		timestamp: Date.now(),
-		priority: params.priority ?? 1,
-		author: components.libp2p.peerId.toCID(),
-		revisionStrategy: params.revisionStrategy ?? components.config.defaultRevisionStrategy
-	});
-
-	await components.uploads.add("put", [CID.parse(params.group).bytes, params.path, entry]);
-
-	return cid.toString();
+	// return cid.toString();
 };
