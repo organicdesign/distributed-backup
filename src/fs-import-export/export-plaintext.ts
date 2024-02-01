@@ -8,6 +8,8 @@ import fs from "fs/promises";
 import type { Blockstore } from "interface-blockstore";
 
 export default async (blockstore: Blockstore, path: string, cid: CID): Promise<void> => {
+	await fs.mkdir(path.split("/").slice(0, -1).join("/"), { recursive: true });
+
 	const walk = async (cid: CID, path: string) => {
 		const dagWalker = Object.values(dagWalkers).find(dw => dw.codec === cid.code);
 
