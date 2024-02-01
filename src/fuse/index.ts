@@ -63,8 +63,7 @@ const opts: FuseOpts = {
 			const pathParts = path.split("/").filter(p => !!p);
 
 			const filteredList = list
-				.filter(l => l.path.startsWith(Path.join("/r", path, "/")) || l.path.startsWith(Path.join("/d", path, "/")) ||
-				l.path === Path.join("/d", path))
+				.filter(l => l.path.startsWith(Path.join("/r", path, "/")))
 				.map(l => ({
 					...l,
 					path: l.path.slice("/r".length)
@@ -132,11 +131,6 @@ const opts: FuseOpts = {
 
 		// Partial match is a directory.
 		if (list.find((l: { path: string }) => l.path.startsWith(Path.join("/r", path)))) {
-			return stat({ mode: 'dir', size: 4096 });
-		}
-
-		// Partial match is a directory.
-		if (list.find((l: { path: string }) => l.path.startsWith(Path.join("/d", path)))) {
 			return stat({ mode: 'dir', size: 4096 });
 		}
 
