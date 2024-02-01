@@ -5,7 +5,7 @@ import runClient from "./utils/run-client.js";
 import { projectPath } from "../../src/daemon/utils.js";
 
 const node = "revisions";
-const testDataDir = Path.join(projectPath, "test/e2e/test-data");
+const testDataDir = Path.join(projectPath, "test/e2e/test-data/file-1.txt");
 const virtualDir = "/data";
 
 describe("revisions", () => {
