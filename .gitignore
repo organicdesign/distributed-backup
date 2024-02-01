@@ -1,12 +1,9 @@
 data
-node_modules
+config
+
 build
 dist
 .docs
 .coverage
 node_modules
 yarn.lock
-.vscode
-ipfs
-config
-coverage

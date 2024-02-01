@@ -1,0 +1,20 @@
+{
+  "extends": "aegir/src/config/tsconfig.aegir.json",
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "outDir": "dist",
+    "module": "ES2022",
+    "target": "ES2022",
+    "rootDir": ".",
+
+    "paths": {
+      "@welo-nm/*": ["./node_modules/welo/dist/src/*"],
+      "@helia-nm/*": ["./node_modules/helia/dist/src/*"],
+      "@libp2p-crypto-nm/*": ["./node_modules/@libp2p/crypto/dist/src/*"]
+    }
+  },
+  "include": [
+    "src",
+    "test"
+  ]
+}
