@@ -2,8 +2,7 @@ import Path from "path";
 import { z } from "zod";
 import { CID } from "multiformats/cid";
 import { BlackHoleBlockstore } from "blockstore-core/black-hole";
-import { selectHasher, selectChunker, type ImporterConfig } from "../../../fs-import-export/index.js";
-import fsImportRecursive from "../../../fs-import-export/import-recursive.js";
+import { selectHasher, selectChunker, importRecursive, type ImporterConfig } from "fs-importer";
 import { encodeEntry, getDagSize } from "../../utils.js";
 import * as logger from "../../logger.js";
 import { type Components, zCID, ImportOptions, RevisionStrategies } from "../../interface.js";
@@ -45,7 +44,7 @@ export const method = (components: Components) => async (raw: unknown) => {
 
 	const cids: { cid: string, path: string }[] = [];
 
-	for await (const r of fsImportRecursive(store, params.localPath, config)) {
+	for await (const r of importRecursive(store, params.localPath, config)) {
 		logger.add("imported %s", params.localPath);
 
 		const { size, blocks } = await getDagSize(components.blockstore, r.cid);
