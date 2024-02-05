@@ -4,7 +4,7 @@ import { CID } from "multiformats/cid";
 import { fileURLToPath } from "url";
 import all from "it-all";
 import { NamespaceDatastore } from "../namespace-datastore/index.js";
-import { defaultDagWalkers } from "./dag-walkers.js";
+import { defaultDagWalkers } from "dag-walkers";
 import { type Libp2p, EncodedEntry, type Entry, MEMORY_MAGIC } from "./interface.js";
 import type { AbortOptions } from "@libp2p/interface";
 import type { Helia } from "@helia/interface";

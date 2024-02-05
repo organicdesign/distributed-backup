@@ -1,4 +1,4 @@
-import { defaultDagWalkers } from "./dag-walkers.js";
+import { defaultDagWalkers } from "dag-walkers";
 import { addBlockRef, addPinRef } from "./utils.js";
 import all from "it-all";
 import { Event, EventTarget} from "ts-event-target";

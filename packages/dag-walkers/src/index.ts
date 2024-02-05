@@ -7,6 +7,11 @@
  * replaced with `import { defaultDagWalkers } from "@helia/utils/dag-walkers"`
  */
 
+/**
+ * Source code taken from the @helia/utils package and is licensed accordingly:
+ * https://github.com/ipfs/helia/blob/main/packages/utils/src/utils/dag-walkers.ts
+ */
+
 import * as dagCbor from '@ipld/dag-cbor'
 import * as dagJson from '@ipld/dag-json'
 import * as dagPb from '@ipld/dag-pb'

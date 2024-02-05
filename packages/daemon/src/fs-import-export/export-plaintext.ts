@@ -1,4 +1,4 @@
-import { defaultDagWalkers } from "./dag-walkers.js";
+import { defaultDagWalkers } from "dag-walkers";
 import { CID } from "multiformats/cid";
 import * as raw from "multiformats/codecs/raw";
 import * as dagPb from "@ipld/dag-pb";
