@@ -37,7 +37,7 @@ export interface BlockInfo {
   links: CID[]
 }
 
-type EventTypes = 'pins:removed' | 'pins:added' | 'pins:adding' | 'downloads:added' | 'downloads:removed' | 'blocks:added' | 'blocks:removed'
+export type EventTypes = 'pins:removed' | 'pins:added' | 'pins:adding' | 'downloads:added' | 'downloads:removed' | 'blocks:added' | 'blocks:removed'
 
 class CIDEvent extends Event<EventTypes> {
   cid: CID
