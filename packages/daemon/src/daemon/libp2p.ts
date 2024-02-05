@@ -12,7 +12,7 @@ import { uPnPNAT } from "@libp2p/upnp-nat";
 import { autoNAT } from "@libp2p/autonat";
 import { circuitRelayTransport, circuitRelayServer } from "@libp2p/circuit-relay-v2";
 import { dcutr } from "@libp2p/dcutr";
-import type { PeerId } from "@libp2p/interface/peer-id";
+import type { PeerId } from "@libp2p/interface";
 import type { Datastore } from "interface-datastore";
 import type { Libp2p } from "./interface.js";
 

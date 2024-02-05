@@ -1,4 +1,4 @@
-import * as dagWalkers from "@helia-nm/utils/dag-walkers.js";
+import { defaultDagWalkers } from "./dag-walkers.js";
 import { addBlockRef, addPinRef } from "./utils.js";
 import all from "it-all";
 import { Event, EventTarget} from "ts-event-target";
@@ -7,12 +7,12 @@ import { DeferredPromise } from "@open-draft/deferred-promise";
 import type { Blocks } from "./blocks.js";
 import type { Pins, PinModel } from "./pins.js";
 import type { Downloads, DownloadModel } from "./downloads.js";
-// Replace the dag walker import with this when the next helia version is released.
-// import type { DAGWalker } from "@helia/interface";
-import type { DAGWalker } from "@helia-nm/index.js";
+import type { DAGWalker } from "@helia/interface";
 import type { CID } from "multiformats/cid";
 import type { Sequelize } from "sequelize";
 import type { Helia } from "@helia/interface";
+
+const dagWalkers = defaultDagWalkers();
 
 const getDagWalker = (cid: CID): DAGWalker => {
 	const dagWalker = Object.values(dagWalkers).find(dw => dw.codec === cid.code);

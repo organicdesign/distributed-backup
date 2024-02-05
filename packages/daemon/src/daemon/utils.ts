@@ -4,14 +4,16 @@ import { CID } from "multiformats/cid";
 import { fileURLToPath } from "url";
 import all from "it-all";
 import { NamespaceDatastore } from "../namespace-datastore/index.js";
-import * as dagWalkers from "@helia-nm/utils/dag-walkers.js";
+import { defaultDagWalkers } from "./dag-walkers.js";
 import { type Libp2p, EncodedEntry, type Entry, MEMORY_MAGIC } from "./interface.js";
 import type { AbortOptions } from "@libp2p/interface";
 import type { Helia } from "@helia/interface";
 import type { Blockstore } from "interface-blockstore";
 import { type Datastore, Key } from "interface-datastore";
 
-export const projectPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), "../..");
+const dagWalkers = defaultDagWalkers();
+
+export const projectPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), "../../../../..");
 
 export const isMemory = (storage?: string): boolean => storage === MEMORY_MAGIC;
 

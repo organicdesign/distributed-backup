@@ -1,4 +1,4 @@
-import * as dagWalkers from "@helia-nm/utils/dag-walkers.js";
+import { defaultDagWalkers } from "./dag-walkers.js";
 import { CID } from "multiformats/cid";
 import * as raw from "multiformats/codecs/raw";
 import * as dagPb from "@ipld/dag-pb";
@@ -6,6 +6,8 @@ import { UnixFS } from "ipfs-unixfs";
 import Path from "path";
 import fs from "fs/promises";
 import type { Blockstore } from "interface-blockstore";
+
+const dagWalkers = defaultDagWalkers();
 
 export default async (blockstore: Blockstore, path: string, cid: CID): Promise<void> => {
 	await fs.mkdir(path.split("/").slice(0, -1).join("/"), { recursive: true });

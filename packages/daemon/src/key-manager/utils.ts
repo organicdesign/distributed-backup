@@ -6,7 +6,7 @@ import { peerIdFromKeys } from "@libp2p/peer-id";
 import * as ecc from "tiny-secp256k1";
 import { BIP32Factory, type BIP32Interface } from "bip32";
 import bip39 from "bip39";
-import type { PeerId } from "@libp2p/interface/peer-id";
+import type { PeerId } from "@libp2p/interface";
 import { type KeyData, EncodedKeyData } from "./interface.js";
 
 const KEY_SEPARATOR = "-";

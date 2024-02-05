@@ -5,7 +5,7 @@ import createUploadManager from "./upload-operations.js";
 import createSyncManager from "./sync-operations.js";
 import type { Welo, Database, Keyvalue } from "welo";
 import type { Libp2p as BaseLibp2p } from "libp2p";
-import type { PubSub } from "@libp2p/interface/pubsub";
+import type { PubSub } from "@libp2p/interface";
 import type { GossipsubEvents } from "@chainsafe/libp2p-gossipsub";
 import type { Helia } from "helia";
 import type { Blockstore } from "interface-blockstore";
@@ -80,7 +80,7 @@ export interface Link {
 
 export interface Components {
 	libp2p: Libp2p
-	helia: Helia<Components["libp2p"]>
+	helia: Helia
 	welo: Welo
 	blockstore: Blockstore
 	groups: Groups

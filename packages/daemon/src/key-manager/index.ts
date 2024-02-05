@@ -1,12 +1,11 @@
 import { Identity } from "welo";
 import { importKeyFile, keyToPeerId } from "./utils.js";
-import { Secp256k1PrivateKey, Secp256k1PublicKey } from "@libp2p-crypto-nm/keys/secp256k1-class.js";
 import { keys } from "@libp2p/crypto";
 import * as cbor from "@ipld/dag-cbor";
 import { sha256 } from "multiformats/hashes/sha2";
 import { encode as encodeBlock } from "multiformats/block";
 import type { BIP32Interface } from "bip32";
-import type { PeerId } from "@libp2p/interface/peer-id";
+import type { PeerId } from "@libp2p/interface";
 import type { KeyData } from "./interface.js";
 
 enum keyIndicies {
@@ -48,8 +47,8 @@ export class KeyManager {
 			throw new Error("key is missing private data");
 		}
 
-		const publicKey = new Secp256k1PublicKey(key.publicKey);
-		const privateKey = new Secp256k1PrivateKey(privateBytes, key.publicKey);
+		const publicKey = new keys.Secp256k1PublicKey(key.publicKey);
+		const privateKey = new keys.Secp256k1PrivateKey(privateBytes, key.publicKey);
 
 		const marshalled = keys.marshalPublicKey(publicKey, "secp256k1");
 

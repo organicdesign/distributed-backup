@@ -1,10 +1,12 @@
 import { type Components } from "../../interface.js";
-import { cidstring } from "../../../../node_modules/welo/dist/src/utils/index.js";
-import { HeadsExchange } from "../../../../node_modules/welo/dist/src/utils/heads-exchange.js";
-import { getHeads, addHeads } from "../../../../node_modules/welo/dist/src/utils/replicator.js";
+// @ts-ignore
+import { cidstring } from "welo/utils/index";
+// @ts-ignore
+import { HeadsExchange } from "welo/utils/heads-exchange";
+// @ts-ignore
+import { getHeads, addHeads } from "welo/utils/replicator";
 import type { Database } from "welo";
-import type { Peer } from "@libp2p/interface/peer-store";
-import type { Libp2p } from "@libp2p/interface";
+import type { Peer, Libp2p } from "@libp2p/interface";
 
 const sync = async (libp2p: Libp2p, peer: Peer, database: Database, options: Partial<{ reverseSync: boolean, collisionRate: number, validate: boolean, rounds: number }> = {}): Promise<void> => {
 	if (!await libp2p.peerStore.has(peer.id)) {
