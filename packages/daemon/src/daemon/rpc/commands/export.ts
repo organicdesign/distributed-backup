@@ -1,7 +1,7 @@
 import Path from "path";
 import { z } from "zod";
 import * as dagCbor from "@ipld/dag-cbor";
-import { fsExport } from "../../../fs-import-export/index.js";
+import { exportPlaintext } from "fs-exporter";
 import { CID } from "multiformats/cid";
 import { decodeEntry } from "../../utils.js";
 import { DATA_KEY } from "../../interface.js"
@@ -35,6 +35,10 @@ export const method = (components: Components) => async (raw: unknown) => {
 		const entry = decodeEntry(encodedEntry);
 		const virtualPath = pair.key.toString().replace("/r", "");
 
-		await fsExport(components.blockstore, Path.join(params.outPath, virtualPath.replace(params.path, "")), entry.cid);
+		await exportPlaintext(
+			components.blockstore,
+			Path.join(params.outPath, virtualPath.replace(params.path, "")),
+			entry.cid
+		);
 	}
 };

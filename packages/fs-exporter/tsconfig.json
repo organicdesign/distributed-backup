@@ -15,25 +15,7 @@
       "path": "../dag-walkers"
     },
     {
-      "path": "../namespace-datastore"
-    },
-    {
-      "path": "../helia-pin-manager"
-    },
-    {
-      "path": "../key-manager"
-    },
-    {
-      "path": "../cipher"
-    },
-    {
       "path": "../logger"
-    },
-    {
-      "path": "../fs-importer"
-    },
-    {
-      "path": "../fs-exporter"
     }
   ]
 }
