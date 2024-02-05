@@ -1,0 +1,38 @@
+{
+  "type": "module",
+  "name": "client",
+  "version": "0.1.0",
+  "description": "The distributed backup client.",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "files": [
+    "dist/src"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "prepublishOnly": "npm run build",
+    "build": "aegir build",
+    "test": "aegir test"
+  },
+  "author": "Saul Boyd",
+  "license": "GPL-3.0-or-later",
+  "devDependencies": {
+    "aegir": "^42.1.0"
+  },
+  "private": true,
+  "sideEffects": false,
+  "dependencies": {
+    "@organicdesign/net-rpc": "^0.1.3",
+    "multiformats": "^13.0.1",
+    "yargs": "^17.7.2",
+    "zod": "^3.22.4"
+  }
+}
