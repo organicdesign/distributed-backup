@@ -1,0 +1,38 @@
+{
+  "type": "module",
+  "name": "namespace-datastore",
+  "version": "0.1.0",
+  "description": "A fixed namespaced datastore.",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "files": [
+    "dist/src"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "prepublishOnly": "npm run build",
+    "build": "aegir build",
+    "test": "aegir test"
+  },
+  "author": "Saul Boyd",
+  "license": "GPL-3.0-or-later",
+  "devDependencies": {
+    "aegir": "^42.1.0",
+    "interface-store": "^5.1.7"
+  },
+  "private": true,
+  "sideEffects": false,
+  "dependencies": {
+    "datastore-core": "^9.2.7",
+    "interface-datastore": "^8.2.10",
+    "it-map": "^3.0.5"
+  }
+}

@@ -9,13 +9,5 @@
   "include": [
     "src",
     "test"
-  ],
-  "references": [
-    {
-      "path": "../dag-walkers"
-    },
-    {
-      "path": "../namespace-datastore"
-    }
   ]
 }
