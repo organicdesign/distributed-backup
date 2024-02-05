@@ -10,7 +10,7 @@ import type { GossipsubEvents } from "@chainsafe/libp2p-gossipsub";
 import type { Helia } from "helia";
 import type { Blockstore } from "interface-blockstore";
 import type { Groups } from "./groups.js";
-import type { Cipher } from "../cipher/index.js";
+import type { Cipher } from "cipher";
 import type { PinManager } from "./pin-manager.js";
 import type { LocalSettings } from "./local-settings.js";
 

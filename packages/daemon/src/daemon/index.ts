@@ -16,7 +16,7 @@ import { Looper } from "./looper.js";
 import { syncLoop, downloadLoop } from "./loops.js";
 import commands from "./rpc/index.js";
 import { createGroups } from "./groups.js";
-import { Cipher } from "../cipher/index.js";
+import { Cipher } from "cipher";
 import { PinManager } from "./pin-manager.js";
 import createHeliaPinManager from "helia-pin-manager";
 import { createKeyManager } from "key-manager";
