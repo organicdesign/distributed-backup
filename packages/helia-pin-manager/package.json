@@ -1,0 +1,43 @@
+{
+  "type": "module",
+  "name": "helia-pin-manager",
+  "version": "0.1.0",
+  "description": "A pin manager for helia.",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "files": [
+    "dist/src"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "prepublishOnly": "npm run build",
+    "build": "aegir build",
+    "test": "aegir test"
+  },
+  "author": "Saul Boyd",
+  "license": "GPL-3.0-or-later",
+  "devDependencies": {
+    "@helia/interface": "^4.0.0",
+    "aegir": "^42.1.0"
+  },
+  "private": true,
+  "sideEffects": false,
+  "dependencies": {
+    "cborg": "^4.0.8",
+    "interface-datastore": "^8.2.10",
+    "it-all": "^3.0.4",
+    "multiformats": "^13.0.1",
+    "p-queue": "^8.0.1",
+    "sequelize": "^6.36.0",
+    "ts-event-target": "^0.1.5",
+    "uint8arrays": "^5.0.1"
+  }
+}

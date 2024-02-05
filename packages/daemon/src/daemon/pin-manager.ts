@@ -8,7 +8,7 @@ import { compare as uint8ArrayCompare } from "uint8arrays/compare";
 import { encodeAny, decodeAny, decodeEntry } from "./utils.js";
 import * as logger from "./logger.js";
 import { EncodedEntry, EncodedPinInfo, type PinInfo } from "./interface.js";
-import type { PinManager as HeliaPinManager } from "../helia-pin-manager/pin-manager.js";
+import type { PinManager as HeliaPinManager } from "helia-pin-manager";
 
 // Get the hash data from raw data.
 const hashEntry = async (data: Uint8Array) => {

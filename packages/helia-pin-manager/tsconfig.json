@@ -13,12 +13,6 @@
   "references": [
     {
       "path": "../dag-walkers"
-    },
-    {
-      "path": "../namespace-datastore"
-    },
-    {
-      "path": "../helia-pin-manager"
     }
   ]
 }
