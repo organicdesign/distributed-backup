@@ -56,6 +56,7 @@ export const convertOpts = (opts: FuseOpts): Fuse.OPERATIONS => {
 					cb(error);
 				} else {
 					console.error(error);
+					cb(1);
 				}
 			});
 		}
