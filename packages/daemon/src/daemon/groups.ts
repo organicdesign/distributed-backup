@@ -4,7 +4,7 @@ import { Key } from "interface-datastore";
 import { decodeCbor } from "welo/utils/block";
 // @ts-ignore
 import { Manifest } from "welo/manifest/index";
-import { groups as logger } from "./logger.js";
+import { groups as logger } from "logger";
 import type { CID } from "multiformats/cid";
 import type { Welo } from "welo";
 // @ts-ignore

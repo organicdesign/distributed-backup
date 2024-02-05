@@ -27,6 +27,9 @@
       "path": "../cipher"
     },
     {
+      "path": "../logger"
+    },
+    {
       "path": "../fs-importer"
     }
   ]

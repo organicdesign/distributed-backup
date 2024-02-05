@@ -6,7 +6,7 @@ import { CID } from "multiformats/cid";
 import all from "it-all";
 import { compare as uint8ArrayCompare } from "uint8arrays/compare";
 import { encodeAny, decodeAny, decodeEntry } from "./utils.js";
-import * as logger from "./logger.js";
+import * as logger from "logger";
 import { EncodedEntry, EncodedPinInfo, type PinInfo } from "./interface.js";
 import type { PinManager as HeliaPinManager } from "helia-pin-manager";
 

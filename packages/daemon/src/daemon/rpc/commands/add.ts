@@ -4,7 +4,7 @@ import { CID } from "multiformats/cid";
 import { BlackHoleBlockstore } from "blockstore-core/black-hole";
 import { selectHasher, selectChunker, importRecursive, type ImporterConfig } from "fs-importer";
 import { encodeEntry, getDagSize } from "../../utils.js";
-import * as logger from "../../logger.js";
+import * as logger from "logger";
 import { type Components, zCID, ImportOptions, RevisionStrategies } from "../../interface.js";
 
 export const name = "add";

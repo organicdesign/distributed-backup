@@ -11,7 +11,7 @@ import { hideBin } from "yargs/helpers";
 import { createWelo, pubsubReplicator, bootstrapReplicator } from "welo";
 import createLibp2p from "./libp2p.js";
 import { getConfig } from "./config.js";
-import * as logger from "./logger.js";
+import * as logger from "logger";
 import { Looper } from "./looper.js";
 import { syncLoop, downloadLoop } from "./loops.js";
 import commands from "./rpc/index.js";

@@ -1,5 +1,5 @@
 import Path from "path";
-import * as logger from "./logger.js";
+import * as logger from "logger";
 import { type Components } from "./interface.js";
 
 export default async (components: Components) => {

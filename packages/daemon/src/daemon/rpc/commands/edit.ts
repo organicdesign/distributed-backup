@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { CID } from "multiformats/cid";
-import * as logger from "../../logger.js";
+import * as logger from "logger";
 import { type Components, zCID, RevisionStrategies } from "../../interface.js";
 
 export const name = "edit";

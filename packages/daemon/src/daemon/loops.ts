@@ -4,7 +4,7 @@ import { pipe } from "it-pipe";
 import { collect, tap } from "streaming-iterables";
 import parallel from "it-parallel";
 import { CID } from "multiformats/cid";
-import * as logger from "./logger.js";
+import * as logger from "logger";
 import { decodeEntry } from "./utils.js";
 import { type Components, EncodedEntry } from "./interface.js";
 
