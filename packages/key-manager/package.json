@@ -1,0 +1,45 @@
+{
+  "type": "module",
+  "name": "key-manager",
+  "version": "0.1.0",
+  "description": "A key manager for the distributed backup.",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "files": [
+    "dist/src"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "prepublishOnly": "npm run build",
+    "build": "aegir build",
+    "test": "aegir test"
+  },
+  "author": "Saul Boyd",
+  "license": "GPL-3.0-or-later",
+  "devDependencies": {
+    "@libp2p/interface": "^1.1.2",
+    "aegir": "^42.1.0"
+  },
+  "private": true,
+  "sideEffects": false,
+  "dependencies": {
+    "@ipld/dag-cbor": "^9.1.0",
+    "@libp2p/crypto": "^4.0.1",
+    "@libp2p/peer-id": "^4.0.5",
+    "bip32": "^4.0.0",
+    "bip39": "^3.1.0",
+    "multiformats": "^13.0.1",
+    "tiny-secp256k1": "^2.2.3",
+    "uint8arrays": "^5.0.1",
+    "welo": "^4.1.0",
+    "zod": "^3.22.4"
+  }
+}

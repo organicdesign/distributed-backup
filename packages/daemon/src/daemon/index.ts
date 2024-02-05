@@ -19,7 +19,7 @@ import { createGroups } from "./groups.js";
 import { Cipher } from "../cipher/index.js";
 import { PinManager } from "./pin-manager.js";
 import createHeliaPinManager from "helia-pin-manager";
-import { createKeyManager } from "../key-manager/index.js";
+import { createKeyManager } from "key-manager";
 import createUploadManager from "./upload-operations.js";
 import createSyncManager from "./sync-operations.js";
 import { LocalSettings } from "./local-settings.js";
