@@ -37,6 +37,7 @@
     "multiformats": "^13.0.1",
     "p-queue": "^8.0.1",
     "sequelize": "^6.36.0",
+    "sqlite3": "^5.1.7",
     "ts-event-target": "^0.1.5",
     "uint8arrays": "^5.0.1"
   }
