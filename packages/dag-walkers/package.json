@@ -25,8 +25,16 @@
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "@helia/interface": "^4.0.0"
+    "@helia/interface": "^4.0.0",
+    "aegir": "^42.1.0"
   },
   "private": true,
-  "sideEffects": false
+  "sideEffects": false,
+  "dependencies": {
+    "@ipld/dag-cbor": "^9.1.0",
+    "@ipld/dag-json": "^10.1.7",
+    "@ipld/dag-pb": "^4.0.8",
+    "cborg": "^4.0.8",
+    "multiformats": "^13.0.1"
+  }
 }

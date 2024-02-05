@@ -4,10 +4,10 @@ export default {
       platform: 'node',
       format: 'esm',
       external: [
-				"pg",
-				"tedious",
-				"pg-hstore"
-			]
+        "pg",
+        "tedious",
+        "pg-hstore"
+      ]
     }
   }
 }
