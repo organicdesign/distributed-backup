@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "name": "fues",
+  "name": "fuse",
   "version": "0.1.0",
   "description": "A FUSE client for the distributed backup.",
   "main": "dist/src/index.js",
