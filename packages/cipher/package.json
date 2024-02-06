@@ -20,15 +20,15 @@
     "dep-check": "aegir dep-check",
     "prepublishOnly": "npm run build",
     "build": "aegir build",
-    "test": "aegir test"
+    "test": "aegir test -t node --cov"
   },
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "aegir": "^42.1.0"
+    "aegir": "^42.1.0",
+    "it-all": "^3.0.4",
+    "uint8arrays": "^5.0.1"
   },
   "private": true,
-  "sideEffects": false,
-  "dependencies": {
-  }
+  "sideEffects": false
 }
