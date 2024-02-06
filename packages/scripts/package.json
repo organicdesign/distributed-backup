@@ -30,6 +30,7 @@
   "private": true,
   "sideEffects": false,
   "dependencies": {
+    "key-manager": "^0.1.0",
     "multiaddr": "^10.0.1",
     "yargs": "^17.7.2"
   }

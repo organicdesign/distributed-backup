@@ -27,6 +27,7 @@
   "devDependencies": {
     "aegir": "^42.1.0",
     "it-all": "^3.0.4",
+    "key-manager": "^0.1.0",
     "uint8arrays": "^5.0.1"
   },
   "private": true,

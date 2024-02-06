@@ -35,6 +35,7 @@
   "sideEffects": false,
   "dependencies": {
     "cborg": "^4.0.8",
+    "dag-walkers": "^0.1.0",
     "interface-datastore": "^8.2.10",
     "it-all": "^3.0.4",
     "multiformats": "^13.0.1",

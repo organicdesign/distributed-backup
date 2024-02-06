@@ -16,9 +16,9 @@
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "aegir": "^42.1.0"
+    "aegir": "^42.1.0",
+    "key-manager": "^0.1.0"
   },
   "private": true,
-  "sideEffects": false,
-  "dependencies": {}
+  "sideEffects": false
 }
