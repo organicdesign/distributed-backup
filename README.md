@@ -48,7 +48,7 @@ You can use `:memory:` if you want all data to be stored in memory instead of th
 
 You first need to generate a key for this server:
 ```
-node dist/scripts/generate-keys.js -p config/key.json
+node packages/scripts/dist/src/index generate-keys config/key.json
 ```
 
 Write down your mnemonic and name since this is what you will need to recover the server.
@@ -72,7 +72,7 @@ You can also add the `-s /path/to/socket` to configure where the socket file is 
 Start the daemon with:
 
 ```
-DEBUG=backup* node dist/daemon/index.js -k config/key1.json -c config/config.json
+DEBUG=backup* node packages/daemon/dist/src/index.js -k config/key.json -c config/config.json
 ```
 
 ### Client
@@ -80,35 +80,35 @@ DEBUG=backup* node dist/daemon/index.js -k config/key1.json -c config/config.jso
 #### Create a Group
 
 ```
-GROUP=$(node dist/client/index.js create-group GROUP_NAME)
+GROUP=$(node packages/client/dist/src/index.js create-group GROUP_NAME)
 ```
 
 #### Join a Group
 
 ```
-node dist/client/index.js join-group $GROUP
+node packages/client/dist/src/index.js join-group $GROUP
 ```
 
 #### Add Content to a Group
 
 ```
-CID=$(node dist/client/index.js add $GROUP <FILE OR DIRECTORY>)
+CID=$(node packages/client/dist/src/index.js add $GROUP <FILE OR DIRECTORY>)
 ```
 
 #### Export Content from a Group
 
 ```
-node dist/client/index.js export $CID <PATH TO EXPORT TO>
+node packages/client/dist/src/index.js export $CID <PATH TO EXPORT TO>
 ```
 
 #### List All Content
 
 ```
-node dist/client/index.js list
+node packages/client/dist/src/index.js list
 ```
 
 #### List All Groups
 
 ```
-node dist/client/index.js list-groups
+node packages/client/dist/src/index.js list-groups
 ```
