@@ -29,20 +29,10 @@ You will need to create a configuration directory:
 mkdir config
 ```
 
-Then create a configuration file similar to the following and save it to your config directory:
-```json
-{
-	"private": false,
-	"serverMode": false,
-	"tickInterval": 0.1,
-	"storage": "/path/to/data",
-	"defaultRevisionStrategy": "log",
-	"addresses": [ "/ip4/0.0.0.0/tcp/0" ],
-	"bootstrap": []
-}
+Then run the following command and follow the prompts to generate a configuration file:
 ```
-
-You can use `:memory:` if you want all data to be stored in memory instead of the disk.
+node packages/scripts/dist/src/index generate-config config/config.json
+```
 
 ### Generate Key File
 
@@ -59,10 +49,9 @@ Do this before attempting to install the distributed backup or you will see erro
 1. Install macfuse. Eg. using homebrew: `brew install macfuse`
 2. Enable and Activate Kernel Extensions: instructions can be found here https://www.makeuseof.com/how-to-enable-third-party-kernel-extensions-apple-silicon-mac/
 
+## Quickstart
 
-## Running
-
-The system is setup in two parts - a client and a daemon, you will need to run the daemon first and then use it via the client.
+The system is setup in two parts - a client and a daemon, you will need to run the daemon first and then use it via the client or FUSE.
 
 You can add the `--help` flag to any script to get more help.
 
