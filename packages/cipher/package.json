@@ -20,7 +20,7 @@
     "dep-check": "aegir dep-check",
     "prepublishOnly": "npm run build",
     "build": "aegir build",
-    "test": "aegir test -t node --cov"
+    "test": "aegir test -t node"
   },
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
