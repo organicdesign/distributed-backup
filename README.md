@@ -112,3 +112,9 @@ node packages/client/dist/src/index.js list
 ```
 node packages/client/dist/src/index.js list-groups
 ```
+
+### FUSE
+
+```
+DEBUG=backup* node packages/fuse/dist/src/index.js --path /tmp/fuse --group $GROUP
+```
