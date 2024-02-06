@@ -1,0 +1,24 @@
+{
+  "type": "module",
+  "name": "e2e-tests",
+  "version": "0.1.0",
+  "description": "E2E distributed backup tests.",
+  "files": [],
+  "exports": {},
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "prepublishOnly": "npm run build",
+    "build": "aegir build",
+    "test": "aegir test -t node --cov"
+  },
+  "author": "Saul Boyd",
+  "license": "GPL-3.0-or-later",
+  "devDependencies": {
+    "aegir": "^42.1.0"
+  },
+  "private": true,
+  "sideEffects": false,
+  "dependencies": {}
+}
