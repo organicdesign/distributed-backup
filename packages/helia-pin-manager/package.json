@@ -20,13 +20,16 @@
     "dep-check": "aegir dep-check",
     "prepublishOnly": "npm run build",
     "build": "aegir build",
-    "test": "aegir test"
+    "test": "aegir test -t node --cov"
   },
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@helia/interface": "^4.0.0",
-    "aegir": "^42.1.0"
+    "@ipld/dag-pb": "^4.0.8",
+    "aegir": "^42.1.0",
+    "helia": "^4.0.1",
+    "interface-blockstore": "^5.2.9"
   },
   "private": true,
   "sideEffects": false,
