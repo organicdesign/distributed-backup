@@ -19,8 +19,7 @@
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
     "prepublishOnly": "npm run build",
-    "build": "aegir build",
-    "test": "aegir test"
+    "build": "aegir build"
   },
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
