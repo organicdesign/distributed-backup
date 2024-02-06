@@ -15,7 +15,7 @@ export default async (name: string): Promise<{ start(): Promise<void>, stop(): P
   await generateKeyFile(keyPath, mnemonic, name)
 
   const args = [
-    Path.join(projectPath, 'packages/daemon/dist/src/index.js'),
+    Path.join(projectPath, 'node_modules/daemon/dist/src/index.js'),
     '-k', keyPath,
     '-c', Path.join(projectPath, 'e2e-tests/config.json'),
     '-s', socket
