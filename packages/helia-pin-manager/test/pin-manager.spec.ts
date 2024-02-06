@@ -426,7 +426,7 @@ describe('pin manager', () => {
       const itr = pm.downloadPin(dag[0])
       const downloader = await itr.next()
 
-      assert(downloader.done == null)
+      assert(downloader.done == null || downloader.done === false)
 
       await downloader.value()
 
