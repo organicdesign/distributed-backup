@@ -1,8 +1,5 @@
-// @ts-expect-error For some reason typescript can't find types.
 import { HeadsExchange } from 'welo/utils/heads-exchange'
-// @ts-expect-error For some reason typescript can't find types.
 import { cidstring } from 'welo/utils/index'
-// @ts-expect-error For some reason typescript can't find types.
 import { getHeads, addHeads } from 'welo/utils/replicator'
 import { type Components } from '../../interface.js'
 import type { Peer, Libp2p } from '@libp2p/interface'

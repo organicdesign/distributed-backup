@@ -1,16 +1,13 @@
 import Path from 'path'
 import { Key } from 'interface-datastore'
 import { groups as logger } from 'logger'
-// @ts-expect-error For some reason typescript can't find types.
 import { Manifest } from 'welo/manifest/index'
-// @ts-expect-error For some reason typescript can't find types.
 import { decodeCbor } from 'welo/utils/block'
 import { type KeyvalueDB, type Pair, type Entry, type EncodedEntry } from './interface.js'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
 import type { Welo } from 'welo'
-// @ts-expect-error For some reason typescript can't find types.
 import type { ManifestData } from 'welo/manifest/interface'
 
 export interface Components {
