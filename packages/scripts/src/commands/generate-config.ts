@@ -83,7 +83,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 
   const config = JSON.stringify({
     private: usePsk,
-    tickInterval: 0.1,
+    tickInterval: 1,
     storage,
     addresses,
     bootstrap
