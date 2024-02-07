@@ -16,7 +16,7 @@ export class Looper {
 
   async run (options: Partial<{ signal: AbortSignal }> = {}): Promise<void> {
     for (;;) {
-      if (options.signal?.aborted == null) {
+      if (options.signal?.aborted === true) {
         return
       }
 

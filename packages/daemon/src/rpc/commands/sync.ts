@@ -44,7 +44,7 @@ const sync = async (libp2p: Libp2p, peer: Peer, database: Database, options: Par
       if (options.validate ?? true) {
         const matches = await he.verify()
 
-        if (matches === true) {
+        if (matches) {
           break
         }
       }

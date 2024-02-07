@@ -221,8 +221,13 @@ process.on('SIGINT', () => {
 
 // Create the loops.
 const loops = [
-  new Looper(async () => syncLoop(components), { sleep: config.tickInterval * 1000 }),
-  new Looper(async () => downloadLoop(components), { sleep: config.tickInterval * 1000 })
+  new Looper(async () => {
+    await syncLoop(components)
+  }, { sleep: config.tickInterval * 1000 }),
+
+  new Looper(async () => {
+    await downloadLoop(components)
+  }, { sleep: config.tickInterval * 1000 })
 ]
 
 logger.lifecycle('started')
