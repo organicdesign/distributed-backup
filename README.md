@@ -95,7 +95,7 @@ node packages/scripts/dist/src/index generate-keys config/key-b.json --mnemonic 
 Then you can start another daemon:
 
 ```
-DEBUG=backup* node packages/daemon/dist/src/index.js -k config/key-a.json -c config/config.json --socket /tmp/peer2
+DEBUG=backup* node packages/daemon/dist/src/index.js -k config/key-b.json -c config/config.json --socket /tmp/peer2
 ```
 
 Note that the `--socket` flag is only there so that we can run another node on the same machine.
