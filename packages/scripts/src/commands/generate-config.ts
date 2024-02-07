@@ -49,6 +49,14 @@ export const handler = createHandler<typeof builder>(async argv => {
     addresses.push(rawAddress)
   }
 
+  if (addresses.length === 0) {
+    const addDefaultAddress = await rl.question('you have no addresses to bind to - would you like to add the default?\n')
+
+    if (isYes(addDefaultAddress)) {
+      addresses.push('/ip4/0.0.0.0/tcp/0')
+    }
+  }
+
   const bootstrap: string[] = []
   const useBootStrap = await rl.question('Would you like to specify bootstrap addresses?\n')
 
