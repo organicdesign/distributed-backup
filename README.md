@@ -14,7 +14,7 @@ Note for Mac users: you should first install Macfuse - see instructions later th
 
 Install dependencies:
 ```
-npm i
+npm ci
 ```
 
 Build:
