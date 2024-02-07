@@ -89,7 +89,7 @@ After the group has been mounted through FUSE you can use it as you would a norm
 Now that one node is up and running you can run another one and join the group but first you must generate another related key using the same mnemonic when you created the first key:
 
 ```
-node packages/scripts/dist/src/index generate-keys config/key-b.json --mnemonic <MNEMONIC>
+node packages/scripts/dist/src/index generate-keys config/key-b.json --mnemonic "<MNEMONIC>"
 ```
 
 Then you can start another daemon:
