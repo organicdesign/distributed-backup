@@ -24,6 +24,7 @@
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
+    "@types/yargs": "^17.0.32",
     "aegir": "^42.1.0"
   },
   "private": true,
