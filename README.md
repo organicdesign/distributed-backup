@@ -132,7 +132,7 @@ node packages/client/dist/src/index.js --socket /tmp/peer2 query-group $GROUP
 #### Export Content from a Group
 
 ```
-node packages/client/dist/src/index.js export $CID <PATH TO EXPORT TO>
+node packages/client/dist/src/index.js export $GROUP <VIRTUAL PATH> <PATH TO EXPORT TO>
 ```
 
 #### List All Content
