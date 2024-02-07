@@ -2,6 +2,13 @@
 
 A distributed backup system running on Libp2p, IPFS and Welo.
 
+## Objectives
+
+- Virtual distributed filesystem
+- Automatic downloads
+- Configurable multiplexed downloads
+- Recording historical versions of files
+
 ## Environment
 
 nodejs will need to be installed to run this project, it has been tested on v18, v20 has typescript issues.
