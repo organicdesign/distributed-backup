@@ -2,6 +2,10 @@
 
 A distributed backup system running on Libp2p, IPFS and Welo.
 
+## Warning
+
+This project is still in development and had very little testing - data backed up using this system may be leaked or corrupted.
+
 ## Objectives
 
 - Virtual distributed filesystem
