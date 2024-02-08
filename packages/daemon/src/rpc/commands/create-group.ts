@@ -11,7 +11,7 @@ const Params = z.object({
 
 export const method = (components: Components) => async (raw: unknown) => {
   const params = Params.parse(raw)
-  const peerValues = params.peers.map(p => uint8ArrayFromString(p, 'base64'))
+  const peerValues = params.peers.map(p => uint8ArrayFromString(p, 'base58btc'))
 
   const manifest = await components.welo.determine({
     name: params.name,
