@@ -67,7 +67,7 @@ export const ImportParams = z.object({
 })
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export type ImportParams = z.infer<typeof ImportParams>
+export type ImportParams = z.input<typeof ImportParams>
 
 export const ImportReturn = z.array(z.object({
   cid: zCID(),
@@ -231,7 +231,7 @@ export const ListParams = z.object({
 })
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export type ListParams = z.infer<typeof ListParams>
+export type ListParams = z.input<typeof ListParams>
 
 export const ListReturn = z.array(z.object({
   path: z.string(),
@@ -260,7 +260,7 @@ export const ReadParams = z.object({
 })
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export type ReadParams = z.infer<typeof ReadParams>
+export type ReadParams = z.input<typeof ReadParams>
 
 export const ReadReturn = z.string()
 
@@ -290,7 +290,7 @@ export const WriteParams = z.object({
 })
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export type WriteParams = z.infer<typeof WriteParams>
+export type WriteParams = z.input<typeof WriteParams>
 
 export const WriteReturn = z.number().int().min(0)
 
