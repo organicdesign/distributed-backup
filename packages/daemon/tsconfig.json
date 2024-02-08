@@ -35,6 +35,9 @@
     },
     {
       "path": "../fs-exporter"
+    },
+    {
+      "path": "../rpc-interfaces"
     }
   ]
 }

@@ -1,0 +1,35 @@
+{
+  "type": "module",
+  "name": "rpc-interfaces",
+  "version": "0.1.0",
+  "description": "Interfaces for the RPC API.",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "files": [
+    "dist/src"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "prepublishOnly": "npm run build",
+    "build": "aegir build"
+  },
+  "author": "Saul Boyd",
+  "license": "GPL-3.0-or-later",
+  "devDependencies": {
+    "aegir": "^42.1.0"
+  },
+  "private": true,
+  "sideEffects": false,
+  "dependencies": {
+    "multiformats": "^13.0.1",
+    "zod": "^3.22.4"
+  }
+}
