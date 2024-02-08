@@ -1,5 +1,5 @@
 import { createNetClient, type NetClient } from '@organicdesign/net-rpc'
-import { type AddParams, AddReturn } from 'rpc-interfaces'
+import { type ImportParams, ImportReturn } from 'rpc-interfaces'
 
 export class Client {
   private readonly client: NetClient
@@ -12,10 +12,10 @@ export class Client {
     this.client.close()
   }
 
-  async add (params: AddParams): Promise<AddReturn> {
-    const raw = await this.client.rpc.request('add', params)
+  async import (params: ImportParams): Promise<ImportReturn> {
+    const raw = await this.client.rpc.request('import', params)
 
-    return AddReturn.parse(raw)
+    return ImportReturn.parse(raw)
   }
 }
 

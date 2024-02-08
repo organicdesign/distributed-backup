@@ -50,7 +50,7 @@ describe('import/export', () => {
   })
 
   it('imports a file', async () => {
-    const response = await runClient(node, 'add', group, data[0].import, data[0].virtual)
+    const response = await runClient(node, 'import', group, data[0].import, data[0].virtual)
 
     assert.deepEqual(response, {
       success: true,
@@ -64,7 +64,7 @@ describe('import/export', () => {
   })
 
   it('imports a directory', async () => {
-    const response = await runClient(node, 'add', group, data[1].import, data[1].virtual)
+    const response = await runClient(node, 'import', group, data[1].import, data[1].virtual)
 
     const expectedImports = [
       {
@@ -91,7 +91,7 @@ describe('import/export', () => {
   })
 
   it('imports a sub directory', async () => {
-    const response = await runClient(node, 'add', group, data[2].import, data[2].virtual)
+    const response = await runClient(node, 'import', group, data[2].import, data[2].virtual)
 
     assert.deepEqual(response, {
       success: true,

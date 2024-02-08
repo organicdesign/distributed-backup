@@ -2,9 +2,9 @@ import Path from 'path'
 import { RevisionStrategies } from 'rpc-interfaces'
 import { createBuilder, createHandler } from '../utils.js'
 
-export const command = 'add [group] [localPath] [path]'
+export const command = 'import [group] [localPath] [path]'
 
-export const desc = 'Add a file or directory to the distributed backup.'
+export const desc = 'Import a file or directory to the distributed backup.'
 
 export const builder = createBuilder({
   group: {
@@ -33,15 +33,6 @@ export const builder = createBuilder({
     type: 'boolean'
   },
 
-  autoUpdate: {
-    default: false,
-    type: 'boolean'
-  },
-
-  versionCount: {
-    type: 'number'
-  },
-
   priority: {
     alias: 'p',
     type: 'number'
@@ -66,15 +57,13 @@ export const handler = createHandler<typeof builder>(async argv => {
     path = Path.join(path, name)
   }
 
-  const imports = await argv.client2.add({
+  const imports = await argv.client2.import({
     group: argv.group,
     localPath: Path.resolve(argv.localPath),
     path,
     onlyHash: argv.onlyHash,
     encrypt: argv.encrypt,
-    autoUpdate: argv.autoUpdate,
-    versionCount: argv.versionCount,
-    priority: argv.priority,
+    priority: argv.priority ?? 1,
     revisionStrategy: RevisionStrategies.parse(argv.revisionStrategy)
   })
 

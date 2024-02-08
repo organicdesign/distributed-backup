@@ -40,7 +40,7 @@ describe('synchronization', () => {
 
   it('syncs a pre-existing file', async () => {
     const virtualPath = '/file-1'
-    const addRes = await runClient(nodes[0], 'add', group, files[0], virtualPath)
+    const addRes = await runClient(nodes[0], 'import', group, files[0], virtualPath)
 
     assert(addRes.success)
 
@@ -67,7 +67,7 @@ describe('synchronization', () => {
 
   it('syncs a new file', async () => {
     const virtualPath = '/file-2'
-    const addRes = await runClient(nodes[0], 'add', group, files[1], virtualPath)
+    const addRes = await runClient(nodes[0], 'import', group, files[1], virtualPath)
 
     assert(addRes.success)
 

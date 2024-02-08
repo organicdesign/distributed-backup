@@ -19,7 +19,7 @@ describe('revisions', () => {
 
     group = (await runClient(node, 'create-group', 'test')).group
 
-    const response = await runClient(node, 'add', group, testDataDir, virtualDir)
+    const response = await runClient(node, 'import', group, testDataDir, virtualDir)
 
     assert(response.success)
   })
@@ -38,7 +38,7 @@ describe('revisions', () => {
   })
 
   it("has 1 revision after overwrite with strategy 'none'", async () => {
-    const add = await runClient(node, 'add', group, testDataDir, virtualDir, '--revisionStrategy', 'none')
+    const add = await runClient(node, 'import', group, testDataDir, virtualDir, '--revisionStrategy', 'none')
 
     assert(add.success)
 
@@ -51,7 +51,7 @@ describe('revisions', () => {
   })
 
   it("has 2 revisions after overwrite with strategy 'log'", async () => {
-    const add = await runClient(node, 'add', group, testDataDir, virtualDir, '--revisionStrategy', 'log')
+    const add = await runClient(node, 'import', group, testDataDir, virtualDir, '--revisionStrategy', 'log')
 
     assert(add.success)
 
@@ -65,7 +65,7 @@ describe('revisions', () => {
   })
 
   it("has 3 revisions after overwrite with strategy 'all'", async () => {
-    const add = await runClient(node, 'add', group, testDataDir, virtualDir, '--revisionStrategy', 'all')
+    const add = await runClient(node, 'import', group, testDataDir, virtualDir, '--revisionStrategy', 'all')
 
     assert(add.success)
 
@@ -80,7 +80,7 @@ describe('revisions', () => {
   })
 
   it("reduces to 2 revisions after overwrite with strategy 'log'", async () => {
-    const add = await runClient(node, 'add', group, testDataDir, virtualDir, '--revisionStrategy', 'log')
+    const add = await runClient(node, 'import', group, testDataDir, virtualDir, '--revisionStrategy', 'log')
 
     assert(add.success)
 
@@ -94,7 +94,7 @@ describe('revisions', () => {
   })
 
   it("reduces to 1 revision after overwrite with strategy 'none'", async () => {
-    const add = await runClient(node, 'add', group, testDataDir, virtualDir, '--revisionStrategy', 'none')
+    const add = await runClient(node, 'import', group, testDataDir, virtualDir, '--revisionStrategy', 'none')
 
     assert(add.success)
 

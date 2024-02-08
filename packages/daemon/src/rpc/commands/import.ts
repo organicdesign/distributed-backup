@@ -3,14 +3,14 @@ import { BlackHoleBlockstore } from 'blockstore-core/black-hole'
 import { selectHasher, selectChunker, importRecursive, type ImporterConfig } from 'fs-importer'
 import * as logger from 'logger'
 import { CID } from 'multiformats/cid'
-import { AddParams, type AddReturn } from 'rpc-interfaces'
+import { ImportParams, type ImportReturn } from 'rpc-interfaces'
 import { encodeEntry, getDagSize } from '../../utils.js'
 import type { Components } from '../../interface.js'
 
-export const name = 'add'
+export const name = 'import'
 
 export const method = (components: Components) => async (raw: unknown) => {
-  const params = AddParams.parse(raw)
+  const params = ImportParams.parse(raw)
   const encrypt = Boolean(params.encrypt)
 
   const config: ImporterConfig = {
@@ -34,7 +34,7 @@ export const method = (components: Components) => async (raw: unknown) => {
     }
   */
 
-  const cids: AddReturn = []
+  const cids: ImportReturn = []
 
   for await (const r of importRecursive(store, params.localPath, config)) {
     logger.add('imported %s', params.localPath)
