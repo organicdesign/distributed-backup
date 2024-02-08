@@ -1,3 +1,3 @@
-# Client
+# CLI
 
-The distributed backup client.
+The distributed backup CLI client.
