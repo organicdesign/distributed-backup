@@ -1,8 +1,8 @@
 {
   "type": "module",
-  "name": "cli",
+  "name": "client",
   "version": "0.1.0",
-  "description": "The distributed backup client.",
+  "description": "An RPC client for the daemon.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "files": [
@@ -24,17 +24,12 @@
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "@types/yargs": "^17.0.32",
     "aegir": "^42.1.0"
   },
   "private": true,
   "sideEffects": false,
   "dependencies": {
     "@organicdesign/net-rpc": "^0.1.3",
-    "client": "^0.1.0",
-    "multiformats": "^13.0.1",
-    "rpc-interfaces": "^0.1.0",
-    "yargs": "^17.7.2",
-    "zod": "^3.22.4"
+    "rpc-interfaces": "^0.1.0"
   }
 }

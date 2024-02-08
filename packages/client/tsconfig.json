@@ -12,9 +12,6 @@
   ],
   "references": [
     {
-      "path": "../client"
-    },
-    {
       "path": "../rpc-interfaces"
     }
   ]

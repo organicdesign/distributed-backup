@@ -1,4 +1,5 @@
 import Path from 'path'
+import { RevisionStrategies } from 'rpc-interfaces'
 import { createBuilder, createHandler } from '../utils.js'
 
 export const command = 'add [group] [localPath] [path]'
@@ -52,7 +53,7 @@ export const builder = createBuilder({
 })
 
 export const handler = createHandler<typeof builder>(async argv => {
-  if (argv.client == null) {
+  if (argv.client == null || argv.client2 == null) {
     throw new Error('Failed to connect to daemon.')
   }
 
@@ -65,7 +66,7 @@ export const handler = createHandler<typeof builder>(async argv => {
     path = Path.join(path, name)
   }
 
-  const imports = await argv.client.rpc.request('add', {
+  const imports = await argv.client2.add({
     group: argv.group,
     localPath: Path.resolve(argv.localPath),
     path,
@@ -74,7 +75,7 @@ export const handler = createHandler<typeof builder>(async argv => {
     autoUpdate: argv.autoUpdate,
     versionCount: argv.versionCount,
     priority: argv.priority,
-    revisionStrategy: argv.revisionStrategy
+    revisionStrategy: RevisionStrategies.parse(argv.revisionStrategy)
   })
 
   if (argv.json === true) {
@@ -84,5 +85,5 @@ export const handler = createHandler<typeof builder>(async argv => {
     })
   }
 
-  return imports
+  return imports.map(i => `${i.virtualPath} ${i.cid}`).join('\n')
 })

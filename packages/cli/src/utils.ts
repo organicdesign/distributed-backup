@@ -1,4 +1,5 @@
 import type { NetClient } from '@organicdesign/net-rpc'
+import type { Client } from 'client'
 import type { ArgumentsCamelCase, Options, InferredOptionTypes, MiddlewareFunction } from 'yargs'
 
 export type Builder = Record<string, Options>
@@ -27,6 +28,7 @@ export const createMiddleware = <T extends Builder>(
 
 export interface AdditionalTypes {
   client: NetClient
+  client2: Client
 }
 
 export const globalOptions = createRawBuilder({
