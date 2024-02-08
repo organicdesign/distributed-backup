@@ -81,7 +81,7 @@ Do this before attempting to install the distributed backup or you will see erro
 
 Be sure to run the setup process first.
 
-The system is setup in two parts - a client and a daemon, you will need to run the daemon first and then use it via the client or FUSE.
+The system is setup in two parts - a client and a daemon, you will need to run the daemon first and then use it via CLI or FUSE.
 
 You can add the `--help` flag to any script to get more help.
 
@@ -97,13 +97,13 @@ DEBUG=backup* node packages/daemon/dist/src/index.js -k config/key-a.json -c con
 Now you can run the client to create a group:
 
 ```
-GROUP=$(node packages/client/dist/src/index.js create-group GROUP_NAME)
+GROUP=$(node packages/cli/dist/src/index.js create-group GROUP_NAME)
 ```
 
 Once the group has been created you can add content to it.
 
 ```
-CID=$(node packages/client/dist/src/index.js add $GROUP <FILE OR DIRECTORY>)
+CID=$(node packages/cli/dist/src/index.js add $GROUP <FILE OR DIRECTORY>)
 ```
 
 Now that we have the daemon running with a group an content we can mount it to a directory with FUSE:
@@ -131,19 +131,19 @@ Note that the `--socket` flag is only there so that we can run another node on t
 Once the second daemon is running you need to connect them together, to do that first get the addresses from the first daemon like so:
 
 ```
-node packages/client/dist/src/index.js addresses
+node packages/cli/dist/src/index.js addresses
 ```
 
 Then copy one of those addresses into the following command to connect the second daemon to the first:
 
 ```
-node packages/client/dist/src/index.js --socket /tmp/peer2 connect <ADDRESS>
+node packages/cli/dist/src/index.js --socket /tmp/peer2 connect <ADDRESS>
 ```
 
 Once the daemons are connected together you can join the group on the second:
 
 ```
-node packages/client/dist/src/index.js --socket /tmp/peer2 join-group $GROUP
+node packages/cli/dist/src/index.js --socket /tmp/peer2 join-group $GROUP
 ```
 
 Now that we have it joined the group it should start replicating and downloading the content from the first.
@@ -151,7 +151,7 @@ Now that we have it joined the group it should start replicating and downloading
 You can mount the other one in FUSE also like you did the first or you can list the content directly:
 
 ```
-node packages/client/dist/src/index.js --socket /tmp/peer2 query-group $GROUP
+node packages/cli/dist/src/index.js --socket /tmp/peer2 query-group $GROUP
 ```
 
 ### Additional commands
@@ -160,23 +160,23 @@ node packages/client/dist/src/index.js --socket /tmp/peer2 query-group $GROUP
 #### Export Content from a Group
 
 ```
-node packages/client/dist/src/index.js export $GROUP <VIRTUAL PATH> <PATH TO EXPORT TO>
+node packages/cli/dist/src/index.js export $GROUP <VIRTUAL PATH> <PATH TO EXPORT TO>
 ```
 
 #### List All Content
 
 ```
-node packages/client/dist/src/index.js list
+node packages/cli/dist/src/index.js list
 ```
 
 #### List All Groups
 
 ```
-node packages/client/dist/src/index.js list-groups
+node packages/cli/dist/src/index.js list-groups
 ```
 
 #### Join a Group
 
 ```
-node packages/client/dist/src/index.js join-group $GROUP
+node packages/cli/dist/src/index.js join-group $GROUP
 ```

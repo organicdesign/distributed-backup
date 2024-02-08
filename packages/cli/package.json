@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "name": "client",
+  "name": "cli",
   "version": "0.1.0",
   "description": "The distributed backup client.",
   "main": "dist/src/index.js",
