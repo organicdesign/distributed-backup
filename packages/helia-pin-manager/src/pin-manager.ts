@@ -154,8 +154,6 @@ export class PinManager {
 
   // Add a pin to the downloads.
   async pin (cid: CID): Promise<void> {
-    // TODO: Look into caching the pins so they can be checked synchronously.
-
     const pin = await this.components.pins.findOne({
       where: {
         cid: cid.toString()
