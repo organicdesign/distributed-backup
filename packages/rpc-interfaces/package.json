@@ -29,7 +29,9 @@
   "private": true,
   "sideEffects": false,
   "dependencies": {
+    "@multiformats/multiaddr": "^12.1.14",
     "multiformats": "^13.0.1",
+    "uint8arrays": "^5.0.2",
     "zod": "^3.22.4"
   }
 }
