@@ -19,9 +19,26 @@ nodejs will need to be installed to run this project, it has been tested on v18,
 
 ## Setup
 
+### Dependencies
+
+This project depends on the OS having FUSE installed which may already be installed by default on some linux distributions.
+
+#### Linux
+
+```
+sudo apt-get install pkg-config libfuse-dev make build-essential
+```
+
+#### Mac with Apple Silicon
+
+Do this before attempting to install the distributed backup or you will see errors at the install stage
+1. Install macfuse. Eg. using homebrew: `brew install macfuse`
+2. Enable and Activate Kernel Extensions: instructions can be found here https://www.makeuseof.com/how-to-enable-third-party-kernel-extensions-apple-silicon-mac/
+
+
 ### Compile
 
-Note for Mac users: you should first install Macfuse - see instructions later this section
+Note the install command will fail if dependencies are not installed, see the dependencies section for installing them.
 
 Install dependencies:
 ```
