@@ -35,11 +35,13 @@ export const builder = createBuilder({
 
   priority: {
     alias: 'p',
-    type: 'number'
+    type: 'number',
+    default: 1
   },
 
   revisionStrategy: {
-    type: 'string'
+    type: 'string',
+    default: 'all'
   }
 })
 

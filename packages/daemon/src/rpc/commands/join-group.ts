@@ -21,6 +21,4 @@ export const method = (components: Components) => async (raw: unknown) => {
 
     throw error
   }
-
-  return manifest.address.cid.toString()
 }

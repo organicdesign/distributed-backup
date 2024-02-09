@@ -13,6 +13,4 @@ export const method = (components: Components) => async (raw: unknown) => {
   const params = Params.parse(raw)
 
   await components.uploads.add('delete', [CID.parse(params.group).bytes, params.path])
-
-  return params.path
 }

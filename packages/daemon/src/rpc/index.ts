@@ -31,7 +31,7 @@ export default [
   edit,
   exportData,
   id,
-	importData,
+  importData,
   joinGroup,
   listGroups,
   listHeliaPins,

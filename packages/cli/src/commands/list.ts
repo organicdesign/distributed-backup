@@ -60,7 +60,7 @@ export const handler = createHandler<typeof builder>(async argv => {
     throw new Error('Failed to connect to daemon.')
   }
 
-  const items = await argv.client2.list({})
+  let items = await argv.client2.list()
 
   const revisionCounter: Record<string, number> = {}
 
@@ -92,6 +92,8 @@ export const handler = createHandler<typeof builder>(async argv => {
     size: 0, // items.reduce((a, b) => a + b.totalSize, 0),
     count: items.length
   }
+
+  items = items.filter(i => i.path.startsWith('/r')).map(i => ({ ...i, path: i.path.slice(2) }))
 
   if (argv.json === true) {
     return JSON.stringify({

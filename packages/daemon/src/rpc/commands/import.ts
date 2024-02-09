@@ -19,11 +19,11 @@ export const method = (components: Components) => async (raw: unknown) => {
     cidVersion: 1
   }
 
-  if (params.onlyHash !== true) {
+  if (!params.onlyHash) {
     logger.add('importing %s', params.inPath)
   }
 
-  const store = params.onlyHash === true ? new BlackHoleBlockstore() : components.blockstore
+  const store = params.onlyHash ? new BlackHoleBlockstore() : components.blockstore
 
   /*
     const cipher = encrypt ? components.cipher : undefined;
@@ -57,8 +57,8 @@ export const method = (components: Components) => async (raw: unknown) => {
     const virtualPath = Path.join(params.path, r.path.replace(params.inPath, ''))
 
     cids.push({
-      inPath: params.inPath,
-      path: params.path,
+      inPath: r.path,
+      path: virtualPath,
       cid: r.cid.toString()
     })
 

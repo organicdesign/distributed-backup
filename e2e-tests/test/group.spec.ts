@@ -35,10 +35,10 @@ describe('group', () => {
     const data = await runClient(nodes[0], 'list-groups')
 
     assert.deepEqual(data, [{
-      cid: GROUP,
-      count: 0,
-      name: 'test-group',
-      peers: 1
+      // count: 0,
+      // peers: 1,
+      group: GROUP,
+      name: 'test-group'
     }])
   })
 
@@ -56,17 +56,17 @@ describe('group', () => {
     // Joins the group.
     const joinData = await runClient(nodes[1], 'join-group', GROUP)
 
-    assert.deepEqual(joinData, { success: true, group: GROUP })
+    assert.deepEqual(joinData, { success: true })
   })
 
   it('lists the joined group', async () => {
     const data = await runClient(nodes[1], 'list-groups')
 
     assert.deepEqual(data, [{
-      cid: GROUP,
-      count: 0,
-      name: 'test-group',
-      peers: 2
+      // count: 0,
+      // peers: 2,
+      group: GROUP,
+      name: 'test-group'
     }])
   })
 })

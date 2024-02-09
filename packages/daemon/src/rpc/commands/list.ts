@@ -1,5 +1,6 @@
 import * as dagCbor from '@ipld/dag-cbor'
 import { CID } from 'multiformats/cid'
+import { toString as uint8arrayToString } from 'uint8arrays'
 import { type Components, EncodedEntry, type LocalEntryData } from '../../interface.js'
 import { countPeers, decodeAny } from '../../utils.js'
 
@@ -53,7 +54,9 @@ export const method = (components: Components) => async () => {
           totalSize: entry.size,
           totalBlocks: entry.blocks,
           priority: ref?.priority ?? entry.priority,
-          revisionStrategy: ref?.revisionStrategy ?? entry.revisionStrategy
+          revisionStrategy: ref?.revisionStrategy ?? entry.revisionStrategy,
+          timestamp: entry.timestamp,
+          author: uint8arrayToString(entry.author, 'base58btc')
         }
       })())
     }
