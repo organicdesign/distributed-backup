@@ -12,18 +12,17 @@ export const builder = createBuilder({
 })
 
 export const handler = createHandler<typeof builder>(async argv => {
-  if (argv.client == null) {
+  if (argv.client2 == null) {
     throw new Error('Failed to connect to daemon.')
   }
 
-  const connect = await argv.client.rpc.request('join-group', { group: argv.group })
+  await argv.client2.joinGroup(argv.group)
 
   if (argv.json === true) {
     return JSON.stringify({
-      success: true,
-      group: connect
+      success: true
     })
   }
 
-  return connect
+  return 'success'
 })

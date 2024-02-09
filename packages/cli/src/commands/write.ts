@@ -31,21 +31,21 @@ export const builder = createBuilder({
 })
 
 export const handler = createHandler<typeof builder>(async argv => {
-  if (argv.client == null) {
+  if (argv.client2 == null) {
     throw new Error('Failed to connect to daemon.')
   }
 
-  const data = await argv.client.rpc.request('write', {
-    group: argv.group,
-    path: argv.path,
+  const length = await argv.client2.write(argv.group, argv.path, argv.data ?? '', {
     position: argv.position,
-    length: argv.length,
-    data: argv.data
+    length: argv.length
   })
 
   if (argv.json === true) {
-    return data
+    return JSON.stringify({
+      success: true,
+      length
+    })
   }
 
-  return data
+  return `Wrote ${length} bytes.`
 })

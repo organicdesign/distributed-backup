@@ -27,13 +27,11 @@ export const builder = createBuilder({
 })
 
 export const handler = createHandler<typeof builder>(async argv => {
-  if (argv.client == null) {
+  if (argv.client2 == null) {
     throw new Error('Failed to connect to daemon.')
   }
 
-  const data = await argv.client.rpc.request('read', {
-    group: argv.group,
-    path: argv.path,
+  const data = await argv.client2.read(argv.group, argv.path, {
     position: argv.position,
     length: argv.length
   })

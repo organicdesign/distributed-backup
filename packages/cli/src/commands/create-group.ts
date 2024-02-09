@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { createBuilder, createHandler } from '../utils.js'
 
 export const command = 'create-group [name] [peers...]'
@@ -17,11 +18,11 @@ export const builder = createBuilder({
 })
 
 export const handler = createHandler<typeof builder>(async argv => {
-  if (argv.client == null) {
+  if (argv.client2 == null) {
     throw new Error('Failed to connect to daemon.')
   }
 
-  const group = await argv.client.rpc.request('create-group', { name: argv.name, peers: argv.peers })
+  const group = await argv.client2.createGroup(argv.name, z.array(z.string()).parse(argv.peers))
 
   if (argv.json === true) {
     return JSON.stringify({ group })

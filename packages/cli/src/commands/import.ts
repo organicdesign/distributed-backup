@@ -1,5 +1,5 @@
 import Path from 'path'
-import { RevisionStrategies } from 'rpc-interfaces'
+import { RevisionStrategies } from 'rpc-interfaces/zod'
 import { createBuilder, createHandler } from '../utils.js'
 
 export const command = 'import [group] [localPath] [path]'
@@ -57,9 +57,7 @@ export const handler = createHandler<typeof builder>(async argv => {
     path = Path.join(path, name)
   }
 
-  const imports = await argv.client2.import({
-    group: argv.group,
-    localPath: Path.resolve(argv.localPath),
+  const imports = await argv.client2.import(argv.group, Path.resolve(argv.localPath), {
     path,
     onlyHash: argv.onlyHash,
     encrypt: argv.encrypt,
@@ -74,5 +72,5 @@ export const handler = createHandler<typeof builder>(async argv => {
     })
   }
 
-  return imports.map(i => `${i.virtualPath} ${i.cid}`).join('\n')
+  return imports.map(i => `${i.path} ${i.cid}`).join('\n')
 })

@@ -1,32 +1,5 @@
-import { z } from 'zod'
-import { zCID, RevisionStrategies } from '../interface.js'
+import { List } from 'rpc-interfaces'
 import { createBuilder, createHandler } from '../utils.js'
-
-const Item = z.object({
-  path: z.string(),
-  cid: zCID,
-  name: z.string(),
-  peers: z.number().int(),
-  group: zCID,
-  groupName: z.string(),
-  encrypted: z.boolean(),
-  state: z.string(),
-  size: z.number().int(),
-  blocks: z.number().int(),
-  totalSize: z.number().int(),
-  totalBlocks: z.number().int(),
-  priority: z.number().int(),
-  revisionStrategy: RevisionStrategies,
-  meta: z.record(z.unknown()).optional()
-})
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-type Item = z.infer<typeof Item>
-
-const Items = z.array(Item)
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-type Items = z.infer<typeof Items>
 
 export const command = 'list'
 
@@ -54,9 +27,9 @@ const formatSize = (size: number): string => {
   return `${size} B`
 }
 
-type JStruct = { [k in string]: JStruct | Item }
+type JStruct = { [k in string]: JStruct | List.Return[number] }
 
-const createJSON = (items: Items): JStruct => {
+const createJSON = (items: List.Return): JStruct => {
   const struct: JStruct = {}
 
   for (const item of items) {
@@ -83,15 +56,15 @@ const formatPercent = (decimal: number): string => {
 }
 
 export const handler = createHandler<typeof builder>(async argv => {
-  if (argv.client == null) {
+  if (argv.client2 == null) {
     throw new Error('Failed to connect to daemon.')
   }
 
-  const raw: unknown = await argv.client.rpc.request('list', {})
+  const items = await argv.client2.list({})
 
   const revisionCounter: Record<string, number> = {}
 
-  for (const item of Items.parse(raw)) {
+  for (const item of items) {
     if (!item.path.startsWith('/v')) {
       continue
     }
@@ -106,19 +79,17 @@ export const handler = createHandler<typeof builder>(async argv => {
     revisionCounter[path] += 1
   }
 
-  const items = Items.parse(raw).filter(i => i.path.startsWith('/r')).map(i => ({ ...i, path: i.path.slice(2) }))
-
   items.sort((a, b) => a.path.localeCompare(b.path))
 
   const completed = {
     blocks: items.reduce((a, b) => a + b.blocks, 0),
     size: items.reduce((a, b) => a + b.size, 0),
-    count: items.filter(i => i.state === 'COMPLETED').length
+    count: 'Not Implemented'// items.filter(i => i.state === 'COMPLETED').length
   }
 
   const total = {
-    blocks: items.reduce((a, b) => a + b.totalBlocks, 0),
-    size: items.reduce((a, b) => a + b.totalSize, 0),
+    blocks: 0, // items.reduce((a, b) => a + b.totalBlocks, 0),
+    size: 0, // items.reduce((a, b) => a + b.totalSize, 0),
     count: items.length
   }
 
@@ -153,31 +124,26 @@ export const handler = createHandler<typeof builder>(async argv => {
     }
 
     for (const [key, subtree] of Object.entries(tree)) {
-      let item: Item | null = null
-
       try {
-        item = Item.parse(subtree)
-      } catch (error) {
-        // Ignore
-      }
-
-      if (item != null) {
+        const [item] = List.Return.parse([subtree])
         let str = ''
 
         str += `${'  '.repeat(depth)}${key}`.slice(0, 18).padEnd(20)
-        str += `${formatSize(item.size)}/${formatSize(item.totalSize)} (${formatPercent(item.size / item.totalSize)})`.slice(0, 25).padEnd(27)
-        str += `${item.blocks}/${item.totalBlocks} (${formatPercent(item.blocks / item.totalBlocks)})`.slice(0, 18).padEnd(20)
-        str += `${item.state}`.slice(0, 13).padEnd(15)
+        str += `${formatSize(item.size)}/${formatSize(0)} (${formatPercent(0)})`.slice(0, 25).padEnd(27)
+        str += `${item.blocks}/${0} (${formatPercent(0)})`.slice(0, 18).padEnd(20)
+        str += 'Not Implemented'.slice(0, 13).padEnd(15)
         str += `${item.priority}`.slice(0, 8).padEnd(10)
         str += `${revisionCounter[item.path] ?? 0}`.slice(0, 8).padEnd(10)
-        str += `${item.peers}`.slice(0, 8).padEnd(10)
-        str += `${item.groupName}`.slice(0, 8).padEnd(10)
+        str += 'Not Implemented'.slice(0, 8).padEnd(10)
+        str += `${item.group}`.slice(0, 8).padEnd(10)
         str += `${item.encrypted}`.slice(0, 8).padEnd(10)
         str += `${item.revisionStrategy}`.slice(0, 8).padEnd(12)
         str += item.cid.padEnd(62)
 
         response += `${str}\n`
         continue
+      } catch (error) {
+        // Ignore
       }
 
       response += `${'  '.repeat(depth)}${key}/\n`
@@ -194,7 +160,7 @@ export const handler = createHandler<typeof builder>(async argv => {
   footer += 'Size'.padEnd(25)
   footer += 'Blocks'.padEnd(20)
   footer += '\n'
-  footer += `${completed.count}/${total.count} (${formatPercent(completed.count / total.count)})`.slice(0, 13).padEnd(15)
+  footer += `${completed.count}/${total.count} (${formatPercent(0 / total.count)})`.slice(0, 13).padEnd(15)
   footer += `${formatSize(completed.size)}/${formatSize(total.size)} (${formatPercent(completed.size / total.size)})`.slice(0, 23).padEnd(25)
   footer += `${completed.blocks}/${total.blocks} (${formatPercent(completed.blocks / total.blocks)})`.slice(0, 18).padEnd(20)
 
