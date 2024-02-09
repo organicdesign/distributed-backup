@@ -20,7 +20,7 @@ export const method = (components: Components) => async (raw: unknown) => {
   }
 
   if (params.onlyHash !== true) {
-    logger.add('importing %s', params.localPath)
+    logger.add('importing %s', params.inPath)
   }
 
   const store = params.onlyHash === true ? new BlackHoleBlockstore() : components.blockstore
@@ -36,8 +36,8 @@ export const method = (components: Components) => async (raw: unknown) => {
 
   const cids: Import.Return = []
 
-  for await (const r of importRecursive(store, params.localPath, config)) {
-    logger.add('imported %s', params.localPath)
+  for await (const r of importRecursive(store, params.inPath, config)) {
+    logger.add('imported %s', params.inPath)
 
     const { size, blocks } = await getDagSize(components.blockstore, r.cid)
 
@@ -54,11 +54,11 @@ export const method = (components: Components) => async (raw: unknown) => {
       revisionStrategy: params.revisionStrategy ?? components.config.defaultRevisionStrategy
     })
 
-    const virtualPath = Path.join(params.path, r.path.replace(params.localPath, ''))
+    const virtualPath = Path.join(params.path, r.path.replace(params.inPath, ''))
 
     cids.push({
-      virtualPath,
-      path: params.localPath,
+      inPath: params.inPath,
+      path: params.path,
       cid: r.cid.toString()
     })
 
