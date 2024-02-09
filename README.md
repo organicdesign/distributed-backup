@@ -103,7 +103,7 @@ GROUP=$(node packages/cli/dist/src/index.js create-group GROUP_NAME)
 Once the group has been created you can add content to it.
 
 ```
-CID=$(node packages/cli/dist/src/index.js add $GROUP <FILE OR DIRECTORY>)
+CID=$(node packages/cli/dist/src/index.js import $GROUP <FILE OR DIRECTORY>)
 ```
 
 Now that we have the daemon running with a group an content we can mount it to a directory with FUSE:
