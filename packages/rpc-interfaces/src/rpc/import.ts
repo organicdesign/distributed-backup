@@ -5,7 +5,7 @@ export const name = 'import'
 
 export const Params = z.object({
   group: zCID(),
-  localPath: z.string(),
+  inPath: z.string(),
   path: z.string().optional().default('/'),
   hash: z.string().optional().default('sha2-256'),
   cidVersion: z.union([z.literal(0), z.literal(1)]).optional().default(1),
@@ -22,8 +22,8 @@ export type Params = z.input<typeof Params>
 
 export const Return = z.array(z.object({
   cid: zCID(),
-  path: z.string(),
-  virtualPath: z.string()
+  inPath: z.string(),
+  path: z.string()
 }))
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
