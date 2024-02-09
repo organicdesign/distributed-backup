@@ -12,6 +12,10 @@
     ".": {
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
+    },
+    "./zod": {
+      "types": "./dist/src/zod.d.ts",
+      "import": "./dist/src/zod.js"
     }
   },
   "scripts": {
