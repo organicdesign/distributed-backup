@@ -151,7 +151,7 @@ Now that we have it joined the group it should start replicating and downloading
 You can mount the other one in FUSE also like you did the first or you can list the content directly:
 
 ```
-node packages/cli/dist/src/index.js --socket /tmp/peer2 query-group $GROUP
+node packages/cli/dist/src/index.js --socket /tmp/peer2 list --group $GROUP
 ```
 
 ### Additional commands
