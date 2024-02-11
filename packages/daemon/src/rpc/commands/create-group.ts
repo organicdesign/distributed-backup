@@ -1,16 +1,11 @@
+import { CreateGroup } from 'rpc-interfaces'
 import { fromString as uint8ArrayFromString } from 'uint8arrays'
-import { z } from 'zod'
 import type { Components } from '../../interface.js'
 
 export const name = 'create-group'
 
-const Params = z.object({
-  name: z.string(),
-  peers: z.array(z.string())
-})
-
-export const method = (components: Components) => async (raw: unknown) => {
-  const params = Params.parse(raw)
+export const method = (components: Components) => async (raw: unknown): Promise<CreateGroup.Return> => {
+  const params = CreateGroup.Params.parse(raw)
   const peerValues = params.peers.map(p => uint8ArrayFromString(p, 'base58btc'))
 
   const manifest = await components.welo.determine({

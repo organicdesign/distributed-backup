@@ -1,11 +1,12 @@
 // import * as dagCbor from '@ipld/dag-cbor'
 // import { CID } from 'multiformats/cid'
+import { type ListGroups } from 'rpc-interfaces'
 import { type Components /* , EncodedEntry */ } from '../../interface.js'
 // import { countPeers } from '../../utils.js'
 
 export const name = 'list-groups'
 
-export const method = (components: Components) => async () => {
+export const method = (components: Components) => async (): Promise<ListGroups.Return> => {
   const promises: Array<Promise<{ group: string, name: string }>> = []
 
   for (const { key: cid, value: database } of components.groups.all()) {

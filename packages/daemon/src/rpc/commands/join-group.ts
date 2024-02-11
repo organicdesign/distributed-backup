@@ -1,15 +1,11 @@
+import { JoinGroup } from 'rpc-interfaces'
 import { Address } from 'welo'
-import { z } from 'zod'
-import { type Components, zCID } from '../../interface.js'
+import type { Components } from '../../interface.js'
 
 export const name = 'join-group'
 
-const Params = z.object({
-  group: zCID
-})
-
-export const method = (components: Components) => async (raw: unknown) => {
-  const params = Params.parse(raw)
+export const method = (components: Components) => async (raw: unknown): Promise<JoinGroup.Return> => {
+  const params = JoinGroup.Params.parse(raw)
   const manifest = await components.welo.fetch(Address.fromString(`/hldb/${params.group}`))
 
   try {
@@ -21,4 +17,6 @@ export const method = (components: Components) => async (raw: unknown) => {
 
     throw error
   }
+
+  return null
 }

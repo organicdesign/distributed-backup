@@ -1,18 +1,25 @@
 import * as dagCbor from '@ipld/dag-cbor'
 import { CID } from 'multiformats/cid'
+import { type List } from 'rpc-interfaces'
+import { type RevisionStrategies } from 'rpc-interfaces/zod'
 import { toString as uint8arrayToString } from 'uint8arrays'
 import { type Components, EncodedEntry, type LocalEntryData } from '../../interface.js'
 import { countPeers, decodeAny } from '../../utils.js'
 
 export const name = 'list'
 
-export const method = (components: Components) => async () => {
+export const method = (components: Components) => async (): Promise<List.Return> => {
   const promises: Array<Promise<{
     cid: string
     name: string
-    peers: number
+    path: string
+    priority: number
+    blocks: number
+    size: number
+    timestamp: number
+    revisionStrategy: RevisionStrategies
+    author: string
     group: string
-    groupName: string
     encrypted: boolean
   }>> = []
 

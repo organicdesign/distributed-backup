@@ -9,7 +9,7 @@ import type { Components } from '../../interface.js'
 
 export const name = 'import'
 
-export const method = (components: Components) => async (raw: unknown) => {
+export const method = (components: Components) => async (raw: unknown): Promise<Import.Return> => {
   const params = Import.Params.parse(raw)
   const encrypt = Boolean(params.encrypt)
 
@@ -66,6 +66,4 @@ export const method = (components: Components) => async (raw: unknown) => {
   }
 
   return cids
-
-  // return cid.toString();
 }

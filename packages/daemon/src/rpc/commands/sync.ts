@@ -1,3 +1,4 @@
+import { type Sync } from 'rpc-interfaces'
 import { HeadsExchange } from 'welo/utils/heads-exchange'
 import { cidstring } from 'welo/utils/index'
 import { getHeads, addHeads } from 'welo/utils/replicator'
@@ -59,7 +60,7 @@ const sync = async (libp2p: Libp2p, peer: Peer, database: Database, options: Par
 
 export const name = 'sync'
 
-export const method = (components: Components) => async () => {
+export const method = (components: Components) => async (): Promise<Sync.Return> => {
   const peers = components.libp2p.getPeers()
   const databases = components.welo.opened.values()
 
@@ -74,4 +75,6 @@ export const method = (components: Components) => async () => {
   }
 
   await Promise.allSettled(promises)
+
+  return null
 }

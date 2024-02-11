@@ -2,23 +2,15 @@ import Path from 'path'
 import { unixfs } from '@helia/unixfs'
 import * as dagCbor from '@ipld/dag-cbor'
 import { CID } from 'multiformats/cid'
+import { Write } from 'rpc-interfaces'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { z } from 'zod'
-import { type Components, type EncodedEntry, type Entry, zCID, DATA_KEY } from '../../interface.js'
+import { type Components, type EncodedEntry, type Entry, DATA_KEY } from '../../interface.js'
 import { decodeEntry, encodeEntry, getDagSize } from '../../utils.js'
 
 export const name = 'write'
 
-const Params = z.object({
-  group: zCID,
-  path: z.string(),
-  position: z.number().int().optional(),
-  length: z.number().int().optional(),
-  data: z.string()
-})
-
-export const method = (components: Components) => async (raw: unknown) => {
-  const params = Params.parse(raw)
+export const method = (components: Components) => async (raw: unknown): Promise<Write.Return> => {
+  const params = Write.Params.parse(raw)
   const group = CID.parse(params.group)
   const database = components.groups.get(group)
 
@@ -49,4 +41,6 @@ export const method = (components: Components) => async (raw: unknown) => {
 
   await database.replica.write(put)
   await components.pinManager.process(group, key, dagCbor.encode(newEncodedEntry), true)
+
+  return params.data.length
 }

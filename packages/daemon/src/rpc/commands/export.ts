@@ -2,21 +2,15 @@ import Path from 'path'
 import * as dagCbor from '@ipld/dag-cbor'
 import { exportPlaintext } from 'fs-exporter'
 import { CID } from 'multiformats/cid'
-import { z } from 'zod'
+import { Export } from 'rpc-interfaces'
 import { DATA_KEY } from '../../interface.js'
-import { type Components, EncodedEntry, zCID } from '../../interface.js'
+import { type Components, EncodedEntry } from '../../interface.js'
 import { decodeEntry } from '../../utils.js'
 
 export const name = 'export'
 
-const Params = z.object({
-  path: z.string(),
-  outPath: z.string(),
-  group: zCID
-})
-
-export const method = (components: Components) => async (raw: unknown) => {
-  const params = Params.parse(raw)
+export const method = (components: Components) => async (raw: unknown): Promise<Export.Return> => {
+  const params = Export.Params.parse(raw)
   const database = components.groups.get(CID.parse(params.group))
 
   if (database == null) {
@@ -41,4 +35,6 @@ export const method = (components: Components) => async (raw: unknown) => {
       entry.cid
     )
   }
+
+  return null
 }
