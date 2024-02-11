@@ -57,7 +57,6 @@ const group = (() => {
 })()
 
 const opts: FuseOpts = {
-
   async readdir (path: string) {
     try {
       const list = await group.query()
@@ -89,6 +88,8 @@ const opts: FuseOpts = {
         })())
 
       const names = filteredList.map(l => l.name)
+
+      /*
       const stats = filteredList.map(l => {
         let mode: 'file' | 'dir' | null = null
 
@@ -109,8 +110,9 @@ const opts: FuseOpts = {
           mtime: new Date(l.timestamp)
         })
       })
+      */
 
-      return { names, stats }
+      return { names /*, stats */ }
     } catch (error) {
       // eslint-disable-next-line @typescript-eslint/no-throw-literal
       throw Fuse.ENOENT
