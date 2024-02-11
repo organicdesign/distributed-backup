@@ -26,9 +26,13 @@ export const handler = createHandler<typeof builder>(async argv => {
     throw new Error('Failed to connect to daemon.')
   }
 
-  const edit = await argv.client2.edit(argv.group, argv.path, {
+  await argv.client2.edit(argv.group, argv.path, {
     priority: argv.priority
   })
 
-  return edit.join('\n')
+  if (argv.json === true) {
+    return JSON.stringify({ success: true })
+  }
+
+  return 'success'
 })

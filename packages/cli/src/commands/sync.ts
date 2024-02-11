@@ -13,5 +13,9 @@ export const handler = createHandler<typeof builder>(async argv => {
 
   await argv.client2.sync()
 
+  if (argv.json === true) {
+    return JSON.stringify({ success: true })
+  }
+
   return 'success'
 })
