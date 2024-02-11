@@ -48,8 +48,10 @@ describe('synchronization', () => {
 
     assert(joinRes.success)
 
-    // Give it a couple seconds to sync.
-    await new Promise(resolve => setTimeout(resolve, 8000))
+    // Ensure it syncs...
+    const sync = await runClient(nodes[1], 'sync')
+
+    assert(sync.success)
 
     const listRes = await runClient(nodes[1], 'list')
 
@@ -71,8 +73,10 @@ describe('synchronization', () => {
 
     assert(addRes.success)
 
-    // Give it a couple seconds to sync.
-    await new Promise(resolve => setTimeout(resolve, 8000))
+    // Ensure it syncs...
+    const sync = await runClient(nodes[1], 'sync')
+
+    assert(sync.success)
 
     const listRes = await runClient(nodes[1], 'list')
 
