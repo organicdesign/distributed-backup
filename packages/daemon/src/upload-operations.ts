@@ -4,7 +4,7 @@ import * as dagCbor from '@ipld/dag-cbor'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import { take } from 'streaming-iterables'
-import { EncodedEntry, type Components, VERSION_KEY, DATA_KEY } from './interface.js'
+import { EncodedEntry, type Entry, type Pair, type Components, VERSION_KEY, DATA_KEY } from './interface.js'
 import { OperationManager } from './operation-manager.js'
 import selectRevisions from './select-revisions.js'
 import { decodeEntry, encodeEntry, getDagSize } from './utils.js'
@@ -14,7 +14,7 @@ type OpComponents = Pick<Components, 'pinManager' | 'libp2p' | 'groups' | 'block
 
 export default async (components: OpComponents): Promise<OperationManager<{
   put(groupData: Uint8Array, path: string, encodedEntry: NonNullable<EncodedEntry>): Promise<void>
-  delete(groupData: Uint8Array, path: string): Promise<void>
+  delete(groupData: Uint8Array, path: string): Promise<Array<Pair<string, Entry>>>
 }>> => {
   const put = async (groupData: Uint8Array, path: string, encodedEntry: NonNullable<EncodedEntry>): Promise<void> => {
     const group = CID.decode(groupData)
@@ -96,8 +96,12 @@ export default async (components: OpComponents): Promise<OperationManager<{
       const cid = await fs.addBytes(new Uint8Array([]))
       const { blocks, size } = await getDagSize(components.blockstore, cid)
 
-      await components.groups.deleteFrom(group, key)
-      await components.pinManager.remove(group, key)
+      const pairs = await all(index.query({ prefix: key }))
+
+      await Promise.all(pairs.map(async p => {
+        await components.groups.deleteFrom(group, p.key.toString())
+        await components.pinManager.remove(group, p.key.toString())
+      }))
 
       const values = await all(take(1)(index.query({ prefix: parentPath })))
 
@@ -114,6 +118,21 @@ export default async (components: OpComponents): Promise<OperationManager<{
           revisionStrategy: 'none'
         }))
       }
+
+      return pairs.map(p => {
+        const encodedEntry = EncodedEntry.parse(dagCbor.decode(p.value))
+
+        if (encodedEntry == null) {
+          return null
+        }
+
+        const entry = decodeEntry(encodedEntry)
+
+        return {
+          key: p.key.toString(),
+          value: entry
+        }
+      }).filter(f => f != null) as Array<Pair<string, Entry>>
     }
   })
 
