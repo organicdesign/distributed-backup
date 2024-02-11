@@ -1,14 +1,16 @@
 import * as dagCbor from '@ipld/dag-cbor'
 import { CID } from 'multiformats/cid'
-import { type List } from 'rpc-interfaces'
-import { type RevisionStrategies } from 'rpc-interfaces/zod'
+import { List } from 'rpc-interfaces'
 import { toString as uint8arrayToString } from 'uint8arrays'
 import { type Components, EncodedEntry, type LocalEntryData } from '../../interface.js'
 import { countPeers, decodeAny } from '../../utils.js'
+import type { RevisionStrategies } from 'rpc-interfaces/zod'
 
 export const name = 'list'
 
-export const method = (components: Components) => async (): Promise<List.Return> => {
+export const method = (components: Components) => async (raw: unknown): Promise<List.Return> => {
+  const params = List.Params.parse(raw)
+
   const promises: Array<Promise<{
     cid: string
     name: string
@@ -24,6 +26,10 @@ export const method = (components: Components) => async (): Promise<List.Return>
   }>> = []
 
   for (const { key: cid, value: database } of components.groups.all()) {
+    if (params.group != null && cid !== params.group) {
+      continue
+    }
+
     const index = await database.store.latest()
 
     for await (const pair of index.query({})) {
