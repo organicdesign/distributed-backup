@@ -44,7 +44,7 @@ const group = (() => {
     query: async (): Promise<Array<{ path: string, size: number, timestamp: number, mode: 'file' }>> => {
       if (Date.now() - ts > 5000) {
         ts = Date.now()
-        data = (await net.rpc.request('query-group', { group: argv.group })).map((d: Record<string, unknown>) => ({ ...d, mode: 'file' }))
+        data = (await net.rpc.request('list', { group: argv.group })).map((d: Record<string, unknown>) => ({ ...d, mode: 'file' }))
       }
 
       return data
