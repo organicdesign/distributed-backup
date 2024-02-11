@@ -9,13 +9,8 @@ import * as id from './commands/id.js'
 import * as importData from './commands/import.js'
 import * as joinGroup from './commands/join-group.js'
 import * as listGroups from './commands/list-groups.js'
-import * as listHeliaPins from './commands/list-helia-pins.js'
-import * as listUploads from './commands/list-uploads.js'
 import * as list from './commands/list.js'
-import * as mkdir from './commands/mkdir.js'
-import * as pubsub from './commands/pubsub.js'
 import * as queryGroup from './commands/query-group.js'
-import * as queryPins from './commands/query-pins.js'
 import * as read from './commands/read.js'
 import * as revisions from './commands/revisions.js'
 import * as sync from './commands/sync.js'
@@ -34,13 +29,8 @@ export default [
   importData,
   joinGroup,
   listGroups,
-  listHeliaPins,
-  listUploads,
   list,
-  mkdir,
   queryGroup,
-  queryPins,
-  pubsub,
   read,
   revisions,
   sync,
