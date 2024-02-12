@@ -37,7 +37,7 @@ export class OperationManager <T extends OperationMap> {
 
     for (const { key, value: [method, params] } of operations) {
       await this.queue.add(async () => {
-        await this.operations[method](...params)
+        await this.operations[method].apply(this, params)
         await this.datastore.delete(key)
       })
     }
