@@ -2,7 +2,7 @@ import fs from 'fs/promises'
 import Path from 'path'
 import { promisify } from 'util'
 import Fuse from '@cocalc/fuse-native'
-import { createNetClient } from '@organicdesign/net-rpc'
+import { createClient } from 'client'
 import * as logger from 'logger'
 import { toString as uint8ArrayToString } from 'uint8arrays'
 import { hideBin } from 'yargs/helpers'
@@ -34,7 +34,7 @@ const argv = await yargs(hideBin(process.argv))
   })
   .parse()
 
-const net = createNetClient(argv.socket)
+const client = createClient(argv.socket)
 
 const group = (() => {
   let data: any
@@ -44,7 +44,7 @@ const group = (() => {
     query: async (): Promise<Array<{ path: string, size: number, timestamp: number, mode: 'file' }>> => {
       if (Date.now() - ts > 5000) {
         ts = Date.now()
-        data = (await net.rpc.request('list', { group: argv.group })).map((d: Record<string, unknown>) => ({ ...d, mode: 'file' }))
+        data = (await client.list({ group: argv.group })).map((d: Record<string, unknown>) => ({ ...d, mode: 'file' }))
       }
 
       return data
@@ -155,12 +155,11 @@ const opts: FuseOpts = {
   async release () {},
 
   async read (path, _, buffer, length, position) {
-    const str = await net.rpc.request('read', {
-      group: argv.group,
+    const str = await client.read(
+      argv.group,
       path,
-      position,
-      length
-    })
+      { position, length }
+    )
 
     if (str.length !== 0) {
       buffer.write(str)
@@ -170,23 +169,16 @@ const opts: FuseOpts = {
   },
 
   async write (path, _, buffer, length, position) {
-    await net.rpc.request('write', {
-      group: argv.group,
-      data: uint8ArrayToString(buffer),
-      path,
+    const written = await client.write(argv.group, path, uint8ArrayToString(buffer), {
       position,
       length
     })
 
-    return length
+    return written
   },
 
   async create (path) {
-    await net.rpc.request('write', {
-      group: argv.group,
-      data: uint8ArrayToString(new Uint8Array([])),
-      path,
-      position: 0,
+    await client.write(argv.group, path, uint8ArrayToString(new Uint8Array([])), {
       length: 0
     })
 
@@ -194,10 +186,7 @@ const opts: FuseOpts = {
   },
 
   async unlink (path: string) {
-    await net.rpc.request('delete', {
-      group: argv.group,
-      path
-    })
+    await client.delete(argv.group, path)
   },
 
   async rename (src, dest) {
@@ -205,43 +194,33 @@ const opts: FuseOpts = {
     const files = list.filter((l: { path: string }) => l.path.startsWith(Path.join('/r', src, '/')) || l.path === Path.join('/r', src)).map(f => ({ ...f, path: f.path.replace('/r', '') }))
 
     for (const file of files) {
-      const str = await net.rpc.request('read', {
-        group: argv.group,
-        path: file.path,
-        position: 0,
+      const str = await client.read(argv.group, file.path, {
         length: 99999
       })
 
-      await net.rpc.request('write', {
-        group: argv.group,
-        path: file.path.replace(src, dest),
-        position: 0,
-        length: str.length,
-        data: uint8ArrayToString(Buffer.from(str))
-      })
+      await client.write(
+        argv.group, file.path.replace(src, dest), uint8ArrayToString(Buffer.from(str)), {
+          length: str.length
+        })
     }
 
     logger.warn('awaiting to get around database write time')
     await new Promise(resolve => setTimeout(resolve, 1000))
 
     await Promise.all(files.map(async file => {
-      await net.rpc.request('delete', {
-        group: argv.group,
-        path: file.path
-      })
+      await client.delete(argv.group, file.path)
     }))
 
     group.reset()
   },
 
   async mkdir (path) {
-    await net.rpc.request('write', {
-      group: argv.group,
-      data: uint8ArrayToString(new Uint8Array([])),
-      path: Path.join(path, '.PLACE_HOLDER'),
-      position: 0,
-      length: 0
-    })
+    await client.write(
+      argv.group,
+      Path.join(path, '.PLACE_HOLDER'),
+      uint8ArrayToString(new Uint8Array([])), {
+        length: 0
+      })
 
     group.reset()
   },
@@ -251,10 +230,7 @@ const opts: FuseOpts = {
     const files = list.filter((l: { path: string }) => l.path.startsWith(Path.join('/r', path, '/')))
 
     for (const file of files) {
-      await net.rpc.request('delete', {
-        group: argv.group,
-        path: file.path.replace('/r', '')
-      })
+      await client.delete(argv.group, file.path.replace('/r', ''))
     }
 
     group.reset()
