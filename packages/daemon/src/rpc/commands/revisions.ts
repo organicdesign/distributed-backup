@@ -1,27 +1,16 @@
 import Path from 'path'
 import * as dagCbor from '@ipld/dag-cbor'
 import { CID } from 'multiformats/cid'
-import { z } from 'zod'
-import { VERSION_KEY, zCID, type Components, EncodedEntry } from '../../interface.js'
+import { Revisions } from 'rpc-interfaces'
+import { VERSION_KEY, type Components, EncodedEntry } from '../../interface.js'
 import { countPeers, decodeAny } from '../../utils.js'
 
 export const name = 'revisions'
 
-const Params = z.object({
-  path: z.string(),
-  group: zCID
-})
+export const method = (components: Components) => async (raw: unknown): Promise<Revisions.Return> => {
+  const params = Revisions.Params.parse(raw)
 
-export const method = (components: Components) => async (raw: unknown) => {
-  const params = Params.parse(raw)
-
-  const promises: Array<Promise<{
-    cid: string
-    peers: number
-    encrypted: boolean
-    peerId: string
-    sequence: number
-  }>> = []
+  const promises: Array<Promise<Revisions.Return[number]>> = []
 
   const database = components.groups.get(CID.parse(params.group))
 
@@ -47,9 +36,9 @@ export const method = (components: Components) => async (raw: unknown) => {
 
     const keyParts = pair.key.toString().split('/')
     const sequence = keyParts.pop()
-    const peerId = keyParts.pop()
+    const author = keyParts.pop()
 
-    if (sequence == null || peerId == null) {
+    if (sequence == null || author == null) {
       throw new Error('corrupted database')
     }
 
@@ -58,8 +47,11 @@ export const method = (components: Components) => async (raw: unknown) => {
         cid: item.toString(),
         peers: await countPeers(components, item, { timeout: 3000 }),
         encrypted: entry.encrypted,
-        peerId,
-        sequence: Number(sequence)
+        author,
+        sequence: Number(sequence),
+        timestamp: entry.timestamp,
+        size: entry.size,
+        blocks: entry.blocks
       }
     })())
   }

@@ -13,6 +13,7 @@ import {
   ListGroups,
   List,
   Read,
+  Revisions,
   Sync,
   Write
 } from 'rpc-interfaces'
@@ -117,6 +118,13 @@ export class Client {
     const raw = await this.client.rpc.request(Read.name, params)
 
     return Read.Return.parse(raw)
+  }
+
+  async revisions (group: Revisions.Params['group'], path: Revisions.Params['path']): Promise<Revisions.Return> {
+    const params: Revisions.Params = { group, path }
+    const raw = await this.client.rpc.request(Revisions.name, params)
+
+    return Revisions.Return.parse(raw)
   }
 
   async sync (): Promise<Sync.Return> {

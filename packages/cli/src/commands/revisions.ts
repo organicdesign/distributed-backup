@@ -17,15 +17,15 @@ export const builder = createBuilder({
 })
 
 export const handler = createHandler<typeof builder>(async argv => {
-  if (argv.client == null) {
+  if (argv.client2 == null) {
     throw new Error('Failed to connect to daemon.')
   }
 
-  const result = await argv.client.rpc.request('revisions', { group: argv.group, path: argv.path })
+  const result = await argv.client2.revisions(argv.group, argv.path)
 
   if (argv.json === true) {
     return JSON.stringify(result)
   }
 
-  return result
+  return result.map(r => `${r.sequence}: ${r.cid}`).join('\n')
 })

@@ -5,26 +5,13 @@ import { List } from 'rpc-interfaces'
 import { toString as uint8arrayToString } from 'uint8arrays'
 import { type Components, EncodedEntry, type LocalEntryData, DATA_KEY } from '../../interface.js'
 import { countPeers, decodeAny } from '../../utils.js'
-import type { RevisionStrategies } from 'rpc-interfaces/zod'
 
 export const name = 'list'
 
 export const method = (components: Components) => async (raw: unknown): Promise<List.Return> => {
   const params = List.Params.parse(raw)
 
-  const promises: Array<Promise<{
-    cid: string
-    name: string
-    path: string
-    priority: number
-    blocks: number
-    size: number
-    timestamp: number
-    revisionStrategy: RevisionStrategies
-    author: string
-    group: string
-    encrypted: boolean
-  }>> = []
+  const promises: Array<Promise<List.Return[number]>> = []
 
   for (const { key: cid, value: database } of components.groups.all()) {
     if (params.group != null && cid !== params.group) {
