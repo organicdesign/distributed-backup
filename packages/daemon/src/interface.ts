@@ -1,5 +1,5 @@
-import { multiaddr } from '@multiformats/multiaddr'
-import { CID } from 'multiformats/cid'
+import { type CID } from 'multiformats/cid'
+import { RevisionStrategies } from 'rpc-interfaces/zod'
 import { z } from 'zod'
 import type { Groups } from './groups.js'
 import type { LocalSettings } from './local-settings.js'
@@ -19,39 +19,6 @@ export type Libp2p = BaseLibp2p<{ pubsub: PubSub<GossipsubEvents> }>
 export const MEMORY_MAGIC = ':memory:'
 export const VERSION_KEY = 'v'
 export const DATA_KEY = 'r'
-
-export const zMultiaddr = z.custom<string>(val => {
-  if (typeof val !== 'string') {
-    return false
-  }
-
-  try {
-    multiaddr(val)
-  } catch (error) {
-    return false
-  }
-
-  return true
-})
-
-export const zCID = z.custom<string>(val => {
-  if (typeof val !== 'string') {
-    return false
-  }
-
-  try {
-    CID.parse(val)
-  } catch (error) {
-    return false
-  }
-
-  return true
-})
-
-export const RevisionStrategies = z.enum(['all', 'none', 'log'])
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export type RevisionStrategies = z.infer<typeof RevisionStrategies>
 
 export const Config = z.object({
   serverMode: z.boolean(),

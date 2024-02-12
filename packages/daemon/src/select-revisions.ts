@@ -1,4 +1,5 @@
-import { type Pair, type EncodedEntry, type RevisionStrategies } from './interface.js'
+import type { Pair, EncodedEntry } from './interface.js'
+import type { RevisionStrategies } from 'rpc-interfaces/zod'
 
 const REVISIONS_PER_INTERVAL = 3
 const MS_IN_DAY = 1000 * 60 * 60 * 24
