@@ -4,8 +4,8 @@ import { selectHasher, selectChunker, importRecursive, type ImporterConfig } fro
 import * as logger from 'logger'
 import { CID } from 'multiformats/cid'
 import { Import } from 'rpc-interfaces'
-import { encodeEntry, getDagSize } from '../../utils.js'
-import type { Components } from '../../interface.js'
+import { encodeEntry, getDagSize } from '../utils.js'
+import type { Components } from '../interface.js'
 
 export const name = 'import'
 

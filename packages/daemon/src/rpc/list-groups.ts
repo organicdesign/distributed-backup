@@ -1,7 +1,7 @@
 // import * as dagCbor from '@ipld/dag-cbor'
 // import { CID } from 'multiformats/cid'
 import { type ListGroups } from 'rpc-interfaces'
-import { type Components /* , EncodedEntry */ } from '../../interface.js'
+import { type Components /* , EncodedEntry */ } from '../interface.js'
 // import { countPeers } from '../../utils.js'
 
 export const name = 'list-groups'

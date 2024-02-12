@@ -2,8 +2,8 @@ import Path from 'path'
 import * as dagCbor from '@ipld/dag-cbor'
 import { CID } from 'multiformats/cid'
 import { Revisions } from 'rpc-interfaces'
-import { VERSION_KEY, type Components, EncodedEntry } from '../../interface.js'
-import { countPeers, decodeAny } from '../../utils.js'
+import { VERSION_KEY, type Components, EncodedEntry } from '../interface.js'
+import { countPeers, decodeAny } from '../utils.js'
 
 export const name = 'revisions'
 

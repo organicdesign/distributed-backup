@@ -2,7 +2,7 @@ import { type Sync } from 'rpc-interfaces'
 import { HeadsExchange } from 'welo/utils/heads-exchange'
 import { cidstring } from 'welo/utils/index'
 import { getHeads, addHeads } from 'welo/utils/replicator'
-import { type Components } from '../../interface.js'
+import { type Components } from '../interface.js'
 import type { Peer, Libp2p } from '@libp2p/interface'
 import type { Database } from 'welo'
 

@@ -1,6 +1,6 @@
 import { type ID } from 'rpc-interfaces'
 import { toString as uint8ArrayToString } from 'uint8arrays'
-import type { Components } from '../../interface.js'
+import type { Components } from '../interface.js'
 
 export const name = 'id'
 

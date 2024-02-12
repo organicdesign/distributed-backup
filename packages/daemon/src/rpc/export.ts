@@ -3,9 +3,9 @@ import * as dagCbor from '@ipld/dag-cbor'
 import { exportPlaintext } from 'fs-exporter'
 import { CID } from 'multiformats/cid'
 import { Export } from 'rpc-interfaces'
-import { DATA_KEY } from '../../interface.js'
-import { type Components, EncodedEntry } from '../../interface.js'
-import { decodeEntry } from '../../utils.js'
+import { DATA_KEY } from '../interface.js'
+import { type Components, EncodedEntry } from '../interface.js'
+import { decodeEntry } from '../utils.js'
 
 export const name = 'export'
 

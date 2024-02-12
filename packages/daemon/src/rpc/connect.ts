@@ -1,6 +1,6 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { Connect } from 'rpc-interfaces'
-import type { Components } from '../../interface.js'
+import type { Components } from '../interface.js'
 
 export const name = 'connect'
 

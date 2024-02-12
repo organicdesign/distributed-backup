@@ -1,5 +1,5 @@
 import { type Addresses } from 'rpc-interfaces'
-import type { Components } from '../../interface.js'
+import type { Components } from '../interface.js'
 
 export const name = 'addresses'
 

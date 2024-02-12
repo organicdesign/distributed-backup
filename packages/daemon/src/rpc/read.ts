@@ -5,9 +5,9 @@ import { Read } from 'rpc-interfaces'
 import { collect } from 'streaming-iterables'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { DATA_KEY } from '../../interface.js'
-import { decodeEntry } from '../../utils.js'
-import type { Components, EncodedEntry } from '../../interface.js'
+import { DATA_KEY } from '../interface.js'
+import { decodeEntry } from '../utils.js'
+import type { Components, EncodedEntry } from '../interface.js'
 
 export const name = 'read'
 
