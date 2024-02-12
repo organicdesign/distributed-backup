@@ -27,11 +27,11 @@ export const builder = createBuilder({
 })
 
 export const handler = createHandler<typeof builder>(async argv => {
-  if (argv.client2 == null) {
+  if (argv.client == null) {
     throw new Error('Failed to connect to daemon.')
   }
 
-  const data = await argv.client2.read(argv.group, argv.path, {
+  const data = await argv.client.read(argv.group, argv.path, {
     position: argv.position,
     length: argv.length
   })

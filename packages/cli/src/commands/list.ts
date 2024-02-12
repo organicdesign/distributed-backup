@@ -56,11 +56,11 @@ const formatPercent = (decimal: number): string => {
 }
 
 export const handler = createHandler<typeof builder>(async argv => {
-  if (argv.client2 == null) {
+  if (argv.client == null) {
     throw new Error('Failed to connect to daemon.')
   }
 
-  let items = await argv.client2.list()
+  let items = await argv.client.list()
 
   const revisionCounter: Record<string, number> = {}
 

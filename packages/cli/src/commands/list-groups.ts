@@ -7,11 +7,11 @@ export const desc = 'List joined groups.'
 export const builder = createBuilder({})
 
 export const handler = createHandler<typeof builder>(async argv => {
-  if (argv.client2 == null) {
+  if (argv.client == null) {
     throw new Error('Failed to connect to daemon.')
   }
 
-  const groups = await argv.client2.listGroups()
+  const groups = await argv.client.listGroups()
 
   if (argv.json === true) {
     return JSON.stringify(groups)

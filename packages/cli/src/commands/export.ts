@@ -22,11 +22,11 @@ export const builder = createBuilder({
 })
 
 export const handler = createHandler<typeof builder>(async argv => {
-  if (argv.client2 == null) {
+  if (argv.client == null) {
     throw new Error('Failed to connect to daemon.')
   }
 
-  await argv.client2.export(argv.group, argv.path, argv.outPath)
+  await argv.client.export(argv.group, argv.path, argv.outPath)
 
   if (argv.json === true) {
     return JSON.stringify({ success: true })
