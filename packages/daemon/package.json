@@ -75,7 +75,7 @@
     "rpc-interfaces": "^0.1.0",
     "streaming-iterables": "^8.0.1",
     "uint8arrays": "^5.0.1",
-    "welo": "^4.1.0",
+    "welo": "^4.1.0-47c08dd",
     "yargs": "^17.7.2",
     "zod": "^3.22.4"
   }
