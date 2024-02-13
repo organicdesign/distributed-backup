@@ -53,6 +53,9 @@ describe('pin manager', () => {
       components.helia.stop(),
       components.sequelize.close()
     ])
+
+    // If it doesn't exit by itself, force it.
+    setTimeout(() => process.exit(0), 1000)
   })
 
   afterEach(async () => {
