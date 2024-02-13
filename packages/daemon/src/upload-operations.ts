@@ -4,10 +4,22 @@ import * as dagCbor from '@ipld/dag-cbor'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import { take } from 'streaming-iterables'
-import { EncodedEntry, type Entry, type Pair, type Components, VERSION_KEY, DATA_KEY } from './interface.js'
+import {
+  EncodedEntry,
+  type Entry,
+  type Pair,
+  type Components
+} from './interface.js'
 import { OperationManager } from './operation-manager.js'
 import selectRevisions from './select-revisions.js'
-import { decodeEntry, encodeEntry, getDagSize } from './utils.js'
+import {
+  decodeEntry,
+  encodeEntry,
+  getDagSize,
+  createDataKey,
+  createVersionKey,
+  stripPrefix
+} from './utils.js'
 import type { Datastore } from 'interface-datastore'
 
 type OpComponents = Pick<Components, 'pinManager' | 'libp2p' | 'groups' | 'blockstore' | 'helia'> & { datastore: Datastore }
@@ -27,7 +39,7 @@ export default async (components: OpComponents): Promise<OperationManager<{
     }
 
     const obj = await database.store.selectors.get(database.store.index)(
-      Path.join(DATA_KEY, path)
+      createDataKey(path)
     )
 
     const data = EncodedEntry.parse(obj ?? null)
@@ -45,8 +57,8 @@ export default async (components: OpComponents): Promise<OperationManager<{
     await components.pinManager.process(group, path, dagCbor.encode(encodeEntry(entry)), true)
 
     const paths = [
-      Path.join(DATA_KEY, path),
-      Path.join(VERSION_KEY, path, components.libp2p.peerId.toString(), entry.sequence.toString())
+      createDataKey(path),
+      createVersionKey(path, components.libp2p.peerId, entry.sequence)
     ]
 
     for (const path of paths) {
@@ -56,7 +68,9 @@ export default async (components: OpComponents): Promise<OperationManager<{
     // Handle revisions.
     const index = database.store.index
 
-    const rawRevisions = await all(index.query({ prefix: Path.join('/', VERSION_KEY, path) }))
+    const rawRevisions = await all(index.query({
+      prefix: createVersionKey(path)
+    }))
 
     const revisions = rawRevisions.filter(r => dagCbor.decode(r.value) != null).map(r => ({
       value: EncodedEntry.parse(dagCbor.decode(r.value)),
@@ -81,7 +95,7 @@ export default async (components: OpComponents): Promise<OperationManager<{
   const om = new OperationManager(components.datastore, {
     put,
 
-    delete: async (groupData: Uint8Array, path: string) => {
+    async delete (groupData: Uint8Array, path: string) {
       const group = CID.decode(groupData)
       const database = components.groups.get(group)
 
@@ -90,7 +104,7 @@ export default async (components: OpComponents): Promise<OperationManager<{
       }
 
       const index = database.store.index
-      const key = Path.join('/', DATA_KEY, path)
+      const key = createDataKey(path)
       const parentPath = key.split('/').slice(0, -2).join('/')
       const fs = unixfs(components.helia)
       const cid = await fs.addBytes(new Uint8Array([]))
@@ -106,7 +120,7 @@ export default async (components: OpComponents): Promise<OperationManager<{
       const values = await all(take(1)(index.query({ prefix: parentPath })))
 
       if (values.filter(v => v.key.toString() !== key).length === 0) {
-        await put(groupData, Path.join(parentPath.replace(`/${DATA_KEY}`, ''), '.PLACE_HOLDER'), encodeEntry({
+        await put(groupData, Path.join(stripPrefix(parentPath), '.PLACE_HOLDER'), encodeEntry({
           cid,
           author: components.libp2p.peerId.toCID(),
           encrypted: false,

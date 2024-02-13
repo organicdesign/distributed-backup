@@ -3,9 +3,8 @@ import * as dagCbor from '@ipld/dag-cbor'
 import { exportPlaintext } from 'fs-exporter'
 import { CID } from 'multiformats/cid'
 import { Export } from 'rpc-interfaces'
-import { DATA_KEY } from '../interface.js'
 import { type Components, EncodedEntry } from '../interface.js'
-import { decodeEntry } from '../utils.js'
+import { decodeEntry, createDataKey } from '../utils.js'
 
 export const name = 'export'
 
@@ -19,7 +18,7 @@ export const method = (components: Components) => async (raw: unknown): Promise<
 
   const index = await database.store.latest()
 
-  for await (const pair of index.query({ prefix: Path.join('/', DATA_KEY, params.path) })) {
+  for await (const pair of index.query({ prefix: createDataKey(params.path) })) {
     const encodedEntry = EncodedEntry.parse(dagCbor.decode(pair.value))
 
     if (encodedEntry == null) {

@@ -1,11 +1,10 @@
-import Path from 'path'
 import { unixfs } from '@helia/unixfs'
 import * as dagCbor from '@ipld/dag-cbor'
 import { CID } from 'multiformats/cid'
 import { Write } from 'rpc-interfaces'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { type Components, type EncodedEntry, type Entry, DATA_KEY } from '../interface.js'
-import { decodeEntry, encodeEntry, getDagSize } from '../utils.js'
+import { decodeEntry, encodeEntry, getDagSize, createDataKey } from '../utils.js'
+import type { Components, EncodedEntry, Entry } from '../interface.js'
 
 export const name = 'write'
 
@@ -18,7 +17,7 @@ export const method = (components: Components) => async (raw: unknown): Promise<
     throw new Error('no such group')
   }
 
-  const key = Path.join('/', DATA_KEY, params.path)
+  const key = createDataKey(params.path)
   const encodedEntry = await database.store.selectors.get(database.store.index)(key) as EncodedEntry
   const entry: Partial<Entry> = encodedEntry == null ? {} : decodeEntry(encodedEntry)
   const fs = unixfs(components.helia)

@@ -1,10 +1,9 @@
-import Path from 'path'
 import * as dagCbor from '@ipld/dag-cbor'
 import { CID } from 'multiformats/cid'
 import { List } from 'rpc-interfaces'
 import { toString as uint8arrayToString } from 'uint8arrays'
-import { type Components, EncodedEntry, type LocalEntryData, DATA_KEY } from '../interface.js'
-import { countPeers, decodeAny } from '../utils.js'
+import { type Components, EncodedEntry, type LocalEntryData } from '../interface.js'
+import { countPeers, decodeAny, createDataKey } from '../utils.js'
 
 export const name = 'list'
 
@@ -20,7 +19,7 @@ export const method = (components: Components) => async (raw: unknown): Promise<
 
     const index = await database.store.latest()
 
-    for await (const pair of index.query({ prefix: Path.join(`/${DATA_KEY}`, params.path) })) {
+    for await (const pair of index.query({ prefix: createDataKey(params.path) })) {
       // Ignore null values...
       if (decodeAny(pair.value) == null) {
         continue

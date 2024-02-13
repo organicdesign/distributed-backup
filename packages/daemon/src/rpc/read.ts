@@ -1,12 +1,10 @@
-import Path from 'path'
 import { unixfs } from '@helia/unixfs'
 import { CID } from 'multiformats/cid'
 import { Read } from 'rpc-interfaces'
 import { collect } from 'streaming-iterables'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { DATA_KEY } from '../interface.js'
-import { decodeEntry } from '../utils.js'
+import { decodeEntry, createDataKey } from '../utils.js'
 import type { Components, EncodedEntry } from '../interface.js'
 
 export const name = 'read'
@@ -19,7 +17,7 @@ export const method = (components: Components) => async (raw: unknown): Promise<
     throw new Error('no such group')
   }
 
-  const key = Path.join('/', DATA_KEY, params.path)
+  const key = createDataKey(params.path)
   const encodedEntry = await group.store.selectors.get(group.store.index)(key) as EncodedEntry
 
   if (encodedEntry == null) {
