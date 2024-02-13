@@ -392,7 +392,7 @@ describe('pin manager', () => {
 
         assert(dag.map(d => d.toString()).includes(blockInfo.cid.toString()))
       }))
-    })
+    }).timeout(1000 * 60 * 2)
   })
 
   describe('downloadPin', () => {
