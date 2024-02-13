@@ -42,11 +42,6 @@ export interface KeyvalueDB extends Database {
   store: Keyvalue
 }
 
-export interface Link {
-  cid: CID
-  type: string
-}
-
 export interface Components {
   libp2p: Libp2p
   helia: Helia
