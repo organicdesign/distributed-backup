@@ -34,14 +34,14 @@ export type Config = z.output<typeof Config>
 
 export type Init = void
 
-export type Requires = {
+export interface Requires extends Record<string, unknown> {
   config: Config
   datastore: Datastore
   blockstore: Blockstore
   keyManager: KeyManager
 }
 
-export type Provides = {
+export interface Provides extends Record<string, unknown> {
   welo: Welo
   libp2p: Libp2p
   helia: Helia
