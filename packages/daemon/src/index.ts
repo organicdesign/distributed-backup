@@ -13,14 +13,13 @@ import * as logger from 'logger'
 import { createWelo, pubsubReplicator, bootstrapReplicator } from 'welo'
 import { hideBin } from 'yargs/helpers'
 import yargs from 'yargs/yargs'
-import { getConfig } from './config.js'
 import { createGroups } from './groups.js'
 import createLibp2p from './libp2p.js'
 import { LocalSettings } from './local-settings.js'
 import { Looper } from './looper.js'
 import { syncLoop, downloadLoop } from './loops.js'
 import { PinManager } from './pin-manager.js'
-import commands from './rpc.js'
+import { commands, Config } from './modules.js'
 import createSyncManager from './sync-operations.js'
 import createUploadManager from './upload-operations.js'
 import { projectPath, isMemory, extendDatastore } from './utils.js'
@@ -52,8 +51,11 @@ const argv = await yargs(hideBin(process.argv))
 
 logger.lifecycle('starting...')
 
-// Setup all the modules.
-const config = await getConfig(argv.config)
+// Setup all the modules
+const raw = await fs.readFile(argv.config, { encoding: 'utf8' })
+const json = JSON.parse(raw)
+const config = Config.parse(json)
+
 logger.lifecycle('loaded config')
 
 // Stops the error thrown by libp2p.
