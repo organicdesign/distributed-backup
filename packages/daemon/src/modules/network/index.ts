@@ -1,3 +1,5 @@
+import { z } from 'zod'
+import { RevisionStrategies } from 'rpc-interfaces/zod'
 import * as addresses from './commands/addresses.js'
 import * as connect from './commands/connect.js'
 import * as connections from './commands/connections.js'
@@ -17,3 +19,7 @@ export const commands = [
 	listGroups,
 	sync
 ]
+
+export const Config = z.object({
+  defaultRevisionStrategy: RevisionStrategies
+})

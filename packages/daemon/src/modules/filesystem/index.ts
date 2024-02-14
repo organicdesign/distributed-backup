@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import * as del from './commands/delete.js'
 import * as edit from './commands/edit.js'
 import * as exportData from './commands/export.js'
@@ -17,3 +18,13 @@ export const commands = [
 	revisions,
 	write
 ]
+
+export const Config = z.object({
+  serverMode: z.boolean().default(false),
+  private: z.boolean().default(false),
+  bootstrap: z.array(z.string()).default([]),
+  addresses: z.array(z.string()).default([
+    '/ip4/127.0.0.1/tcp/0',
+    '/ip4/127.0.0.1/tcp/0/ws'
+  ])
+})
