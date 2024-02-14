@@ -4,7 +4,13 @@ import { cidstring } from 'welo/utils/index'
 import { getHeads, addHeads } from 'welo/utils/replicator'
 import type { Peer, Libp2p } from '@libp2p/interface'
 import type { Database } from 'welo'
-import { type Components } from '@/interface.js'
+import type { RPCCommand } from '@/interface.js'
+import type { Welo } from "welo";
+
+export interface Components {
+  welo: Welo
+  libp2p: Libp2p
+}
 
 const sync = async (libp2p: Libp2p, peer: Peer, database: Database, options: Partial<{ reverseSync: boolean, collisionRate: number, validate: boolean, rounds: number }> = {}): Promise<void> => {
   if (!await libp2p.peerStore.has(peer.id)) {
@@ -58,23 +64,27 @@ const sync = async (libp2p: Libp2p, peer: Peer, database: Database, options: Par
   await stream.close()
 }
 
-export const name = 'sync'
+const command: RPCCommand<Components> = {
+  name: 'sync',
 
-export const method = (components: Components) => async (): Promise<Sync.Return> => {
-  const peers = components.libp2p.getPeers()
-  const databases = components.welo.opened.values()
+  method: (components: Components) => async (): Promise<Sync.Return> => {
+	  const peers = components.libp2p.getPeers()
+	  const databases = components.welo.opened.values()
 
-  const promises: Array<Promise<void>> = []
+	  const promises: Array<Promise<void>> = []
 
-  for (const peerId of peers) {
-    const peer = await components.libp2p.peerStore.get(peerId)
+	  for (const peerId of peers) {
+	    const peer = await components.libp2p.peerStore.get(peerId)
 
-    for (const database of databases) {
-      promises.push(sync(components.libp2p, peer, database))
-    }
+	    for (const database of databases) {
+	      promises.push(sync(components.libp2p, peer, database))
+	    }
+	  }
+
+	  await Promise.allSettled(promises)
+
+	  return null
   }
-
-  await Promise.allSettled(promises)
-
-  return null
 }
+
+export default command

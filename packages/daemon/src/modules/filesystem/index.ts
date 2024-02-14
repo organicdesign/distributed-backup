@@ -1,3 +1,4 @@
+import { RevisionStrategies } from 'rpc-interfaces/zod'
 import { z } from 'zod'
 import * as del from './commands/delete.js'
 import * as edit from './commands/edit.js'
@@ -20,11 +21,8 @@ export const commands = [
 ]
 
 export const Config = z.object({
-  serverMode: z.boolean().default(false),
-  private: z.boolean().default(false),
-  bootstrap: z.array(z.string()).default([]),
-  addresses: z.array(z.string()).default([
-    '/ip4/127.0.0.1/tcp/0',
-    '/ip4/127.0.0.1/tcp/0/ws'
-  ])
+  defaultRevisionStrategy: RevisionStrategies
 })
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export type Config = z.output<typeof Config>

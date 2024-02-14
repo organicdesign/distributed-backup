@@ -21,6 +21,11 @@ export const MEMORY_MAGIC = ':memory:'
 export const VERSION_KEY = 'v'
 export const DATA_KEY = 'r'
 
+export interface RPCCommand<Components extends {} = {}> {
+	name: string
+	method(components: Components): (params: Record<string, unknown>) => Promise<unknown> | unknown
+}
+
 export interface Pair<Key = unknown, Value = unknown> {
   key: Key
   value: Value

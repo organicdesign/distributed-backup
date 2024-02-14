@@ -1,22 +1,33 @@
 import { JoinGroup } from 'rpc-interfaces'
 import { Address } from 'welo'
-import type { Components } from '@/interface.js'
+import type { RPCCommand } from '@/interface.js'
+import type { Welo } from "welo";
+import type { Groups } from "@/groups.js";
 
-export const name = 'join-group'
+export interface Components {
+  welo: Welo
+  groups: Groups
+}
 
-export const method = (components: Components) => async (raw: unknown): Promise<JoinGroup.Return> => {
-  const params = JoinGroup.Params.parse(raw)
-  const manifest = await components.welo.fetch(Address.fromString(`/hldb/${params.group}`))
+const command: RPCCommand<Components> = {
+  name: 'join-group',
 
-  try {
-    await components.groups.add(manifest)
-  } catch (error) {
-    if ((error as Error).message.includes('is already open')) {
-      throw new Error('group has already been joined')
+  method: (components: Components) => async (raw: unknown): Promise<JoinGroup.Return> => {
+    const params = JoinGroup.Params.parse(raw)
+    const manifest = await components.welo.fetch(Address.fromString(`/hldb/${params.group}`))
+
+    try {
+      await components.groups.add(manifest)
+    } catch (error) {
+      if ((error as Error).message.includes('is already open')) {
+        throw new Error('group has already been joined')
+      }
+
+      throw error
     }
 
-    throw error
+    return null
   }
-
-  return null
 }
+
+export default command
