@@ -1,8 +1,8 @@
 import { JoinGroup } from 'rpc-interfaces'
 import { Address } from 'welo'
+import type { Groups } from '@/groups.js'
 import type { RPCCommand } from '@/interface.js'
-import type { Welo } from "welo";
-import type { Groups } from "@/groups.js";
+import type { Welo } from 'welo'
 
 export interface Components {
   welo: Welo
@@ -10,7 +10,7 @@ export interface Components {
 }
 
 const command: RPCCommand<Components> = {
-  name: 'join-group',
+  name: JoinGroup.name,
 
   method: (components: Components) => async (raw: unknown): Promise<JoinGroup.Return> => {
     const params = JoinGroup.Params.parse(raw)

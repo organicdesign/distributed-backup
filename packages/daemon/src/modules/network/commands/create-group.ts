@@ -1,16 +1,16 @@
 import { CreateGroup } from 'rpc-interfaces'
 import { fromString as uint8ArrayFromString } from 'uint8arrays'
-import type { RPCCommand } from '@/interface.js'
-import type { Welo } from "welo";
 import type { Groups } from '@/groups.js'
+import type { RPCCommand } from '@/interface.js'
+import type { Welo } from 'welo'
 
 export interface Components {
-	welo: Welo
-	groups: Groups
+  welo: Welo
+  groups: Groups
 }
 
 const command: RPCCommand<Components> = {
-  name: 'create-group',
+  name: CreateGroup.name,
 
   method: (components: Components) => async (raw: unknown): Promise<CreateGroup.Return> => {
     const params = CreateGroup.Params.parse(raw)
@@ -31,4 +31,4 @@ const command: RPCCommand<Components> = {
   }
 }
 
-export default command;
+export default command

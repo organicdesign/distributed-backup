@@ -9,22 +9,22 @@ export interface Components {
 }
 
 const command: RPCCommand<Components> = {
-  name: 'edit',
+  name: Edit.name,
 
   method: (components: Components) => async (raw: unknown): Promise<Edit.Return> => {
-	  const params = Edit.Params.parse(raw)
+    const params = Edit.Params.parse(raw)
 
-	  if (params.revisionStrategy !== null) {
-	    logger.warn('local revision strategy has no effect')
-	  }
+    if (params.revisionStrategy !== null) {
+      logger.warn('local revision strategy has no effect')
+    }
 
-	  await components.localSettings.set(CID.parse(params.group), params.path, {
-	    priority: params.priority,
-	    revisionStrategy: params.revisionStrategy
-	  })
+    await components.localSettings.set(CID.parse(params.group), params.path, {
+      priority: params.priority,
+      revisionStrategy: params.revisionStrategy
+    })
 
-	  return null
+    return null
   }
 }
 
-export default command;
+export default command

@@ -8,14 +8,14 @@ export interface Components {
 }
 
 const command: RPCCommand<Components> = {
-  name: 'delete',
+  name: Delete.name,
 
   method: (components: Components) => async (raw: unknown): Promise<Delete.Return> => {
-	  const params = Delete.Params.parse(raw)
-	  const pairs = await components.uploads.add('delete', [CID.parse(params.group).bytes, params.path])
+    const params = Delete.Params.parse(raw)
+    const pairs = await components.uploads.add('delete', [CID.parse(params.group).bytes, params.path])
 
-	  return pairs.map(p => ({ path: p.key, cid: p.value.cid.toString() }))
+    return pairs.map(p => ({ path: p.key, cid: p.value.cid.toString() }))
   }
 }
 
-export default command;
+export default command

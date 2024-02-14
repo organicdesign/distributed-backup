@@ -1,14 +1,14 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { Connect } from 'rpc-interfaces'
 import type { RPCCommand } from '@/interface.js'
-import type { Libp2p } from "libp2p";
+import type { Libp2p } from 'libp2p'
 
 export interface Components {
   libp2p: Libp2p
 }
 
 const command: RPCCommand<Components> = {
-  name: 'connect',
+  name: Connect.name,
 
   method: (components: Components) => async (raw: unknown): Promise<Connect.Return> => {
     const params = Connect.Params.parse(raw)
@@ -20,4 +20,4 @@ const command: RPCCommand<Components> = {
   }
 }
 
-export default command;
+export default command
