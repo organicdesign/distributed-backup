@@ -3,27 +3,15 @@ import Path from 'path'
 import { createNetServer } from '@organicdesign/net-rpc'
 import { MemoryBlockstore } from 'blockstore-core'
 import { FsBlockstore } from 'blockstore-fs'
-import { Cipher } from 'cipher'
 import { MemoryDatastore } from 'datastore-core'
 import { FsDatastore } from 'datastore-fs'
-import { createHelia } from 'helia'
-import createHeliaPinManager from 'helia-pin-manager'
 import { createKeyManager } from 'key-manager'
 import * as logger from 'logger'
-import { createWelo, pubsubReplicator, bootstrapReplicator } from 'welo'
 import { hideBin } from 'yargs/helpers'
 import yargs from 'yargs/yargs'
-import { createGroups } from './groups.js'
-import createLibp2p from './libp2p.js'
-import { LocalSettings } from './local-settings.js'
-import { Looper } from './looper.js'
-import { syncLoop, downloadLoop } from './loops.js'
-import { commands, Config } from './modules.js'
-import { PinManager } from './pin-manager.js'
-import createSyncManager from './sync-operations.js'
-import createUploadManager from './upload-operations.js'
-import { projectPath, isMemory, extendDatastore } from './utils.js'
-import type { Components } from './interface.js'
+import { z } from 'zod'
+import { projectPath, isMemory } from './utils.js'
+import Network from '@/modules/network/index.js'
 
 const argv = await yargs(hideBin(process.argv))
   .option({
@@ -51,19 +39,19 @@ const argv = await yargs(hideBin(process.argv))
 
 logger.lifecycle('starting...')
 
-// Setup all the modules
+const { rpc, close } = await createNetServer(argv.socket)
+
 const raw = await fs.readFile(argv.config, { encoding: 'utf8' })
 const json = JSON.parse(raw)
+
+const Config = z.object({
+  tickInterval: z.number().default(10 * 60),
+  storage: z.string().default(':memory:')
+})
+  .merge(Network.Config)
+
 const config = Config.parse(json)
 
-logger.lifecycle('loaded config')
-
-// Stops the error thrown by libp2p.
-if (!isMemory(config.storage)) {
-  await fs.mkdir(Path.join(config.storage, 'datastore/libp2p'), { recursive: true })
-}
-
-// Setup datastores and blockstores.
 const keyManager = await createKeyManager(Path.resolve(argv.key))
 
 const datastore = isMemory(config.storage)
@@ -74,122 +62,19 @@ const blockstore = isMemory(config.storage)
   ? new MemoryBlockstore()
   : new FsBlockstore(Path.join(config.storage, 'blockstore'))
 
-const peerId = await keyManager.getPeerId()
-const psk = keyManager.getPskKey()
+// Setup all the modules
 
-const libp2pDatastore = isMemory(config.storage)
-  ? new MemoryDatastore()
-  : new FsDatastore(Path.join(config.storage, 'datastore/libp2p'))
+logger.lifecycle('loaded config')
 
-const libp2p = await createLibp2p({
-  datastore: libp2pDatastore,
-  psk: config.private ? psk : undefined,
-  peerId,
-  ...config
-})
+const defaultComponents = { config, datastore, blockstore, keyManager }
+const networkComponents = await Network.setup()(defaultComponents)
 
-logger.lifecycle('loaded libp2p')
+const components = { ...defaultComponents, ...networkComponents }
 
-const helia = await createHelia({
-  datastore: extendDatastore(datastore, 'helia/datastore'),
-  libp2p,
-  blockstore
-})
-
-logger.lifecycle('loaded helia')
-
-const welo = await createWelo({
-  // @ts-expect-error Helia version mismatch here.
-  ipfs: helia,
-  replicators: [bootstrapReplicator(), pubsubReplicator()],
-  identity: await keyManager.getWeloIdentity()
-})
-
-logger.lifecycle('loaded welo')
-
-const cipher = new Cipher(keyManager)
-
-logger.lifecycle('loaded cipher')
-
-const localSettings = new LocalSettings({
-  datastore: extendDatastore(datastore, 'references')
-})
-
-const groups = await createGroups({
-  datastore: extendDatastore(datastore, 'groups'),
-  welo
-})
-
-logger.lifecycle('loaded groups')
-
-const { rpc, close } = await createNetServer(argv.socket)
-
-logger.lifecycle('loaded server')
-
-const heliaPinManager = await createHeliaPinManager(helia, {
-  storage: isMemory(config.storage) ? ':memory:' : Path.join(config.storage, 'sqlite')
-})
-
-heliaPinManager.events.addEventListener('downloads:added', ({ cid }) => {
-  logger.downloads(`[+] ${cid}`)
-})
-
-heliaPinManager.events.addEventListener('pins:added', ({ cid }) => {
-  logger.pins(`[+] ${cid}`)
-})
-
-heliaPinManager.events.addEventListener('pins:adding', ({ cid }) => {
-  logger.pins(`[~] ${cid}`)
-})
-
-heliaPinManager.events.addEventListener('pins:removed', ({ cid }) => {
-  logger.pins(`[-] ${cid}`)
-})
-
-const pinManager = new PinManager({
-  pinManager: heliaPinManager,
-  datastore: extendDatastore(datastore, 'pin-references')
-})
-
-const sync = await createSyncManager({
-  datastore: extendDatastore(datastore, 'sync-operations'),
-  pinManager,
-  groups
-})
-
-logger.lifecycle('downloads synced')
-
-const uploads = await createUploadManager({
-  datastore: extendDatastore(datastore, 'upload-operations'),
-  libp2p,
-  groups,
-  pinManager,
-  blockstore,
-  helia
-})
-
-logger.lifecycle('uploads synced')
-
-const components: Components = {
-  libp2p,
-  cipher,
-  helia,
-  welo,
-  blockstore,
-  groups,
-  config,
-  pinManager,
-  uploads,
-  sync,
-  localSettings
-}
-
-// Register all the RPC commands.
-for (const command of commands) {
+for (const command of Network.commands) {
   rpc.addMethod(command.name, command.method(components))
 }
 
-// Cleanup on signal interupt.
 let exiting = false
 
 process.on('SIGINT', () => {
@@ -204,14 +89,6 @@ process.on('SIGINT', () => {
     logger.lifecycle('cleaning up...')
     await close()
     logger.lifecycle('stopped server')
-    await groups.stop()
-    logger.lifecycle('stopped groups')
-    await welo.stop()
-    logger.lifecycle('stopped welo')
-    await helia.stop()
-    logger.lifecycle('stopped helia')
-    await libp2p.stop()
-    logger.lifecycle('stopped libp2p')
 
     logger.lifecycle('exiting...')
 
@@ -220,19 +97,3 @@ process.on('SIGINT', () => {
     throw error
   })
 })
-
-// Create the loops.
-const loops = [
-  new Looper(async () => {
-    await syncLoop(components)
-  }, { sleep: config.tickInterval * 1000 }),
-
-  new Looper(async () => {
-    await downloadLoop(components)
-  }, { sleep: config.tickInterval * 1000 })
-]
-
-logger.lifecycle('started')
-
-// Run the main loop.
-await Promise.all(loops.map(async l => l.run()))
