@@ -1,12 +1,10 @@
 import { type CID } from 'multiformats/cid'
 import { RevisionStrategies } from 'rpc-interfaces/zod'
 import { z } from 'zod'
-import type { Groups } from './groups.js'
 import type { LocalSettings } from './local-settings.js'
-import type { Config } from './modules.js'
-import type { PinManager } from './pin-manager.js'
 import type createSyncManager from './sync-operations.js'
 import type createUploadManager from './upload-operations.js'
+import type { Groups } from '@/modules/network/groups.js'
 import type { GossipsubEvents } from '@chainsafe/libp2p-gossipsub'
 import type { PubSub } from '@libp2p/interface'
 import type { Cipher } from 'cipher'
@@ -22,8 +20,21 @@ export const VERSION_KEY = 'v'
 export const DATA_KEY = 'r'
 
 export interface RPCCommand<Components extends {} = {}> {
-	name: string
-	method(components: Components): (params: Record<string, unknown>) => Promise<unknown> | unknown
+  name: string
+  method(components: Components): (params: Record<string, unknown>) => Promise<unknown> | unknown
+}
+
+export interface Module<
+  Config extends z.AnyZodObject = z.ZodObject<{}>,
+  Init extends Record<string, unknown> | void = void,
+  Requires extends Record<string, unknown> = Record<string, unknown>,
+  Provides extends Record<string, unknown> = Record<string, unknown>
+> {
+  Config: Config
+
+  commands: Array<RPCCommand<Requires & Provides>>
+
+  setup (init: Init): (components: Requires) => Provides | Promise<Provides>
 }
 
 export interface Pair<Key = unknown, Value = unknown> {
@@ -42,8 +53,6 @@ export interface Components {
   blockstore: Blockstore
   groups: Groups
   cipher: Cipher
-  config: Config
-  pinManager: PinManager
   uploads: Awaited<ReturnType<typeof createUploadManager>>
   sync: Awaited<ReturnType<typeof createSyncManager>>
   localSettings: LocalSettings
