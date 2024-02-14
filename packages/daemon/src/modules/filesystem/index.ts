@@ -9,14 +9,14 @@ import * as revisions from './commands/revisions.js'
 import * as write from './commands/write.js'
 
 export const commands = [
-	del,
-	edit,
-	exportData,
-	importData,
-	list,
-	read,
-	revisions,
-	write
+  del,
+  edit,
+  exportData,
+  importData,
+  list,
+  read,
+  revisions,
+  write
 ]
 
 export const Config = z.object({

@@ -3,6 +3,7 @@ import { RevisionStrategies } from 'rpc-interfaces/zod'
 import { z } from 'zod'
 import type { Groups } from './groups.js'
 import type { LocalSettings } from './local-settings.js'
+import type { Config } from './modules.js'
 import type { PinManager } from './pin-manager.js'
 import type createSyncManager from './sync-operations.js'
 import type createUploadManager from './upload-operations.js'
@@ -19,19 +20,6 @@ export type Libp2p = BaseLibp2p<{ pubsub: PubSub<GossipsubEvents> }>
 export const MEMORY_MAGIC = ':memory:'
 export const VERSION_KEY = 'v'
 export const DATA_KEY = 'r'
-
-export const Config = z.object({
-  serverMode: z.boolean(),
-  private: z.boolean(),
-  tickInterval: z.number(),
-  storage: z.string(),
-  addresses: z.array(z.string()),
-  bootstrap: z.array(z.string()),
-  defaultRevisionStrategy: RevisionStrategies
-})
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export type Config = z.infer<typeof Config>
 
 export interface Pair<Key = unknown, Value = unknown> {
   key: Key

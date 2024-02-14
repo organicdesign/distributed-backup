@@ -2,9 +2,9 @@ import { type Sync } from 'rpc-interfaces'
 import { HeadsExchange } from 'welo/utils/heads-exchange'
 import { cidstring } from 'welo/utils/index'
 import { getHeads, addHeads } from 'welo/utils/replicator'
-import { type Components } from '@/interface.js'
 import type { Peer, Libp2p } from '@libp2p/interface'
 import type { Database } from 'welo'
+import { type Components } from '@/interface.js'
 
 const sync = async (libp2p: Libp2p, peer: Peer, database: Database, options: Partial<{ reverseSync: boolean, collisionRate: number, validate: boolean, rounds: number }> = {}): Promise<void> => {
   if (!await libp2p.peerStore.has(peer.id)) {
