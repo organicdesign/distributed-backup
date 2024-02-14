@@ -1,7 +1,7 @@
 import * as logger from 'logger'
 import { CID } from 'multiformats/cid'
 import { Edit } from 'rpc-interfaces'
-import type { Components } from '../interface.js'
+import type { Components } from '@/interface.js'
 
 export const name = 'edit'
 

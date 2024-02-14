@@ -1,6 +1,6 @@
 import { CID } from 'multiformats/cid'
 import { Delete } from 'rpc-interfaces'
-import type { Components } from '../interface.js'
+import type { Components } from '@/interface.js'
 
 export const name = 'delete'
 

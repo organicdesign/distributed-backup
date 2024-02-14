@@ -1,6 +1,6 @@
 import { JoinGroup } from 'rpc-interfaces'
 import { Address } from 'welo'
-import type { Components } from '../interface.js'
+import type { Components } from '@/interface.js'
 
 export const name = 'join-group'
 

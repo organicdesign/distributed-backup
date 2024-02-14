@@ -1,6 +1,6 @@
 import { CreateGroup } from 'rpc-interfaces'
 import { fromString as uint8ArrayFromString } from 'uint8arrays'
-import type { Components } from '../interface.js'
+import type { Components } from '@/interface.js'
 
 export const name = 'create-group'
 

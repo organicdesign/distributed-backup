@@ -2,8 +2,8 @@ import * as dagCbor from '@ipld/dag-cbor'
 import { CID } from 'multiformats/cid'
 import { List } from 'rpc-interfaces'
 import { toString as uint8arrayToString } from 'uint8arrays'
-import { type Components, EncodedEntry, type LocalEntryData } from '../interface.js'
-import { countPeers, decodeAny, createDataKey } from '../utils.js'
+import { type Components, EncodedEntry, type LocalEntryData } from '@/interface.js'
+import { countPeers, decodeAny, createDataKey } from '@/utils.js'
 
 export const name = 'list'
 

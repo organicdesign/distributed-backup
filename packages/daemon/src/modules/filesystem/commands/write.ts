@@ -3,8 +3,8 @@ import * as dagCbor from '@ipld/dag-cbor'
 import { CID } from 'multiformats/cid'
 import { Write } from 'rpc-interfaces'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { decodeEntry, encodeEntry, getDagSize, createDataKey } from '../utils.js'
-import type { Components, EncodedEntry, Entry } from '../interface.js'
+import { decodeEntry, encodeEntry, getDagSize, createDataKey } from '@/utils.js'
+import type { Components, EncodedEntry, Entry } from '@/interface.js'
 
 export const name = 'write'
 
