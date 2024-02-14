@@ -12,7 +12,7 @@ import { tcp } from '@libp2p/tcp'
 import { uPnPNAT } from '@libp2p/upnp-nat'
 import { webSockets } from '@libp2p/websockets'
 import { createLibp2p } from 'libp2p'
-import type { Libp2p } from './interface.js'
+import type { Libp2p } from '@/interface.js'
 import type { PeerId } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 

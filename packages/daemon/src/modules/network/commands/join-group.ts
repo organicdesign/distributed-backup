@@ -1,6 +1,6 @@
 import { JoinGroup } from 'rpc-interfaces'
 import { Address } from 'welo'
-import type { Groups } from '@/groups.js'
+import type { Groups } from '../groups.js'
 import type { RPCCommand } from '@/interface.js'
 import type { Welo } from 'welo'
 

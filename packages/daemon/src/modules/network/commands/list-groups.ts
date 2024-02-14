@@ -1,5 +1,5 @@
 import { ListGroups } from 'rpc-interfaces'
-import type { Groups } from '@/groups.js'
+import type { Groups } from '../groups.js'
 import { type RPCCommand } from '@/interface.js'
 
 export interface Components {

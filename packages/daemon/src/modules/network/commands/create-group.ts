@@ -1,6 +1,6 @@
 import { CreateGroup } from 'rpc-interfaces'
 import { fromString as uint8ArrayFromString } from 'uint8arrays'
-import type { Groups } from '@/groups.js'
+import type { Groups } from '../groups.js'
 import type { RPCCommand } from '@/interface.js'
 import type { Welo } from 'welo'
 

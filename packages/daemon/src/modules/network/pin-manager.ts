@@ -6,9 +6,9 @@ import * as logger from 'logger'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { compare as uint8ArrayCompare } from 'uint8arrays/compare'
-import { EncodedEntry, EncodedPinInfo, type Entry, type PinInfo } from './interface.js'
-import { encodeAny, decodeAny, decodeEntry } from './utils.js'
 import type { PinManager as HeliaPinManager, BlockInfo } from 'helia-pin-manager'
+import { EncodedEntry, EncodedPinInfo, type Entry, type PinInfo } from '@/interface.js'
+import { encodeAny, decodeAny, decodeEntry } from '@/utils.js'
 
 // Get the hash data from raw data.
 const hashEntry = async (data: Uint8Array): Promise<Uint8Array> => {

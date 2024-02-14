@@ -1,26 +1,56 @@
 import { z } from 'zod'
-import * as addresses from './commands/addresses.js'
-import * as connect from './commands/connect.js'
-import * as connections from './commands/connections.js'
-import * as createGroup from './commands/create-group.js'
-import * as id from './commands/id.js'
-import * as joinGroup from './commands/join-group.js'
-import * as listGroups from './commands/list-groups.js'
-import * as sync from './commands/sync.js'
-import type { Module } from '@/interface.js';
-import type { Welo } from 'welo'
+import addresses from './commands/addresses.js'
+import connect from './commands/connect.js'
+import connections from './commands/connections.js'
+import createGroup from './commands/create-group.js'
+import id from './commands/id.js'
+import joinGroup from './commands/join-group.js'
+import listGroups from './commands/list-groups.js'
+import sync from './commands/sync.js'
+import setup from './setup.js'
+import type { Groups } from './groups.js'
+import type { PinManager } from './pin-manager.js'
+import type { Module } from '@/interface.js'
+import type { Helia } from 'helia'
+import type { Blockstore } from 'interface-blockstore'
+import type { Datastore } from 'interface-datastore'
+import type { KeyManager } from 'key-manager'
 import type { Libp2p } from 'libp2p'
+import type { Welo } from 'welo'
 
-const module: Module<{}, {}, { welo: Welo, libp2p: Libp2p}> = {
-  Config: z.object({
-	  serverMode: z.boolean().default(false),
-	  private: z.boolean().default(false),
-	  bootstrap: z.array(z.string()).default([]),
-	  addresses: z.array(z.string()).default([
-	    '/ip4/127.0.0.1/tcp/0',
-	    '/ip4/127.0.0.1/tcp/0/ws'
-	  ])
-  }),
+const Config = z.object({
+  serverMode: z.boolean().default(false),
+  private: z.boolean().default(false),
+  bootstrap: z.array(z.string()).default([]),
+  storage: z.string().default(':memory:'),
+  addresses: z.array(z.string()).default([
+    '/ip4/127.0.0.1/tcp/0',
+    '/ip4/127.0.0.1/tcp/0/ws'
+  ])
+})
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export type Config = z.output<typeof Config>
+
+export type Init = void
+
+export type Requires = {
+  config: Config
+  datastore: Datastore
+  blockstore: Blockstore
+  keyManager: KeyManager
+}
+
+export type Provides = {
+  welo: Welo
+  libp2p: Libp2p
+  helia: Helia
+  groups: Groups
+  pinManager: PinManager
+}
+
+const module: Module<typeof Config, Init, Requires, Provides> = {
+  Config,
 
   commands: [
     addresses,
@@ -33,13 +63,7 @@ const module: Module<{}, {}, { welo: Welo, libp2p: Libp2p}> = {
     sync
   ],
 
-  setup: () => () => ({
-    libp2p: null as unknown as Libp2p,
-    welo: null as unknown as Welo
-  })
+  setup
 }
 
 export default module
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export type Config = z.output<typeof Config>
