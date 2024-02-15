@@ -3,9 +3,11 @@ import * as dagCbor from '@ipld/dag-cbor'
 import { exportPlaintext } from 'fs-exporter'
 import { CID } from 'multiformats/cid'
 import { Export } from 'rpc-interfaces'
+import { EncodedEntry } from '../interface.js'
+import { decodeEntry } from '../utils.js'
 import type { Provides, Requires } from '../index.js'
-import { type RPCCommandConstructor, EncodedEntry } from '@/interface.js'
-import { decodeEntry, createDataKey } from '@/utils.js'
+import type { RPCCommandConstructor } from '@/interface.js'
+import { createDataKey } from '@/utils.js'
 
 const command: RPCCommandConstructor<Provides, Requires> = (_, { base, groups }) => ({
   name: Export.name,

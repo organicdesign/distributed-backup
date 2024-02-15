@@ -4,9 +4,9 @@ import * as cborg from 'cborg'
 import { defaultDagWalkers } from 'dag-walkers'
 import { type Datastore, Key } from 'interface-datastore'
 import all from 'it-all'
-import { CID } from 'multiformats/cid'
+import { type CID } from 'multiformats/cid'
 import { NamespaceDatastore } from 'namespace-datastore'
-import { type Libp2p, EncodedEntry, type Entry, MEMORY_MAGIC, DATA_KEY, VERSION_KEY } from './interface.js'
+import { type Libp2p, MEMORY_MAGIC, DATA_KEY, VERSION_KEY } from './interface.js'
 import type { AbortOptions, PeerId } from '@libp2p/interface'
 import type { Helia } from 'helia'
 import type { Blockstore } from 'interface-blockstore'
@@ -129,23 +129,6 @@ export const countPeers = async ({ libp2p }: { libp2p: Libp2p }, cid: CID, optio
 
   return count
 }
-
-export const encodeEntry = (entry: Entry): NonNullable<EncodedEntry> => {
-  const ee: NonNullable<EncodedEntry> = {
-    ...entry,
-    cid: entry.cid.bytes,
-    author: entry.author.bytes
-  }
-
-  // Parse will strip foreign keys...
-  return EncodedEntry.parse(ee) as NonNullable<EncodedEntry>
-}
-
-export const decodeEntry = (entry: NonNullable<EncodedEntry>): Entry => ({
-  ...entry,
-  cid: CID.decode(entry.cid),
-  author: CID.decode(entry.author)
-})
 
 const toT = <T extends Key | string>(original: T, parsed: string): T extends Key ? Key : string => {
   if (typeof original === 'string') {

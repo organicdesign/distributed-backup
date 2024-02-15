@@ -2,8 +2,9 @@ import * as dagCbor from '@ipld/dag-cbor'
 import { CID } from 'multiformats/cid'
 import { List } from 'rpc-interfaces'
 import { toString as uint8arrayToString } from 'uint8arrays'
+import { EncodedEntry } from '../interface.js'
 import type { Provides, Requires } from '../index.js'
-import { type RPCCommandConstructor, EncodedEntry, type LocalEntryData } from '@/interface.js'
+import type { RPCCommandConstructor, LocalEntryData } from '@/interface.js'
 import { decodeAny, createDataKey } from '@/utils.js'
 
 const command: RPCCommandConstructor<Provides, Requires> = (context, { groups }) => ({

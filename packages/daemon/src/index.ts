@@ -56,14 +56,7 @@ const filesystem = await setupFilesystem({
   groups: groups.components
 }, { config })
 
-for (const command of [
-  ...base.commands,
-  ...network.commands,
-  ...filesystem.commands,
-  ...groups.commands
-]) {
-  rpc.addMethod(command.name, command.method)
-}
+const components = [base, network, groups, filesystem]
 
 let exiting = false
 
@@ -90,9 +83,16 @@ process.on('SIGINT', () => {
 
 logger.lifecycle('started')
 
-// Run the main loop.
+// Setup the component commands
+for (const component of components) {
+  for (const command of component.commands) {
+    rpc.addMethod(command.name, command.method)
+  }
+}
+
+// Setup the component tick methods.
 await Promise.all(
-  [base.tick, network.tick, filesystem.tick, groups.tick]
+  components.map(c => c.tick)
     .filter(t => Boolean(t))
     .map(t => new Looper(async () => t?.(), { sleep: base.components.config.tickInterval }))
     .map(async l => l.run())

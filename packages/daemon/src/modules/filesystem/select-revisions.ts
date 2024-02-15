@@ -1,4 +1,5 @@
-import type { Pair, EncodedEntry } from '@/interface.js'
+import type { EncodedEntry } from './interface.js'
+import type { Pair } from '@/interface.js'
 import type { RevisionStrategies } from 'rpc-interfaces/zod'
 
 const REVISIONS_PER_INTERVAL = 3

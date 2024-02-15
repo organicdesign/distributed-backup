@@ -3,12 +3,13 @@ import { Key } from 'interface-datastore'
 import { groups as logger } from 'logger'
 import { Manifest } from 'welo/manifest/index'
 import { decodeCbor } from 'welo/utils/block'
+import type { KeyvalueDB, Pair } from '@/interface.js'
+import type { Entry, EncodedEntry } from '@/modules/filesystem/interface.js'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
 import type { Welo } from 'welo'
 import type { ManifestData } from 'welo/manifest/interface'
-import { type KeyvalueDB, type Pair, type Entry, type EncodedEntry } from '@/interface.js'
 
 export interface Components {
   datastore: Datastore

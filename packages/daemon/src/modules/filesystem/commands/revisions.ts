@@ -1,8 +1,9 @@
 import * as dagCbor from '@ipld/dag-cbor'
 import { CID } from 'multiformats/cid'
 import { Revisions } from 'rpc-interfaces'
+import { EncodedEntry } from '../interface.js'
 import type { Provides, Requires } from '../index.js'
-import { type RPCCommandConstructor, EncodedEntry } from '@/interface.js'
+import type { RPCCommandConstructor } from '@/interface.js'
 import { decodeAny, createVersionKey } from '@/utils.js'
 
 const command: RPCCommandConstructor<Provides, Requires> = (_, { groups }) => ({

@@ -3,9 +3,11 @@ import * as dagCbor from '@ipld/dag-cbor'
 import { CID } from 'multiformats/cid'
 import { Write } from 'rpc-interfaces'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { decodeEntry, encodeEntry } from '../utils.js'
 import type { Provides, Requires } from '../index.js'
-import type { RPCCommandConstructor, EncodedEntry, Entry } from '@/interface.js'
-import { decodeEntry, encodeEntry, getDagSize, createDataKey } from '@/utils.js'
+import type { EncodedEntry, Entry } from '../interface.js'
+import type { RPCCommandConstructor } from '@/interface.js'
+import { getDagSize, createDataKey } from '@/utils.js'
 
 const command: RPCCommandConstructor<Provides, Requires> = (context, { base, network, groups }) => ({
   name: Write.name,

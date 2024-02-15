@@ -3,9 +3,10 @@ import { pipe } from 'it-pipe'
 import * as logger from 'logger'
 import { type CID } from 'multiformats/cid'
 import { collect } from 'streaming-iterables'
+import { EncodedEntry } from './interface.js'
+import { decodeEntry } from './utils.js'
 import type { Provides, Requires } from './index.js'
-import { EncodedEntry } from '@/interface.js'
-import { linearWeightTranslation, decodeEntry } from '@/utils.js'
+import { linearWeightTranslation } from '@/utils.js'
 
 export default async (context: Provides, { groups }: Requires): Promise<void> => {
   // logger.tick("STARTED");

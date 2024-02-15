@@ -4,23 +4,14 @@ import * as dagCbor from '@ipld/dag-cbor'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import { take } from 'streaming-iterables'
+import { EncodedEntry, type Entry } from './interface.js'
 import selectRevisions from './select-revisions.js'
+import { decodeEntry, encodeEntry } from './utils.js'
 import type { Requires } from './index.js'
+import type { Pair } from '@/interface.js'
 import type { Datastore } from 'interface-datastore'
-import {
-  EncodedEntry,
-  type Entry,
-  type Pair
-} from '@/interface.js'
 import { OperationManager } from '@/operation-manager.js'
-import {
-  decodeEntry,
-  encodeEntry,
-  getDagSize,
-  createDataKey,
-  createVersionKey,
-  stripPrefix
-} from '@/utils.js'
+import { getDagSize, createDataKey, createVersionKey, stripPrefix } from '@/utils.js'
 
 export default async ({ network, base, groups }: Requires, datastore: Datastore): Promise<OperationManager<{
   put(groupData: Uint8Array, path: string, encodedEntry: NonNullable<EncodedEntry>): Promise<void>
