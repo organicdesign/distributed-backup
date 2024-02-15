@@ -4,6 +4,7 @@ import { createNetServer } from '@organicdesign/net-rpc'
 import * as logger from 'logger'
 import { hideBin } from 'yargs/helpers'
 import yargs from 'yargs/yargs'
+import { Looper } from './looper.js'
 import { projectPath } from './utils.js'
 import setupBase from '@/modules/base/index.js'
 import setupFilesystem from '@/modules/filesystem/index.js'
@@ -82,3 +83,13 @@ process.on('SIGINT', () => {
     throw error
   })
 })
+
+logger.lifecycle('started')
+
+// Run the main loop.
+await Promise.all(
+  [base.tick, network.tick, filesystem.tick]
+    .filter(t => Boolean(t))
+    .map(t => new Looper(async () => t?.(), { sleep: base.components.config.tickInterval }))
+    .map(async l => l.run())
+)
