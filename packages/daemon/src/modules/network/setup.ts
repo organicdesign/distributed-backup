@@ -5,8 +5,6 @@ import { FsDatastore } from 'datastore-fs'
 import { createHelia } from 'helia'
 import createHeliaPinManager from 'helia-pin-manager'
 import * as logger from 'logger'
-import { createWelo, pubsubReplicator, bootstrapReplicator } from 'welo'
-import { createGroups } from './groups.js'
 import createLibp2p from './libp2p.js'
 import { PinManager } from './pin-manager.js'
 import type { Requires, Provides, Config } from './index.js'
@@ -37,18 +35,6 @@ export default async ({ base }: Requires, config: Config): Promise<Provides> => 
     blockstore: base.blockstore
   })
 
-  const welo = await createWelo({
-    // @ts-expect-error Helia version mismatch here.
-    ipfs: helia,
-    replicators: [bootstrapReplicator(), pubsubReplicator()],
-    identity: await base.keyManager.getWeloIdentity()
-  })
-
-  const groups = await createGroups({
-    datastore: extendDatastore(base.datastore, 'groups'),
-    welo
-  })
-
   const heliaPinManager = await createHeliaPinManager(helia, {
     storage: isMemory(config.storage) ? ':memory:' : Path.join(config.storage, 'sqlite')
   })
@@ -76,8 +62,6 @@ export default async ({ base }: Requires, config: Config): Promise<Provides> => 
 
   return {
     libp2p,
-    welo,
-    groups,
     helia,
     pinManager,
     config

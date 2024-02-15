@@ -8,12 +8,12 @@ import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor, EncodedEntry } from '@/interface.js'
 import { decodeEntry, createDataKey } from '@/utils.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = (_, { network }) => ({
+const command: RPCCommandConstructor<Provides, Requires> = (_, { network, groups }) => ({
   name: Read.name,
 
   async method (raw: unknown): Promise<Read.Return> {
     const params = Read.Params.parse(raw)
-    const group = network.groups.get(CID.parse(params.group))
+    const group = groups.groups.get(CID.parse(params.group))
 
     if (group == null) {
       throw new Error('no such group')

@@ -5,7 +5,7 @@ import type { Provides, Requires } from '../index.js'
 import { type RPCCommandConstructor, EncodedEntry } from '@/interface.js'
 import { decodeAny, createVersionKey } from '@/utils.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = (_, { network }) => ({
+const command: RPCCommandConstructor<Provides, Requires> = (_, { groups }) => ({
   name: Revisions.name,
 
   async method (raw: unknown): Promise<Revisions.Return> {
@@ -13,7 +13,7 @@ const command: RPCCommandConstructor<Provides, Requires> = (_, { network }) => (
 
     const promises: Array<Promise<Revisions.Return[number]>> = []
 
-    const database = network.groups.get(CID.parse(params.group))
+    const database = groups.groups.get(CID.parse(params.group))
 
     if (database == null) {
       throw new Error('no such group')

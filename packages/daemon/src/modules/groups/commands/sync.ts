@@ -2,7 +2,7 @@ import { Sync } from 'rpc-interfaces'
 import { HeadsExchange } from 'welo/utils/heads-exchange'
 import { cidstring } from 'welo/utils/index'
 import { getHeads, addHeads } from 'welo/utils/replicator'
-import type { Provides } from '../index.js'
+import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor } from '@/interface.js'
 import type { Peer, Libp2p } from '@libp2p/interface'
 import type { Database } from 'welo'
@@ -59,20 +59,20 @@ const sync = async (libp2p: Libp2p, peer: Peer, database: Database, options: Par
   await stream.close()
 }
 
-const command: RPCCommandConstructor<Provides> = (context) => ({
+const command: RPCCommandConstructor<Provides, Requires> = (context, { network }) => ({
   name: Sync.name,
 
   async method (): Promise<Sync.Return> {
-    const peers = context.libp2p.getPeers()
+    const peers = network.libp2p.getPeers()
     const databases = context.welo.opened.values()
 
     const promises: Array<Promise<void>> = []
 
     for (const peerId of peers) {
-      const peer = await context.libp2p.peerStore.get(peerId)
+      const peer = await network.libp2p.peerStore.get(peerId)
 
       for (const database of databases) {
-        promises.push(sync(context.libp2p, peer, database))
+        promises.push(sync(network.libp2p, peer, database))
       }
     }
 

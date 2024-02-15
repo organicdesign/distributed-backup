@@ -8,6 +8,7 @@ import { Looper } from './looper.js'
 import { projectPath } from './utils.js'
 import setupBase from '@/modules/base/index.js'
 import setupFilesystem from '@/modules/filesystem/index.js'
+import setupGroups from '@/modules/groups/index.js'
 import setupNetwork from '@/modules/network/index.js'
 
 const argv = await yargs(hideBin(process.argv))
@@ -47,16 +48,19 @@ logger.lifecycle('loaded config')
 
 const base = await setupBase({}, { config, key: argv.key })
 const network = await setupNetwork({ base: base.components }, { config })
+const groups = await setupGroups({ base: base.components, network: network.components }, { config })
 
 const filesystem = await setupFilesystem({
   base: base.components,
-  network: network.components
+  network: network.components,
+  groups: groups.components
 }, { config })
 
 for (const command of [
   ...base.commands,
   ...network.commands,
-  ...filesystem.commands
+  ...filesystem.commands,
+  ...groups.commands
 ]) {
   rpc.addMethod(command.name, command.method)
 }
@@ -88,7 +92,7 @@ logger.lifecycle('started')
 
 // Run the main loop.
 await Promise.all(
-  [base.tick, network.tick, filesystem.tick]
+  [base.tick, network.tick, filesystem.tick, groups.tick]
     .filter(t => Boolean(t))
     .map(t => new Looper(async () => t?.(), { sleep: base.components.config.tickInterval }))
     .map(async l => l.run())

@@ -2,8 +2,8 @@ import Path from 'path'
 import * as logger from 'logger'
 import type { Provides, Requires } from './index.js'
 
-export default async (context: Provides, { network }: Requires): Promise<void> => {
-  for (const { value: database } of network.groups.all()) {
+export default async (context: Provides, { network, groups }: Requires): Promise<void> => {
+  for (const { value: database } of groups.groups.all()) {
     // logger.validate("syncing group: %s", database.address.cid.toString());
     const index = await database.store.latest()
 

@@ -22,14 +22,14 @@ import {
   stripPrefix
 } from '@/utils.js'
 
-export default async ({ network, base }: Requires, datastore: Datastore): Promise<OperationManager<{
+export default async ({ network, base, groups }: Requires, datastore: Datastore): Promise<OperationManager<{
   put(groupData: Uint8Array, path: string, encodedEntry: NonNullable<EncodedEntry>): Promise<void>
   delete(groupData: Uint8Array, path: string): Promise<Array<Pair<string, Entry>>>
 }>> => {
   const put = async (groupData: Uint8Array, path: string, encodedEntry: NonNullable<EncodedEntry>): Promise<void> => {
     const group = CID.decode(groupData)
     const entry = decodeEntry(encodedEntry)
-    const database = network.groups.get(group)
+    const database = groups.groups.get(group)
     let sequence = 0
 
     if (database == null) {
@@ -60,7 +60,7 @@ export default async ({ network, base }: Requires, datastore: Datastore): Promis
     ]
 
     for (const path of paths) {
-      await network.groups.addTo(group, path, entry)
+      await groups.groups.addTo(group, path, entry)
     }
 
     // Handle revisions.
@@ -85,7 +85,7 @@ export default async ({ network, base }: Requires, datastore: Datastore): Promis
         continue
       }
 
-      await network.groups.deleteFrom(group, path)
+      await groups.groups.deleteFrom(group, path)
       await network.pinManager.remove(group, path)
     }
   }
@@ -95,7 +95,7 @@ export default async ({ network, base }: Requires, datastore: Datastore): Promis
 
     async delete (groupData: Uint8Array, path: string) {
       const group = CID.decode(groupData)
-      const database = network.groups.get(group)
+      const database = groups.groups.get(group)
 
       if (database == null) {
         throw new Error('no such group')
@@ -111,7 +111,7 @@ export default async ({ network, base }: Requires, datastore: Datastore): Promis
       const pairs = await all(index.query({ prefix: key }))
 
       await Promise.all(pairs.map(async p => {
-        await network.groups.deleteFrom(group, p.key.toString())
+        await groups.groups.deleteFrom(group, p.key.toString())
         await network.pinManager.remove(group, p.key.toString())
       }))
 

@@ -7,13 +7,13 @@ import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor, EncodedEntry, Entry } from '@/interface.js'
 import { decodeEntry, encodeEntry, getDagSize, createDataKey } from '@/utils.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = (context, { base, network }) => ({
+const command: RPCCommandConstructor<Provides, Requires> = (context, { base, network, groups }) => ({
   name: Write.name,
 
   async method (raw: unknown): Promise<Write.Return> {
     const params = Write.Params.parse(raw)
     const group = CID.parse(params.group)
-    const database = network.groups.get(group)
+    const database = groups.groups.get(group)
 
     if (database == null) {
       throw new Error('no such group')

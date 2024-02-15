@@ -7,7 +7,7 @@ import type { Provides, Requires } from './index.js'
 import { EncodedEntry } from '@/interface.js'
 import { linearWeightTranslation, decodeEntry } from '@/utils.js'
 
-export default async (context: Provides, { network }: Requires): Promise<void> => {
+export default async (context: Provides, { network, groups }: Requires): Promise<void> => {
   // logger.tick("STARTED");
   // logger.tick("GOT REMOTE CONTENTS");
 
@@ -44,7 +44,7 @@ export default async (context: Provides, { network }: Requires): Promise<void> =
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     for await (const _ of loop) {
       for await (const { group, path } of network.pinManager.getActive()) {
-        const database = network.groups.get(group)
+        const database = groups.groups.get(group)
 
         if (database == null) {
           logger.warn('Reverse lookup points to non-existant database: ', group)

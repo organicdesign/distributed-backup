@@ -16,6 +16,7 @@ import type createSyncManager from './sync-operations.js'
 import type createUploadManager from './upload-operations.js'
 import type { Module } from '@/interface.js'
 import type { Provides as Base } from '@/modules/base/index.js'
+import type { Provides as Groups } from '@/modules/groups/index.js'
 import type { Provides as Network } from '@/modules/network/index.js'
 
 export const Config = z.object({
@@ -32,6 +33,7 @@ export interface Init extends Record<string, unknown> {
 export interface Requires extends Record<string, unknown> {
   base: Base
   network: Network
+  groups: Groups
 }
 
 export interface Provides extends Record<string, unknown> {

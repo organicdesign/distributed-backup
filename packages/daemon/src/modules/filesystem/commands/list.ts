@@ -6,14 +6,14 @@ import type { Provides, Requires } from '../index.js'
 import { type RPCCommandConstructor, EncodedEntry, type LocalEntryData } from '@/interface.js'
 import { decodeAny, createDataKey } from '@/utils.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = (context, { network }) => ({
+const command: RPCCommandConstructor<Provides, Requires> = (context, { groups }) => ({
   name: List.name,
 
   async method (raw: unknown): Promise<List.Return> {
     const params = List.Params.parse(raw)
     const promises: Array<Promise<List.Return[number]>> = []
 
-    for (const { key: cid, value: database } of network.groups.all()) {
+    for (const { key: cid, value: database } of groups.groups.all()) {
       if (params.group != null && cid !== params.group) {
         continue
       }
