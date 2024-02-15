@@ -2,10 +2,9 @@ import Path from 'path'
 import { defaultDagWalkers } from 'dag-walkers'
 import { Key } from 'interface-datastore'
 import { CID } from 'multiformats/cid'
-import { EncodedEntry, type Entry } from './interface.js'
+import { DATA_KEY, VERSION_KEY, EncodedEntry, type Entry } from './interface.js'
 import type { PeerId, AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
-import { DATA_KEY, VERSION_KEY } from '@/interface.js'
 
 const dagWalkers = defaultDagWalkers()
 

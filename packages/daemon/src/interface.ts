@@ -1,6 +1,4 @@
 export const MEMORY_MAGIC = ':memory:'
-export const VERSION_KEY = 'v'
-export const DATA_KEY = 'r'
 
 export interface RPCCommand {
   name: string

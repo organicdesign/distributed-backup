@@ -2,6 +2,9 @@ import { type CID } from 'multiformats/cid'
 import { RevisionStrategies } from 'rpc-interfaces/zod'
 import { z } from 'zod'
 
+export const VERSION_KEY = 'v'
+export const DATA_KEY = 'r'
+
 export const LocalEntryData = z.object({
   priority: z.number().min(0).max(100),
   revisionStrategy: RevisionStrategies
