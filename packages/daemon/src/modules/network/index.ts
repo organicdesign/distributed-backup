@@ -44,6 +44,7 @@ export interface Provides extends Record<string, unknown> {
   helia: Helia
   groups: Groups
   pinManager: PinManager
+  config: Config
 }
 
 const module: Module<Init, Requires, Provides> = async (components, init) => {

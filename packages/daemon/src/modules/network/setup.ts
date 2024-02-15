@@ -79,6 +79,7 @@ export default async ({ base }: Requires, config: Config): Promise<Provides> => 
     welo,
     groups,
     helia,
-    pinManager
+    pinManager,
+    config
   }
 }
