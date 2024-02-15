@@ -2,7 +2,7 @@ import Path from 'path'
 import * as logger from 'logger'
 import type { Provides, Requires } from './index.js'
 
-export default async (context: Provides, { network, groups }: Requires): Promise<void> => {
+export default async (context: Provides, { groups }: Requires): Promise<void> => {
   for (const { value: database } of groups.groups.all()) {
     // logger.validate("syncing group: %s", database.address.cid.toString());
     const index = await database.store.latest()
@@ -12,7 +12,7 @@ export default async (context: Provides, { network, groups }: Requires): Promise
       const path = pair.key.toString()
 
       // All we really want to do here is check for dirty entries.
-      if (await network.pinManager.validate(group, path, pair.value)) {
+      if (await groups.pinManager.validate(group, path, pair.value)) {
         continue
       }
 

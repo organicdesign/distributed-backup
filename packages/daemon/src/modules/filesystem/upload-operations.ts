@@ -52,7 +52,7 @@ export default async ({ network, base, groups }: Requires, datastore: Datastore)
 
     entry.sequence = sequence
 
-    await network.pinManager.process(group, path, dagCbor.encode(encodeEntry(entry)), true)
+    await groups.pinManager.process(group, path, dagCbor.encode(encodeEntry(entry)), true)
 
     const paths = [
       createDataKey(path),
@@ -86,7 +86,7 @@ export default async ({ network, base, groups }: Requires, datastore: Datastore)
       }
 
       await groups.groups.deleteFrom(group, path)
-      await network.pinManager.remove(group, path)
+      await groups.pinManager.remove(group, path)
     }
   }
 
@@ -112,7 +112,7 @@ export default async ({ network, base, groups }: Requires, datastore: Datastore)
 
       await Promise.all(pairs.map(async p => {
         await groups.groups.deleteFrom(group, p.key.toString())
-        await network.pinManager.remove(group, p.key.toString())
+        await groups.pinManager.remove(group, p.key.toString())
       }))
 
       const values = await all(take(1)(index.query({ prefix: parentPath })))

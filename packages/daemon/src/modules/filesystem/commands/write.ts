@@ -41,7 +41,7 @@ const command: RPCCommandConstructor<Provides, Requires> = (context, { base, net
     const put = database.store.creators.put(key, newEncodedEntry)
 
     await database.replica.write(put)
-    await network.pinManager.process(group, key, dagCbor.encode(newEncodedEntry), true)
+    await groups.pinManager.process(group, key, dagCbor.encode(newEncodedEntry), true)
 
     return params.data.length
   }
