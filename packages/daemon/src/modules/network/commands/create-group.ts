@@ -1,34 +1,28 @@
 import { CreateGroup } from 'rpc-interfaces'
 import { fromString as uint8ArrayFromString } from 'uint8arrays'
-import type { Groups } from '../groups.js'
-import type { RPCCommand } from '@/interface.js'
-import type { Welo } from 'welo'
+import type { Provides } from '../index.js'
+import type { RPCCommandConstructor } from '@/interface.js'
 
-export interface Components {
-  welo: Welo
-  groups: Groups
-}
-
-const command: RPCCommand<Components> = {
+const command: RPCCommandConstructor<Provides> = (context) => ({
   name: CreateGroup.name,
 
-  method: (components: Components) => async (raw: unknown): Promise<CreateGroup.Return> => {
+  async method (raw: unknown): Promise<CreateGroup.Return> {
     const params = CreateGroup.Params.parse(raw)
     const peerValues = params.peers.map(p => uint8ArrayFromString(p, 'base58btc'))
 
-    const manifest = await components.welo.determine({
+    const manifest = await context.welo.determine({
       name: params.name,
       meta: { type: 'group' },
       access: {
         protocol: '/hldb/access/static',
-        config: { write: [components.welo.identity.id, ...peerValues] }
+        config: { write: [context.welo.identity.id, ...peerValues] }
       }
     })
 
-    await components.groups.add(manifest)
+    await context.groups.add(manifest)
 
     return manifest.address.cid.toString()
   }
-}
+})
 
 export default command

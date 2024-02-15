@@ -7,14 +7,12 @@ import id from './commands/id.js'
 import joinGroup from './commands/join-group.js'
 import listGroups from './commands/list-groups.js'
 import sync from './commands/sync.js'
-import setup from './setup.js'
+import setupComponents from './setup.js'
 import type { Groups } from './groups.js'
 import type { PinManager } from './pin-manager.js'
 import type { Module } from '@/interface.js'
+import type { Provides as Base } from '@/modules/base/index.js'
 import type { Helia } from 'helia'
-import type { Blockstore } from 'interface-blockstore'
-import type { Datastore } from 'interface-datastore'
-import type { KeyManager } from 'key-manager'
 import type { Libp2p } from 'libp2p'
 import type { Welo } from 'welo'
 
@@ -32,13 +30,12 @@ const Config = z.object({
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type Config = z.output<typeof Config>
 
-export type Init = void
+export interface Init {
+  config: unknown
+}
 
 export interface Requires extends Record<string, unknown> {
-  config: Config
-  datastore: Datastore
-  blockstore: Blockstore
-  keyManager: KeyManager
+  base: Base
 }
 
 export interface Provides extends Record<string, unknown> {
@@ -49,10 +46,12 @@ export interface Provides extends Record<string, unknown> {
   pinManager: PinManager
 }
 
-const module: Module<typeof Config, Init, Requires, Provides> = {
-  Config,
+const module: Module<Init, Requires, Provides> = async (components, init) => {
+  const config = Config.parse(init.config)
 
-  commands: [
+  const context = await setupComponents(components, config)
+
+  const commands = [
     addresses,
     connect,
     connections,
@@ -61,9 +60,9 @@ const module: Module<typeof Config, Init, Requires, Provides> = {
     joinGroup,
     listGroups,
     sync
-  ],
+  ].map(c => c.apply(null, [context, components]))
 
-  setup
+  return { commands, components: context }
 }
 
 export default module

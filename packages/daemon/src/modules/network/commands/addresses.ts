@@ -1,17 +1,13 @@
 import { Addresses } from 'rpc-interfaces'
-import type { RPCCommand } from '@/interface.js'
-import type { Libp2p } from 'libp2p'
+import type { Provides } from '../index.js'
+import type { RPCCommandConstructor } from '@/interface.js'
 
-export interface Components {
-  libp2p: Libp2p
-}
-
-const command: RPCCommand<Components> = {
+const command: RPCCommandConstructor<Provides> = (context) => ({
   name: Addresses.name,
 
-  method: (components: Components) => async (): Promise<Addresses.Return> => {
-    return components.libp2p.getMultiaddrs().map(a => a.toString())
+  async method (): Promise<Addresses.Return> {
+    return context.libp2p.getMultiaddrs().map(a => a.toString())
   }
-}
+})
 
 export default command

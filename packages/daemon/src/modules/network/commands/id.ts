@@ -1,18 +1,14 @@
 import { ID } from 'rpc-interfaces'
 import { toString as uint8ArrayToString } from 'uint8arrays'
-import type { RPCCommand } from '@/interface.js'
-import type { Welo } from 'welo'
+import type { Provides } from '../index.js'
+import type { RPCCommandConstructor } from '@/interface.js'
 
-export interface Components {
-  welo: Welo
-}
-
-const command: RPCCommand<Components> = {
+const command: RPCCommandConstructor<Provides> = (context) => ({
   name: ID.name,
 
-  method: (components: Components) => async (): Promise<ID.Return> => {
-    return uint8ArrayToString(components.welo.identity.id, 'base58btc')
+  async method (): Promise<ID.Return> {
+    return uint8ArrayToString(context.welo.identity.id, 'base58btc')
   }
-}
+})
 
 export default command

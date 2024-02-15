@@ -1,23 +1,19 @@
 import { ListGroups } from 'rpc-interfaces'
-import type { Groups } from '../groups.js'
-import { type RPCCommand } from '@/interface.js'
+import type { Provides } from '../index.js'
+import type { RPCCommandConstructor } from '@/interface.js'
 
-export interface Components {
-  groups: Groups
-}
-
-const command: RPCCommand<Components> = {
+const command: RPCCommandConstructor<Provides> = (context) => ({
   name: ListGroups.name,
 
-  method: (components: Components) => async (): Promise<ListGroups.Return> => {
+  async method (): Promise<ListGroups.Return> {
     const promises: Array<{ group: string, name: string }> = []
 
-    for (const { key: cid, value: database } of components.groups.all()) {
+    for (const { key: cid, value: database } of context.groups.all()) {
       promises.push({ group: cid, name: database.manifest.name })
     }
 
     return Promise.all(promises)
   }
-}
+})
 
 export default command

@@ -9,48 +9,48 @@ import { createWelo, pubsubReplicator, bootstrapReplicator } from 'welo'
 import { createGroups } from './groups.js'
 import createLibp2p from './libp2p.js'
 import { PinManager } from './pin-manager.js'
-import type { Requires, Provides } from './index.js'
+import type { Requires, Provides, Config } from './index.js'
 import { extendDatastore, isMemory } from '@/utils.js'
 
-export default () => async (components: Requires): Promise<Provides> => {
-  const peerId = await components.keyManager.getPeerId()
-  const psk = components.keyManager.getPskKey()
+export default async ({ base }: Requires, config: Config): Promise<Provides> => {
+  const peerId = await base.keyManager.getPeerId()
+  const psk = base.keyManager.getPskKey()
 
-  if (!isMemory(components.config.storage)) {
-    await fs.mkdir(Path.join(components.config.storage, 'datastore/libp2p'), { recursive: true })
+  if (!isMemory(config.storage)) {
+    await fs.mkdir(Path.join(config.storage, 'datastore/libp2p'), { recursive: true })
   }
 
-  const libp2pDatastore = isMemory(components.config.storage)
+  const libp2pDatastore = isMemory(config.storage)
     ? new MemoryDatastore()
-    : new FsDatastore(Path.join(components.config.storage, 'datastore/libp2p'))
+    : new FsDatastore(Path.join(config.storage, 'datastore/libp2p'))
 
   const libp2p = await createLibp2p({
     datastore: libp2pDatastore,
-    psk: components.config.private ? psk : undefined,
+    psk: config.private ? psk : undefined,
     peerId,
-    ...components.config
+    ...config
   })
 
   const helia = await createHelia({
-    datastore: extendDatastore(components.datastore, 'helia/datastore'),
+    datastore: extendDatastore(base.datastore, 'helia/datastore'),
     libp2p,
-    blockstore: components.blockstore
+    blockstore: base.blockstore
   })
 
   const welo = await createWelo({
     // @ts-expect-error Helia version mismatch here.
     ipfs: helia,
     replicators: [bootstrapReplicator(), pubsubReplicator()],
-    identity: await components.keyManager.getWeloIdentity()
+    identity: await base.keyManager.getWeloIdentity()
   })
 
   const groups = await createGroups({
-    datastore: extendDatastore(components.datastore, 'groups'),
+    datastore: extendDatastore(base.datastore, 'groups'),
     welo
   })
 
   const heliaPinManager = await createHeliaPinManager(helia, {
-    storage: isMemory(components.config.storage) ? ':memory:' : Path.join(components.config.storage, 'sqlite')
+    storage: isMemory(config.storage) ? ':memory:' : Path.join(config.storage, 'sqlite')
   })
 
   heliaPinManager.events.addEventListener('downloads:added', ({ cid }) => {
@@ -71,7 +71,7 @@ export default () => async (components: Requires): Promise<Provides> => {
 
   const pinManager = new PinManager({
     pinManager: heliaPinManager,
-    datastore: extendDatastore(components.datastore, 'pin-references')
+    datastore: extendDatastore(base.datastore, 'pin-references')
   })
 
   return {

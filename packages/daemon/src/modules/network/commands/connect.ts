@@ -1,22 +1,20 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { Connect } from 'rpc-interfaces'
-import type { RPCCommand } from '@/interface.js'
-import type { Libp2p } from 'libp2p'
+import type { Provides } from '../index.js'
+import type { RPCCommandConstructor } from '@/interface.js'
 
-export interface Components {
-  libp2p: Libp2p
-}
+const command: RPCCommandConstructor<Provides> = (context) => {
+  return {
+	  name: Connect.name,
 
-const command: RPCCommand<Components> = {
-  name: Connect.name,
+	  async method (raw: unknown): Promise<Connect.Return> {
+	    const params = Connect.Params.parse(raw)
+	    const address = multiaddr(params.address)
 
-  method: (components: Components) => async (raw: unknown): Promise<Connect.Return> => {
-    const params = Connect.Params.parse(raw)
-    const address = multiaddr(params.address)
+	    await context.libp2p.dial(address)
 
-    await components.libp2p.dial(address)
-
-    return null
+	    return null
+	  }
   }
 }
 
