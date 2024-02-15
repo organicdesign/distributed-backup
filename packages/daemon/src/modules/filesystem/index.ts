@@ -8,6 +8,7 @@ import list from './commands/list.js'
 import read from './commands/read.js'
 import revisions from './commands/revisions.js'
 import write from './commands/write.js'
+import download from './downloader.js'
 import setup from './setup.js'
 import syncGroups from './sync-groups.js'
 import type { LocalSettings } from './local-settings.js'
@@ -55,7 +56,10 @@ const module: Module<Init, Requires, Provides> = async (components, init) => {
     write
   ].map(c => c.apply(null, [context, components]))
 
-  const tick = async () => syncGroups(context, components)
+  const tick = async () => {
+    await syncGroups(context, components)
+    await download(context, components)
+  }
 
   return { components: context, tick, commands }
 }

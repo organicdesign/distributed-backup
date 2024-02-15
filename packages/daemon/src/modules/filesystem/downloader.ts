@@ -3,15 +3,11 @@ import { pipe } from 'it-pipe'
 import * as logger from 'logger'
 import { type CID } from 'multiformats/cid'
 import { collect } from 'streaming-iterables'
-import { type Components, EncodedEntry } from './interface.js'
-import syncGroups from './sync-groups.js'
-import { linearWeightTranslation, decodeEntry } from './utils.js'
+import type { Provides, Requires } from './index.js'
+import { EncodedEntry } from '@/interface.js'
+import { linearWeightTranslation, decodeEntry } from '@/utils.js'
 
-export const syncLoop = async (components: Components): Promise<void> => {
-  await syncGroups(components)
-}
-
-export const downloadLoop = async (components: Components): Promise<void> => {
+export default async (context: Provides, { network }: Requires) => {
   // logger.tick("STARTED");
   // logger.tick("GOT REMOTE CONTENTS");
 
@@ -22,7 +18,7 @@ export const downloadLoop = async (components: Components): Promise<void> => {
       const priority = p ?? 100
       const weight = Math.floor(linearWeightTranslation(priority / 100) * SLOTS) + 1
 
-      const downloaders = await components.pinManager.download(cid, { limit: weight })
+      const downloaders = await network.pinManager.download(cid, { limit: weight })
 
       yield * downloaders
     }
@@ -47,8 +43,8 @@ export const downloadLoop = async (components: Components): Promise<void> => {
   const getPins = async function * (loop: AsyncIterable<void>): AsyncGenerator<[CID, number | undefined]> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     for await (const _ of loop) {
-      for await (const { group, path } of components.pinManager.getActive()) {
-        const database = components.groups.get(group)
+      for await (const { group, path } of network.pinManager.getActive()) {
+        const database = network.groups.get(group)
 
         if (database == null) {
           logger.warn('Reverse lookup points to non-existant database: ', group)
@@ -68,7 +64,7 @@ export const downloadLoop = async (components: Components): Promise<void> => {
         let priority: number = entry.priority
 
         if (path.startsWith('/r')) {
-          const localRef = await components.localSettings.get(group, path.slice(2))
+          const localRef = await context.localSettings.get(group, path.slice(2))
 
           if (localRef?.priority != null) {
             priority = localRef.priority
