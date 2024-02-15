@@ -3,9 +3,10 @@ import { CID } from 'multiformats/cid'
 import { List } from 'rpc-interfaces'
 import { toString as uint8arrayToString } from 'uint8arrays'
 import { EncodedEntry, type LocalEntryData } from '../interface.js'
+import { createDataKey } from '../utils.js'
 import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor } from '@/interface.js'
-import { decodeAny, createDataKey } from '@/utils.js'
+import { decodeAny } from '@/utils.js'
 
 const command: RPCCommandConstructor<Provides, Requires> = (context, { groups }) => ({
   name: List.name,

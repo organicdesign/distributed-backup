@@ -4,9 +4,8 @@ import * as logger from 'logger'
 import { type CID } from 'multiformats/cid'
 import { collect } from 'streaming-iterables'
 import { EncodedEntry } from './interface.js'
-import { decodeEntry } from './utils.js'
+import { decodeEntry, linearWeightTranslation } from './utils.js'
 import type { Provides, Requires } from './index.js'
-import { linearWeightTranslation } from '@/utils.js'
 
 export default async (context: Provides, { groups }: Requires): Promise<void> => {
   // logger.tick("STARTED");

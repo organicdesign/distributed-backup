@@ -4,10 +4,9 @@ import { selectHasher, selectChunker, importRecursive, type ImporterConfig } fro
 import * as logger from 'logger'
 import { CID } from 'multiformats/cid'
 import { Import } from 'rpc-interfaces'
-import { encodeEntry } from '../utils.js'
+import { encodeEntry, getDagSize } from '../utils.js'
 import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor } from '@/interface.js'
-import { getDagSize } from '@/utils.js'
 
 const command: RPCCommandConstructor<Provides, Requires> = (context, { network, base }) => ({
   name: Import.name,
