@@ -19,7 +19,7 @@
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
     "prepublishOnly": "npm run build",
-    "build": "aegir build",
+    "build": "aegir build && tsc-alias",
     "test": "aegir test -t node -f './dist/test/**/*.spec.js'"
   },
   "author": "Saul Boyd",
@@ -29,7 +29,8 @@
     "@libp2p/interfaces": "^3.3.2",
     "@types/yargs": "^17.0.32",
     "aegir": "^42.2.2",
-    "interface-blockstore": "^5.2.9"
+    "interface-blockstore": "^5.2.9",
+    "tsc-alias": "^1.8.8"
   },
   "private": true,
   "sideEffects": false,
