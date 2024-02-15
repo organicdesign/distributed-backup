@@ -1,16 +1,16 @@
 import { CID } from 'multiformats/cid'
-import type { Components } from '@/interface.js'
+import type { Requires } from './index.js'
 import type { Datastore } from 'interface-datastore'
 import { OperationManager } from '@/operation-manager.js'
 
-export default async (components: Pick<Components, 'pinManager' | 'groups'> & { datastore: Datastore }): Promise<OperationManager<{
+export default async ({ network }: Requires, datastore: Datastore): Promise<OperationManager<{
   put(groupData: Uint8Array, path: string, rawEntry: Uint8Array): Promise<void>
 }>> => {
-  const om = new OperationManager(components.datastore, {
+  const om = new OperationManager(datastore, {
     put: async (groupData: Uint8Array, path: string, rawEntry: Uint8Array) => {
       const group = CID.decode(groupData)
 
-      await components.pinManager.process(group, path, rawEntry)
+      await network.pinManager.process(group, path, rawEntry)
     }
   })
 

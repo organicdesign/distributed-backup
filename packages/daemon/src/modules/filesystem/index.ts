@@ -9,7 +9,9 @@ import read from './commands/read.js'
 import revisions from './commands/revisions.js'
 import write from './commands/write.js'
 import setup from './setup.js'
+import syncGroups from './sync-groups.js'
 import type { LocalSettings } from './local-settings.js'
+import type createSyncManager from './sync-operations.js'
 import type createUploadManager from './upload-operations.js'
 import type { Module } from '@/interface.js'
 import type { Provides as Base } from '@/modules/base/index.js'
@@ -33,6 +35,7 @@ export interface Requires extends Record<string, unknown> {
 
 export interface Provides extends Record<string, unknown> {
   uploads: Awaited<ReturnType<typeof createUploadManager>>
+  sync: Awaited<ReturnType<typeof createSyncManager>>
   localSettings: LocalSettings
   config: Config
 }
@@ -52,7 +55,9 @@ const module: Module<Init, Requires, Provides> = async (components, init) => {
     write
   ].map(c => c.apply(null, [context, components]))
 
-  return { components: context, commands }
+  const tick = async () => syncGroups(context, components)
+
+  return { components: context, tick, commands }
 }
 
 export default module
