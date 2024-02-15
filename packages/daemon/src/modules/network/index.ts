@@ -6,6 +6,7 @@ import setupComponents from './setup.js'
 import type { Module } from '@/interface.js'
 import type { Provides as Base } from '@/modules/base/index.js'
 import type { Helia } from 'helia'
+import type { PinManager } from 'helia-pin-manager'
 import type { Libp2p } from 'libp2p'
 
 const Config = z.object({
@@ -33,6 +34,7 @@ export interface Requires extends Record<string, unknown> {
 export interface Provides extends Record<string, unknown> {
   libp2p: Libp2p
   helia: Helia
+  pinManager: PinManager
   config: Config
 }
 
