@@ -7,7 +7,7 @@ import type { Provides, Requires } from './index.js'
 import { EncodedEntry } from '@/interface.js'
 import { linearWeightTranslation, decodeEntry } from '@/utils.js'
 
-export default async (context: Provides, { network }: Requires) => {
+export default async (context: Provides, { network }: Requires): Promise<void> => {
   // logger.tick("STARTED");
   // logger.tick("GOT REMOTE CONTENTS");
 

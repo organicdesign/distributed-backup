@@ -61,7 +61,7 @@ const module: Module<Init, Requires, Provides> = async (components, init) => {
     joinGroup,
     listGroups,
     sync
-  ].map(c => c.apply(null, [context, components]))
+  ].map(c => c(context, components))
 
   return { commands, components: context }
 }

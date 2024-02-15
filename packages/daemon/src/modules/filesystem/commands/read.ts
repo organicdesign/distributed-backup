@@ -4,11 +4,11 @@ import { Read } from 'rpc-interfaces'
 import { collect } from 'streaming-iterables'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { Requires } from '../index.js'
+import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor, EncodedEntry } from '@/interface.js'
 import { decodeEntry, createDataKey } from '@/utils.js'
 
-const command: RPCCommandConstructor<{}, Requires> = (_, { network }) => ({
+const command: RPCCommandConstructor<Provides, Requires> = (_, { network }) => ({
   name: Read.name,
 
   async method (raw: unknown): Promise<Read.Return> {

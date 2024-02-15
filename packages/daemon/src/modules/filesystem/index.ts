@@ -54,9 +54,9 @@ const module: Module<Init, Requires, Provides> = async (components, init) => {
     read,
     revisions,
     write
-  ].map(c => c.apply(null, [context, components]))
+  ].map(c => c(context, components))
 
-  const tick = async () => {
+  const tick = async (): Promise<void> => {
     await syncGroups(context, components)
     await download(context, components)
   }

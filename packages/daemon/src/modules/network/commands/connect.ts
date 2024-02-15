@@ -5,16 +5,16 @@ import type { RPCCommandConstructor } from '@/interface.js'
 
 const command: RPCCommandConstructor<Provides> = (context) => {
   return {
-	  name: Connect.name,
+    name: Connect.name,
 
-	  async method (raw: unknown): Promise<Connect.Return> {
-	    const params = Connect.Params.parse(raw)
-	    const address = multiaddr(params.address)
+    async method (raw: unknown): Promise<Connect.Return> {
+      const params = Connect.Params.parse(raw)
+      const address = multiaddr(params.address)
 
-	    await context.libp2p.dial(address)
+      await context.libp2p.dial(address)
 
-	    return null
-	  }
+      return null
+    }
   }
 }
 

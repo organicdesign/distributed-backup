@@ -1,11 +1,11 @@
 import * as dagCbor from '@ipld/dag-cbor'
 import { CID } from 'multiformats/cid'
 import { Revisions } from 'rpc-interfaces'
-import type { Requires } from '../index.js'
+import type { Provides, Requires } from '../index.js'
 import { type RPCCommandConstructor, EncodedEntry } from '@/interface.js'
 import { decodeAny, createVersionKey } from '@/utils.js'
 
-const command: RPCCommandConstructor<{}, Requires> = (_, { network }) => ({
+const command: RPCCommandConstructor<Provides, Requires> = (_, { network }) => ({
   name: Revisions.name,
 
   async method (raw: unknown): Promise<Revisions.Return> {
