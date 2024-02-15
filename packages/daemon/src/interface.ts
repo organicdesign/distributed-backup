@@ -53,18 +53,6 @@ export const LocalEntryData = z.object({
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type LocalEntryData = z.infer<typeof LocalEntryData>
 
-export const ImportOptions = z.object({
-  hash: z.string(),
-  cidVersion: z.union([z.literal(0), z.literal(1)]),
-  chunker: z.string(),
-  rawLeaves: z.boolean(),
-  encrypt: z.boolean(),
-  path: z.string()
-})
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export type ImportOptions = z.infer<typeof ImportOptions>
-
 export const EncodedPinInfo = z.object({
   hash: z.instanceof(Uint8Array),
   cid: z.instanceof(Uint8Array)
