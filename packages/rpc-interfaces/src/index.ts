@@ -1,6 +1,7 @@
 export * as Addresses from './rpc/addresses.js'
 export * as Connect from './rpc/connect.js'
 export * as Connections from './rpc/connections.js'
+export * as CountPeers from './rpc/count-peers.js'
 export * as CreateGroup from './rpc/create-group.js'
 export * as Delete from './rpc/delete.js'
 export * as Edit from './rpc/edit.js'
