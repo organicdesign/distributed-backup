@@ -5,12 +5,12 @@ import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import { take } from 'streaming-iterables'
 import selectRevisions from './select-revisions.js'
+import type { Requires } from './index.js'
 import type { Datastore } from 'interface-datastore'
 import {
   EncodedEntry,
   type Entry,
-  type Pair,
-  type Components
+  type Pair
 } from '@/interface.js'
 import { OperationManager } from '@/operation-manager.js'
 import {
@@ -22,16 +22,14 @@ import {
   stripPrefix
 } from '@/utils.js'
 
-type OpComponents = Pick<Components, 'pinManager' | 'libp2p' | 'groups' | 'blockstore' | 'helia'> & { datastore: Datastore }
-
-export default async (components: OpComponents): Promise<OperationManager<{
+export default async ({ network, base }: Requires, datastore: Datastore): Promise<OperationManager<{
   put(groupData: Uint8Array, path: string, encodedEntry: NonNullable<EncodedEntry>): Promise<void>
   delete(groupData: Uint8Array, path: string): Promise<Array<Pair<string, Entry>>>
 }>> => {
   const put = async (groupData: Uint8Array, path: string, encodedEntry: NonNullable<EncodedEntry>): Promise<void> => {
     const group = CID.decode(groupData)
     const entry = decodeEntry(encodedEntry)
-    const database = components.groups.get(group)
+    const database = network.groups.get(group)
     let sequence = 0
 
     if (database == null) {
@@ -54,15 +52,15 @@ export default async (components: OpComponents): Promise<OperationManager<{
 
     entry.sequence = sequence
 
-    await components.pinManager.process(group, path, dagCbor.encode(encodeEntry(entry)), true)
+    await network.pinManager.process(group, path, dagCbor.encode(encodeEntry(entry)), true)
 
     const paths = [
       createDataKey(path),
-      createVersionKey(path, components.libp2p.peerId, entry.sequence)
+      createVersionKey(path, network.libp2p.peerId, entry.sequence)
     ]
 
     for (const path of paths) {
-      await components.groups.addTo(group, path, entry)
+      await network.groups.addTo(group, path, entry)
     }
 
     // Handle revisions.
@@ -87,17 +85,17 @@ export default async (components: OpComponents): Promise<OperationManager<{
         continue
       }
 
-      await components.groups.deleteFrom(group, path)
-      await components.pinManager.remove(group, path)
+      await network.groups.deleteFrom(group, path)
+      await network.pinManager.remove(group, path)
     }
   }
 
-  const om = new OperationManager(components.datastore, {
+  const om = new OperationManager(datastore, {
     put,
 
     async delete (groupData: Uint8Array, path: string) {
       const group = CID.decode(groupData)
-      const database = components.groups.get(group)
+      const database = network.groups.get(group)
 
       if (database == null) {
         throw new Error('no such group')
@@ -106,15 +104,15 @@ export default async (components: OpComponents): Promise<OperationManager<{
       const index = database.store.index
       const key = createDataKey(path)
       const parentPath = key.split('/').slice(0, -2).join('/')
-      const fs = unixfs(components.helia)
+      const fs = unixfs(network.helia)
       const cid = await fs.addBytes(new Uint8Array([]))
-      const { blocks, size } = await getDagSize(components.blockstore, cid)
+      const { blocks, size } = await getDagSize(base.blockstore, cid)
 
       const pairs = await all(index.query({ prefix: key }))
 
       await Promise.all(pairs.map(async p => {
-        await components.groups.deleteFrom(group, p.key.toString())
-        await components.pinManager.remove(group, p.key.toString())
+        await network.groups.deleteFrom(group, p.key.toString())
+        await network.pinManager.remove(group, p.key.toString())
       }))
 
       const values = await all(take(1)(index.query({ prefix: parentPath })))
@@ -122,7 +120,7 @@ export default async (components: OpComponents): Promise<OperationManager<{
       if (values.filter(v => v.key.toString() !== key).length === 0) {
         await put(groupData, Path.join(stripPrefix(parentPath), '.PLACE_HOLDER'), encodeEntry({
           cid,
-          author: components.libp2p.peerId.toCID(),
+          author: network.libp2p.peerId.toCID(),
           encrypted: false,
           blocks,
           size,

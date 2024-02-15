@@ -8,6 +8,7 @@ import list from './commands/list.js'
 import read from './commands/read.js'
 import revisions from './commands/revisions.js'
 import write from './commands/write.js'
+import setup from './setup.js'
 import type { LocalSettings } from './local-settings.js'
 import type createUploadManager from './upload-operations.js'
 import type { Module } from '@/interface.js'
@@ -38,12 +39,7 @@ export interface Provides extends Record<string, unknown> {
 
 const module: Module<Init, Requires, Provides> = async (components, init) => {
   const config = Config.parse(init.config)
-
-  const context = {
-    uploads: null as unknown as Awaited<ReturnType<typeof createUploadManager>>,
-    localSettings: null as unknown as LocalSettings,
-    config
-  }
+  const context = await setup(components, config)
 
   const commands = [
     del,
