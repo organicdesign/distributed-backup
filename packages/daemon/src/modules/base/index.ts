@@ -19,7 +19,7 @@ const Config = z.object({
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type Config = z.output<typeof Config>
 
-export interface Init { config: unknown, key: string }
+export interface Init extends Record<string, unknown> { config: unknown, key: string }
 
 export interface Requires extends Record<string, unknown> {}
 
