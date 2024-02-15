@@ -2,6 +2,14 @@ import { type CID } from 'multiformats/cid'
 import { RevisionStrategies } from 'rpc-interfaces/zod'
 import { z } from 'zod'
 
+export const LocalEntryData = z.object({
+  priority: z.number().min(0).max(100),
+  revisionStrategy: RevisionStrategies
+})
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export type LocalEntryData = z.infer<typeof LocalEntryData>
+
 export const EncodedEntry = z.union([
   z.object({
     cid: z.instanceof(Uint8Array),

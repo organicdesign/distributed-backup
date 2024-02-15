@@ -1,5 +1,3 @@
-import { RevisionStrategies } from 'rpc-interfaces/zod'
-import { z } from 'zod'
 import type { GossipsubEvents } from '@chainsafe/libp2p-gossipsub'
 import type { PubSub } from '@libp2p/interface'
 import type { Libp2p as BaseLibp2p } from 'libp2p'
@@ -38,11 +36,3 @@ export interface Pair<Key = unknown, Value = unknown> {
   key: Key
   value: Value
 }
-
-export const LocalEntryData = z.object({
-  priority: z.number().min(0).max(100),
-  revisionStrategy: RevisionStrategies
-})
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export type LocalEntryData = z.infer<typeof LocalEntryData>

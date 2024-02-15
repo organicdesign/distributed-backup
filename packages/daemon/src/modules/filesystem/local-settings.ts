@@ -1,6 +1,6 @@
 import { Key, type Datastore } from 'interface-datastore'
 import { type CID } from 'multiformats/cid'
-import { LocalEntryData } from '@/interface.js'
+import { LocalEntryData } from './interface.js'
 import { encodeAny, decodeAny } from '@/utils.js'
 
 /**
