@@ -3,7 +3,6 @@ import { z } from 'zod'
 import type { GossipsubEvents } from '@chainsafe/libp2p-gossipsub'
 import type { PubSub } from '@libp2p/interface'
 import type { Libp2p as BaseLibp2p } from 'libp2p'
-import type { Database, Keyvalue } from 'welo'
 
 export type Libp2p = BaseLibp2p<{ pubsub: PubSub<GossipsubEvents> }>
 
@@ -38,10 +37,6 @@ export interface Module<
 export interface Pair<Key = unknown, Value = unknown> {
   key: Key
   value: Value
-}
-
-export interface KeyvalueDB extends Database {
-  store: Keyvalue
 }
 
 export const LocalEntryData = z.object({
