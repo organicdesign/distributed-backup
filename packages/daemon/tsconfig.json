@@ -30,9 +30,6 @@
       "path": "../key-manager"
     },
     {
-      "path": "../cipher"
-    },
-    {
       "path": "../logger"
     },
     {
