@@ -1,17 +1,10 @@
 import { type CID } from 'multiformats/cid'
 import { RevisionStrategies } from 'rpc-interfaces/zod'
 import { z } from 'zod'
-import type { LocalSettings } from './local-settings.js'
-import type createSyncManager from './sync-operations.js'
-import type createUploadManager from './upload-operations.js'
-import type { Groups } from '@/modules/network/groups.js'
 import type { GossipsubEvents } from '@chainsafe/libp2p-gossipsub'
 import type { PubSub } from '@libp2p/interface'
-import type { Cipher } from 'cipher'
-import type { Helia } from 'helia'
-import type { Blockstore } from 'interface-blockstore'
 import type { Libp2p as BaseLibp2p } from 'libp2p'
-import type { Welo, Database, Keyvalue } from 'welo'
+import type { Database, Keyvalue } from 'welo'
 
 export type Libp2p = BaseLibp2p<{ pubsub: PubSub<GossipsubEvents> }>
 
@@ -19,22 +12,22 @@ export const MEMORY_MAGIC = ':memory:'
 export const VERSION_KEY = 'v'
 export const DATA_KEY = 'r'
 
-export interface RPCCommand<Components extends {} = {}> {
+export interface RPCCommand {
   name: string
-  method(components: Components): (params: Record<string, unknown>) => Promise<unknown> | unknown
+  method(params: Record<string, unknown>): Promise<unknown> | unknown
 }
 
+export interface RPCCommandConstructor<Context extends {} = {}, Components extends {} = {}> { (context: Context, components: Components): RPCCommand }
+
 export interface Module<
-  Config extends z.AnyZodObject = z.ZodObject<{}>,
   Init extends Record<string, unknown> | void = void,
   Requires extends Record<string, unknown> = Record<string, unknown>,
-  Provides extends Record<string, unknown> = Record<string, unknown>
+  Provides extends Record<string, unknown> = Record<string, unknown>,
 > {
-  Config: Config
-
-  commands: Array<RPCCommand<Requires & Provides>>
-
-  setup (init: Init): (components: Requires) => Provides | Promise<Provides>
+  (components: Requires, init: Init): Promise<{
+    commands: RPCCommand[]
+    components: Provides
+  }>
 }
 
 export interface Pair<Key = unknown, Value = unknown> {
@@ -44,18 +37,6 @@ export interface Pair<Key = unknown, Value = unknown> {
 
 export interface KeyvalueDB extends Database {
   store: Keyvalue
-}
-
-export interface Components {
-  libp2p: Libp2p
-  helia: Helia
-  welo: Welo
-  blockstore: Blockstore
-  groups: Groups
-  cipher: Cipher
-  uploads: Awaited<ReturnType<typeof createUploadManager>>
-  sync: Awaited<ReturnType<typeof createSyncManager>>
-  localSettings: LocalSettings
 }
 
 export const EncodedEntry = z.union([
