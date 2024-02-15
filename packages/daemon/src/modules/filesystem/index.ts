@@ -1,24 +1,18 @@
 import { RevisionStrategies } from 'rpc-interfaces/zod'
 import { z } from 'zod'
-import * as del from './commands/delete.js'
-import * as edit from './commands/edit.js'
-import * as exportData from './commands/export.js'
-import * as importData from './commands/import.js'
-import * as list from './commands/list.js'
-import * as read from './commands/read.js'
-import * as revisions from './commands/revisions.js'
-import * as write from './commands/write.js'
-
-export const commands = [
-  del,
-  edit,
-  exportData,
-  importData,
-  list,
-  read,
-  revisions,
-  write
-]
+import del from './commands/delete.js'
+import edit from './commands/edit.js'
+import exportData from './commands/export.js'
+import importData from './commands/import.js'
+import list from './commands/list.js'
+import read from './commands/read.js'
+import revisions from './commands/revisions.js'
+import write from './commands/write.js'
+import type { LocalSettings } from './local-settings.js'
+import type createUploadManager from './upload-operations.js'
+import type { Module } from '@/interface.js'
+import type { Provides as Base } from '@/modules/base/index.js'
+import type { Provides as Network } from '@/modules/network/index.js'
 
 export const Config = z.object({
   defaultRevisionStrategy: RevisionStrategies
@@ -26,3 +20,43 @@ export const Config = z.object({
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type Config = z.output<typeof Config>
+
+export interface Init extends Record<string, unknown> {
+  config: unknown
+}
+
+export interface Requires extends Record<string, unknown> {
+  base: Base
+  network: Network
+}
+
+export interface Provides extends Record<string, unknown> {
+  uploads: Awaited<ReturnType<typeof createUploadManager>>
+  localSettings: LocalSettings
+  config: Config
+}
+
+const module: Module<Init, Requires, Provides> = async (components, init) => {
+  const config = Config.parse(init.config)
+
+  const context = {
+    uploads: null as unknown as Awaited<ReturnType<typeof createUploadManager>>,
+    localSettings: null as unknown as LocalSettings,
+    config
+  }
+
+  const commands = [
+    del,
+    edit,
+    exportData,
+    importData,
+    list,
+    read,
+    revisions,
+    write
+  ].map(c => c.apply(null, [context, components]))
+
+  return { components: context, commands }
+}
+
+export default module

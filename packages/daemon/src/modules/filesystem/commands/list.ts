@@ -2,25 +2,18 @@ import * as dagCbor from '@ipld/dag-cbor'
 import { CID } from 'multiformats/cid'
 import { List } from 'rpc-interfaces'
 import { toString as uint8arrayToString } from 'uint8arrays'
-import type { Groups } from '@/groups.js'
-import type { LocalSettings } from '@/local-settings.js'
-import { type RPCCommand, EncodedEntry, type LocalEntryData } from '@/interface.js'
+import type { Provides, Requires } from '../index.js'
+import { type RPCCommandConstructor, EncodedEntry, type LocalEntryData } from '@/interface.js'
 import { decodeAny, createDataKey } from '@/utils.js'
 
-export interface Components {
-  groups: Groups
-  localSettings: LocalSettings
-}
-
-const command: RPCCommand<Components> = {
+const command: RPCCommandConstructor<Provides, Requires> = (context, { network }) => ({
   name: List.name,
 
-  method: (components: Components) => async (raw: unknown): Promise<List.Return> => {
+  async method (raw: unknown): Promise<List.Return> {
     const params = List.Params.parse(raw)
-
     const promises: Array<Promise<List.Return[number]>> = []
 
-    for (const { key: cid, value: database } of components.groups.all()) {
+    for (const { key: cid, value: database } of network.groups.all()) {
       if (params.group != null && cid !== params.group) {
         continue
       }
@@ -44,7 +37,7 @@ const command: RPCCommand<Components> = {
         let ref: Partial<LocalEntryData> | null = null
 
         if (pair.key.toString().startsWith('/r')) {
-          ref = await components.localSettings.get(CID.parse(cid), pair.key.toString().slice(2))
+          ref = await context.localSettings.get(CID.parse(cid), pair.key.toString().slice(2))
         }
 
         promises.push((async () => {
@@ -68,6 +61,6 @@ const command: RPCCommand<Components> = {
 
     return Promise.all(promises)
   }
-}
+})
 
 export default command

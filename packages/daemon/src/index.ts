@@ -6,6 +6,7 @@ import { hideBin } from 'yargs/helpers'
 import yargs from 'yargs/yargs'
 import { projectPath } from './utils.js'
 import setupBase from '@/modules/base/index.js'
+import setupFilesystem from '@/modules/filesystem/index.js'
 import setupNetwork from '@/modules/network/index.js'
 
 const argv = await yargs(hideBin(process.argv))
@@ -46,7 +47,16 @@ logger.lifecycle('loaded config')
 const base = await setupBase({}, { config, key: argv.key })
 const network = await setupNetwork({ base: base.components }, { config })
 
-for (const command of [...base.commands, ...network.commands]) {
+const filesystem = await setupFilesystem({
+  base: base.components,
+  network: network.components
+}, { config })
+
+for (const command of [
+  ...base.commands,
+  ...network.commands,
+  ...filesystem.commands
+]) {
   rpc.addMethod(command.name, command.method)
 }
 

@@ -4,14 +4,15 @@ import * as dagCbor from '@ipld/dag-cbor'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import { take } from 'streaming-iterables'
+import selectRevisions from './select-revisions.js'
+import type { Datastore } from 'interface-datastore'
 import {
   EncodedEntry,
   type Entry,
   type Pair,
   type Components
-} from './interface.js'
-import { OperationManager } from './operation-manager.js'
-import selectRevisions from './select-revisions.js'
+} from '@/interface.js'
+import { OperationManager } from '@/operation-manager.js'
 import {
   decodeEntry,
   encodeEntry,
@@ -19,8 +20,7 @@ import {
   createDataKey,
   createVersionKey,
   stripPrefix
-} from './utils.js'
-import type { Datastore } from 'interface-datastore'
+} from '@/utils.js'
 
 type OpComponents = Pick<Components, 'pinManager' | 'libp2p' | 'groups' | 'blockstore' | 'helia'> & { datastore: Datastore }
 

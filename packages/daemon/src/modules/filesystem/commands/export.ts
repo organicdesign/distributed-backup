@@ -3,22 +3,16 @@ import * as dagCbor from '@ipld/dag-cbor'
 import { exportPlaintext } from 'fs-exporter'
 import { CID } from 'multiformats/cid'
 import { Export } from 'rpc-interfaces'
-import type { Groups } from '@/groups.js'
-import type { Blockstore } from 'interface-blockstore'
-import { type RPCCommand, EncodedEntry } from '@/interface.js'
+import type { Requires } from '../index.js'
+import { type RPCCommandConstructor, EncodedEntry } from '@/interface.js'
 import { decodeEntry, createDataKey } from '@/utils.js'
 
-export interface Components {
-  groups: Groups
-  blockstore: Blockstore
-}
-
-const command: RPCCommand<Components> = {
+const command: RPCCommandConstructor<{}, Requires> = (_, { base, network }) => ({
   name: Export.name,
 
-  method: (components: Components) => async (raw: unknown): Promise<Export.Return> => {
+  async method (raw: unknown): Promise<Export.Return> {
     const params = Export.Params.parse(raw)
-    const database = components.groups.get(CID.parse(params.group))
+    const database = network.groups.get(CID.parse(params.group))
 
     if (database == null) {
       throw new Error('no such group')
@@ -37,7 +31,7 @@ const command: RPCCommand<Components> = {
       const virtualPath = pair.key.toString().replace('/r', '')
 
       await exportPlaintext(
-        components.blockstore,
+        base.blockstore,
         Path.join(params.outPath, virtualPath.replace(params.path, '')),
         entry.cid
       )
@@ -45,6 +39,6 @@ const command: RPCCommand<Components> = {
 
     return null
   }
-}
+})
 
 export default command

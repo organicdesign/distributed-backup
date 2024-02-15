@@ -1,7 +1,7 @@
 import { Key, type Datastore } from 'interface-datastore'
 import { type CID } from 'multiformats/cid'
-import { LocalEntryData } from './interface.js'
-import { encodeAny, decodeAny } from './utils.js'
+import { LocalEntryData } from '@/interface.js'
+import { encodeAny, decodeAny } from '@/utils.js'
 
 /**
  * This class handles storing the local settings for entries that overwrite the

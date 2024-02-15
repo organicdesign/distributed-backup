@@ -4,24 +4,14 @@ import { selectHasher, selectChunker, importRecursive, type ImporterConfig } fro
 import * as logger from 'logger'
 import { CID } from 'multiformats/cid'
 import { Import } from 'rpc-interfaces'
-import type { Config } from '../index.js'
-import type { RPCCommand } from '@/interface.js'
-import type createUploadManager from '@/upload-operations.js'
-import type { Blockstore } from 'interface-blockstore'
-import type { Libp2p } from 'libp2p'
+import type { Provides, Requires } from '../index.js'
+import type { RPCCommandConstructor } from '@/interface.js'
 import { encodeEntry, getDagSize } from '@/utils.js'
 
-export interface Components {
-  blockstore: Blockstore
-  libp2p: Libp2p
-  uploads: Awaited<ReturnType<typeof createUploadManager>>
-  config: Config
-}
-
-const command: RPCCommand<Components> = {
+const command: RPCCommandConstructor<Provides, Requires> = (context, { network, base }) => ({
   name: Import.name,
 
-  method: (components: Components) => async (raw: unknown): Promise<Import.Return> => {
+  async method (raw: unknown): Promise<Import.Return> {
     const params = Import.Params.parse(raw)
     const encrypt = Boolean(params.encrypt)
 
@@ -35,7 +25,7 @@ const command: RPCCommand<Components> = {
       logger.add('importing %s', params.inPath)
     }
 
-    const store = params.onlyHash ? new BlackHoleBlockstore() : components.blockstore
+    const store = params.onlyHash ? new BlackHoleBlockstore() : base.blockstore
 
     /*
       const cipher = encrypt ? components.cipher : undefined;
@@ -51,7 +41,7 @@ const command: RPCCommand<Components> = {
     for await (const r of importRecursive(store, params.inPath, config)) {
       logger.add('imported %s', params.inPath)
 
-      const { size, blocks } = await getDagSize(components.blockstore, r.cid)
+      const { size, blocks } = await getDagSize(base.blockstore, r.cid)
 
       // Create the action record.
       const entry = encodeEntry({
@@ -62,8 +52,8 @@ const command: RPCCommand<Components> = {
         encrypted: encrypt,
         timestamp: Date.now(),
         priority: params.priority ?? 1,
-        author: components.libp2p.peerId.toCID(),
-        revisionStrategy: params.revisionStrategy ?? components.config.defaultRevisionStrategy
+        author: network.libp2p.peerId.toCID(),
+        revisionStrategy: params.revisionStrategy ?? context.config.defaultRevisionStrategy
       })
 
       const virtualPath = Path.join(params.path, r.path.replace(params.inPath, ''))
@@ -74,11 +64,11 @@ const command: RPCCommand<Components> = {
         cid: r.cid.toString()
       })
 
-      await components.uploads.add('put', [CID.parse(params.group).bytes, virtualPath, entry])
+      await context.uploads.add('put', [CID.parse(params.group).bytes, virtualPath, entry])
     }
 
     return cids
   }
-}
+})
 
 export default command

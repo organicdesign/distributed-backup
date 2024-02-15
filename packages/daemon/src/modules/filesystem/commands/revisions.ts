@@ -1,23 +1,19 @@
 import * as dagCbor from '@ipld/dag-cbor'
 import { CID } from 'multiformats/cid'
 import { Revisions } from 'rpc-interfaces'
-import type { Groups } from '@/groups.js'
-import { type RPCCommand, EncodedEntry } from '@/interface.js'
+import type { Requires } from '../index.js'
+import { type RPCCommandConstructor, EncodedEntry } from '@/interface.js'
 import { decodeAny, createVersionKey } from '@/utils.js'
 
-export interface Components {
-  groups: Groups
-}
-
-const command: RPCCommand<Components> = {
+const command: RPCCommandConstructor<{}, Requires> = (_, { network }) => ({
   name: Revisions.name,
 
-  method: (components: Components) => async (raw: unknown): Promise<Revisions.Return> => {
+  async method (raw: unknown): Promise<Revisions.Return> {
     const params = Revisions.Params.parse(raw)
 
     const promises: Array<Promise<Revisions.Return[number]>> = []
 
-    const database = components.groups.get(CID.parse(params.group))
+    const database = network.groups.get(CID.parse(params.group))
 
     if (database == null) {
       throw new Error('no such group')
@@ -62,6 +58,6 @@ const command: RPCCommand<Components> = {
 
     return Promise.all(promises)
   }
-}
+})
 
 export default command
