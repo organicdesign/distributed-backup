@@ -5,9 +5,9 @@ import connections from './commands/connections.js'
 import setupComponents from './setup.js'
 import type { Module } from '@/interface.js'
 import type { Provides as Base } from '@/modules/base/index.js'
+import type { Libp2p } from '@libp2p/interface'
 import type { Helia } from 'helia'
 import type { PinManager } from 'helia-pin-manager'
-import type { Libp2p } from 'libp2p'
 
 const Config = z.object({
   serverMode: z.boolean().default(false),

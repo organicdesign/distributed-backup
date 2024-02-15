@@ -1,9 +1,3 @@
-import type { GossipsubEvents } from '@chainsafe/libp2p-gossipsub'
-import type { PubSub } from '@libp2p/interface'
-import type { Libp2p as BaseLibp2p } from 'libp2p'
-
-export type Libp2p = BaseLibp2p<{ pubsub: PubSub<GossipsubEvents> }>
-
 export const MEMORY_MAGIC = ':memory:'
 export const VERSION_KEY = 'v'
 export const DATA_KEY = 'r'

@@ -12,8 +12,7 @@ import { tcp } from '@libp2p/tcp'
 import { uPnPNAT } from '@libp2p/upnp-nat'
 import { webSockets } from '@libp2p/websockets'
 import { createLibp2p } from 'libp2p'
-import type { Libp2p } from '@/interface.js'
-import type { PeerId } from '@libp2p/interface'
+import type { Libp2p, PeerId } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 
 export default async ({ datastore, peerId, psk, addresses, bootstrap: bs, serverMode }: { datastore?: Datastore, peerId?: PeerId, psk?: Uint8Array, addresses?: string[], bootstrap?: string[], serverMode?: boolean }): Promise<Libp2p> => {
