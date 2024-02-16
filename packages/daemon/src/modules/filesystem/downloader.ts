@@ -18,7 +18,7 @@ export default async (context: Provides, { groups }: Requires): Promise<void> =>
       const priority = p ?? 100
       const weight = Math.floor(linearWeightTranslation(priority / 100) * SLOTS) + 1
 
-      const downloaders = await groups.pinManager.download(cid, { limit: weight })
+      const downloaders = await context.pinManager.download(cid, { limit: weight })
 
       yield * downloaders
     }
@@ -43,7 +43,7 @@ export default async (context: Provides, { groups }: Requires): Promise<void> =>
   const getPins = async function * (loop: AsyncIterable<void>): AsyncGenerator<[CID, number | undefined]> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     for await (const _ of loop) {
-      for await (const { group, path } of groups.pinManager.getActive()) {
+      for await (const { group, path } of context.pinManager.getActive()) {
         const database = groups.groups.get(group)
 
         if (database == null) {

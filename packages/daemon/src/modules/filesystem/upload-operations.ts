@@ -9,11 +9,12 @@ import { EncodedEntry, type Entry } from './interface.js'
 import selectRevisions from './select-revisions.js'
 import { decodeEntry, encodeEntry, getDagSize, createDataKey, createVersionKey, stripPrefix } from './utils.js'
 import type { Requires } from './index.js'
+import type { PinManager } from './pin-manager.js'
 import type { Pair } from '@/interface.js'
 import type { Datastore } from 'interface-datastore'
 import { OperationManager } from '@/operation-manager.js'
 
-export default async ({ network, base, groups }: Requires, datastore: Datastore): Promise<OperationManager<{
+export default async ({ network, base, groups }: Requires, pinManager: PinManager, datastore: Datastore): Promise<OperationManager<{
   put(groupData: Uint8Array, path: string, encodedEntry: NonNullable<EncodedEntry>): Promise<void>
   delete(groupData: Uint8Array, path: string): Promise<Array<Pair<string, Entry>>>
 }>> => {
@@ -45,7 +46,7 @@ export default async ({ network, base, groups }: Requires, datastore: Datastore)
 
     entry.sequence = sequence
 
-    await groups.pinManager.process(group, path, dagCbor.encode(encodeEntry(entry)), true)
+    await pinManager.process(group, path, dagCbor.encode(encodeEntry(entry)), true)
 
     const paths = [
       createDataKey(path),
@@ -79,7 +80,7 @@ export default async ({ network, base, groups }: Requires, datastore: Datastore)
       }
 
       await fs.remove(path)
-      await groups.pinManager.remove(group, path)
+      await pinManager.remove(group, path)
     }
   }
 
@@ -106,7 +107,7 @@ export default async ({ network, base, groups }: Requires, datastore: Datastore)
 
       await Promise.all(pairs.map(async p => {
         await fs.remove(p.key.toString())
-        await groups.pinManager.remove(group, p.key.toString())
+        await pinManager.remove(group, p.key.toString())
       }))
 
       const values = await all(take(1)(index.query({ prefix: parentPath })))

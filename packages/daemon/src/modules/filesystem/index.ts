@@ -12,6 +12,7 @@ import download from './downloader.js'
 import setup from './setup.js'
 import syncGroups from './sync-groups.js'
 import type { LocalSettings } from './local-settings.js'
+import type { PinManager } from './pin-manager.js'
 import type createSyncManager from './sync-operations.js'
 import type createUploadManager from './upload-operations.js'
 import type { Module } from '@/interface.js'
@@ -40,6 +41,7 @@ export interface Provides extends Record<string, unknown> {
   uploads: Awaited<ReturnType<typeof createUploadManager>>
   sync: Awaited<ReturnType<typeof createSyncManager>>
   localSettings: LocalSettings
+  pinManager: PinManager
   config: Config
 }
 

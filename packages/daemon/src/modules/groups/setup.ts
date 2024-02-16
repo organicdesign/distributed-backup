@@ -1,6 +1,5 @@
 import { createWelo, pubsubReplicator, bootstrapReplicator } from 'welo'
 import { createGroups } from './groups.js'
-import { PinManager } from './pin-manager.js'
 import type { Requires, Provides } from './index.js'
 import { extendDatastore } from '@/utils.js'
 
@@ -17,14 +16,8 @@ export default async ({ base, network }: Requires): Promise<Provides> => {
     welo
   })
 
-  const pinManager = new PinManager({
-    pinManager: network.pinManager,
-    datastore: extendDatastore(base.datastore, 'pin-references')
-  })
-
   return {
     welo,
-    pinManager,
     groups
   }
 }

@@ -12,7 +12,7 @@ export default async (context: Provides, { groups }: Requires): Promise<void> =>
       const path = pair.key.toString()
 
       // All we really want to do here is check for dirty entries.
-      if (await groups.pinManager.validate(group, path, pair.value)) {
+      if (await context.pinManager.validate(group, path, pair.value)) {
         continue
       }
 

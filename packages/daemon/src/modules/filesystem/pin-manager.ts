@@ -6,10 +6,9 @@ import * as logger from 'logger'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { compare as uint8ArrayCompare } from 'uint8arrays/compare'
-import { EncodedPinInfo, type PinInfo } from './interface.js'
+import { EncodedPinInfo, type PinInfo, type Entry, EncodedEntry } from './interface.js'
+import { decodeEntry } from './utils.js'
 import type { PinManager as HeliaPinManager, BlockInfo } from 'helia-pin-manager'
-import { type Entry, EncodedEntry } from '@/modules/filesystem/interface.js'
-import { decodeEntry } from '@/modules/filesystem/utils.js'
 import { encodeAny, decodeAny } from '@/utils.js'
 
 // Get the hash data from raw data.
@@ -35,7 +34,7 @@ const decodeEntryFromRaw = (data: Uint8Array): Entry | null => {
 // Generate the key to store data under.
 const makeKey = (group: CID, path: string): Key => new Key(Path.join(group.toString(), path))
 
-// This class is responsible for keeping track of what is pinned uner what group/path and automatically unpinning if there are no more references to a pin.
+// This class is responsible for keeping track of what is pinned under what group/path and automatically unpinning if there are no more references to a pin.
 export class PinManager {
   private readonly datastore: Datastore
   private readonly pinManager: HeliaPinManager
