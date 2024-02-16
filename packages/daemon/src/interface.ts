@@ -1,3 +1,9 @@
+import type { Database, Keyvalue } from 'welo'
+
+export interface KeyvalueDB extends Database {
+  store: Keyvalue
+}
+
 export const MEMORY_MAGIC = ':memory:'
 
 export interface RPCCommand {

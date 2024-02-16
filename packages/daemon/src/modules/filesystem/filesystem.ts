@@ -1,7 +1,7 @@
 import Path from 'path'
 import { groups as logger } from 'logger'
 import type { Entry, EncodedEntry } from './interface.js'
-import type { KeyvalueDB } from '@/modules/groups/interface.js'
+import type { KeyvalueDB } from '@/interface.js'
 
 export class Filesystem {
   private readonly database: KeyvalueDB
