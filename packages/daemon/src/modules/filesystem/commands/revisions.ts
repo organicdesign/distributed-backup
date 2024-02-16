@@ -1,42 +1,25 @@
-import * as dagCbor from '@ipld/dag-cbor'
 import { CID } from 'multiformats/cid'
 import { Revisions } from 'rpc-interfaces'
-import { EncodedEntry } from '../interface.js'
+import { Filesystem } from '../filesystem.js'
 import { createVersionKey } from '../utils.js'
 import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor } from '@/interface.js'
-import { decodeAny } from '@/utils.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = (_, { groups }) => ({
+const command: RPCCommandConstructor<Provides, Requires> = (context, { groups }) => ({
   name: Revisions.name,
 
   async method (raw: unknown): Promise<Revisions.Return> {
     const params = Revisions.Params.parse(raw)
-
-    const promises: Array<Promise<Revisions.Return[number]>> = []
-
+    const revisions: Revisions.Return = []
     const database = groups.groups.get(CID.parse(params.group))
 
     if (database == null) {
       throw new Error('no such group')
     }
 
-    const index = await database.store.latest()
+    const fs = new Filesystem(context.pinManager, database)
 
-    for await (const pair of index.query({ prefix: createVersionKey(params.path) })) {
-      // Ignore null values...
-      if (decodeAny(pair.value) == null) {
-        continue
-      }
-
-      const entry = EncodedEntry.optional().parse(dagCbor.decode(pair.value))
-
-      if (entry == null) {
-        continue
-      }
-
-      const item = CID.decode(entry.cid)
-
+    for await (const pair of fs.getDir(createVersionKey(params.path))) {
       const keyParts = pair.key.toString().split('/')
       const sequence = keyParts.pop()
       const author = keyParts.pop()
@@ -45,20 +28,18 @@ const command: RPCCommandConstructor<Provides, Requires> = (_, { groups }) => ({
         throw new Error('corrupted database')
       }
 
-      promises.push((async () => {
-        return {
-          cid: item.toString(),
-          encrypted: entry.encrypted,
-          author,
-          sequence: Number(sequence),
-          timestamp: entry.timestamp,
-          size: entry.size,
-          blocks: entry.blocks
-        }
-      })())
+      revisions.push({
+        cid: pair.value.cid.toString(),
+        encrypted: pair.value.encrypted,
+        author,
+        sequence: Number(sequence),
+        timestamp: pair.value.timestamp,
+        size: pair.value.size,
+        blocks: pair.value.blocks
+      })
     }
 
-    return Promise.all(promises)
+    return revisions
   }
 })
 

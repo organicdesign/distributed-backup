@@ -3,8 +3,8 @@ import { pipe } from 'it-pipe'
 import * as logger from 'logger'
 import { type CID } from 'multiformats/cid'
 import { collect } from 'streaming-iterables'
-import { EncodedEntry } from './interface.js'
-import { decodeEntry, linearWeightTranslation } from './utils.js'
+import { Filesystem } from './filesystem.js'
+import { linearWeightTranslation } from './utils.js'
 import type { Provides, Requires } from './index.js'
 
 export default async (context: Provides, { groups }: Requires): Promise<void> => {
@@ -51,15 +51,12 @@ export default async (context: Provides, { groups }: Requires): Promise<void> =>
           continue
         }
 
-        const paily = database.store.index
-        const data = await database.store.selectors.get(paily)(path)
-        const encodedEntry = EncodedEntry.parse(data)
+        const fs = new Filesystem(context.pinManager, database)
+        const entry = await fs.get(path)
 
-        if (encodedEntry == null) {
+        if (entry == null) {
           continue
         }
-
-        const entry = decodeEntry(encodedEntry)
 
         let priority: number = entry.priority
 

@@ -28,7 +28,7 @@ export default async ({ network, base, groups }: Requires, pinManager: PinManage
       throw new Error('unable to get group')
     }
 
-    const fs = new Filesystem(database)
+    const fs = new Filesystem(pinManager, database)
 
     const obj = await database.store.selectors.get(database.store.index)(
       createDataKey(path)
@@ -46,15 +46,13 @@ export default async ({ network, base, groups }: Requires, pinManager: PinManage
 
     entry.sequence = sequence
 
-    await pinManager.process(group, path, dagCbor.encode(encodeEntry(entry)), true)
-
     const paths = [
       createDataKey(path),
       createVersionKey(path, network.libp2p.peerId, entry.sequence)
     ]
 
     for (const path of paths) {
-      await fs.write(path, entry)
+      await fs.put(path, entry, true)
     }
 
     // Handle revisions.
@@ -79,8 +77,7 @@ export default async ({ network, base, groups }: Requires, pinManager: PinManage
         continue
       }
 
-      await fs.remove(path)
-      await pinManager.remove(group, path)
+      await fs.delete(path)
     }
   }
 
@@ -95,7 +92,7 @@ export default async ({ network, base, groups }: Requires, pinManager: PinManage
         throw new Error('no such group')
       }
 
-      const fs = new Filesystem(database)
+      const fs = new Filesystem(pinManager, database)
       const index = database.store.index
       const key = createDataKey(path)
       const parentPath = key.split('/').slice(0, -2).join('/')
@@ -105,10 +102,7 @@ export default async ({ network, base, groups }: Requires, pinManager: PinManage
 
       const pairs = await all(index.query({ prefix: key }))
 
-      await Promise.all(pairs.map(async p => {
-        await fs.remove(p.key.toString())
-        await pinManager.remove(group, p.key.toString())
-      }))
+      await Promise.all(pairs.map(async p => fs.delete(p.key.toString())))
 
       const values = await all(take(1)(index.query({ prefix: parentPath })))
 

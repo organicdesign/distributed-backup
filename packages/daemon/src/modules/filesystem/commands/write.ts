@@ -1,11 +1,11 @@
 import { unixfs } from '@helia/unixfs'
-import * as dagCbor from '@ipld/dag-cbor'
 import { CID } from 'multiformats/cid'
 import { Write } from 'rpc-interfaces'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { decodeEntry, encodeEntry, getDagSize, createDataKey } from '../utils.js'
+import { Filesystem } from '../filesystem.js'
+import { getDagSize, createDataKey } from '../utils.js'
 import type { Provides, Requires } from '../index.js'
-import type { EncodedEntry, Entry } from '../interface.js'
+import type { Entry } from '../interface.js'
 import type { RPCCommandConstructor } from '@/interface.js'
 
 const command: RPCCommandConstructor<Provides, Requires> = (context, { base, network, groups }) => ({
@@ -20,14 +20,14 @@ const command: RPCCommandConstructor<Provides, Requires> = (context, { base, net
       throw new Error('no such group')
     }
 
+    const fs = new Filesystem(context.pinManager, database)
     const key = createDataKey(params.path)
-    const encodedEntry = await database.store.selectors.get(database.store.index)(key) as EncodedEntry
-    const entry: Partial<Entry> = encodedEntry == null ? {} : decodeEntry(encodedEntry)
-    const fs = unixfs(network.helia)
-    const cid = await fs.addBytes(uint8ArrayFromString(params.data))
+    const entry: Partial<Entry> = await fs.get(key) ?? {}
+    const ufs = unixfs(network.helia)
+    const cid = await ufs.addBytes(uint8ArrayFromString(params.data))
     const { blocks, size } = await getDagSize(base.blockstore, cid)
 
-    const newEncodedEntry = encodeEntry({
+    const newEntry: Entry = {
       cid,
       author: network.libp2p.peerId.toCID(),
       encrypted: false,
@@ -37,12 +37,9 @@ const command: RPCCommandConstructor<Provides, Requires> = (context, { base, net
       priority: entry?.priority ?? 100,
       sequence: entry?.sequence != null ? entry.sequence + 1 : 0,
       revisionStrategy: entry.revisionStrategy ?? context.config.defaultRevisionStrategy
-    })
+    }
 
-    const put = database.store.creators.put(key, newEncodedEntry)
-
-    await database.replica.write(put)
-    await context.pinManager.process(group, key, dagCbor.encode(newEncodedEntry), true)
+    await fs.put(key, newEntry, true)
 
     return params.data.length
   }

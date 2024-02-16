@@ -1,14 +1,13 @@
 import Path from 'path'
-import * as dagCbor from '@ipld/dag-cbor'
 import { exportPlaintext } from 'fs-exporter'
 import { CID } from 'multiformats/cid'
 import { Export } from 'rpc-interfaces'
-import { EncodedEntry } from '../interface.js'
-import { decodeEntry, createDataKey } from '../utils.js'
+import { Filesystem } from '../filesystem.js'
+import { createDataKey } from '../utils.js'
 import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor } from '@/interface.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = (_, { base, groups }) => ({
+const command: RPCCommandConstructor<Provides, Requires> = (context, { base, groups }) => ({
   name: Export.name,
 
   async method (raw: unknown): Promise<Export.Return> {
@@ -19,22 +18,15 @@ const command: RPCCommandConstructor<Provides, Requires> = (_, { base, groups })
       throw new Error('no such group')
     }
 
-    const index = await database.store.latest()
+    const fs = new Filesystem(context.pinManager, database)
 
-    for await (const pair of index.query({ prefix: createDataKey(params.path) })) {
-      const encodedEntry = EncodedEntry.parse(dagCbor.decode(pair.value))
-
-      if (encodedEntry == null) {
-        continue
-      }
-
-      const entry = decodeEntry(encodedEntry)
+    for await (const pair of fs.getDir(createDataKey(params.path))) {
       const virtualPath = pair.key.toString().replace('/r', '')
 
       await exportPlaintext(
         base.blockstore,
         Path.join(params.outPath, virtualPath.replace(params.path, '')),
-        entry.cid
+        pair.value.cid
       )
     }
 
