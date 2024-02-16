@@ -1,11 +1,9 @@
-import Path from 'path'
 import { Key } from 'interface-datastore'
 import { groups as logger } from 'logger'
 import { Manifest } from 'welo/manifest/index'
 import { decodeCbor } from 'welo/utils/block'
 import type { KeyvalueDB } from './interface.js'
 import type { Pair } from '@/interface.js'
-import type { Entry, EncodedEntry } from '@/modules/filesystem/interface.js'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
@@ -64,47 +62,6 @@ export class Groups implements Startable {
     await this.datastore.put(new Key(database.address.cid.toString()), database.manifest.block.bytes)
 
     logger(`[join] ${manifest.address.cid.toString()}`)
-  }
-
-  async addTo (group: CID, path: string, entry: Entry): Promise<void> {
-    const database = this.groups.get(group.toString())
-
-    if (database == null) {
-      throw new Error('not a part of group')
-    }
-
-    logger(`[+] ${Path.join(group.toString(), path)}`)
-
-    const rawEntry: EncodedEntry = {
-      cid: entry.cid.bytes,
-      author: entry.author.bytes,
-      encrypted: entry.encrypted,
-      timestamp: entry.timestamp,
-      sequence: entry.sequence,
-      blocks: entry.blocks,
-      size: entry.size,
-      priority: entry.priority,
-      revisionStrategy: entry.revisionStrategy
-    }
-
-    // Update global database.
-    const op = database.store.creators.put(path, rawEntry)
-
-    await database.replica.write(op)
-  }
-
-  async deleteFrom (group: CID, path: string): Promise<void> {
-    const database = this.groups.get(group.toString())
-
-    if (database == null) {
-      throw new Error('not a part of group')
-    }
-
-    logger(`[-] ${Path.join(group.toString(), path)}`)
-
-    const op = database.store.creators.del(path)
-
-    await database.replica.write(op)
   }
 
   get (group: CID): KeyvalueDB | undefined {

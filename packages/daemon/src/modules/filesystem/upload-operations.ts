@@ -4,6 +4,7 @@ import * as dagCbor from '@ipld/dag-cbor'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import { take } from 'streaming-iterables'
+import { Filesystem } from './filesystem.js'
 import { EncodedEntry, type Entry } from './interface.js'
 import selectRevisions from './select-revisions.js'
 import { decodeEntry, encodeEntry, getDagSize, createDataKey, createVersionKey, stripPrefix } from './utils.js'
@@ -25,6 +26,8 @@ export default async ({ network, base, groups }: Requires, datastore: Datastore)
     if (database == null) {
       throw new Error('unable to get group')
     }
+
+    const fs = new Filesystem(database)
 
     const obj = await database.store.selectors.get(database.store.index)(
       createDataKey(path)
@@ -50,7 +53,7 @@ export default async ({ network, base, groups }: Requires, datastore: Datastore)
     ]
 
     for (const path of paths) {
-      await groups.groups.addTo(group, path, entry)
+      await fs.write(path, entry)
     }
 
     // Handle revisions.
@@ -75,7 +78,7 @@ export default async ({ network, base, groups }: Requires, datastore: Datastore)
         continue
       }
 
-      await groups.groups.deleteFrom(group, path)
+      await fs.remove(path)
       await groups.pinManager.remove(group, path)
     }
   }
@@ -91,17 +94,18 @@ export default async ({ network, base, groups }: Requires, datastore: Datastore)
         throw new Error('no such group')
       }
 
+      const fs = new Filesystem(database)
       const index = database.store.index
       const key = createDataKey(path)
       const parentPath = key.split('/').slice(0, -2).join('/')
-      const fs = unixfs(network.helia)
-      const cid = await fs.addBytes(new Uint8Array([]))
+      const ufs = unixfs(network.helia)
+      const cid = await ufs.addBytes(new Uint8Array([]))
       const { blocks, size } = await getDagSize(base.blockstore, cid)
 
       const pairs = await all(index.query({ prefix: key }))
 
       await Promise.all(pairs.map(async p => {
-        await groups.groups.deleteFrom(group, p.key.toString())
+        await fs.remove(p.key.toString())
         await groups.pinManager.remove(group, p.key.toString())
       }))
 
