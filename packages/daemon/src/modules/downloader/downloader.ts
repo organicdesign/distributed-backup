@@ -12,11 +12,9 @@ export default async (context: Provides): Promise<void> => {
 
   const SLOTS = 50
 
-  const batchDownload = async function * (itr: AsyncIterable<[CID, number | undefined]>): AsyncGenerator<() => Promise<{ cid: CID, block: Uint8Array }>, void, undefined> {
-    for await (const [cid, p] of itr) {
-      const priority = p ?? 100
+  const batchDownload = async function * (itr: AsyncIterable<[CID, number]>): AsyncGenerator<() => Promise<{ cid: CID, block: Uint8Array }>, void, undefined> {
+    for await (const [cid, priority] of itr) {
       const weight = Math.floor(linearWeightTranslation(priority / 100) * SLOTS) + 1
-
       const downloaders = await context.pinManager.download(cid, { limit: weight })
 
       yield * downloaders
@@ -39,34 +37,11 @@ export default async (context: Provides): Promise<void> => {
     }
   }
 
-  const getPins = async function * (loop: AsyncIterable<void>): AsyncGenerator<[CID, number | undefined]> {
+  const getPins = async function * (loop: AsyncIterable<void>): AsyncGenerator<[CID, number]> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     for await (const _ of loop) {
-      for await (const { group, path } of context.pinManager.getActive()) {
-        const fs = context.getFileSystem(group)
-
-        if (fs == null) {
-          logger.warn('Reverse lookup points to non-existant database: ', group)
-          continue
-        }
-
-        const entry = await fs.get(path)
-
-        if (entry == null) {
-          continue
-        }
-
-        let priority: number = entry.priority
-
-        if (path.startsWith('/r')) {
-          const localRef = await context.localSettings.get(group, path.slice(2))
-
-          if (localRef?.priority != null) {
-            priority = localRef.priority
-          }
-        }
-
-        yield [entry.cid, priority]
+      for await (const { value } of context.pinManager.getActive()) {
+        yield [value.cid, value.priority]
       }
     }
   }
