@@ -1,7 +1,7 @@
 import Path from 'path'
-import { VERSION_KEY, EncodedEntry, type Entry } from './interface.js'
-import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import { CID } from 'multiformats/cid'
+import { toString as uint8arrayToString } from 'uint8arrays/to-string'
+import { VERSION_KEY, EncodedEntry, type Entry } from './interface.js'
 
 export const encodeEntry = (entry: Entry): NonNullable<EncodedEntry> => {
   const ee: NonNullable<EncodedEntry> = {

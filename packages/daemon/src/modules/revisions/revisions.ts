@@ -1,6 +1,6 @@
 import Path from 'path'
 import { groups as logger } from 'logger'
-import { type Entry, EncodedEntry } from './interface.js'
+import { type Entry, type EncodedEntry } from './interface.js'
 import { createVersionKey, encodeEntry, decodeEntry } from './utils.js'
 import type { KeyvalueDB } from '@/interface.js'
 import type { CID } from 'multiformats/cid'
@@ -17,7 +17,7 @@ export class Revisions {
   }
 
   async put (path: string, author: Uint8Array, sequence: number, entry: Entry): Promise<void> {
-		const key = createVersionKey(path, author, sequence)
+    const key = createVersionKey(path, author, sequence)
 
     logger(`[+] ${Path.join(this.group.toString(), key)}`)
 
@@ -30,7 +30,7 @@ export class Revisions {
   }
 
   async get (path: string, author: Uint8Array, sequence: number): Promise<Entry | null> {
-		const key = createVersionKey(path, author, sequence)
+    const key = createVersionKey(path, author, sequence)
     const encodedEntry = await this.database.store.selectors.get(this.database.store.index)(key) as EncodedEntry
 
     if (encodedEntry == null) {
@@ -41,7 +41,7 @@ export class Revisions {
   }
 
   async delete (path: string, author: Uint8Array, sequence: number): Promise<void> {
-		const key = createVersionKey(path, author, sequence)
+    const key = createVersionKey(path, author, sequence)
 
     logger(`[-] ${Path.join(this.group.toString(), key)}`)
 

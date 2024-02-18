@@ -6,7 +6,7 @@ const command: RPCCommandConstructor<Provides, Requires> = () => ({
   name: Revisions.name,
 
   async method (): Promise<Revisions.Return> {
-    /*const params = Revisions.Params.parse(raw)
+    /* const params = Revisions.Params.parse(raw)
     const revisions: Revisions.Return = []
     const database = groups.groups.get(CID.parse(params.group))
 
@@ -36,8 +36,8 @@ const command: RPCCommandConstructor<Provides, Requires> = () => ({
       })
     }
 
-    return revisions*/
-		throw new Error("not implemented")
+    return revisions */
+    throw new Error('not implemented')
   }
 })
 
