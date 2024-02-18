@@ -1,7 +1,6 @@
 import { CID } from 'multiformats/cid'
 import { List } from 'rpc-interfaces'
 import { toString as uint8arrayToString } from 'uint8arrays'
-import { FileSystem } from '../file-system.js'
 import { createDataKey } from '../utils.js'
 import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor } from '@/interface.js'
@@ -13,12 +12,16 @@ const command: RPCCommandConstructor<Provides, Requires> = (context, { groups })
     const params = List.Params.parse(raw)
     const list: List.Return = []
 
-    for (const { key: group, value: database } of groups.groups.all()) {
+    for (const { key: group } of groups.groups.all()) {
       if (params.group != null && group !== params.group) {
         continue
       }
 
-      const fs = new FileSystem(context.pinManager, database)
+			const fs = context.getFileSystem(CID.parse(group));
+
+			if (fs == null) {
+				continue
+			}
 
       for await (const pair of fs.getDir(createDataKey(params.path))) {
         const entry = pair.value

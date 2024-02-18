@@ -1,23 +1,20 @@
 import { CID } from 'multiformats/cid'
 import { Revisions } from 'rpc-interfaces'
-import { FileSystem } from '../file-system.js'
 import { createVersionKey } from '../utils.js'
-import type { Provides, Requires } from '../index.js'
+import type { Provides } from '../index.js'
 import type { RPCCommandConstructor } from '@/interface.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = (context, { groups }) => ({
+const command: RPCCommandConstructor<Provides> = (context) => ({
   name: Revisions.name,
 
   async method (raw: unknown): Promise<Revisions.Return> {
     const params = Revisions.Params.parse(raw)
     const revisions: Revisions.Return = []
-    const database = groups.groups.get(CID.parse(params.group))
+    const fs = context.getFileSystem(CID.parse(params.group))
 
-    if (database == null) {
+    if (fs == null) {
       throw new Error('no such group')
     }
-
-    const fs = new FileSystem(context.pinManager, database)
 
     for await (const pair of fs.getDir(createVersionKey(params.path))) {
       const keyParts = pair.key.toString().split('/')

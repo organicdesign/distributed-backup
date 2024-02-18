@@ -1,4 +1,4 @@
-import type { EncodedEntry } from './interface.js'
+import type { Entry } from './interface.js'
 import type { Pair } from '@/interface.js'
 import type { RevisionStrategies } from 'rpc-interfaces/zod'
 
@@ -14,7 +14,7 @@ const roundTo = (timestamp: number, mod: number): number => {
 
 const dist = (a: number, b: number): number => Math.abs(a - b)
 
-export default (revisions: Array<Pair<string, EncodedEntry>>, strategy: RevisionStrategies): Array<Pair<string, EncodedEntry>> => {
+export default (revisions: Array<Pair<string, Entry>>, strategy: RevisionStrategies): Array<Pair<string, Entry>> => {
   if (strategy === 'none') {
     return []
   }
@@ -36,9 +36,9 @@ export default (revisions: Array<Pair<string, EncodedEntry>>, strategy: Revision
     }
   }
 
-  const nonNullRevisions = revisions.filter(({ value }) => Boolean(value)) as Array<Pair<string, NonNullable<EncodedEntry>>>
+  const nonNullRevisions = revisions.filter(({ value }) => Boolean(value)) as Array<Pair<string, NonNullable<Entry>>>
 
-  const getClosestRevision = (ts: number): Pair<string, EncodedEntry> => nonNullRevisions.reduce((p, c) => dist(ts, p.value.timestamp) < dist(ts, c.value.timestamp) ? p : c, nonNullRevisions[0])
+  const getClosestRevision = (ts: number): Pair<string, Entry> => nonNullRevisions.reduce((p, c) => dist(ts, p.value.timestamp) < dist(ts, c.value.timestamp) ? p : c, nonNullRevisions[0])
 
   return [...new Set(dates.map(getClosestRevision))]
 }

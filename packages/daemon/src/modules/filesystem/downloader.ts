@@ -3,11 +3,10 @@ import { pipe } from 'it-pipe'
 import * as logger from 'logger'
 import { type CID } from 'multiformats/cid'
 import { collect } from 'streaming-iterables'
-import { FileSystem } from './file-system.js'
 import { linearWeightTranslation } from './utils.js'
-import type { Provides, Requires } from './index.js'
+import type { Provides } from './index.js'
 
-export default async (context: Provides, { groups }: Requires): Promise<void> => {
+export default async (context: Provides): Promise<void> => {
   // logger.tick("STARTED");
   // logger.tick("GOT REMOTE CONTENTS");
 
@@ -44,14 +43,13 @@ export default async (context: Provides, { groups }: Requires): Promise<void> =>
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     for await (const _ of loop) {
       for await (const { group, path } of context.pinManager.getActive()) {
-        const database = groups.groups.get(group)
+        const fs = context.getFileSystem(group)
 
-        if (database == null) {
+        if (fs == null) {
           logger.warn('Reverse lookup points to non-existant database: ', group)
           continue
         }
 
-        const fs = new FileSystem(context.pinManager, database)
         const entry = await fs.get(path)
 
         if (entry == null) {

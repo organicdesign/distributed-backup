@@ -19,6 +19,8 @@ import type { Module } from '@/interface.js'
 import type { Provides as Base } from '@/modules/base/index.js'
 import type { Provides as Groups } from '@/modules/groups/index.js'
 import type { Provides as Network } from '@/modules/network/index.js'
+import type { CID } from 'multiformats/cid'
+import { FileSystem } from './file-system.js'
 
 export const Config = z.object({
   defaultRevisionStrategy: RevisionStrategies.default('all')
@@ -43,6 +45,7 @@ export interface Provides extends Record<string, unknown> {
   localSettings: LocalSettings
   pinManager: PinManager
   config: Config
+  getFileSystem (group: CID): FileSystem | null
 }
 
 const module: Module<Init, Requires, Provides> = async (components, init) => {
@@ -62,7 +65,7 @@ const module: Module<Init, Requires, Provides> = async (components, init) => {
 
   const tick = async (): Promise<void> => {
     await syncGroups(context, components)
-    await download(context, components)
+    await download(context)
   }
 
   return { components: context, tick, commands }

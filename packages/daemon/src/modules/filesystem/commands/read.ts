@@ -4,23 +4,21 @@ import { Read } from 'rpc-interfaces'
 import { collect } from 'streaming-iterables'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { FileSystem } from '../file-system.js'
 import { createDataKey } from '../utils.js'
 import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor } from '@/interface.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = (context, { network, groups }) => ({
+const command: RPCCommandConstructor<Provides, Requires> = (context, { network }) => ({
   name: Read.name,
 
   async method (raw: unknown): Promise<Read.Return> {
     const params = Read.Params.parse(raw)
-    const database = groups.groups.get(CID.parse(params.group))
+    const fs = context.getFileSystem(CID.parse(params.group))
 
-    if (database == null) {
+    if (fs == null) {
       throw new Error('no such group')
     }
 
-    const fs = new FileSystem(context.pinManager, database)
     const key = createDataKey(params.path)
     const entry = await fs.get(key)
 
