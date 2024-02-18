@@ -4,7 +4,7 @@ import * as dagCbor from '@ipld/dag-cbor'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import { take } from 'streaming-iterables'
-import { Filesystem } from './filesystem.js'
+import { FileSystem } from './file-system.js'
 import { EncodedEntry, type Entry } from './interface.js'
 import selectRevisions from './select-revisions.js'
 import { decodeEntry, encodeEntry, getDagSize, createDataKey, createVersionKey, stripPrefix } from './utils.js'
@@ -28,7 +28,7 @@ export default async ({ network, base, groups }: Requires, pinManager: PinManage
       throw new Error('unable to get group')
     }
 
-    const fs = new Filesystem(pinManager, database)
+    const fs = new FileSystem(pinManager, database)
 
     const obj = await database.store.selectors.get(database.store.index)(
       createDataKey(path)
@@ -92,7 +92,7 @@ export default async ({ network, base, groups }: Requires, pinManager: PinManage
         throw new Error('no such group')
       }
 
-      const fs = new Filesystem(pinManager, database)
+      const fs = new FileSystem(pinManager, database)
       const index = database.store.index
       const key = createDataKey(path)
       const parentPath = key.split('/').slice(0, -2).join('/')

@@ -1,6 +1,6 @@
 import { CID } from 'multiformats/cid'
 import { Revisions } from 'rpc-interfaces'
-import { Filesystem } from '../filesystem.js'
+import { FileSystem } from '../file-system.js'
 import { createVersionKey } from '../utils.js'
 import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor } from '@/interface.js'
@@ -17,7 +17,7 @@ const command: RPCCommandConstructor<Provides, Requires> = (context, { groups })
       throw new Error('no such group')
     }
 
-    const fs = new Filesystem(context.pinManager, database)
+    const fs = new FileSystem(context.pinManager, database)
 
     for await (const pair of fs.getDir(createVersionKey(params.path))) {
       const keyParts = pair.key.toString().split('/')

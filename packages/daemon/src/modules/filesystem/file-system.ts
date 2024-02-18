@@ -8,7 +8,7 @@ import type { KeyvalueDB, Pair } from '@/interface.js'
 import type { CID } from 'multiformats/cid'
 import { decodeAny } from '@/utils.js'
 
-export class Filesystem {
+export class FileSystem {
   private readonly database: KeyvalueDB
   private readonly pinManager: PinManager
 

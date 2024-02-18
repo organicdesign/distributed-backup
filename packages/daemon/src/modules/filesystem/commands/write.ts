@@ -2,7 +2,7 @@ import { unixfs } from '@helia/unixfs'
 import { CID } from 'multiformats/cid'
 import { Write } from 'rpc-interfaces'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { Filesystem } from '../filesystem.js'
+import { FileSystem } from '../file-system.js'
 import { getDagSize, createDataKey } from '../utils.js'
 import type { Provides, Requires } from '../index.js'
 import type { Entry } from '../interface.js'
@@ -20,7 +20,7 @@ const command: RPCCommandConstructor<Provides, Requires> = (context, { base, net
       throw new Error('no such group')
     }
 
-    const fs = new Filesystem(context.pinManager, database)
+    const fs = new FileSystem(context.pinManager, database)
     const key = createDataKey(params.path)
     const entry: Partial<Entry> = await fs.get(key) ?? {}
     const ufs = unixfs(network.helia)

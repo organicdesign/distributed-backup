@@ -3,7 +3,7 @@ import { pipe } from 'it-pipe'
 import * as logger from 'logger'
 import { type CID } from 'multiformats/cid'
 import { collect } from 'streaming-iterables'
-import { Filesystem } from './filesystem.js'
+import { FileSystem } from './file-system.js'
 import { linearWeightTranslation } from './utils.js'
 import type { Provides, Requires } from './index.js'
 
@@ -51,7 +51,7 @@ export default async (context: Provides, { groups }: Requires): Promise<void> =>
           continue
         }
 
-        const fs = new Filesystem(context.pinManager, database)
+        const fs = new FileSystem(context.pinManager, database)
         const entry = await fs.get(path)
 
         if (entry == null) {

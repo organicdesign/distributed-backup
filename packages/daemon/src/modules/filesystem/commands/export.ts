@@ -2,7 +2,7 @@ import Path from 'path'
 import { exportPlaintext } from 'fs-exporter'
 import { CID } from 'multiformats/cid'
 import { Export } from 'rpc-interfaces'
-import { Filesystem } from '../filesystem.js'
+import { FileSystem } from '../file-system.js'
 import { createDataKey } from '../utils.js'
 import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor } from '@/interface.js'
@@ -18,7 +18,7 @@ const command: RPCCommandConstructor<Provides, Requires> = (context, { base, gro
       throw new Error('no such group')
     }
 
-    const fs = new Filesystem(context.pinManager, database)
+    const fs = new FileSystem(context.pinManager, database)
 
     for await (const pair of fs.getDir(createDataKey(params.path))) {
       const virtualPath = pair.key.toString().replace('/r', '')
