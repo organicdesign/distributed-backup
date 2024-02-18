@@ -1,8 +1,11 @@
-import { Key, type Pair, type Datastore } from 'interface-datastore'
+import { Key, type Datastore } from 'interface-datastore'
 import all from 'it-all'
 import * as logger from 'logger'
 import { CID } from 'multiformats/cid'
 import type { PinManager as HeliaPinManager, BlockInfo } from 'helia-pin-manager'
+import { encodePinInfo, decodePinInfo } from './utils.js'
+import type { PinInfo } from './interface.js'
+import type { Pair } from '@/interface.js'
 
 export class PinManager {
   private readonly datastore: Datastore
@@ -13,10 +16,25 @@ export class PinManager {
     this.pinManager = components.pinManager
   }
 
-  async has (key: string, cid?: CID): Promise<boolean> {
-    const eCid = await this.getByKey(key)
+	async put (key: string, pinInfo: PinInfo, local = false): Promise<void> {
+		const data = encodePinInfo(pinInfo)
 
-    if (eCid == null) {
+		// Need to ensure that the references get updated.
+		await this.remove(key);
+
+		if (local === true) {
+      await this.pinManager.pinLocal(pinInfo.cid)
+    } else {
+      await this.pinManager.pin(pinInfo.cid)
+    }
+
+		await this.datastore.put(new Key(key), data);
+	}
+
+  async has (key: string, cid?: CID): Promise<boolean> {
+    const pinInfo = await this.getByKey(key)
+
+    if (pinInfo == null) {
       return false
     }
 
@@ -24,20 +42,12 @@ export class PinManager {
 			return true;
 		}
 
-    return eCid.equals(cid)
+    return pinInfo.cid.equals(cid)
   }
 
-  async * getActive (): AsyncGenerator<{
-    cid: CID
-    key: string
-  }> {
+  async * getActive (): AsyncGenerator<Pair<string, PinInfo>> {
     for (const pin of await this.pinManager.getActiveDownloads()) {
-      for await (const { key } of this.getByPin(pin)) {
-        yield {
-          cid: pin,
-          key: key.toString()
-        }
-      }
+			yield * this.getByPin(pin)
     }
   }
 
@@ -58,17 +68,17 @@ export class PinManager {
   }
 
   async remove (key: string): Promise<void> {
-		const cid = await this.getByKey(key);
+		const pinInfo = await this.getByKey(key);
 
-		if (cid == null) {
+		if (pinInfo == null) {
 			return;
 		}
 
-    const keys = await all(this.getByPin(cid))
+    const keys = await all(this.getByPin(pinInfo.cid))
 
 		// If we only have 1 reference be sure to unpin it.
     if (keys.length <= 1) {
-      await this.pinManager.unpin(cid)
+      await this.pinManager.unpin(pinInfo.cid)
     }
 
     logger.references(`[-] ${key.toString()}`)
@@ -76,23 +86,34 @@ export class PinManager {
     await this.datastore.delete(new Key(key))
   }
 
-	private async getByKey (key: string): Promise<CID | null> {
+	private async getByKey (key: string): Promise<PinInfo | null> {
 		try {
 			const data = await this.datastore.get(new Key(key));
 
-			return CID.decode(data);
+			return decodePinInfo(data);
 		} catch (error) {
 			return null
 		}
 	}
 
-  private async * getByPin (pin: CID): AsyncGenerator<Pair, void, undefined> {
-    yield * this.datastore.query({
+  private async * getByPin (pin: CID): AsyncGenerator<Pair<string, PinInfo>> {
+    const itr = this.datastore.query({
       filters: [({ value }) => {
         const cid = CID.decode(value)
 
         return cid.equals(pin)
       }]
     })
+
+		for await (const pair of itr) {
+			const pinInfo = decodePinInfo(pair.value)
+
+			if (pinInfo == null) {
+				await this.datastore.delete(pair.key)
+				continue;
+			}
+
+			yield { key: pair.key.toString(), value: pinInfo }
+		}
   }
 }
