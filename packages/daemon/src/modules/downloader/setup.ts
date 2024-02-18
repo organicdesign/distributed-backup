@@ -10,6 +10,6 @@ export default async (components: Requires, config: Config): Promise<Provides> =
 
   return {
     pinManager,
-    config,
+    config
   }
 }
