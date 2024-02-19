@@ -10,6 +10,7 @@ import write from './commands/write.js'
 import { type FileSystem } from './file-system.js'
 import setup from './setup.js'
 import syncGroups from './sync-groups.js'
+import type { Events } from './events.js'
 import type { LocalSettings } from './local-settings.js'
 import type createUploadManager from './upload-operations.js'
 import type { Module } from '@/interface.js'
@@ -42,6 +43,7 @@ export interface Provides extends Record<string, unknown> {
   localSettings: LocalSettings
   config: Config
   getFileSystem (group: CID): FileSystem | null
+  events: Events
 }
 
 const module: Module<Init, Requires, Provides> = async (components, init) => {

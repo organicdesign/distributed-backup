@@ -76,6 +76,7 @@
     "p-queue": "^8.0.1",
     "rpc-interfaces": "^0.1.0",
     "streaming-iterables": "^8.0.1",
+    "ts-event-target": "^0.1.5",
     "uint8arrays": "^5.0.1",
     "welo": "^4.1.0-47c08dd",
     "yargs": "^17.7.2",

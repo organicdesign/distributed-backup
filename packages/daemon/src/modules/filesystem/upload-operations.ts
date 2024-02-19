@@ -3,6 +3,7 @@ import { unixfs } from '@helia/unixfs'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import { take } from 'streaming-iterables'
+import { FileSystemEvent } from './events.js'
 import { type EncodedEntry, type Entry } from './interface.js'
 import { decodeEntry, encodeEntry, getDagSize } from './utils.js'
 import type { Requires, Provides } from './index.js'
@@ -10,7 +11,7 @@ import type { Pair } from '@/interface.js'
 import type { Datastore } from 'interface-datastore'
 import { OperationManager } from '@/operation-manager.js'
 
-export default async (context: Pick<Provides, 'getFileSystem'>, { network, base, downloader }: Requires, datastore: Datastore): Promise<OperationManager<{
+export default async (context: Pick<Provides, 'getFileSystem' | 'events'>, { network, base, downloader }: Requires, datastore: Datastore): Promise<OperationManager<{
   put(groupData: Uint8Array, path: string, encodedEntry: NonNullable<EncodedEntry>): Promise<void>
   delete(groupData: Uint8Array, path: string): Promise<Array<Pair<string, Entry>>>
 }>> => {
@@ -31,6 +32,10 @@ export default async (context: Pick<Provides, 'getFileSystem'>, { network, base,
 
     entry.sequence = sequence
 
+    await fs.put(path, entry)
+    await downloader.pinManager.put(path, { cid: entry.cid, priority: entry.priority })
+    context.events.dispatchEvent(new FileSystemEvent('file:added', entry))
+    /*
     const paths = [
       path
       // createVersionKey(path, network.libp2p.peerId, entry.sequence)
@@ -40,7 +45,7 @@ export default async (context: Pick<Provides, 'getFileSystem'>, { network, base,
       await fs.put(path, entry)
       await downloader.pinManager.put(path, { cid: entry.cid, priority: entry.priority })
     }
-    /*
+
     // Handle revisions.
     const revisions = await all(fs.getDir(createVersionKey(path)))
 
