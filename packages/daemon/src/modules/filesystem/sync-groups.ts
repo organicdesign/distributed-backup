@@ -1,24 +1,24 @@
 import Path from 'path'
 import * as logger from 'logger'
-import type { Provides, Requires } from './index.js'
+import { FileSystem } from './file-system.js'
+import type { Requires } from './index.js'
 
-export default async (context: Provides, { groups }: Requires): Promise<void> => {
-  for (const { value: { database } } of groups.groups.all()) {
-    // logger.validate("syncing group: %s", database.address.cid.toString());
-    const index = await database.store.latest()
+export default async ({ groups, downloader }: Requires): Promise<void> => {
+  for (const { value: { tracker, database } } of groups.groups.all()) {
+    for await (const { key } of tracker.process()) {
+      const group = database.manifest.address.cid
+      const fs = new FileSystem(database)
+      logger.entry('syncing update:', Path.join(group.toString(), key))
 
-    for await (const pair of index.query({})) {
-      const group = database.address.cid
-      const path = pair.key.toString()
+      const entry = await fs.get(key)
+      const fullKey = Path.join(group.toString(), key)
 
-      // All we really want to do here is check for dirty entries.
-      if (await context.pinManager.validate(group, path, pair.value)) {
+      if (entry == null) {
+        await downloader.pinManager.remove(fullKey)
         continue
       }
 
-      logger.entry('syncing update:', Path.join(group.toString(), path))
-
-      await context.sync.add('put', [group.bytes, path, pair.value])
+      await downloader.pinManager.put(fullKey, { cid: entry.cid, priority: entry.priority })
     }
   }
 }

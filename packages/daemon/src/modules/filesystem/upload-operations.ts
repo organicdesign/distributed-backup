@@ -38,7 +38,7 @@ export default async (context: Pick<Provides, 'getFileSystem'>, { network, base 
     ]
 
     for (const path of paths) {
-      await fs.put(path, entry, true)
+      await fs.put(path, entry)
     }
 
     // Handle revisions.

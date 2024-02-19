@@ -36,7 +36,7 @@ const command: RPCCommandConstructor<Provides, Requires> = (context, { base, net
       revisionStrategy: entry.revisionStrategy ?? context.config.defaultRevisionStrategy
     }
 
-    await fs.put(key, newEntry, true)
+    await fs.put(key, newEntry)
 
     return params.data.length
   }

@@ -7,6 +7,7 @@ import yargs from 'yargs/yargs'
 import { Looper } from './looper.js'
 import { projectPath } from './utils.js'
 import setupBase from '@/modules/base/index.js'
+import setupDownloader from '@/modules/downloader/index.js'
 import setupFilesystem from '@/modules/filesystem/index.js'
 import setupGroups from '@/modules/groups/index.js'
 import setupNetwork from '@/modules/network/index.js'
@@ -49,14 +50,16 @@ logger.lifecycle('loaded config')
 const base = await setupBase({}, { config, key: argv.key })
 const network = await setupNetwork({ base: base.components }, { config })
 const groups = await setupGroups({ base: base.components, network: network.components }, { config })
+const downloader = await setupDownloader({ base: base.components, network: network.components }, { config })
 
 const filesystem = await setupFilesystem({
   base: base.components,
   network: network.components,
-  groups: groups.components
+  groups: groups.components,
+  downloader: downloader.components
 }, { config })
 
-const components = [base, network, groups, filesystem]
+const components = [base, network, groups, downloader, filesystem]
 
 let exiting = false
 
