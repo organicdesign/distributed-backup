@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import setPriority from './commands/set-priority.js'
 import download from './downloader.js'
 import setup from './setup.js'
 import type { PinManager } from './pin-manager.js'
@@ -31,11 +32,13 @@ const module: Module<Init, Requires, Provides> = async (components, init) => {
   const config = Config.parse(init.config)
   const context = await setup(components, config)
 
+  const commands = [setPriority].map(c => c(context, components))
+
   const tick = async (): Promise<void> => {
     await download(context)
   }
 
-  return { components: context, tick, commands: [] }
+  return { components: context, tick, commands }
 }
 
 export default module

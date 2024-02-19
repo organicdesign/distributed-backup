@@ -39,7 +39,7 @@ export default async (context: Pick<Provides, 'getFileSystem'>, { network, base,
 
     for (const path of paths) {
       await fs.put(path, entry)
-			await downloader.pinManager.put(path, { cid: entry.cid, priority: entry.priority }, true)
+      await downloader.pinManager.put(path, { cid: entry.cid, priority: entry.priority }, true)
     }
 
     // Handle revisions.

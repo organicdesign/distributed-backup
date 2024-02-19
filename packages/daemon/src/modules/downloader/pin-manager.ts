@@ -32,7 +32,7 @@ export class PinManager {
   }
 
   async has (key: string, cid?: CID): Promise<boolean> {
-    const pinInfo = await this.getByKey(key)
+    const pinInfo = await this.get(key)
 
     if (pinInfo == null) {
       return false
@@ -68,7 +68,7 @@ export class PinManager {
   }
 
   async remove (key: string): Promise<void> {
-    const pinInfo = await this.getByKey(key)
+    const pinInfo = await this.get(key)
 
     if (pinInfo == null) {
       return
@@ -86,7 +86,7 @@ export class PinManager {
     await this.datastore.delete(new Key(key))
   }
 
-  private async getByKey (key: string): Promise<PinInfo | null> {
+  async get (key: string): Promise<PinInfo | null> {
     try {
       const data = await this.datastore.get(new Key(key))
 
