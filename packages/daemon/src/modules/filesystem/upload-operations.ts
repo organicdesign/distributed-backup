@@ -11,7 +11,7 @@ import type { Pair } from '@/interface.js'
 import type { Datastore } from 'interface-datastore'
 import { OperationManager } from '@/operation-manager.js'
 
-export default async (context: Pick<Provides, 'getFileSystem'>, { network, base }: Requires, datastore: Datastore): Promise<OperationManager<{
+export default async (context: Pick<Provides, 'getFileSystem'>, { network, base, downloader }: Requires, datastore: Datastore): Promise<OperationManager<{
   put(groupData: Uint8Array, path: string, encodedEntry: NonNullable<EncodedEntry>): Promise<void>
   delete(groupData: Uint8Array, path: string): Promise<Array<Pair<string, Entry>>>
 }>> => {
@@ -39,6 +39,7 @@ export default async (context: Pick<Provides, 'getFileSystem'>, { network, base 
 
     for (const path of paths) {
       await fs.put(path, entry)
+			await downloader.pinManager.put(path, { cid: entry.cid, priority: entry.priority }, true)
     }
 
     // Handle revisions.
