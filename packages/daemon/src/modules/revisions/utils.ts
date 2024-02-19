@@ -18,12 +18,8 @@ export const decodeEntry = (entry: NonNullable<EncodedEntry>): Entry => ({
   cid: CID.decode(entry.cid)
 })
 
-export const prefixKey = (key: string, prefix: string): string => {
-  return Path.join('/', prefix, key)
-}
-
-export const createVersionKey = (key: string, author?: Uint8Array, sequence?: number): string => {
-  let str = prefixKey(key, VERSION_KEY).toString()
+export const createPath = (key: string, author?: Uint8Array, sequence?: number): string => {
+  let str = Path.join('/', VERSION_KEY, key)
 
   if (author != null) {
     str = Path.join(str, uint8arrayToString(author))

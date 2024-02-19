@@ -4,6 +4,7 @@ import revisions from './commands/revisions.js'
 import setup from './setup.js'
 import type { Module } from '@/interface.js'
 import type { Provides as Base } from '@/modules/base/index.js'
+import type { Provides as FileSystem } from '@/modules/filesystem/index.js'
 import type { Provides as Groups } from '@/modules/groups/index.js'
 import type { Provides as Network } from '@/modules/network/index.js'
 
@@ -22,6 +23,7 @@ export interface Requires extends Record<string, unknown> {
   base: Base
   network: Network
   groups: Groups
+  filesystem: FileSystem
 }
 
 export interface Provides extends Record<string, unknown> {}

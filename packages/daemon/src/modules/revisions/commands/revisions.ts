@@ -1,22 +1,22 @@
+import { CID } from 'multiformats/cid'
 import { Revisions } from 'rpc-interfaces'
+import { createPath } from '../utils.js'
 import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor } from '@/interface.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = () => ({
+const command: RPCCommandConstructor<Provides, Requires> = (_, { filesystem }) => ({
   name: Revisions.name,
 
-  async method (): Promise<Revisions.Return> {
-    /* const params = Revisions.Params.parse(raw)
+  async method (raw: unknown): Promise<Revisions.Return> {
+    const params = Revisions.Params.parse(raw)
     const revisions: Revisions.Return = []
-    const database = groups.groups.get(CID.parse(params.group))
+    const fs = filesystem.getFileSystem(CID.parse(params.group))
 
-    if (database == null) {
+    if (fs == null) {
       throw new Error('no such group')
     }
 
-    const fs = new Filesystem(context.pinManager, database)
-
-    for await (const pair of fs.getDir(createVersionKey(params.path))) {
+    for await (const pair of fs.getDir(createPath(params.path))) {
       const keyParts = pair.key.toString().split('/')
       const sequence = keyParts.pop()
       const author = keyParts.pop()
@@ -36,8 +36,7 @@ const command: RPCCommandConstructor<Provides, Requires> = () => ({
       })
     }
 
-    return revisions */
-    throw new Error('not implemented')
+    return revisions
   }
 })
 
