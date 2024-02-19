@@ -2,14 +2,12 @@ import { Key } from 'interface-datastore'
 import { groups as logger } from 'logger'
 import { Manifest } from 'welo/manifest/index'
 import { decodeCbor } from 'welo/utils/block'
-import { EntryTracker } from './entry-tracker.js'
 import type { Pair, KeyvalueDB } from '@/interface.js'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
 import type { Welo } from 'welo'
 import type { ManifestData } from 'welo/manifest/interface'
-import { extendDatastore } from '@/utils.js'
 
 export interface Components {
   datastore: Datastore
@@ -18,15 +16,13 @@ export interface Components {
 
 export class Groups implements Startable {
   private readonly welo: Welo
-  private readonly groupsDatastore: Datastore
-  private readonly trackerDatastore: Datastore
-  private readonly groups = new Map<string, { database: KeyvalueDB, tracker: EntryTracker }>()
+  private readonly datastore: Datastore
+  private readonly groups = new Map<string, KeyvalueDB>()
   private started = false
 
   constructor (components: Components) {
     this.welo = components.welo
-    this.groupsDatastore = extendDatastore(components.datastore, 'groups')
-    this.trackerDatastore = extendDatastore(components.datastore, 'trackers')
+    this.datastore = components.datastore
   }
 
   isStarted (): boolean {
@@ -38,7 +34,7 @@ export class Groups implements Startable {
       return
     }
 
-    for await (const pair of this.groupsDatastore.query({})) {
+    for await (const pair of this.datastore.query({})) {
       const block = await decodeCbor<ManifestData>(pair.value)
       const manifest = Manifest.asManifest({ block })
 
@@ -61,24 +57,18 @@ export class Groups implements Startable {
     const database = await this.welo.open(manifest) as KeyvalueDB
     const address = manifest.address.cid.toString()
 
-    this.groups.set(address, {
-      database,
-      tracker: new EntryTracker(
-        extendDatastore(this.trackerDatastore, address),
-        database
-      )
-    })
+    this.groups.set(address, database)
 
-    await this.groupsDatastore.put(new Key(database.address.cid.toString()), database.manifest.block.bytes)
+    await this.datastore.put(new Key(database.address.cid.toString()), database.manifest.block.bytes)
 
     logger(`[join] ${manifest.address.cid.toString()}`)
   }
 
-  get (group: CID): { database: KeyvalueDB, tracker: EntryTracker } | undefined {
+  get (group: CID): KeyvalueDB | undefined {
     return this.groups.get(group.toString())
   }
 
-  * all (): Iterable<Pair<string, { database: KeyvalueDB, tracker: EntryTracker }>> {
+  * all (): Iterable<Pair<string, KeyvalueDB>> {
     for (const [key, value] of this.groups.entries()) {
       yield { key, value }
     }

@@ -8,7 +8,7 @@ const command: RPCCommandConstructor<Provides> = (context) => ({
   async method (): Promise<ListGroups.Return> {
     const promises: Array<{ group: string, name: string }> = []
 
-    for (const { key: cid, value: { database } } of context.groups.all()) {
+    for (const { key: cid, value: database } of context.groups.all()) {
       promises.push({ group: cid, name: database.manifest.name })
     }
 

@@ -4,7 +4,9 @@ import { FileSystem } from './file-system.js'
 import type { Requires } from './index.js'
 
 export default async ({ groups, downloader }: Requires): Promise<void> => {
-  for (const { value: { tracker, database } } of groups.groups.all()) {
+  for (const { value: database } of groups.groups.all()) {
+    const tracker = groups.getTracker(database)
+
     for await (const { key } of tracker.process()) {
       const group = database.manifest.address.cid
       const fs = new FileSystem(database)

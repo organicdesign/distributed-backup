@@ -1,6 +1,8 @@
 import { createWelo, pubsubReplicator, bootstrapReplicator } from 'welo'
+import { EntryTracker } from './entry-tracker.js'
 import { createGroups } from './groups.js'
 import type { Requires, Provides } from './index.js'
+import type { KeyvalueDB } from '@/interface.js'
 import { extendDatastore } from '@/utils.js'
 
 export default async ({ base, network }: Requires): Promise<Provides> => {
@@ -16,8 +18,11 @@ export default async ({ base, network }: Requires): Promise<Provides> => {
     welo
   })
 
+  const getTracker = (database: KeyvalueDB): EntryTracker => new EntryTracker(database)
+
   return {
     welo,
-    groups
+    groups,
+    getTracker
   }
 }

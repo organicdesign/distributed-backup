@@ -2,7 +2,7 @@ import { Key, type Datastore } from 'interface-datastore'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { compare as uint8ArrayCompare } from 'uint8arrays/compare'
 import type { KeyvalueDB, Pair } from '@/interface.js'
-import { encodeAny } from '@/utils.js'
+import { encodeAny, extendDatastore } from '@/utils.js'
 
 // Get the hash data from raw data.
 const hashEntry = async (entry: unknown): Promise<Uint8Array> => {
@@ -17,8 +17,8 @@ export class EntryTracker {
   private readonly datastore: Datastore
   private readonly database: KeyvalueDB
 
-  constructor (datastore: Datastore, database: KeyvalueDB) {
-    this.datastore = datastore
+  constructor (database: KeyvalueDB) {
+    this.datastore = extendDatastore(database.datastore, 'entry-tracker')
     this.database = database
   }
 
@@ -38,7 +38,14 @@ export class EntryTracker {
     }
   }
 
-  private async validate (key: string, entry: unknown): Promise<boolean> {
+  // Process an entry.
+  async put (key: string, entry: unknown): Promise<void> {
+    const hash = await hashEntry(entry)
+
+    await this.datastore.put(new Key(key), hash)
+  }
+
+  async validate (key: string, entry: unknown): Promise<boolean> {
     const eHash = await this.getHash(key)
 
     if (eHash == null) {
@@ -48,13 +55,6 @@ export class EntryTracker {
     const hash = await hashEntry(entry)
 
     return uint8ArrayCompare(eHash, hash) === 0
-  }
-
-  // Process an entry.
-  private async put (key: string, entry: unknown): Promise<void> {
-    const hash = await hashEntry(entry)
-
-    await this.datastore.put(new Key(key), hash)
   }
 
   private async getHash (key: string): Promise<Uint8Array | null> {

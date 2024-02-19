@@ -6,14 +6,14 @@ import type { CID } from 'multiformats/cid'
 import { extendDatastore } from '@/utils.js'
 
 export default async (components: Requires, config: Config): Promise<Provides> => {
-  const getFileSystem = (groupId: CID): FileSystem | null => {
-    const group = components.groups.groups.get(groupId)
+  const getFileSystem = (group: CID): FileSystem | null => {
+    const database = components.groups.groups.get(group)
 
-    if (group == null) {
+    if (database == null) {
       return null
     }
 
-    return new FileSystem(group.database)
+    return new FileSystem(database)
   }
 
   const localSettings = new LocalSettings({
