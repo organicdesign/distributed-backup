@@ -39,6 +39,8 @@ const command: RPCCommandConstructor<Provides, Requires> = (context, { network, 
     const cids: Import.Return = []
 
     for await (const r of importRecursive(store, params.inPath, config)) {
+      await network.pinManager.pinLocal(r.cid)
+
       logger.add('imported %s', params.inPath)
 
       const { size, blocks } = await getDagSize(base.blockstore, r.cid)

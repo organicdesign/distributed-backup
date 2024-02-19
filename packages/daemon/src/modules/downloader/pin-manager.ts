@@ -16,17 +16,13 @@ export class PinManager {
     this.pinManager = components.pinManager
   }
 
-  async put (key: string, pinInfo: PinInfo, local = false): Promise<void> {
+  async put (key: string, pinInfo: PinInfo): Promise<void> {
     const data = encodePinInfo(pinInfo)
 
     // Need to ensure that the references get updated.
     await this.remove(key)
 
-    if (local) {
-      await this.pinManager.pinLocal(pinInfo.cid)
-    } else {
-      await this.pinManager.pin(pinInfo.cid)
-    }
+    await this.pinManager.pin(pinInfo.cid)
 
     await this.datastore.put(new Key(key), data)
   }
