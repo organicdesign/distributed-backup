@@ -36,7 +36,7 @@ export default (revisions: Array<Pair<string, Entry>>, strategy: RevisionStrateg
     }
   }
 
-  const nonNullRevisions = revisions.filter(({ value }) => Boolean(value)) as Array<Pair<string, NonNullable<Entry>>>
+  const nonNullRevisions = revisions.filter(({ value }) => Boolean(value))
 
   const getClosestRevision = (ts: number): Pair<string, Entry> => nonNullRevisions.reduce((p, c) => dist(ts, p.value.timestamp) < dist(ts, c.value.timestamp) ? p : c, nonNullRevisions[0])
 

@@ -17,11 +17,11 @@ const command: RPCCommandConstructor<Provides, Requires> = (context, { groups })
         continue
       }
 
-			const fs = context.getFileSystem(CID.parse(group));
+      const fs = context.getFileSystem(CID.parse(group))
 
-			if (fs == null) {
-				continue
-			}
+      if (fs == null) {
+        continue
+      }
 
       for await (const pair of fs.getDir(createDataKey(params.path))) {
         const entry = pair.value

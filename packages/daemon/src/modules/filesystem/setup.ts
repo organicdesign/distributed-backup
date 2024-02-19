@@ -1,22 +1,22 @@
+import { FileSystem } from './file-system.js'
 import { LocalSettings } from './local-settings.js'
 import { PinManager } from './pin-manager.js'
 import createSyncManager from './sync-operations.js'
 import createUploadManager from './upload-operations.js'
 import type { Requires, Provides, Config } from './index.js'
-import { extendDatastore } from '@/utils.js'
-import { FileSystem } from './file-system.js'
 import type { CID } from 'multiformats/cid'
+import { extendDatastore } from '@/utils.js'
 
 export default async (components: Requires, config: Config): Promise<Provides> => {
-	const getFileSystem = (group: CID): FileSystem | null => {
-		const database = components.groups.groups.get(group)
+  const getFileSystem = (groupId: CID): FileSystem | null => {
+    const group = components.groups.groups.get(groupId)
 
-		if (database == null) {
-			return null
-		}
+    if (group == null) {
+      return null
+    }
 
-		return new FileSystem(pinManager, database);
-	};
+    return new FileSystem(pinManager, group.database)
+  }
 
   const localSettings = new LocalSettings({
     datastore: extendDatastore(components.base.datastore, 'references')
@@ -28,7 +28,7 @@ export default async (components: Requires, config: Config): Promise<Provides> =
   })
 
   const uploads = await createUploadManager(
-		{ getFileSystem },
+    { getFileSystem },
     components,
     extendDatastore(components.base.datastore, 'upload-operations')
   )
@@ -44,6 +44,6 @@ export default async (components: Requires, config: Config): Promise<Provides> =
     uploads,
     sync,
     config,
-		getFileSystem
+    getFileSystem
   }
 }

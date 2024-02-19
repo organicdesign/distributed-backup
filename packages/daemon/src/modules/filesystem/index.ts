@@ -8,7 +8,7 @@ import list from './commands/list.js'
 import read from './commands/read.js'
 import revisions from './commands/revisions.js'
 import write from './commands/write.js'
-import download from './downloader.js'
+import { type FileSystem } from './file-system.js'
 import setup from './setup.js'
 import syncGroups from './sync-groups.js'
 import type { LocalSettings } from './local-settings.js'
@@ -20,7 +20,6 @@ import type { Provides as Base } from '@/modules/base/index.js'
 import type { Provides as Groups } from '@/modules/groups/index.js'
 import type { Provides as Network } from '@/modules/network/index.js'
 import type { CID } from 'multiformats/cid'
-import { FileSystem } from './file-system.js'
 
 export const Config = z.object({
   defaultRevisionStrategy: RevisionStrategies.default('all')
@@ -65,7 +64,6 @@ const module: Module<Init, Requires, Provides> = async (components, init) => {
 
   const tick = async (): Promise<void> => {
     await syncGroups(context, components)
-    await download(context)
   }
 
   return { components: context, tick, commands }
