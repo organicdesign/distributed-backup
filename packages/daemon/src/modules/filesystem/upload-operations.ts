@@ -34,7 +34,8 @@ export default async (context: Pick<Provides, 'getFileSystem' | 'events'>, { net
 
     await fs.put(path, entry)
     await downloader.pinManager.put(path, { cid: entry.cid, priority: entry.priority })
-    context.events.dispatchEvent(new FileSystemEvent('file:added', entry))
+
+    context.events.dispatchEvent(new FileSystemEvent('file:added', path, entry))
     /*
     const paths = [
       path

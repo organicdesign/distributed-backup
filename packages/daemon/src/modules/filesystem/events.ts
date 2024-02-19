@@ -5,10 +5,12 @@ export type EventTypes = 'file:added'
 
 export class FileSystemEvent extends Event<EventTypes> {
   entry: Entry
+  path: string
 
-  constructor (type: EventTypes, entry: Entry) {
+  constructor (type: EventTypes, path: string, entry: Entry) {
     super(type)
     this.entry = entry
+    this.path = path
   }
 }
 
