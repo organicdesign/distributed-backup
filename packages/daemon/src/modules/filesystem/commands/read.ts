@@ -4,7 +4,6 @@ import { Read } from 'rpc-interfaces'
 import { collect } from 'streaming-iterables'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { createDataKey } from '../utils.js'
 import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor } from '@/interface.js'
 
@@ -19,11 +18,10 @@ const command: RPCCommandConstructor<Provides, Requires> = (context, { network }
       throw new Error('no such group')
     }
 
-    const key = createDataKey(params.path)
-    const entry = await fs.get(key)
+    const entry = await fs.get(params.path)
 
     if (entry == null) {
-      throw new Error(`no such item: ${key}`)
+      throw new Error(`no such item: ${params.path}`)
     }
 
     const ufs = unixfs(network.helia)

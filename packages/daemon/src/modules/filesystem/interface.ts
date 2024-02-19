@@ -15,7 +15,6 @@ export interface PinInfo {
   cid: CID
 }
 
-export const VERSION_KEY = 'v'
 export const DATA_KEY = 'r'
 
 export const LocalEntryData = z.object({

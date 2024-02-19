@@ -2,7 +2,7 @@ import { unixfs } from '@helia/unixfs'
 import { CID } from 'multiformats/cid'
 import { Write } from 'rpc-interfaces'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { getDagSize, createDataKey } from '../utils.js'
+import { getDagSize } from '../utils.js'
 import type { Provides, Requires } from '../index.js'
 import type { Entry } from '../interface.js'
 import type { RPCCommandConstructor } from '@/interface.js'
@@ -18,8 +18,7 @@ const command: RPCCommandConstructor<Provides, Requires> = (context, { base, net
       throw new Error('no such group')
     }
 
-    const key = createDataKey(params.path)
-    const entry: Partial<Entry> = await fs.get(key) ?? {}
+    const entry: Partial<Entry> = await fs.get(params.path) ?? {}
     const ufs = unixfs(network.helia)
     const cid = await ufs.addBytes(uint8ArrayFromString(params.data))
     const { blocks, size } = await getDagSize(base.blockstore, cid)
@@ -36,7 +35,7 @@ const command: RPCCommandConstructor<Provides, Requires> = (context, { base, net
       revisionStrategy: entry.revisionStrategy ?? context.config.defaultRevisionStrategy
     }
 
-    await fs.put(key, newEntry)
+    await fs.put(params.path, newEntry)
 
     return params.data.length
   }

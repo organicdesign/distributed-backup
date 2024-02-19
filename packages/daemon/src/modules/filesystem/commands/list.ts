@@ -1,7 +1,6 @@
 import { CID } from 'multiformats/cid'
 import { List } from 'rpc-interfaces'
 import { toString as uint8arrayToString } from 'uint8arrays'
-import { createDataKey } from '../utils.js'
 import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor } from '@/interface.js'
 
@@ -23,7 +22,7 @@ const command: RPCCommandConstructor<Provides, Requires> = (context, { groups })
         continue
       }
 
-      for await (const pair of fs.getDir(createDataKey(params.path))) {
+      for await (const pair of fs.getDir(params.path)) {
         const entry = pair.value
 
         const ref = await context.localSettings.get(

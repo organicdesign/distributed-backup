@@ -6,7 +6,6 @@ import exportData from './commands/export.js'
 import importData from './commands/import.js'
 import list from './commands/list.js'
 import read from './commands/read.js'
-import revisions from './commands/revisions.js'
 import write from './commands/write.js'
 import { type FileSystem } from './file-system.js'
 import setup from './setup.js'
@@ -56,7 +55,6 @@ const module: Module<Init, Requires, Provides> = async (components, init) => {
     importData,
     list,
     read,
-    revisions,
     write
   ].map(c => c(context, components))
 

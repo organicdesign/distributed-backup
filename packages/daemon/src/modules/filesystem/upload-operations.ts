@@ -4,8 +4,7 @@ import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import { take } from 'streaming-iterables'
 import { type EncodedEntry, type Entry } from './interface.js'
-import selectRevisions from './select-revisions.js'
-import { decodeEntry, encodeEntry, getDagSize, createDataKey, createVersionKey, stripPrefix } from './utils.js'
+import { decodeEntry, encodeEntry, getDagSize } from './utils.js'
 import type { Requires, Provides } from './index.js'
 import type { Pair } from '@/interface.js'
 import type { Datastore } from 'interface-datastore'
@@ -24,7 +23,7 @@ export default async (context: Pick<Provides, 'getFileSystem'>, { network, base,
       throw new Error('unable to get group')
     }
 
-    const existing = await fs.get(createDataKey(path))
+    const existing = await fs.get(path)
 
     if (existing != null) {
       sequence = existing.sequence + 1
@@ -33,15 +32,15 @@ export default async (context: Pick<Provides, 'getFileSystem'>, { network, base,
     entry.sequence = sequence
 
     const paths = [
-      createDataKey(path),
-      createVersionKey(path, network.libp2p.peerId, entry.sequence)
+      path
+      // createVersionKey(path, network.libp2p.peerId, entry.sequence)
     ]
 
     for (const path of paths) {
       await fs.put(path, entry)
       await downloader.pinManager.put(path, { cid: entry.cid, priority: entry.priority }, true)
     }
-
+    /*
     // Handle revisions.
     const revisions = await all(fs.getDir(createVersionKey(path)))
 
@@ -57,8 +56,8 @@ export default async (context: Pick<Provides, 'getFileSystem'>, { network, base,
 
       await fs.delete(path)
     }
+    */
   }
-
   const om = new OperationManager(datastore, {
     put,
 
@@ -69,20 +68,19 @@ export default async (context: Pick<Provides, 'getFileSystem'>, { network, base,
         throw new Error('no such group')
       }
 
-      const key = createDataKey(path)
-      const parentPath = key.split('/').slice(0, -2).join('/')
+      const parentPath = path.split('/').slice(0, -2).join('/')
       const ufs = unixfs(network.helia)
       const cid = await ufs.addBytes(new Uint8Array([]))
       const { blocks, size } = await getDagSize(base.blockstore, cid)
 
-      const pairs = await all(fs.getDir(key))
+      const pairs = await all(fs.getDir(path))
 
       await Promise.all(pairs.map(async p => fs.delete(p.key.toString())))
 
       const values = await all(take(1)(fs.getDir(parentPath)))
 
-      if (values.filter(v => v.key.toString() !== key).length === 0) {
-        await put(groupData, Path.join(stripPrefix(parentPath), '.PLACE_HOLDER'), encodeEntry({
+      if (values.filter(v => v.key.toString() !== path).length === 0) {
+        await put(groupData, Path.join(parentPath, '.PLACE_HOLDER'), encodeEntry({
           cid,
           author: network.libp2p.peerId.toCID(),
           encrypted: false,

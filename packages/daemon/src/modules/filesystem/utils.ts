@@ -1,9 +1,8 @@
 import Path from 'path'
 import { defaultDagWalkers } from 'dag-walkers'
-import { Key } from 'interface-datastore'
 import { CID } from 'multiformats/cid'
-import { DATA_KEY, VERSION_KEY, EncodedEntry, type Entry } from './interface.js'
-import type { PeerId, AbortOptions } from '@libp2p/interface'
+import { DATA_KEY, EncodedEntry, type Entry } from './interface.js'
+import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 
 const dagWalkers = defaultDagWalkers()
@@ -92,46 +91,16 @@ export const logWeightTranslation = (p: number): number => {
   return 1 - Math.log10((10 - 1) * p - 1)
 }
 
-const toT = <T extends Key | string>(original: T, parsed: string): T extends Key ? Key : string => {
-  if (typeof original === 'string') {
-    return parsed as T extends Key ? Key : string
-  }
-
-  return new Key(parsed) as T extends Key ? Key : string
-}
-
-export const stripPrefix = <T extends Key | string = string>(key: T): T extends Key ? Key : string => {
-  let str = key.toString()
+export const keyToPath = (key: string): string => {
+  let str = key
 
   if (str.startsWith(`/${DATA_KEY}/`)) {
     str = str.replace(`/${DATA_KEY}/`, '/')
-  } else if (str.startsWith(`/${VERSION_KEY}/`)) {
-    str = str.replace(`/${VERSION_KEY}/`, '/')
   }
 
-  return toT(key, str)
+  return str
 }
 
-export const prefixKey = <T extends Key | string = string>(key: T, prefix: string): T extends Key ? Key : string => {
-  const str = Path.join('/', prefix, key.toString())
-
-  return toT(key, str)
-}
-
-export const createDataKey = <T extends Key | string = string>(key: T): T extends Key ? Key : string => {
-  return prefixKey(key, DATA_KEY)
-}
-
-export const createVersionKey = <T extends Key | string = string>(key: T, peerId?: PeerId, sequence?: number): T extends Key ? Key : string => {
-  let str = prefixKey(key, VERSION_KEY).toString()
-
-  if (peerId != null) {
-    str = Path.join(str, peerId.toString())
-  }
-
-  if (sequence != null) {
-    str = Path.join(str, sequence.toString())
-  }
-
-  return toT(key, str)
+export const pathToKey = (path: string): string => {
+  return Path.join('/', DATA_KEY, path)
 }

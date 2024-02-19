@@ -2,7 +2,6 @@ import Path from 'path'
 import { exportPlaintext } from 'fs-exporter'
 import { CID } from 'multiformats/cid'
 import { Export } from 'rpc-interfaces'
-import { createDataKey } from '../utils.js'
 import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor } from '@/interface.js'
 
@@ -17,7 +16,7 @@ const command: RPCCommandConstructor<Provides, Requires> = (context, { base }) =
       throw new Error('no such group')
     }
 
-    for await (const pair of fs.getDir(createDataKey(params.path))) {
+    for await (const pair of fs.getDir(params.path)) {
       const virtualPath = pair.key.toString().replace('/r', '')
 
       await exportPlaintext(
