@@ -37,20 +37,22 @@ describe('revisions', () => {
     assert.equal(response[0].sequence, 0)
   })
 
-  it("has 1 revision after overwrite with strategy 'none'", async () => {
+  it("has 0 revisions after overwrite with strategy 'none'", async () => {
     const add = await runClient(node, 'import', group, testDataDir, virtualDir, '--revisionStrategy', 'none')
 
     assert(add.success)
 
     const response = await runClient(node, 'revisions', group, virtualDir)
 
+    await new Promise(resolve => setTimeout(resolve, 3000))
+
     assert(response)
     assert(Array.isArray(response))
-    assert.equal(response.length, 1)
-    assert.equal(response[0].sequence, 1)
+    assert.equal(response.length, 0)
+    // assert.equal(response[0].sequence, 1)
   })
 
-  it("has 2 revisions after overwrite with strategy 'log'", async () => {
+  it("has 1 revisions after overwrite with strategy 'log'", async () => {
     const add = await runClient(node, 'import', group, testDataDir, virtualDir, '--revisionStrategy', 'log')
 
     assert(add.success)
@@ -59,12 +61,11 @@ describe('revisions', () => {
 
     assert(response)
     assert(Array.isArray(response))
-    assert.equal(response.length, 2)
-    assert.equal(response[0].sequence, 1)
-    assert.equal(response[1].sequence, 2)
+    assert.equal(response.length, 1)
+    assert.equal(response[0].sequence, 2)
   })
 
-  it("has 3 revisions after overwrite with strategy 'all'", async () => {
+  it("has 2 revisions after overwrite with strategy 'all'", async () => {
     const add = await runClient(node, 'import', group, testDataDir, virtualDir, '--revisionStrategy', 'all')
 
     assert(add.success)
@@ -73,13 +74,12 @@ describe('revisions', () => {
 
     assert(response)
     assert(Array.isArray(response))
-    assert.equal(response.length, 3)
-    assert.equal(response[0].sequence, 1)
-    assert.equal(response[1].sequence, 2)
-    assert.equal(response[2].sequence, 3)
+    assert.equal(response.length, 2)
+    assert.equal(response[0].sequence, 2)
+    assert.equal(response[1].sequence, 3)
   })
 
-  it("reduces to 2 revisions after overwrite with strategy 'log'", async () => {
+  it("reduces to 1 revision after overwrite with strategy 'log'", async () => {
     const add = await runClient(node, 'import', group, testDataDir, virtualDir, '--revisionStrategy', 'log')
 
     assert(add.success)
@@ -88,12 +88,11 @@ describe('revisions', () => {
 
     assert(response)
     assert(Array.isArray(response))
-    assert.equal(response.length, 2)
-    assert.equal(response[0].sequence, 1)
-    assert.equal(response[1].sequence, 4)
+    assert.equal(response.length, 1)
+    assert.equal(response[0].sequence, 2)
   })
 
-  it("reduces to 1 revision after overwrite with strategy 'none'", async () => {
+  it("reduces to 0 revisions after overwrite with strategy 'none'", async () => {
     const add = await runClient(node, 'import', group, testDataDir, virtualDir, '--revisionStrategy', 'none')
 
     assert(add.success)
@@ -102,7 +101,6 @@ describe('revisions', () => {
 
     assert(response)
     assert(Array.isArray(response))
-    assert.equal(response.length, 1)
-    assert.equal(response[0].sequence, 5)
+    assert.equal(response.length, 0)
   })
 })

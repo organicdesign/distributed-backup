@@ -1,7 +1,7 @@
 import { Key, type Datastore } from 'interface-datastore'
 import all from 'it-all'
 import * as logger from 'logger'
-import { CID } from 'multiformats/cid'
+import { type CID } from 'multiformats/cid'
 import { encodePinInfo, decodePinInfo } from './utils.js'
 import type { PinInfo } from './interface.js'
 import type { Pair } from '@/interface.js'
@@ -95,9 +95,13 @@ export class PinManager {
   private async * getByPin (pin: CID): AsyncGenerator<Pair<string, PinInfo>> {
     const itr = this.datastore.query({
       filters: [({ value }) => {
-        const cid = CID.decode(value)
+        const pinInfo = decodePinInfo(value)
 
-        return cid.equals(pin)
+        if (pinInfo == null) {
+          return false
+        }
+
+        return pinInfo.cid.equals(pin)
       }]
     })
 

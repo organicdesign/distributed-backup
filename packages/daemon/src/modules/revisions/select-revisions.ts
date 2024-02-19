@@ -24,7 +24,7 @@ export default (revisions: Array<Pair<string, Entry>>, strategy: RevisionStrateg
   }
 
   if (strategy !== 'log') {
-    throw new Error('unknow revision strategy')
+    throw new Error('unknown revision strategy')
   }
 
   // Get a list of target dates:
@@ -38,7 +38,10 @@ export default (revisions: Array<Pair<string, Entry>>, strategy: RevisionStrateg
 
   const nonNullRevisions = revisions.filter(({ value }) => Boolean(value))
 
-  const getClosestRevision = (ts: number): Pair<string, Entry> => nonNullRevisions.reduce((p, c) => dist(ts, p.value.timestamp) < dist(ts, c.value.timestamp) ? p : c, nonNullRevisions[0])
+  const getClosestRevision = (ts: number): Pair<string, Entry> => nonNullRevisions.reduce(
+    (p, c) => dist(ts, p.value.timestamp) < dist(ts, c.value.timestamp) ? p : c,
+    nonNullRevisions[0]
+  )
 
   return [...new Set(dates.map(getClosestRevision))]
 }

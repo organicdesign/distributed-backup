@@ -11,6 +11,7 @@ import setupDownloader from '@/modules/downloader/index.js'
 import setupFilesystem from '@/modules/filesystem/index.js'
 import setupGroups from '@/modules/groups/index.js'
 import setupNetwork from '@/modules/network/index.js'
+import setupRevisions from '@/modules/revisions/index.js'
 
 const argv = await yargs(hideBin(process.argv))
   .option({
@@ -59,7 +60,14 @@ const filesystem = await setupFilesystem({
   downloader: downloader.components
 }, { config })
 
-const components = [base, network, groups, downloader, filesystem]
+const revisions = await setupRevisions({
+  base: base.components,
+  network: network.components,
+  groups: groups.components,
+  filesystem: filesystem.components
+}, { config })
+
+const components = [base, network, groups, downloader, filesystem, revisions]
 
 let exiting = false
 
