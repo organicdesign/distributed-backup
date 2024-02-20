@@ -60,24 +60,8 @@ export const handler = createHandler<typeof builder>(async argv => {
     throw new Error('Failed to connect to daemon.')
   }
 
-  let items = await argv.client.list()
-
+  const items = await argv.client.list()
   const revisionCounter: Record<string, number> = {}
-
-  for (const item of items) {
-    if (!item.path.startsWith('/v')) {
-      continue
-    }
-
-    const parts = item.path.split('/')
-    const path = `/${parts.slice(2, parts.length - 2).join('/')}`
-
-    if (revisionCounter[path] == null) {
-      revisionCounter[path] = 0
-    }
-
-    revisionCounter[path] += 1
-  }
 
   items.sort((a, b) => a.path.localeCompare(b.path))
 
@@ -92,8 +76,6 @@ export const handler = createHandler<typeof builder>(async argv => {
     size: 0, // items.reduce((a, b) => a + b.totalSize, 0),
     count: items.length
   }
-
-  items = items.filter(i => i.path.startsWith('/r')).map(i => ({ ...i, path: i.path.slice(2) }))
 
   if (argv.json === true) {
     return JSON.stringify({
