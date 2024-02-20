@@ -2,10 +2,10 @@ import { CID } from 'multiformats/cid'
 import { List } from 'rpc-interfaces'
 import { toString as uint8arrayToString } from 'uint8arrays'
 import type { Provides, Requires } from '../index.js'
-import type { RPCCommandConstructor } from '@/interface.js'
+import type { ModuleMethod } from '@/interface.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = (context, { rpc, groups }) => {
-  rpc.register(List.name, async (raw: unknown): Promise<List.Return> => {
+const command: ModuleMethod<Provides, Requires> = (context, { rpc, groups }) => {
+  rpc.addMethod(List.name, async (raw: unknown): Promise<List.Return> => {
     const params = List.Params.parse(raw)
     const list: List.Return = []
 

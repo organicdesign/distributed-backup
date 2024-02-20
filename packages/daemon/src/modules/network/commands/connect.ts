@@ -1,10 +1,10 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { Connect } from 'rpc-interfaces'
 import type { Provides, Requires } from '../index.js'
-import type { RPCCommandConstructor } from '@/interface.js'
+import type { ModuleMethod } from '@/interface.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = (context, { rpc }) => {
-  rpc.register(Connect.name, async (raw: unknown): Promise<Connect.Return> => {
+const command: ModuleMethod<Provides, Requires> = (context, { rpc }) => {
+  rpc.addMethod(Connect.name, async (raw: unknown): Promise<Connect.Return> => {
     const params = Connect.Params.parse(raw)
     const address = multiaddr(params.address)
 

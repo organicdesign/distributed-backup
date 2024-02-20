@@ -2,10 +2,10 @@ import { CID } from 'multiformats/cid'
 import { Revisions } from 'rpc-interfaces'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import type { Provides, Requires } from '../index.js'
-import type { RPCCommandConstructor } from '@/interface.js'
+import type { ModuleMethod } from '@/interface.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = (context, { rpc }) => {
-  rpc.register(Revisions.name, async (raw: unknown): Promise<Revisions.Return> => {
+const command: ModuleMethod<Provides, Requires> = (context, { rpc }) => {
+  rpc.addMethod(Revisions.name, async (raw: unknown): Promise<Revisions.Return> => {
     const params = Revisions.Params.parse(raw)
     const rs: Revisions.Return = []
     const revisions = context.getRevisions(CID.parse(params.group))

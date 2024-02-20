@@ -6,7 +6,7 @@ export interface KeyvalueDB extends Database {
 
 export const MEMORY_MAGIC = ':memory:'
 
-export interface RPCCommandConstructor<
+export interface ModuleMethod<
   Context extends Record<string, unknown> = Record<string, unknown>,
   Components extends Record<string, unknown> = Record<string, unknown>
 > {

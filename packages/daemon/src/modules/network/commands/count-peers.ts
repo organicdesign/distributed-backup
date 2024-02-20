@@ -1,10 +1,10 @@
 import { CID } from 'multiformats/cid'
 import { CountPeers } from 'rpc-interfaces'
 import type { Provides, Requires } from '../index.js'
-import type { RPCCommandConstructor } from '@/interface.js'
+import type { ModuleMethod } from '@/interface.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = (context, { rpc }) => {
-  rpc.register(CountPeers.name, async (raw: unknown): Promise<CountPeers.Return> => {
+const command: ModuleMethod<Provides, Requires> = (context, { rpc }) => {
+  rpc.addMethod(CountPeers.name, async (raw: unknown): Promise<CountPeers.Return> => {
     const countPeers = async (cid: CID, options?: { timeout: number }): Promise<number> => {
       let count = 0
 

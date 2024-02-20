@@ -1,10 +1,10 @@
 import { CreateGroup } from 'rpc-interfaces'
 import { fromString as uint8ArrayFromString } from 'uint8arrays'
 import type { Provides, Requires } from '../index.js'
-import type { RPCCommandConstructor } from '@/interface.js'
+import type { ModuleMethod } from '@/interface.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = (context, { rpc }) => {
-  rpc.register(CreateGroup.name, async (raw: unknown): Promise<CreateGroup.Return> => {
+const command: ModuleMethod<Provides, Requires> = (context, { rpc }) => {
+  rpc.addMethod(CreateGroup.name, async (raw: unknown): Promise<CreateGroup.Return> => {
     const params = CreateGroup.Params.parse(raw)
     const peerValues = params.peers.map(p => uint8ArrayFromString(p, 'base58btc'))
 

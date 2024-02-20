@@ -5,10 +5,10 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { getDagSize } from '../utils.js'
 import type { Provides, Requires } from '../index.js'
 import type { Entry } from '../interface.js'
-import type { RPCCommandConstructor } from '@/interface.js'
+import type { ModuleMethod } from '@/interface.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = (context, { rpc, base, network }) => {
-  rpc.register(Write.name, async (raw: unknown): Promise<Write.Return> => {
+const command: ModuleMethod<Provides, Requires> = (context, { rpc, base, network }) => {
+  rpc.addMethod(Write.name, async (raw: unknown): Promise<Write.Return> => {
     const params = Write.Params.parse(raw)
     const fs = context.getFileSystem(CID.parse(params.group))
 

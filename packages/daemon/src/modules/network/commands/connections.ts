@@ -1,9 +1,9 @@
 import { Connections } from 'rpc-interfaces'
 import type { Provides, Requires } from '../index.js'
-import type { RPCCommandConstructor } from '@/interface.js'
+import type { ModuleMethod } from '@/interface.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = (context, { rpc }) => {
-  rpc.register(Connections.name, async (): Promise<Connections.Return> => {
+const command: ModuleMethod<Provides, Requires> = (context, { rpc }) => {
+  rpc.addMethod(Connections.name, async (): Promise<Connections.Return> => {
     return context.libp2p.getConnections().map(c => c.remoteAddr.toString())
   })
 }

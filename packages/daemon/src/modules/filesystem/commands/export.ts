@@ -3,10 +3,10 @@ import { exportPlaintext } from 'fs-exporter'
 import { CID } from 'multiformats/cid'
 import { Export } from 'rpc-interfaces'
 import type { Provides, Requires } from '../index.js'
-import type { RPCCommandConstructor } from '@/interface.js'
+import type { ModuleMethod } from '@/interface.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = (context, { rpc, base }) => {
-  rpc.register(Export.name, async (raw: unknown): Promise<Export.Return> => {
+const command: ModuleMethod<Provides, Requires> = (context, { rpc, base }) => {
+  rpc.addMethod(Export.name, async (raw: unknown): Promise<Export.Return> => {
     const params = Export.Params.parse(raw)
     const fs = context.getFileSystem(CID.parse(params.group))
 

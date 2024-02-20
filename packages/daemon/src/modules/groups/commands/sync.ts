@@ -3,7 +3,7 @@ import { HeadsExchange } from 'welo/utils/heads-exchange'
 import { cidstring } from 'welo/utils/index'
 import { getHeads, addHeads } from 'welo/utils/replicator'
 import type { Provides, Requires } from '../index.js'
-import type { RPCCommandConstructor } from '@/interface.js'
+import type { ModuleMethod } from '@/interface.js'
 import type { Peer, Libp2p } from '@libp2p/interface'
 import type { Database } from 'welo'
 
@@ -59,8 +59,8 @@ const sync = async (libp2p: Libp2p, peer: Peer, database: Database, options: Par
   await stream.close()
 }
 
-const command: RPCCommandConstructor<Provides, Requires> = (context, { rpc, network }) => {
-  rpc.register(Sync.name, async (): Promise<Sync.Return> => {
+const command: ModuleMethod<Provides, Requires> = (context, { rpc, network }) => {
+  rpc.addMethod(Sync.name, async (): Promise<Sync.Return> => {
     const peers = network.libp2p.getPeers()
     const databases = context.welo.opened.values()
 

@@ -6,10 +6,10 @@ import { CID } from 'multiformats/cid'
 import { Import } from 'rpc-interfaces'
 import { encodeEntry, getDagSize } from '../utils.js'
 import type { Provides, Requires } from '../index.js'
-import type { RPCCommandConstructor } from '@/interface.js'
+import type { ModuleMethod } from '@/interface.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = (context, { rpc, network, base }) => {
-  rpc.register(Import.name, async (raw: unknown): Promise<Import.Return> => {
+const command: ModuleMethod<Provides, Requires> = (context, { rpc, network, base }) => {
+  rpc.addMethod(Import.name, async (raw: unknown): Promise<Import.Return> => {
     const params = Import.Params.parse(raw)
     const encrypt = Boolean(params.encrypt)
 
