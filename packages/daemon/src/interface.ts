@@ -6,16 +6,11 @@ export interface KeyvalueDB extends Database {
 
 export const MEMORY_MAGIC = ':memory:'
 
-export interface RPCCommand {
-  name: string
-  method(params: Record<string, unknown>): Promise<unknown> | unknown
-}
-
 export interface RPCCommandConstructor<
   Context extends Record<string, unknown> = Record<string, unknown>,
   Components extends Record<string, unknown> = Record<string, unknown>
 > {
-  (context: Context, components: Components): RPCCommand
+  (context: Context, components: Components): void
 }
 
 export interface Module<
@@ -24,7 +19,6 @@ export interface Module<
   Provides extends Record<string, unknown> = Record<string, unknown>,
 > {
   (components: Requires, init: Init): Promise<{
-    commands: RPCCommand[]
     components: Provides
   }>
 }

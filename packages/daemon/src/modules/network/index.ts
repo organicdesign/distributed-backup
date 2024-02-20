@@ -5,6 +5,7 @@ import connections from './commands/connections.js'
 import setupComponents from './setup.js'
 import type { Module } from '@/interface.js'
 import type { Provides as Base } from '@/modules/base/index.js'
+import type { Provides as RPC } from '@/modules/rpc/index.js'
 import type { Libp2p } from '@libp2p/interface'
 import type { Helia } from 'helia'
 import type { PinManager } from 'helia-pin-manager'
@@ -29,6 +30,7 @@ export interface Init extends Record<string, unknown> {
 
 export interface Requires extends Record<string, unknown> {
   base: Base
+  rpc: RPC
 }
 
 export interface Provides extends Record<string, unknown> {
@@ -43,13 +45,11 @@ const module: Module<Init, Requires, Provides> = async (components, init) => {
 
   const context = await setupComponents(components, config)
 
-  const commands = [
-    addresses,
-    connect,
-    connections
-  ].map(c => c(context, components))
+  for (const setupCommand of [addresses, connect, connections]) {
+    setupCommand(context, components)
+  }
 
-  return { commands, components: context }
+  return { components: context }
 }
 
 export default module

@@ -5,7 +5,7 @@ import { MemoryDatastore } from 'datastore-core'
 import { FsDatastore } from 'datastore-fs'
 import { createKeyManager } from 'key-manager'
 import { z } from 'zod'
-import type { Module, RPCCommand } from '@/interface.js'
+import type { Module } from '@/interface.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { KeyManager } from 'key-manager'
@@ -42,12 +42,8 @@ const module: Module<Init, Requires, Provides> = async (_, init) => {
     : new FsBlockstore(Path.join(config.storage, 'blockstore'))
 
   const components = { config, keyManager, datastore, blockstore }
-  const commands: RPCCommand[] = []
 
-  return {
-    components,
-    commands
-  }
+  return { components }
 }
 
 export default module

@@ -5,10 +5,8 @@ import { Export } from 'rpc-interfaces'
 import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor } from '@/interface.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = (context, { base }) => ({
-  name: Export.name,
-
-  async method (raw: unknown): Promise<Export.Return> {
+const command: RPCCommandConstructor<Provides, Requires> = (context, { rpc, base }) => {
+  rpc.register(Export.name, async (raw: unknown): Promise<Export.Return> => {
     const params = Export.Params.parse(raw)
     const fs = context.getFileSystem(CID.parse(params.group))
 
@@ -27,7 +25,7 @@ const command: RPCCommandConstructor<Provides, Requires> = (context, { base }) =
     }
 
     return null
-  }
-})
+  })
+}
 
 export default command

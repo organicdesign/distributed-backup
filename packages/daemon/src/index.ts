@@ -1,6 +1,5 @@
 import fs from 'fs/promises'
 import Path from 'path'
-import { createNetServer } from '@organicdesign/net-rpc'
 import * as logger from 'logger'
 import { hideBin } from 'yargs/helpers'
 import yargs from 'yargs/yargs'
@@ -11,6 +10,7 @@ import setupFilesystem from '@/modules/filesystem/index.js'
 import setupGroups from '@/modules/groups/index.js'
 import setupNetwork from '@/modules/network/index.js'
 import setupRevisions from '@/modules/revisions/index.js'
+import setupRPC from '@/modules/rpc/index.js'
 import setupTick from '@/modules/tick/index.js'
 
 const argv = await yargs(hideBin(process.argv))
@@ -39,8 +39,6 @@ const argv = await yargs(hideBin(process.argv))
 
 logger.lifecycle('starting...')
 
-const { rpc, close } = await createNetServer(argv.socket)
-
 const raw = await fs.readFile(argv.config, { encoding: 'utf8' })
 const config = JSON.parse(raw)
 
@@ -50,26 +48,42 @@ logger.lifecycle('loaded config')
 
 const base = await setupBase({}, { config, key: argv.key })
 const tick = await setupTick({}, { config })
-const network = await setupNetwork({ base: base.components }, { config })
-const groups = await setupGroups({ base: base.components, network: network.components }, { config })
-const downloader = await setupDownloader({ base: base.components, network: network.components }, { config })
+const rpc = await setupRPC({}, { socket: argv.socket })
+
+const network = await setupNetwork({
+  base: base.components,
+  rpc: rpc.components
+}, { config })
+
+const groups = await setupGroups({
+  base: base.components,
+  network: network.components,
+  rpc: rpc.components
+}, { config })
+
+const downloader = await setupDownloader({
+  base: base.components,
+  network: network.components,
+  rpc: rpc.components,
+  tick: tick.components
+}, { config })
 
 const filesystem = await setupFilesystem({
   base: base.components,
   network: network.components,
   groups: groups.components,
   downloader: downloader.components,
-  tick: tick.components
+  tick: tick.components,
+  rpc: rpc.components
 }, { config })
 
-const revisions = await setupRevisions({
+await setupRevisions({
   base: base.components,
   network: network.components,
   groups: groups.components,
-  filesystem: filesystem.components
+  filesystem: filesystem.components,
+  rpc: rpc.components
 }, { config })
-
-const components = [tick, base, network, groups, downloader, filesystem, revisions]
 
 let exiting = false
 
@@ -83,7 +97,6 @@ process.on('SIGINT', () => {
 
   ;(async () => {
     logger.lifecycle('cleaning up...')
-    await close()
     logger.lifecycle('stopped server')
 
     logger.lifecycle('exiting...')
@@ -95,10 +108,3 @@ process.on('SIGINT', () => {
 })
 
 logger.lifecycle('started')
-
-// Setup the component commands
-for (const component of components) {
-  for (const command of component.commands) {
-    rpc.addMethod(command.name, command.method)
-  }
-}

@@ -1,12 +1,10 @@
 import { JoinGroup } from 'rpc-interfaces'
 import { Address } from 'welo'
-import type { Provides } from '../index.js'
+import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor } from '@/interface.js'
 
-const command: RPCCommandConstructor<Provides> = (context) => ({
-  name: JoinGroup.name,
-
-  async method (raw: unknown): Promise<JoinGroup.Return> {
+const command: RPCCommandConstructor<Provides, Requires> = (context, { rpc }) => {
+  rpc.register(JoinGroup.name, async (raw: unknown): Promise<JoinGroup.Return> => {
     const params = JoinGroup.Params.parse(raw)
     const manifest = await context.welo.fetch(Address.fromString(`/hldb/${params.group}`))
 
@@ -21,7 +19,7 @@ const command: RPCCommandConstructor<Provides> = (context) => ({
     }
 
     return null
-  }
-})
+  })
+}
 
 export default command

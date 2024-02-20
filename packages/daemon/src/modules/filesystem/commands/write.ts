@@ -7,10 +7,8 @@ import type { Provides, Requires } from '../index.js'
 import type { Entry } from '../interface.js'
 import type { RPCCommandConstructor } from '@/interface.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = (context, { base, network }) => ({
-  name: Write.name,
-
-  async method (raw: unknown): Promise<Write.Return> {
+const command: RPCCommandConstructor<Provides, Requires> = (context, { rpc, base, network }) => {
+  rpc.register(Write.name, async (raw: unknown): Promise<Write.Return> => {
     const params = Write.Params.parse(raw)
     const fs = context.getFileSystem(CID.parse(params.group))
 
@@ -38,7 +36,7 @@ const command: RPCCommandConstructor<Provides, Requires> = (context, { base, net
     await fs.put(params.path, newEntry)
 
     return params.data.length
-  }
-})
+  })
+}
 
 export default command

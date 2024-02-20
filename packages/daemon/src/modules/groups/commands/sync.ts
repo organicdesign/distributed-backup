@@ -59,10 +59,8 @@ const sync = async (libp2p: Libp2p, peer: Peer, database: Database, options: Par
   await stream.close()
 }
 
-const command: RPCCommandConstructor<Provides, Requires> = (context, { network }) => ({
-  name: Sync.name,
-
-  async method (): Promise<Sync.Return> {
+const command: RPCCommandConstructor<Provides, Requires> = (context, { rpc, network }) => {
+  rpc.register(Sync.name, async (): Promise<Sync.Return> => {
     const peers = network.libp2p.getPeers()
     const databases = context.welo.opened.values()
 
@@ -79,7 +77,7 @@ const command: RPCCommandConstructor<Provides, Requires> = (context, { network }
     await Promise.allSettled(promises)
 
     return null
-  }
-})
+  })
+}
 
 export default command

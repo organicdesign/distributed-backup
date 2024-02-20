@@ -8,10 +8,8 @@ import { encodeEntry, getDagSize } from '../utils.js'
 import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor } from '@/interface.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = (context, { network, base }) => ({
-  name: Import.name,
-
-  async method (raw: unknown): Promise<Import.Return> {
+const command: RPCCommandConstructor<Provides, Requires> = (context, { rpc, network, base }) => {
+  rpc.register(Import.name, async (raw: unknown): Promise<Import.Return> => {
     const params = Import.Params.parse(raw)
     const encrypt = Boolean(params.encrypt)
 
@@ -70,7 +68,7 @@ const command: RPCCommandConstructor<Provides, Requires> = (context, { network, 
     }
 
     return cids
-  }
-})
+  })
+}
 
 export default command

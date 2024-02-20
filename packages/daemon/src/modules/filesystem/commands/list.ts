@@ -4,10 +4,8 @@ import { toString as uint8arrayToString } from 'uint8arrays'
 import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor } from '@/interface.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = (context, { groups }) => ({
-  name: List.name,
-
-  async method (raw: unknown): Promise<List.Return> {
+const command: RPCCommandConstructor<Provides, Requires> = (context, { rpc, groups }) => {
+  rpc.register(List.name, async (raw: unknown): Promise<List.Return> => {
     const params = List.Params.parse(raw)
     const list: List.Return = []
 
@@ -47,7 +45,7 @@ const command: RPCCommandConstructor<Provides, Requires> = (context, { groups })
     }
 
     return list
-  }
-})
+  })
+}
 
 export default command

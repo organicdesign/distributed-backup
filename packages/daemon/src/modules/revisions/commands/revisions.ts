@@ -1,13 +1,11 @@
 import { CID } from 'multiformats/cid'
 import { Revisions } from 'rpc-interfaces'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
-import type { Provides } from '../index.js'
+import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor } from '@/interface.js'
 
-const command: RPCCommandConstructor<Provides> = (context) => ({
-  name: Revisions.name,
-
-  async method (raw: unknown): Promise<Revisions.Return> {
+const command: RPCCommandConstructor<Provides, Requires> = (context, { rpc }) => {
+  rpc.register(Revisions.name, async (raw: unknown): Promise<Revisions.Return> => {
     const params = Revisions.Params.parse(raw)
     const rs: Revisions.Return = []
     const revisions = context.getRevisions(CID.parse(params.group))
@@ -29,7 +27,7 @@ const command: RPCCommandConstructor<Provides> = (context) => ({
     }
 
     return rs
-  }
-})
+  })
+}
 
 export default command

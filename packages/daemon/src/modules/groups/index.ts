@@ -9,6 +9,7 @@ import type { Groups } from './groups.js'
 import type { Module, KeyvalueDB } from '@/interface.js'
 import type { Provides as Base } from '@/modules/base/index.js'
 import type { Provides as Network } from '@/modules/network/index.js'
+import type { Provides as RPC } from '@/modules/rpc/index.js'
 import type { Welo } from 'welo'
 
 export interface Init extends Record<string, unknown> {}
@@ -16,6 +17,7 @@ export interface Init extends Record<string, unknown> {}
 export interface Requires extends Record<string, unknown> {
   base: Base
   network: Network
+  rpc: RPC
 }
 
 export interface Provides extends Record<string, unknown> {
@@ -27,15 +29,17 @@ export interface Provides extends Record<string, unknown> {
 const module: Module<Init, Requires, Provides> = async (components) => {
   const context = await setupComponents(components)
 
-  const commands = [
+  for (const setupCommand of [
     createGroup,
     joinGroup,
     listGroups,
     sync,
     id
-  ].map(c => c(context, components))
+  ]) {
+    setupCommand(context, components)
+  }
 
-  return { commands, components: context }
+  return { components: context }
 }
 
 export default module

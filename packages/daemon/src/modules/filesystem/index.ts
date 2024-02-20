@@ -18,6 +18,7 @@ import type { Provides as Base } from '@/modules/base/index.js'
 import type { Provides as Downloader } from '@/modules/downloader/index.js'
 import type { Provides as Groups } from '@/modules/groups/index.js'
 import type { Provides as Network } from '@/modules/network/index.js'
+import type { Provides as RPC } from '@/modules/rpc/index.js'
 import type { Provides as Tick } from '@/modules/tick/index.js'
 import type { CID } from 'multiformats/cid'
 
@@ -38,6 +39,7 @@ export interface Requires extends Record<string, unknown> {
   groups: Groups
   downloader: Downloader
   tick: Tick
+  rpc: RPC
 }
 
 export interface Provides extends Record<string, unknown> {
@@ -52,7 +54,7 @@ const module: Module<Init, Requires, Provides> = async (components, init) => {
   const config = Config.parse(init.config)
   const context = await setup(components, config)
 
-  const commands = [
+  for (const setupCommand of [
     del,
     edit,
     exportData,
@@ -60,11 +62,13 @@ const module: Module<Init, Requires, Provides> = async (components, init) => {
     list,
     read,
     write
-  ].map(c => c(context, components))
+  ]) {
+    setupCommand(context, components)
+  }
 
   components.tick.register(async () => syncGroups(components))
 
-  return { components: context, commands }
+  return { components: context }
 }
 
 export default module

@@ -7,10 +7,8 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor } from '@/interface.js'
 
-const command: RPCCommandConstructor<Provides, Requires> = (context, { network }) => ({
-  name: Read.name,
-
-  async method (raw: unknown): Promise<Read.Return> {
+const command: RPCCommandConstructor<Provides, Requires> = (context, { rpc, network }) => {
+  rpc.register(Read.name, async (raw: unknown): Promise<Read.Return> => {
     const params = Read.Params.parse(raw)
     const fs = context.getFileSystem(CID.parse(params.group))
 
@@ -27,7 +25,7 @@ const command: RPCCommandConstructor<Provides, Requires> = (context, { network }
     const ufs = unixfs(network.helia)
 
     return uint8ArrayToString(uint8ArrayConcat(await collect(ufs.cat(entry.cid, { offset: params.position, length: params.length }))))
-  }
-})
+  })
+}
 
 export default command

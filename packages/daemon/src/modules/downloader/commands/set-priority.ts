@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { Provides } from '../index.js'
+import type { Provides, Requires } from '../index.js'
 import type { RPCCommandConstructor } from '@/interface.js'
 
 const Params = z.object({
@@ -7,10 +7,8 @@ const Params = z.object({
   path: z.string()
 })
 
-const command: RPCCommandConstructor<Provides> = (context) => ({
-  name: 'set-priority',
-
-  method: async (raw: unknown): Promise<null> => {
+const command: RPCCommandConstructor<Provides, Requires> = (context, { rpc }) => {
+  rpc.register('set-priority', async (raw: unknown) => {
     const params = Params.parse(raw)
     const pinInfo = await context.pinManager.get(params.path)
 
@@ -23,7 +21,7 @@ const command: RPCCommandConstructor<Provides> = (context) => ({
     await context.pinManager.put(params.path, pinInfo)
 
     return null
-  }
-})
+  })
+}
 
 export default command
