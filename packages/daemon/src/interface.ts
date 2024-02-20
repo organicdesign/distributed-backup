@@ -26,7 +26,6 @@ export interface Module<
   (components: Requires, init: Init): Promise<{
     commands: RPCCommand[]
     components: Provides
-    tick?(): void | Promise<void>
   }>
 }
 

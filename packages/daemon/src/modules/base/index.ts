@@ -12,7 +12,6 @@ import type { KeyManager } from 'key-manager'
 import { isMemory } from '@/utils.js'
 
 const Config = z.object({
-  tickInterval: z.number().default(10 * 60),
   storage: z.string().default(':memory:')
 })
 

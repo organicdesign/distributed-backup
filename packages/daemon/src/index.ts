@@ -4,7 +4,6 @@ import { createNetServer } from '@organicdesign/net-rpc'
 import * as logger from 'logger'
 import { hideBin } from 'yargs/helpers'
 import yargs from 'yargs/yargs'
-import { Looper } from './looper.js'
 import { projectPath } from './utils.js'
 import setupBase from '@/modules/base/index.js'
 import setupDownloader from '@/modules/downloader/index.js'
@@ -12,6 +11,7 @@ import setupFilesystem from '@/modules/filesystem/index.js'
 import setupGroups from '@/modules/groups/index.js'
 import setupNetwork from '@/modules/network/index.js'
 import setupRevisions from '@/modules/revisions/index.js'
+import setupTick from '@/modules/tick/index.js'
 
 const argv = await yargs(hideBin(process.argv))
   .option({
@@ -49,6 +49,7 @@ const config = JSON.parse(raw)
 logger.lifecycle('loaded config')
 
 const base = await setupBase({}, { config, key: argv.key })
+const tick = await setupTick({}, { config })
 const network = await setupNetwork({ base: base.components }, { config })
 const groups = await setupGroups({ base: base.components, network: network.components }, { config })
 const downloader = await setupDownloader({ base: base.components, network: network.components }, { config })
@@ -57,7 +58,8 @@ const filesystem = await setupFilesystem({
   base: base.components,
   network: network.components,
   groups: groups.components,
-  downloader: downloader.components
+  downloader: downloader.components,
+  tick: tick.components
 }, { config })
 
 const revisions = await setupRevisions({
@@ -67,7 +69,7 @@ const revisions = await setupRevisions({
   filesystem: filesystem.components
 }, { config })
 
-const components = [base, network, groups, downloader, filesystem, revisions]
+const components = [tick, base, network, groups, downloader, filesystem, revisions]
 
 let exiting = false
 
@@ -100,11 +102,3 @@ for (const component of components) {
     rpc.addMethod(command.name, command.method)
   }
 }
-
-// Setup the component tick methods.
-await Promise.all(
-  components.map(c => c.tick)
-    .filter(t => Boolean(t))
-    .map(t => new Looper(async () => t?.(), { sleep: base.components.config.tickInterval }))
-    .map(async l => l.run())
-)
