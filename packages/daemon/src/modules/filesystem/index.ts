@@ -15,6 +15,7 @@ import type { LocalSettings } from './local-settings.js'
 import type createUploadManager from './upload-operations.js'
 import type { Module } from '@/interface.js'
 import type { Provides as Base } from '@/modules/base/index.js'
+import type { Provides as ConfigModule } from '@/modules/config/index.js'
 import type { Provides as Downloader } from '@/modules/downloader/index.js'
 import type { Provides as Groups } from '@/modules/groups/index.js'
 import type { Provides as Network } from '@/modules/network/index.js'
@@ -29,10 +30,6 @@ export const Config = z.object({
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type Config = z.output<typeof Config>
 
-export interface Init extends Record<string, unknown> {
-  config: unknown
-}
-
 export interface Requires extends Record<string, unknown> {
   base: Base
   network: Network
@@ -40,6 +37,7 @@ export interface Requires extends Record<string, unknown> {
   downloader: Downloader
   tick: Tick
   rpc: RPC
+  config: ConfigModule
 }
 
 export interface Provides extends Record<string, unknown> {
@@ -50,8 +48,8 @@ export interface Provides extends Record<string, unknown> {
   events: Events
 }
 
-const module: Module<Init, Requires, Provides> = async (components, init) => {
-  const config = Config.parse(init.config)
+const module: Module<Provides, Requires> = async (components) => {
+  const config = components.config.get(Config)
   const context = await setup(components, config)
 
   for (const setupCommand of [

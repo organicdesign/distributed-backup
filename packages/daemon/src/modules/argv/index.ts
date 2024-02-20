@@ -1,20 +1,16 @@
-import type { Module } from '@/interface.js'
 import Path from 'path'
 import { hideBin } from 'yargs/helpers'
 import yargs from 'yargs/yargs'
+import type { Module } from '@/interface.js'
 import { projectPath } from '@/utils.js'
 
-export interface Init extends Record<string, unknown> {}
-
-export interface Requires extends Record<string, unknown> {}
-
 export interface Provides extends Record<string, unknown> {
-  socket: string,
-	key: string,
-	config: string
+  socket: string
+  key: string
+  config: string
 }
 
-const module: Module<Init, Requires, Provides> = async (_, __) => {
+const module: Module<Provides> = async () => {
   const argv = await yargs(hideBin(process.argv))
     .option({
       socket: {
@@ -37,7 +33,7 @@ const module: Module<Init, Requires, Provides> = async (_, __) => {
         default: Path.join(projectPath, 'config/config.json')
       }
     })
-    .parse();
+    .parse()
 
   return { components: { socket: argv.socket, key: argv.key, config: argv.config } }
 }

@@ -1,6 +1,7 @@
 import * as logger from 'logger'
 import { z } from 'zod'
 import type { Module } from '@/interface.js'
+import type { Provides as ConfigModule } from '@/modules/config/index.js'
 
 const Config = z.object({
   tickInterval: z.number().default(10 * 60)
@@ -9,17 +10,17 @@ const Config = z.object({
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type Config = z.output<typeof Config>
 
-export interface Init extends Record<string, unknown> { config: unknown }
-
-export interface Requires extends Record<string, unknown> {}
+export interface Requires extends Record<string, unknown> {
+  config: ConfigModule
+}
 
 export interface Provides extends Record<string, unknown> {
   config: Config
   register (method: (...args: any[]) => any): void
 }
 
-const module: Module<Init, Requires, Provides> = async (_, init) => {
-  const config = Config.parse(init.config)
+const module: Module<Provides, Requires> = async (components) => {
+  const config = components.config.get(Config)
   const methods: Array<(...args: any[]) => any> = []
   const register = (method: (...args: any[]) => any): void => { methods.push(method) }
 

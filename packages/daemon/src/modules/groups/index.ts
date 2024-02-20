@@ -12,8 +12,6 @@ import type { Provides as Network } from '@/modules/network/index.js'
 import type { Provides as RPC } from '@/modules/rpc/index.js'
 import type { Welo } from 'welo'
 
-export interface Init extends Record<string, unknown> {}
-
 export interface Requires extends Record<string, unknown> {
   base: Base
   network: Network
@@ -26,7 +24,7 @@ export interface Provides extends Record<string, unknown> {
   getTracker(database: KeyvalueDB): EntryTracker
 }
 
-const module: Module<Init, Requires, Provides> = async (components) => {
+const module: Module<Provides, Requires> = async (components) => {
   const context = await setupComponents(components)
 
   for (const setupCommand of [

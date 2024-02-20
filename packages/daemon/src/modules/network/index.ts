@@ -5,6 +5,7 @@ import connections from './commands/connections.js'
 import setupComponents from './setup.js'
 import type { Module } from '@/interface.js'
 import type { Provides as Base } from '@/modules/base/index.js'
+import type { Provides as ConfigModule } from '@/modules/config/index.js'
 import type { Provides as RPC } from '@/modules/rpc/index.js'
 import type { Libp2p } from '@libp2p/interface'
 import type { Helia } from 'helia'
@@ -24,13 +25,10 @@ const Config = z.object({
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type Config = z.output<typeof Config>
 
-export interface Init extends Record<string, unknown> {
-  config: unknown
-}
-
 export interface Requires extends Record<string, unknown> {
   base: Base
   rpc: RPC
+  config: ConfigModule
 }
 
 export interface Provides extends Record<string, unknown> {
@@ -40,8 +38,8 @@ export interface Provides extends Record<string, unknown> {
   config: Config
 }
 
-const module: Module<Init, Requires, Provides> = async (components, init) => {
-  const config = Config.parse(init.config)
+const module: Module<Provides, Requires> = async (components) => {
+  const config = components.config.get(Config)
 
   const context = await setupComponents(components, config)
 

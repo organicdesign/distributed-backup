@@ -13,12 +13,15 @@ export interface ModuleMethod<
   (context: Context, components: Components): void
 }
 
+// Optional type to get around linter void issues.
+export type Optional<T> = T extends undefined ? ReturnType<() => void> : T
+
 export interface Module<
-  Init extends Record<string, unknown> | undefined = undefined,
-  Requires extends Record<string, unknown> = Record<string, unknown>,
   Provides extends Record<string, unknown> = Record<string, unknown>,
+  Requires extends Record<string, unknown> | undefined = undefined,
+  Init extends Record<string, unknown> | undefined = undefined,
 > {
-  (components: Requires, init: Init): Promise<{
+  (components: Optional<Requires>, init: Optional<Init>): Promise<{
     components: Provides
   }>
 }
