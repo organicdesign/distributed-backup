@@ -37,7 +37,7 @@ const module: Module<Init, Requires, Provides> = async (_, init) => {
     }
   })()
 
-  return { components: { config, register }, commands: [] }
+  return { components: { config, register } }
 }
 
 export default module
