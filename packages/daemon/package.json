@@ -19,17 +19,20 @@
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
     "prepublishOnly": "npm run build",
-    "build": "aegir build",
+    "build": "aegir build && tsc-alias",
     "test": "aegir test -t node -f './dist/test/**/*.spec.js'"
   },
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
+    "@helia/interface": "^3.0.1",
+    "@ipld/dag-pb": "^4.0.8",
     "@libp2p/interface": "^1.1.2",
     "@libp2p/interfaces": "^3.3.2",
     "@types/yargs": "^17.0.32",
     "aegir": "^42.2.2",
-    "interface-blockstore": "^5.2.9"
+    "interface-blockstore": "^5.2.9",
+    "tsc-alias": "^1.8.8"
   },
   "private": true,
   "sideEffects": false,
@@ -54,7 +57,6 @@
     "blockstore-core": "^4.3.10",
     "blockstore-fs": "^1.1.9",
     "cborg": "^4.0.8",
-    "cipher": "^0.1.0",
     "dag-walkers": "^0.1.0",
     "datastore-core": "^9.2.7",
     "datastore-fs": "^9.1.7",
@@ -74,6 +76,7 @@
     "p-queue": "^8.0.1",
     "rpc-interfaces": "^0.1.0",
     "streaming-iterables": "^8.0.1",
+    "ts-event-target": "^0.1.5",
     "uint8arrays": "^5.0.1",
     "welo": "^4.1.0-47c08dd",
     "yargs": "^17.7.2",

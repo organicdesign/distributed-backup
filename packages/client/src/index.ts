@@ -3,6 +3,7 @@ import {
   Addresses,
   Connect,
   Connections,
+  CountPeers,
   CreateGroup,
   Delete,
   Edit,
@@ -48,6 +49,13 @@ export class Client {
     const raw = await this.client.rpc.request(Connections.name, params)
 
     return Connections.Return.parse(raw)
+  }
+
+  async countPeers (cids: CountPeers.Params['cids']): Promise<CountPeers.Return> {
+    const params: CountPeers.Params = { cids }
+    const raw = await this.client.rpc.request(CountPeers.name, params)
+
+    return CountPeers.Return.parse(raw)
   }
 
   async createGroup (name: CreateGroup.Params['name'], peers: CreateGroup.Params['peers'] = []): Promise<CreateGroup.Return> {
