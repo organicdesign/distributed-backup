@@ -66,7 +66,7 @@ const module: Module<Provides, Requires> = async (components) => {
 
   components.tick.register(async () => syncGroups(components))
 
-  return { components: context }
+  return context
 }
 
 export default module

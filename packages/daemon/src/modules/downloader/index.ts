@@ -46,7 +46,7 @@ const module: Module<Provides, Requires> = async (components) => {
 
   components.tick.register(async () => download(context))
 
-  return { components: context }
+  return context
 }
 
 export default module

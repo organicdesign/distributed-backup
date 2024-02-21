@@ -40,7 +40,7 @@ const module: Module<Provides, Requires> = async ({ argv, config }) => {
     ? new MemoryBlockstore()
     : new FsBlockstore(Path.join(c.storage, 'blockstore'))
 
-  return { components: { keyManager, datastore, blockstore } }
+  return { keyManager, datastore, blockstore }
 }
 
 export default module

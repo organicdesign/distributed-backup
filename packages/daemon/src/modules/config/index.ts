@@ -17,7 +17,7 @@ const module: Module<Provides, Requires> = async ({ argv }) => {
   const config = z.record(z.unknown()).parse(JSON.parse(raw))
   const get = <T extends z.AnyZodObject>(shape: T): z.infer<T> => shape.parse(config)
 
-  return { components: { config, get } }
+  return { config, get }
 }
 
 export default module

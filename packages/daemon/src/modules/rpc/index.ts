@@ -17,7 +17,7 @@ const module: Module<Provides, Requires> = async (components) => {
     rpc.addMethod(name, method)
   }
 
-  return { components: { addMethod }, stop: close }
+  return { addMethod, stop: close }
 }
 
 export default module

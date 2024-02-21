@@ -37,7 +37,7 @@ const module: Module<Provides, Requires> = async (components) => {
     setupCommand(context, components)
   }
 
-  return { components: context }
+  return context
 }
 
 export default module

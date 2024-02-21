@@ -38,7 +38,7 @@ const module: Module<Provides, Requires> = async (components) => {
     }
   })()
 
-  return { components: { config, register } }
+  return { config, register }
 }
 
 export default module

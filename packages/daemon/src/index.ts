@@ -18,50 +18,25 @@ logger.lifecycle('loaded config')
 
 const argv = await setupArgv()
 
-const config = await setupConfig({ argv: argv.components })
-const rpc = await setupRPC({ argv: argv.components })
-
-const tick = await setupTick({ config: config.components })
-const base = await setupBase({ argv: argv.components, config: config.components })
-
-const network = await setupNetwork({
-  config: config.components,
-  base: base.components,
-  rpc: rpc.components
-})
-
-const groups = await setupGroups({
-  base: base.components,
-  network: network.components,
-  rpc: rpc.components
-})
-
-const downloader = await setupDownloader({
-  config: config.components,
-  base: base.components,
-  network: network.components,
-  rpc: rpc.components,
-  tick: tick.components
-})
+const config = await setupConfig({ argv })
+const rpc = await setupRPC({ argv })
+const tick = await setupTick({ config })
+const base = await setupBase({ argv, config })
+const network = await setupNetwork({ config, base, rpc })
+const groups = await setupGroups({ base, network, rpc })
+const downloader = await setupDownloader({ config, base, network, rpc, tick })
 
 const filesystem = await setupFilesystem({
-  config: config.components,
-  base: base.components,
-  network: network.components,
-  groups: groups.components,
-  downloader: downloader.components,
-  tick: tick.components,
-  rpc: rpc.components
+  config,
+  base,
+  network,
+  groups,
+  downloader,
+  tick,
+  rpc
 })
 
-await setupRevisions({
-  config: config.components,
-  base: base.components,
-  network: network.components,
-  groups: groups.components,
-  filesystem: filesystem.components,
-  rpc: rpc.components
-})
+const revisions = await setupRevisions({ config, base, network, groups, filesystem, rpc })
 
 let exiting = false
 
@@ -75,7 +50,21 @@ process.on('SIGINT', () => {
 
   ;(async () => {
     logger.lifecycle('cleaning up...')
-    logger.lifecycle('stopped server')
+
+    for (const module of [
+      argv,
+      config,
+      rpc,
+      tick,
+      base,
+      network,
+      groups,
+      downloader,
+      filesystem,
+      revisions
+    ]) {
+      await module.stop?.()
+    }
 
     logger.lifecycle('exiting...')
 

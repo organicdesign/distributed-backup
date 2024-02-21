@@ -35,7 +35,7 @@ const module: Module<Provides> = async () => {
     })
     .parse()
 
-  return { components: { socket: argv.socket, key: argv.key, config: argv.config } }
+  return { socket: argv.socket, key: argv.key, config: argv.config }
 }
 
 export default module
