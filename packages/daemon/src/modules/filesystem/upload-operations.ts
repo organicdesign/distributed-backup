@@ -37,34 +37,8 @@ export default async (context: Pick<Provides, 'getFileSystem' | 'events'>, { net
     await downloader.pinManager.put(path, { cid: entry.cid, priority: entry.priority })
 
     context.events.dispatchEvent(new FileSystemEvent('file:added', group, path, entry))
-    /*
-    const paths = [
-      path
-      // createVersionKey(path, network.libp2p.peerId, entry.sequence)
-    ]
-
-    for (const path of paths) {
-      await fs.put(path, entry)
-      await downloader.pinManager.put(path, { cid: entry.cid, priority: entry.priority })
-    }
-
-    // Handle revisions.
-    const revisions = await all(fs.getDir(createVersionKey(path)))
-
-    // Filter revisions.
-    const selectedRevisions = selectRevisions(revisions, entry.revisionStrategy)
-
-    for (const { key: path } of revisions) {
-      const hasSelectedOld = selectedRevisions.find(r => r.key === path) != null
-
-      if (hasSelectedOld) {
-        continue
-      }
-
-      await fs.delete(path)
-    }
-    */
   }
+
   const om = new OperationManager(datastore, {
     put,
 
