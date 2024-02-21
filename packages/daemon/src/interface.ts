@@ -21,7 +21,7 @@ export interface Module<
   Requires extends Record<string, unknown> | undefined = undefined,
   Init extends Record<string, unknown> | undefined = undefined,
 > {
-  (components: Optional<Requires>, init: Optional<Init>): Promise<Provides & { stop?(): void | Promise<void> }>
+  (components: Optional<Requires>, init: Optional<Init>): Promise<Provides>
 }
 
 export interface Pair<Key = unknown, Value = unknown> {

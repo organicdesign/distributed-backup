@@ -1,9 +1,11 @@
 import { createNetServer } from '@organicdesign/net-rpc'
 import type { Module } from '@/interface.js'
 import type { Provides as Argv } from '@/modules/argv/index.js'
+import type { Provides as Sigint } from '@/modules/sigint/index.js'
 
 export interface Requires extends Record<string, unknown> {
   argv: Argv
+  sigint: Sigint
 }
 
 export interface Provides extends Record<string, unknown> {
@@ -17,7 +19,9 @@ const module: Module<Provides, Requires> = async (components) => {
     rpc.addMethod(name, method)
   }
 
-  return { addMethod, stop: close }
+  components.sigint.onInterupt(close)
+
+  return { addMethod }
 }
 
 export default module

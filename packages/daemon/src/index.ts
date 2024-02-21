@@ -8,6 +8,7 @@ import setupGroups from '@/modules/groups/index.js'
 import setupNetwork from '@/modules/network/index.js'
 import setupRevisions from '@/modules/revisions/index.js'
 import setupRPC from '@/modules/rpc/index.js'
+import setupSigint from '@/modules/sigint/index.js'
 import setupTick from '@/modules/tick/index.js'
 
 logger.lifecycle('starting...')
@@ -18,8 +19,9 @@ logger.lifecycle('loaded config')
 
 const argv = await setupArgv()
 
+const sigint = await setupSigint()
 const config = await setupConfig({ argv })
-const rpc = await setupRPC({ argv })
+const rpc = await setupRPC({ argv, sigint })
 const tick = await setupTick({ config })
 const base = await setupBase({ argv, config })
 const network = await setupNetwork({ config, base, rpc })
@@ -36,42 +38,6 @@ const filesystem = await setupFilesystem({
   rpc
 })
 
-const revisions = await setupRevisions({ config, base, network, groups, filesystem, rpc })
-
-let exiting = false
-
-process.on('SIGINT', () => {
-  if (exiting) {
-    logger.lifecycle('force exiting')
-    process.exit(1)
-  }
-
-  exiting = true
-
-  ;(async () => {
-    logger.lifecycle('cleaning up...')
-
-    for (const module of [
-      argv,
-      config,
-      rpc,
-      tick,
-      base,
-      network,
-      groups,
-      downloader,
-      filesystem,
-      revisions
-    ]) {
-      await module.stop?.()
-    }
-
-    logger.lifecycle('exiting...')
-
-    process.exit()
-  })().catch(error => {
-    throw error
-  })
-})
+await setupRevisions({ config, base, network, groups, filesystem, rpc })
 
 logger.lifecycle('started')
