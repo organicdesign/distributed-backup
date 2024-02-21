@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import getStatus from './commands/get-status.js'
 import setPriority from './commands/set-priority.js'
 import download from './downloader.js'
 import { PinManager } from './pin-manager.js'
@@ -40,7 +41,7 @@ const module: Module<Provides, Requires> = async (components) => {
 
   const context = { pinManager, config: c }
 
-  for (const setupCommand of [setPriority]) {
+  for (const setupCommand of [setPriority, getStatus]) {
     setupCommand(context, components)
   }
 

@@ -1,38 +1,23 @@
-import Path from 'path'
-import { zCID } from 'rpc-interfaces/zod'
-import { z } from 'zod'
+import { CID } from 'multiformats/cid'
+import { GetStatus } from 'rpc-interfaces'
 import type { Provides, Requires } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 
-const Params = z.object({
-  items: z.array(z.object({
-    group: zCID(),
-    path: z.string()
-  }))
-})
-
 const command: ModuleMethod<Provides, Requires> = (context, { rpc }) => {
-  rpc.addMethod('set-priority', async (raw: unknown) => {
-    const params = Params.parse(raw)
+  rpc.addMethod(GetStatus.name, async (raw: unknown): Promise<GetStatus.Return> => {
+    const params = GetStatus.Params.parse(raw)
 
-    return Promise.all(params.items.map(async item => {
-      const key = Path.join('/', item.group, item.path)
-      const pinInfo = await context.pinManager.get(key)
-
-      if (pinInfo == null) {
-        throw new Error('no such pin')
-      }
+    return Promise.all(params.cids.map(async str => {
+      const cid = CID.parse(str)
 
       const [state, blocks, size] = await Promise.all([
-        context.pinManager.getState(pinInfo.cid),
-        context.pinManager.getBlockCount(pinInfo.cid),
-        context.pinManager.getSize(pinInfo.cid)
+        context.pinManager.getState(cid),
+        context.pinManager.getBlockCount(cid),
+        context.pinManager.getSize(cid)
       ])
 
       return {
-        path: item.path,
-        group: item.group,
-        cid: pinInfo.cid.toString(),
+        cid: str,
         state,
         blocks,
         size
