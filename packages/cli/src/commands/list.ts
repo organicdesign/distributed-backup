@@ -65,24 +65,28 @@ export const handler = createHandler<typeof builder>(async argv => {
 
   items.sort((a, b) => a.path.localeCompare(b.path))
 
-  const completed = {
-    blocks: items.reduce((a, b) => a + b.blocks, 0),
-    size: items.reduce((a, b) => a + b.size, 0),
-    count: 'Not Implemented'// items.filter(i => i.state === 'COMPLETED').length
-  }
-
   const total = {
-    blocks: 0, // items.reduce((a, b) => a + b.totalBlocks, 0),
-    size: 0, // items.reduce((a, b) => a + b.totalSize, 0),
+    blocks: items.reduce((a, b) => a + b.blocks, 0), // items.reduce((a, b) => a + b.totalBlocks, 0),
+    size: items.reduce((a, b) => a + b.size, 0), // items.reduce((a, b) => a + b.totalSize, 0),
     count: items.length
   }
 
   if (argv.json === true) {
     return JSON.stringify({
       items,
-      completed,
       total
     })
+  }
+
+  const statuses = await argv.client.getStatus(items.map(i => i.cid))
+
+  const getStatus = ({ cid }: { cid: string }): (typeof statuses)[number] =>
+    statuses.find(s => s.cid === cid) ?? { state: 'NOTFOUND', blocks: 0, size: 0, cid }
+
+  const completed = {
+    blocks: items.map(getStatus).reduce((a, b) => a + b.blocks, 0),
+    size: items.map(getStatus).reduce((a, b) => a + b.size, 0),
+    count: items.map(getStatus).filter(i => i.state === 'COMPLETED').length
   }
 
   let header = 'Name'.padEnd(20)
@@ -113,9 +117,9 @@ export const handler = createHandler<typeof builder>(async argv => {
         let str = ''
 
         str += `${'  '.repeat(depth)}${key}`.slice(0, 18).padEnd(20)
-        str += `${formatSize(item.size)}/${formatSize(0)} (${formatPercent(0)})`.slice(0, 25).padEnd(27)
-        str += `${item.blocks}/${0} (${formatPercent(0)})`.slice(0, 18).padEnd(20)
-        str += 'Not Implemented'.slice(0, 13).padEnd(15)
+        str += `${formatSize(getStatus(item).size)}/${formatSize(item.size)} (${formatPercent(getStatus(item).size / item.size)})`.slice(0, 25).padEnd(27)
+        str += `${getStatus(item).blocks}/${item.blocks} (${formatPercent(getStatus(item).blocks / item.blocks)})`.slice(0, 18).padEnd(20)
+        str += getStatus(item).state.slice(0, 13).padEnd(15)
         str += `${item.priority}`.slice(0, 8).padEnd(10)
         str += `${revisionCounter[item.path] ?? 0}`.slice(0, 8).padEnd(10)
         str += 'Not Implemented'.slice(0, 8).padEnd(10)
