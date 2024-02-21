@@ -38,6 +38,15 @@ const filesystem = await setupFilesystem({
   rpc
 })
 
-await setupRevisions({ config, base, network, groups, filesystem, rpc })
+await setupRevisions({
+  config,
+  base,
+  network,
+  groups,
+  filesystem,
+  downloader,
+  tick,
+  rpc
+})
 
 logger.lifecycle('started')
