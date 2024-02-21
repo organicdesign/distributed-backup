@@ -10,12 +10,14 @@ import type { Module, KeyvalueDB } from '@/interface.js'
 import type { Provides as Base } from '@/modules/base/index.js'
 import type { Provides as Network } from '@/modules/network/index.js'
 import type { Provides as RPC } from '@/modules/rpc/index.js'
+import type { Provides as Sigint } from '@/modules/sigint/index.js'
 import type { Welo } from 'welo'
 
 export interface Requires extends Record<string, unknown> {
   base: Base
   network: Network
   rpc: RPC
+  sigint: Sigint
 }
 
 export interface Provides extends Record<string, unknown> {
@@ -36,6 +38,11 @@ const module: Module<Provides, Requires> = async (components) => {
   ]) {
     setupCommand(context, components)
   }
+
+  components.sigint.onInterupt(async () => {
+    await context.groups.stop()
+    await context.welo.stop()
+  })
 
   return context
 }

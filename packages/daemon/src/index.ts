@@ -24,8 +24,8 @@ const config = await setupConfig({ argv })
 const rpc = await setupRPC({ argv, sigint })
 const tick = await setupTick({ config })
 const base = await setupBase({ argv, config })
-const network = await setupNetwork({ config, base, rpc })
-const groups = await setupGroups({ base, network, rpc })
+const network = await setupNetwork({ sigint, config, base, rpc })
+const groups = await setupGroups({ sigint, base, network, rpc })
 const downloader = await setupDownloader({ config, base, network, rpc, tick })
 
 const filesystem = await setupFilesystem({
