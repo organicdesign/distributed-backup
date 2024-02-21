@@ -2,6 +2,7 @@ import { z } from 'zod'
 import addresses from './commands/addresses.js'
 import connect from './commands/connect.js'
 import connections from './commands/connections.js'
+import countPeers from './commands/count-peers.js'
 import setupComponents from './setup.js'
 import type { Module } from '@/interface.js'
 import type { Provides as Base } from '@/modules/base/index.js'
@@ -45,7 +46,7 @@ const module: Module<Provides, Requires> = async (components) => {
 
   const context = await setupComponents(components, config)
 
-  for (const setupCommand of [addresses, connect, connections]) {
+  for (const setupCommand of [addresses, connect, connections, countPeers]) {
     setupCommand(context, components)
   }
 

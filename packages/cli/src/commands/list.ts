@@ -83,6 +83,11 @@ export const handler = createHandler<typeof builder>(async argv => {
   const getStatus = ({ cid }: { cid: string }): (typeof statuses)[number] =>
     statuses.find(s => s.cid === cid) ?? { state: 'NOTFOUND', blocks: 0, size: 0, cid }
 
+  const peers = await argv.client.countPeers(items.map(i => i.cid))
+
+	const getPeers = ({ cid }: { cid: string }): number =>
+    peers.find(p => p.cid === cid)?.peers ?? 0
+
   const completed = {
     blocks: items.map(getStatus).reduce((a, b) => a + b.blocks, 0),
     size: items.map(getStatus).reduce((a, b) => a + b.size, 0),
@@ -122,7 +127,7 @@ export const handler = createHandler<typeof builder>(async argv => {
         str += getStatus(item).state.slice(0, 13).padEnd(15)
         str += `${item.priority}`.slice(0, 8).padEnd(10)
         str += `${revisionCounter[item.path] ?? 0}`.slice(0, 8).padEnd(10)
-        str += 'Not Implemented'.slice(0, 8).padEnd(10)
+        str += `${getPeers(item)}`.slice(0, 8).padEnd(10)
         str += `${item.group}`.slice(0, 8).padEnd(10)
         str += `${item.encrypted}`.slice(0, 8).padEnd(10)
         str += `${item.revisionStrategy}`.slice(0, 8).padEnd(12)
