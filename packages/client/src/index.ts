@@ -8,6 +8,7 @@ import {
   Delete,
   Edit,
   Export,
+  GetStatus,
   ID,
   Import,
   JoinGroup,
@@ -15,6 +16,7 @@ import {
   List,
   Read,
   Revisions,
+  SetPriority,
   Sync,
   Write
 } from 'rpc-interfaces'
@@ -86,6 +88,13 @@ export class Client {
     return Export.Return.parse(raw)
   }
 
+  async getStatus (cids: GetStatus.Params['cids']): Promise<GetStatus.Return> {
+    const params: GetStatus.Params = { cids }
+    const raw = await this.client.rpc.request(GetStatus.name, params)
+
+    return GetStatus.Return.parse(raw)
+  }
+
   async id (): Promise<ID.Return> {
     const params: ID.Params = {}
     const raw = await this.client.rpc.request(ID.name, params)
@@ -133,6 +142,13 @@ export class Client {
     const raw = await this.client.rpc.request(Revisions.name, params)
 
     return Revisions.Return.parse(raw)
+  }
+
+  async setPriority (group: SetPriority.Params['group'], path: SetPriority.Params['path'], priority: SetPriority.Params['priority']): Promise<SetPriority.Return> {
+    const params: SetPriority.Params = { group, path, priority }
+    const raw = await this.client.rpc.request(SetPriority.name, params)
+
+    return SetPriority.Return.parse(raw)
   }
 
   async sync (): Promise<Sync.Return> {
