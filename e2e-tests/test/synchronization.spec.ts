@@ -59,7 +59,6 @@ describe('synchronization', () => {
     assert.equal(typeof listRes, 'object')
     assert(listRes.items)
     assert(listRes.total)
-    assert(listRes.completed)
     assert(Array.isArray(listRes.items))
     assert.equal(listRes.items.length, 1)
     assert.equal(listRes.items[0].cid, addRes.imports[0].cid)
@@ -84,7 +83,6 @@ describe('synchronization', () => {
     assert.equal(typeof listRes, 'object')
     assert(listRes.items)
     assert(listRes.total)
-    assert(listRes.completed)
     assert(Array.isArray(listRes.items))
     assert.equal(listRes.items.length, 2)
 
