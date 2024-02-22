@@ -1,8 +1,8 @@
 import { createBuilder, createHandler } from '../utils.js'
 
-export const command = 'edit [group] [path]'
+export const command = 'set-priority [group] [path] [priority]'
 
-export const desc = 'Edit an item in the distributed backup.'
+export const desc = 'Set the priority of an item in the distributed backup.'
 
 export const builder = createBuilder({
   group: {
@@ -16,7 +16,7 @@ export const builder = createBuilder({
   },
 
   priority: {
-    alias: 'p',
+    required: true,
     type: 'number'
   }
 })
@@ -26,9 +26,7 @@ export const handler = createHandler<typeof builder>(async argv => {
     throw new Error('Failed to connect to daemon.')
   }
 
-  await argv.client.edit(argv.group, argv.path, {
-    priority: argv.priority
-  })
+  await argv.client.setPriority(argv.group, argv.path, argv.priority)
 
   if (argv.json === true) {
     return JSON.stringify({ success: true })
