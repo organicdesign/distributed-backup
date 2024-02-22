@@ -1,5 +1,5 @@
 import { DeferredPromise } from '@open-draft/deferred-promise'
-import { defaultDagWalkers } from 'dag-walkers'
+import { defaultDagWalkers } from '@organicdesign/db-dag-walkers'
 import all from 'it-all'
 import Queue from 'p-queue'
 import { Event, EventTarget } from 'ts-event-target'

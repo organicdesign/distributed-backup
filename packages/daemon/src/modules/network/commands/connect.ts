@@ -1,5 +1,5 @@
 import { multiaddr } from '@multiformats/multiaddr'
-import { Connect } from 'rpc-interfaces'
+import { Connect } from '@organicdesign/db-rpc-interfaces'
 import type { Provides, Requires } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 

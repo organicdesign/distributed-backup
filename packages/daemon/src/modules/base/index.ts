@@ -1,16 +1,15 @@
 import Path from 'path'
+import { createKeyManager, type KeyManager } from '@organicdesign/db-key-manager'
 import { MemoryBlockstore } from 'blockstore-core'
 import { FsBlockstore } from 'blockstore-fs'
 import { MemoryDatastore } from 'datastore-core'
 import { FsDatastore } from 'datastore-fs'
-import { createKeyManager } from 'key-manager'
 import { z } from 'zod'
 import type { Module } from '@/interface.js'
 import type { Provides as Argv } from '@/modules/argv/index.js'
 import type { Provides as ConfigModule } from '@/modules/config/index.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
-import type { KeyManager } from 'key-manager'
 import { isMemory } from '@/utils.js'
 
 const Config = z.object({

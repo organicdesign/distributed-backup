@@ -10,8 +10,8 @@ import type { Provides as ConfigModule } from '@/modules/config/index.js'
 import type { Provides as RPC } from '@/modules/rpc/index.js'
 import type { Provides as Sigint } from '@/modules/sigint/index.js'
 import type { Libp2p } from '@libp2p/interface'
+import type { PinManager } from '@organicdesign/db-helia-pin-manager'
 import type { Helia } from 'helia'
-import type { PinManager } from 'helia-pin-manager'
 import { createLogger } from '@/logger.js'
 
 export const logger = createLogger('network')

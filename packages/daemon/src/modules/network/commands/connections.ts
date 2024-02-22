@@ -1,4 +1,4 @@
-import { Connections } from 'rpc-interfaces'
+import { Connections } from '@organicdesign/db-rpc-interfaces'
 import type { Provides, Requires } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 

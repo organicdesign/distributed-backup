@@ -1,5 +1,5 @@
+import { List } from '@organicdesign/db-rpc-interfaces'
 import { CID } from 'multiformats/cid'
-import { List } from 'rpc-interfaces'
 import { toString as uint8arrayToString } from 'uint8arrays'
 import type { Provides, Requires } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'

@@ -1,6 +1,6 @@
 import assert from 'assert/strict'
+import { KeyManager, parseKeyData } from '@organicdesign/db-key-manager'
 import all from 'it-all'
-import { KeyManager, parseKeyData } from 'key-manager'
 import { concat } from 'uint8arrays/concat'
 import { Cipher } from '../src/index.js'
 

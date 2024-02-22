@@ -2,7 +2,7 @@ import { spawn, type ChildProcessWithoutNullStreams } from 'child_process'
 import fs from 'fs/promises'
 import Path from 'path'
 import { DeferredPromise } from '@open-draft/deferred-promise'
-import { generateKeyFile } from 'key-manager'
+import { generateKeyFile } from '@organicdesign/db-key-manager'
 import { toString as uint8ArrayToString } from 'uint8arrays'
 import projectPath from './project-path.js'
 
@@ -15,7 +15,7 @@ export default async (name: string): Promise<{ start(): Promise<void>, stop(): P
   await generateKeyFile(keyPath, mnemonic, name)
 
   const args = [
-    Path.join(projectPath, 'node_modules/daemon/dist/src/index.js'),
+    Path.join(projectPath, 'node_modules/@organicdesign/db-daemon/dist/src/index.js'),
     '-k', keyPath,
     '-c', Path.join(projectPath, 'e2e-tests/config.json'),
     '-s', socket

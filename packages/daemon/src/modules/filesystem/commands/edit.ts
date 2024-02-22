@@ -1,5 +1,5 @@
+import { Edit } from '@organicdesign/db-rpc-interfaces'
 import { CID } from 'multiformats/cid'
-import { Edit } from 'rpc-interfaces'
 import { type Provides, type Requires, logger } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 

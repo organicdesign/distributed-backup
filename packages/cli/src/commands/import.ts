@@ -1,5 +1,5 @@
 import Path from 'path'
-import { RevisionStrategies } from 'rpc-interfaces/zod'
+import { RevisionStrategies } from '@organicdesign/db-rpc-interfaces/zod'
 import { createBuilder, createHandler } from '../utils.js'
 
 export const command = 'import [group] [localPath] [path]'

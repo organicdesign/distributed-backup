@@ -1,4 +1,4 @@
-import { ListGroups } from 'rpc-interfaces'
+import { ListGroups } from '@organicdesign/db-rpc-interfaces'
 import type { Provides, Requires } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 

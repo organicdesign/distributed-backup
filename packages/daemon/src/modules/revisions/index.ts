@@ -1,4 +1,4 @@
-import { RevisionStrategies } from 'rpc-interfaces/zod'
+import { RevisionStrategies } from '@organicdesign/db-rpc-interfaces/zod'
 import { z } from 'zod'
 import revisions from './commands/revisions.js'
 import setup from './setup.js'

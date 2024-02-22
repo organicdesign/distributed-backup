@@ -1,4 +1,4 @@
-import { JoinGroup } from 'rpc-interfaces'
+import { JoinGroup } from '@organicdesign/db-rpc-interfaces'
 import { Address } from 'welo'
 import type { Provides, Requires } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'

@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { resolve } from 'path'
-import { generateMnemonic, generateKeyFile } from 'key-manager'
+import { generateMnemonic, generateKeyFile } from '@organicdesign/db-key-manager'
 import { createBuilder, createHandler } from '../utils.js'
 
 export const command = 'generate-keys [path]'

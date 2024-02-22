@@ -1,7 +1,7 @@
 import fs from 'fs/promises'
 import Path from 'path'
 import * as dagPb from '@ipld/dag-pb'
-import { defaultDagWalkers } from 'dag-walkers'
+import { defaultDagWalkers } from '@organicdesign/db-dag-walkers'
 import { UnixFS } from 'ipfs-unixfs'
 import { type CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'

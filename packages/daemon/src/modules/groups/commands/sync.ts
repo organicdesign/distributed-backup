@@ -1,4 +1,4 @@
-import { Sync } from 'rpc-interfaces'
+import { Sync } from '@organicdesign/db-rpc-interfaces'
 import { HeadsExchange } from 'welo/utils/heads-exchange'
 import { cidstring } from 'welo/utils/index'
 import { getHeads, addHeads } from 'welo/utils/replicator'

@@ -1,4 +1,3 @@
-import { createNetClient, type NetClient } from '@organicdesign/net-rpc'
 import {
   Addresses,
   Connect,
@@ -19,7 +18,8 @@ import {
   SetPriority,
   Sync,
   Write
-} from 'rpc-interfaces'
+} from '@organicdesign/db-rpc-interfaces'
+import { createNetClient, type NetClient } from '@organicdesign/net-rpc'
 
 export class Client {
   private readonly client: NetClient

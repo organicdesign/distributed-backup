@@ -1,4 +1,4 @@
-import { CreateGroup } from 'rpc-interfaces'
+import { CreateGroup } from '@organicdesign/db-rpc-interfaces'
 import { fromString as uint8ArrayFromString } from 'uint8arrays'
 import type { Provides, Requires } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'

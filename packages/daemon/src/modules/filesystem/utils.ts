@@ -1,5 +1,5 @@
 import Path from 'path'
-import { defaultDagWalkers } from 'dag-walkers'
+import { defaultDagWalkers } from '@organicdesign/db-dag-walkers'
 import { CID } from 'multiformats/cid'
 import { DATA_KEY, EncodedEntry, type Entry } from './interface.js'
 import type { AbortOptions } from '@libp2p/interface'

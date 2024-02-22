@@ -1,4 +1,4 @@
-import { createClient, type Client } from 'client'
+import { createClient, type Client } from '@organicdesign/db-client'
 import { hideBin } from 'yargs/helpers'
 import yargs from 'yargs/yargs'
 import commands from './commands.js'

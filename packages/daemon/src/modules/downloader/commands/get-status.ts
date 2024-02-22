@@ -1,5 +1,5 @@
+import { GetStatus } from '@organicdesign/db-rpc-interfaces'
 import { CID } from 'multiformats/cid'
-import { GetStatus } from 'rpc-interfaces'
 import type { Provides, Requires } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 

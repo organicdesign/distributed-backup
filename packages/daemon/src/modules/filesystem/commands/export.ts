@@ -1,7 +1,7 @@
 import Path from 'path'
-import { exportPlaintext } from 'fs-exporter'
+import { exportPlaintext } from '@organicdesign/db-fs-exporter'
+import { Export } from '@organicdesign/db-rpc-interfaces'
 import { CID } from 'multiformats/cid'
-import { Export } from 'rpc-interfaces'
 import type { Provides, Requires } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 

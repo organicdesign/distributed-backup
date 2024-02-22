@@ -1,8 +1,8 @@
 import Path from 'path'
 import { fileURLToPath } from 'url'
+import { NamespaceDatastore } from '@organicdesign/db-namespace-datastore'
 import * as cborg from 'cborg'
 import { type Datastore, Key } from 'interface-datastore'
-import { NamespaceDatastore } from 'namespace-datastore'
 import { MEMORY_MAGIC } from './interface.js'
 
 export const projectPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), '../../../../..')

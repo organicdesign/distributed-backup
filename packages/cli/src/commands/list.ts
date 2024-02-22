@@ -1,4 +1,4 @@
-import { List } from 'rpc-interfaces'
+import { List } from '@organicdesign/db-rpc-interfaces'
 import { createBuilder, createHandler } from '../utils.js'
 
 export const command = 'list'

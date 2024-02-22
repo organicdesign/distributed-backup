@@ -1,4 +1,4 @@
-import type { Client } from 'client'
+import type { Client } from '@organicdesign/db-client'
 import type { ArgumentsCamelCase, Options, InferredOptionTypes, MiddlewareFunction } from 'yargs'
 
 export type Builder = Record<string, Options>

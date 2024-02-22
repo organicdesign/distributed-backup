@@ -1,5 +1,5 @@
+import { CountPeers } from '@organicdesign/db-rpc-interfaces'
 import { CID } from 'multiformats/cid'
-import { CountPeers } from 'rpc-interfaces'
 import type { Provides, Requires } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 

@@ -1,6 +1,6 @@
 import type { Entry } from './interface.js'
 import type { Pair } from '@/interface.js'
-import type { RevisionStrategies } from 'rpc-interfaces/zod'
+import type { RevisionStrategies } from '@organicdesign/db-rpc-interfaces/zod'
 
 const REVISIONS_PER_INTERVAL = 3
 const MS_IN_DAY = 1000 * 60 * 60 * 24

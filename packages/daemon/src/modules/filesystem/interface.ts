@@ -1,4 +1,4 @@
-import { RevisionStrategies } from 'rpc-interfaces/zod'
+import { RevisionStrategies } from '@organicdesign/db-rpc-interfaces/zod'
 import { z } from 'zod'
 import type { CID } from 'multiformats/cid'
 

@@ -1,5 +1,5 @@
 import Path from 'path'
-import { SetPriority } from 'rpc-interfaces'
+import { SetPriority } from '@organicdesign/db-rpc-interfaces'
 import type { Provides, Requires } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 

@@ -6,7 +6,7 @@ import projectPath from './project-path.js'
 
 export default async (name: string, path: string, group: string): Promise<{ start(): Promise<void>, stop(): Promise<void> }> => {
   const args = [
-    Path.join(projectPath, 'node_modules/fuse/dist/src/index.js'),
+    Path.join(projectPath, 'node_modules/@organicdesign/db-fuse/dist/src/index.js'),
     '--group', group,
     '--path', path,
     '-s', Path.join(projectPath, `e2e-tests/${name}.socket`)

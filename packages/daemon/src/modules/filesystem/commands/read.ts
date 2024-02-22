@@ -1,6 +1,6 @@
 import { unixfs } from '@helia/unixfs'
+import { Read } from '@organicdesign/db-rpc-interfaces'
 import { CID } from 'multiformats/cid'
-import { Read } from 'rpc-interfaces'
 import { collect } from 'streaming-iterables'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'

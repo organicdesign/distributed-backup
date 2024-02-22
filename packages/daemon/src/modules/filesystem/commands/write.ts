@@ -1,6 +1,6 @@
 import { unixfs } from '@helia/unixfs'
+import { Write } from '@organicdesign/db-rpc-interfaces'
 import { CID } from 'multiformats/cid'
-import { Write } from 'rpc-interfaces'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { getDagSize } from '../utils.js'
 import type { Provides, Requires } from '../index.js'
