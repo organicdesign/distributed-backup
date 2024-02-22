@@ -2,7 +2,7 @@ import Path from 'path'
 import * as dagCbor from '@ipld/dag-cbor'
 import { VERSION_KEY } from './interface.js'
 import { decodeEntry } from './utils.js'
-import type { Requires } from './index.js'
+import { type Requires, logger } from './index.js'
 
 export default async ({ groups, downloader }: Requires): Promise<void> => {
   for (const { value: database } of groups.groups.all()) {
@@ -12,6 +12,8 @@ export default async ({ groups, downloader }: Requires): Promise<void> => {
       const entry = decodeEntry(dagCbor.decode(value))
       const group = database.manifest.address.cid
       const fullKey = Path.join('/', group.toString(), key)
+
+      logger.info('[entry] syncing update:', fullKey)
 
       if (entry == null) {
         await downloader.pinManager.remove(fullKey)
