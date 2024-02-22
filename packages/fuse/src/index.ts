@@ -31,19 +31,48 @@ const argv = await yargs(hideBin(process.argv))
       required: true
     }
   })
+  .option({
+    at: {
+      alias: 't',
+      type: 'number',
+      default: 0
+    }
+  })
   .parse()
 
 const client = createClient(argv.socket)
 
+type RT = Pick<Awaited<ReturnType<typeof client.list>>[number], 'path' | 'timestamp' | 'size'>
+
 const group = (() => {
-  let data: Awaited<ReturnType<typeof client.list>>
+  let data: RT[]
   let ts = 0
 
   return {
-    query: async (): ReturnType<typeof client.list> => {
+    query: async (): Promise<RT[]> => {
       if (Date.now() - ts > 5000) {
         ts = Date.now()
         data = await client.list({ group: argv.group })
+
+        if (argv.at > 0) {
+          const rs = await Promise.all(data.map(async d => {
+            if (d.timestamp < argv.at) {
+              return d
+            }
+
+            const revisions = await client.revisions(argv.group, d.path)
+
+            for (const revision of revisions) {
+              if (revision.timestamp < argv.at) {
+                return { ...revision, path: d.path }
+              }
+            }
+
+            return null
+          }))
+
+          data = rs.filter(d => d != null) as RT[]
+        }
       }
 
       return data
