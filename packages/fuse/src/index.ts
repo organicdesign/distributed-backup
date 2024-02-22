@@ -227,6 +227,14 @@ const opts: FuseOpts = {
     }
 
     group.reset()
+  },
+
+  async getxattr () {
+    return null
+  },
+
+  async listxattr () {
+    return []
   }
 }
 
