@@ -63,11 +63,6 @@ const opts: FuseOpts = {
       const pathParts = path.split('/').filter(p => Boolean(p))
 
       const filteredList = list
-        .filter(l => l.path.startsWith(Path.join('/r', path, '/')))
-        .map(l => ({
-          ...l,
-          path: l.path.slice('/r'.length)
-        }))
         .map(l => ({
           ...l,
           name: l.path.split('/').filter(p => Boolean(p)).slice(pathParts.length)[0]
@@ -121,7 +116,7 @@ const opts: FuseOpts = {
 
   async getattr (path) {
     const list = await group.query()
-    const file = list.find((l: { path: string }) => l.path === Path.join('/r', path))
+    const file = list.find((l: { path: string }) => l.path === path)
 
     // Exact match is a file.
     if (file != null) {
@@ -135,7 +130,7 @@ const opts: FuseOpts = {
     }
 
     // Partial match is a directory.
-    if (list.find((l: { path: string }) => l.path.startsWith(Path.join('/r', path))) != null) {
+    if (list.find((l: { path: string }) => l.path.startsWith(path)) != null) {
       return stat({ mode: 'dir', size: 4096 })
     }
 
@@ -191,7 +186,7 @@ const opts: FuseOpts = {
 
   async rename (src, dest) {
     const list = await group.query()
-    const files = list.filter((l: { path: string }) => l.path.startsWith(Path.join('/r', src, '/')) || l.path === Path.join('/r', src)).map(f => ({ ...f, path: f.path.replace('/r', '') }))
+    const files = list.filter((l: { path: string }) => l.path.startsWith(Path.join(src, '/')) || l.path === src)
 
     for (const file of files) {
       const str = await client.read(argv.group, file.path, {
@@ -227,10 +222,10 @@ const opts: FuseOpts = {
 
   async rmdir (path) {
     const list = await group.query()
-    const files = list.filter((l: { path: string }) => l.path.startsWith(Path.join('/r', path, '/')))
+    const files = list.filter((l: { path: string }) => l.path.startsWith(Path.join(path, '/')))
 
     for (const file of files) {
-      await client.delete(argv.group, file.path.replace('/r', ''))
+      await client.delete(argv.group, file.path)
     }
 
     group.reset()
