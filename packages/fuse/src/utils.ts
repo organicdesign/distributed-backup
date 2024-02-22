@@ -1,4 +1,3 @@
-import * as logger from 'logger'
 import type { FuseOpts } from './interface.js'
 import type Fuse from '@cocalc/fuse-native'
 
@@ -74,7 +73,8 @@ export const convertOpts = (opts: FuseOpts): Fuse.OPERATIONS => {
         if (typeof error === 'number') {
           cb(error)
         } else {
-          logger.error(error)
+          // eslint-disable-next-line no-console
+          console.error(error)
           // eslint-disable-next-line n/no-callback-literal
           cb(1)
         }

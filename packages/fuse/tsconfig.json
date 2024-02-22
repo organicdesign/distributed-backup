@@ -12,9 +12,6 @@
   ],
   "references": [
     {
-      "path": "../logger"
-    },
-    {
       "path": "../client"
     }
   ]

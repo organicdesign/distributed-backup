@@ -31,7 +31,6 @@
   "dependencies": {
     "@cocalc/fuse-native": "^2.4.0",
     "client": "^0.1.0",
-    "logger": "^0.1.0",
     "uint8arrays": "^5.0.1",
     "yargs": "^17.7.2"
   }

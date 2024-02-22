@@ -3,7 +3,6 @@ import Path from 'path'
 import { promisify } from 'util'
 import Fuse from '@cocalc/fuse-native'
 import { createClient } from 'client'
-import * as logger from 'logger'
 import { toString as uint8ArrayToString } from 'uint8arrays'
 import { hideBin } from 'yargs/helpers'
 import yargs from 'yargs/yargs'
@@ -197,7 +196,8 @@ const opts: FuseOpts = {
         })
     }
 
-    logger.warn('awaiting to get around database write time')
+    // eslint-disable-next-line no-console
+    console.warn('awaiting to get around database write time')
     await new Promise(resolve => setTimeout(resolve, 1000))
 
     await Promise.all(files.map(async file => {
@@ -243,12 +243,14 @@ await fs.mkdir(argv.path, { recursive: true })
 const fuse = new Fuse(argv.path, convertOpts(opts), { debug: true })
 
 process.on('uncaughtException', (error) => {
-  logger.error(error)
+  // eslint-disable-next-line no-console
+  console.error(error)
 
   promisify(fuse.unmount.bind(fuse))().then(() => {
     process.exit(1)
   }).catch(error => {
-    logger.error(error)
+    // eslint-disable-next-line no-console
+    console.error(error)
     process.exit(1)
   })
 })
@@ -257,7 +259,8 @@ process.on('SIGINT', () => {
   promisify(fuse.unmount.bind(fuse))().then(() => {
     process.exit(1)
   }).catch(error => {
-    logger.error(error)
+    // eslint-disable-next-line no-console
+    console.error(error)
     process.exit(1)
   })
 })

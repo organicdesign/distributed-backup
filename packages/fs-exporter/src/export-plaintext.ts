@@ -3,7 +3,6 @@ import Path from 'path'
 import * as dagPb from '@ipld/dag-pb'
 import { defaultDagWalkers } from 'dag-walkers'
 import { UnixFS } from 'ipfs-unixfs'
-import * as logger from 'logger'
 import { type CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import type { Blockstore } from 'interface-blockstore'
@@ -40,7 +39,6 @@ export default async (blockstore: Blockstore, path: string, cid: CID): Promise<v
 
       for (const link of data.Links) {
         if (link.Name == null) {
-          logger.warn('link is missing name')
           continue
         }
 
