@@ -21,6 +21,7 @@ export default async ({ filesystem, network, groups }: Requires): Promise<Provid
       const revisions = getRevisions(group)
 
       if (revisions == null) {
+        logger.error('file added to non-existant group')
         return
       }
 
@@ -45,7 +46,7 @@ export default async ({ filesystem, network, groups }: Requires): Promise<Provid
           continue
         }
 
-        await revisions.delete(path, sequence)
+        await revisions.delete(path, author, sequence)
       }
     })().catch(error => {
       logger.warn(error)

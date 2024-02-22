@@ -34,8 +34,8 @@ export class Revisions {
     await this.database.replica.write(op)
   }
 
-  async get (path: string, sequence: number): Promise<Entry | null> {
-    const key = pathToKey(path, this.author, sequence)
+  async get (path: string, author: Uint8Array, sequence: number): Promise<Entry | null> {
+    const key = pathToKey(path, author, sequence)
     const encodedEntry = await this.database.store.selectors.get(this.database.store.index)(key) as EncodedEntry
 
     if (encodedEntry == null) {
@@ -45,8 +45,8 @@ export class Revisions {
     return decodeEntry(encodedEntry)
   }
 
-  async delete (path: string, sequence: number): Promise<void> {
-    const key = pathToKey(path, this.author, sequence)
+  async delete (path: string, author: Uint8Array, sequence: number): Promise<void> {
+    const key = pathToKey(path, author, sequence)
 
     logger.info(`[-] ${Path.join(this.group.toString(), key)}`)
 
