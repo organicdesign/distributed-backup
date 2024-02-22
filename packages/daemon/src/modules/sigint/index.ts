@@ -1,5 +1,7 @@
-import * as logger from 'logger'
 import type { Module } from '@/interface.js'
+import { createLogger } from '@/logger.js'
+
+export const logger = createLogger('sigint')
 
 export interface Provides extends Record<string, unknown> {
   onInterupt (method: (...args: any[]) => any): void
@@ -12,20 +14,20 @@ const module: Module<Provides> = async () => {
 
   process.on('SIGINT', () => {
     if (exiting) {
-      logger.lifecycle('force exiting')
+      logger.warn('force exiting')
       process.exit(1)
     }
 
     exiting = true
 
     ;(async () => {
-      logger.lifecycle('cleaning up...')
+      logger.info('cleaning up...')
 
       for (const method of methods) {
         await method()
       }
 
-      logger.lifecycle('exiting...')
+      logger.info('exiting...')
 
       process.exit()
     })().catch(error => {

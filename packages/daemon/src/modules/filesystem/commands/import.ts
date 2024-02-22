@@ -1,11 +1,10 @@
 import Path from 'path'
 import { BlackHoleBlockstore } from 'blockstore-core/black-hole'
 import { selectHasher, selectChunker, importRecursive, type ImporterConfig } from 'fs-importer'
-import * as logger from 'logger'
 import { CID } from 'multiformats/cid'
 import { Import } from 'rpc-interfaces'
+import { type Provides, type Requires, logger } from '../index.js'
 import { encodeEntry, getDagSize } from '../utils.js'
-import type { Provides, Requires } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 
 const command: ModuleMethod<Provides, Requires> = (context, { rpc, network, base }) => {
@@ -20,7 +19,7 @@ const command: ModuleMethod<Provides, Requires> = (context, { rpc, network, base
     }
 
     if (!params.onlyHash) {
-      logger.add('importing %s', params.inPath)
+      logger.info('[add] importing %s', params.inPath)
     }
 
     const store = params.onlyHash ? new BlackHoleBlockstore() : base.blockstore
@@ -39,7 +38,7 @@ const command: ModuleMethod<Provides, Requires> = (context, { rpc, network, base
     for await (const r of importRecursive(store, params.inPath, config)) {
       await network.pinManager.pinLocal(r.cid)
 
-      logger.add('imported %s', params.inPath)
+      logger.info('[add] imported %s', params.inPath)
 
       const { size, blocks } = await getDagSize(base.blockstore, r.cid)
 

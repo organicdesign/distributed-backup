@@ -1,4 +1,4 @@
-import * as logger from 'logger'
+import { createLogger } from './logger.js'
 import setupArgv from '@/modules/argv/index.js'
 import setupBase from '@/modules/base/index.js'
 import setupConfig from '@/modules/config/index.js'
@@ -11,12 +11,11 @@ import setupRPC from '@/modules/rpc/index.js'
 import setupSigint from '@/modules/sigint/index.js'
 import setupTick from '@/modules/tick/index.js'
 
-logger.lifecycle('starting...')
+const logger = createLogger('system')
+
+logger.info('starting...')
 
 // Setup all the modules
-
-logger.lifecycle('loaded config')
-
 const argv = await setupArgv()
 
 const sigint = await setupSigint()
@@ -49,4 +48,4 @@ await setupRevisions({
   rpc
 })
 
-logger.lifecycle('started')
+logger.info('started')

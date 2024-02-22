@@ -1,8 +1,8 @@
 import { Key, type Datastore } from 'interface-datastore'
 import all from 'it-all'
-import * as logger from 'logger'
 import { type CID } from 'multiformats/cid'
 import { encodePinInfo, decodePinInfo } from './utils.js'
+import { logger } from './index.js'
 import type { PinInfo } from './interface.js'
 import type { Pair } from '@/interface.js'
 import type { PinManager as HeliaPinManager, BlockInfo } from 'helia-pin-manager'
@@ -77,7 +77,7 @@ export class PinManager {
       await this.pinManager.unpin(pinInfo.cid)
     }
 
-    logger.references(`[-] ${key.toString()}`)
+    logger.info(`[references] [-] ${key.toString()}`)
 
     await this.datastore.delete(new Key(key))
   }

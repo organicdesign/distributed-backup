@@ -30,9 +30,6 @@
       "path": "../key-manager"
     },
     {
-      "path": "../logger"
-    },
-    {
       "path": "../fs-importer"
     },
     {

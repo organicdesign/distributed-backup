@@ -1,7 +1,9 @@
-import * as logger from 'logger'
 import { z } from 'zod'
 import type { Module } from '@/interface.js'
 import type { Provides as ConfigModule } from '@/modules/config/index.js'
+import { createLogger } from '@/logger.js'
+
+export const logger = createLogger('tick')
 
 const Config = z.object({
   tickInterval: z.number().default(10 * 60)
@@ -30,7 +32,7 @@ const module: Module<Provides, Requires> = async (components) => {
         try {
           await method()
         } catch (error) {
-          logger.warn('tick method threw: ', error)
+          logger.warn('method threw: ', error)
         }
       }
 

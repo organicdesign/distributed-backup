@@ -1,8 +1,8 @@
 import Path from 'path'
 import * as dagCbor from '@ipld/dag-cbor'
-import { groups as logger } from 'logger'
 import { type Entry, EncodedEntry } from './interface.js'
 import { encodeEntry, decodeEntry, keyToPath, pathToKey } from './utils.js'
+import { logger } from './index.js'
 import type { KeyvalueDB, Pair } from '@/interface.js'
 import type { CID } from 'multiformats/cid'
 import { decodeAny } from '@/utils.js'
@@ -19,7 +19,7 @@ export class FileSystem {
   }
 
   async put (path: string, entry: Entry): Promise<void> {
-    logger(`[+] ${Path.join(this.group.toString(), path)}`)
+    logger.info(`[groups] [+] ${Path.join(this.group.toString(), path)}`)
 
     const key = pathToKey(path)
     const encodedEntry: EncodedEntry = encodeEntry(entry)
@@ -42,7 +42,7 @@ export class FileSystem {
   }
 
   async delete (path: string): Promise<void> {
-    logger(`[-] ${Path.join(this.group.toString(), path)}`)
+    logger.info(`[groups] [-] ${Path.join(this.group.toString(), path)}`)
 
     const key = pathToKey(path)
     const op = this.database.store.creators.del(key)

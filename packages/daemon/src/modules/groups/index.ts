@@ -12,6 +12,9 @@ import type { Provides as Network } from '@/modules/network/index.js'
 import type { Provides as RPC } from '@/modules/rpc/index.js'
 import type { Provides as Sigint } from '@/modules/sigint/index.js'
 import type { Welo } from 'welo'
+import { createLogger } from '@/logger.js'
+
+export const logger = createLogger('groups')
 
 export interface Requires extends Record<string, unknown> {
   base: Base

@@ -1,8 +1,8 @@
 import Path from 'path'
 import * as dagCbor from '@ipld/dag-cbor'
-import { groups as logger } from 'logger'
 import { type Entry, EncodedEntry } from './interface.js'
 import { pathToKey, decodeKey, encodeEntry, decodeEntry } from './utils.js'
+import { logger } from './index.js'
 import type { KeyvalueDB } from '@/interface.js'
 import type { PeerId } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
@@ -24,7 +24,7 @@ export class Revisions {
   async put (path: string, sequence: number, entry: Entry): Promise<void> {
     const key = pathToKey(path, this.author, sequence)
 
-    logger(`[+] ${Path.join(this.group.toString(), key)}`)
+    logger.info(`[+] ${Path.join(this.group.toString(), key)}`)
 
     const encodedEntry: EncodedEntry = encodeEntry(entry)
 
@@ -48,7 +48,7 @@ export class Revisions {
   async delete (path: string, sequence: number): Promise<void> {
     const key = pathToKey(path, this.author, sequence)
 
-    logger(`[-] ${Path.join(this.group.toString(), key)}`)
+    logger.info(`[-] ${Path.join(this.group.toString(), key)}`)
 
     const op = this.database.store.creators.del(key)
 

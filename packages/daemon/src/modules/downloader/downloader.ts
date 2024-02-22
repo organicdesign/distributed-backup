@@ -1,15 +1,11 @@
 import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
-import * as logger from 'logger'
 import { type CID } from 'multiformats/cid'
 import { collect } from 'streaming-iterables'
 import { linearWeightTranslation } from './utils.js'
-import type { Provides } from './index.js'
+import { type Provides, logger } from './index.js'
 
 export default async (context: Provides): Promise<void> => {
-  // logger.tick("STARTED");
-  // logger.tick("GOT REMOTE CONTENTS");
-
   const batchDownload = async function * (itr: AsyncIterable<[CID, number]>): AsyncGenerator<() => Promise<{ cid: CID, block: Uint8Array }>, void, undefined> {
     for await (const [cid, priority] of itr) {
       const weight = Math.floor(linearWeightTranslation(priority / 100) * context.config.slots) + 1
@@ -52,6 +48,4 @@ export default async (context: Provides): Promise<void> => {
     i => catcher(i),
     async i => collect(i)
   )
-
-  // logger.tick("FINISHED");
 }

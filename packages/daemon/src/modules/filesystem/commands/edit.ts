@@ -1,7 +1,6 @@
-import * as logger from 'logger'
 import { CID } from 'multiformats/cid'
 import { Edit } from 'rpc-interfaces'
-import type { Provides, Requires } from '../index.js'
+import { type Provides, type Requires, logger } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 
 const command: ModuleMethod<Provides, Requires> = (context, { rpc }) => {

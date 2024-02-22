@@ -9,7 +9,10 @@ import type { Provides as ConfigModule } from '@/modules/config/index.js'
 import type { Provides as Network } from '@/modules/network/index.js'
 import type { Provides as RPC } from '@/modules/rpc/index.js'
 import type { Provides as Tick } from '@/modules/tick/index.js'
+import { createLogger } from '@/logger.js'
 import { extendDatastore } from '@/utils.js'
+
+export const logger = createLogger('downloader')
 
 export const Config = z.object({
   slots: z.number().int().min(1).max(100).default(20)

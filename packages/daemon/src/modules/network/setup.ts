@@ -4,9 +4,8 @@ import { MemoryDatastore } from 'datastore-core'
 import { FsDatastore } from 'datastore-fs'
 import { createHelia } from 'helia'
 import createPinManager from 'helia-pin-manager'
-import * as logger from 'logger'
 import createLibp2p from './libp2p.js'
-import type { Requires, Provides, Config } from './index.js'
+import { type Requires, type Provides, type Config, logger } from './index.js'
 import { extendDatastore, isMemory } from '@/utils.js'
 
 export default async ({ base }: Requires, config: Config): Promise<Provides> => {
@@ -39,19 +38,19 @@ export default async ({ base }: Requires, config: Config): Promise<Provides> => 
   })
 
   pinManager.events.addEventListener('downloads:added', ({ cid }) => {
-    logger.downloads(`[+] ${cid}`)
+    logger.info(`[downloads] [+] ${cid}`)
   })
 
   pinManager.events.addEventListener('pins:added', ({ cid }) => {
-    logger.pins(`[+] ${cid}`)
+    logger.info(`[pins] [+] ${cid}`)
   })
 
   pinManager.events.addEventListener('pins:adding', ({ cid }) => {
-    logger.pins(`[~] ${cid}`)
+    logger.info(`[pins] [~] ${cid}`)
   })
 
   pinManager.events.addEventListener('pins:removed', ({ cid }) => {
-    logger.pins(`[-] ${cid}`)
+    logger.info(`[pins] [-] ${cid}`)
   })
 
   return {

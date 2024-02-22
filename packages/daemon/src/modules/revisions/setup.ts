@@ -1,9 +1,8 @@
 import all from 'it-all'
-import * as logger from 'logger'
 import { Revisions } from './revisions.js'
 import selectRevisions from './select-revisions.js'
 import { pathToKey } from './utils.js'
-import type { Provides, Requires } from './index.js'
+import { type Provides, type Requires, logger } from './index.js'
 import type { CID } from 'multiformats/cid'
 
 export default async ({ filesystem, network, groups }: Requires): Promise<Provides> => {

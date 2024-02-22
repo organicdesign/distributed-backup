@@ -13,9 +13,15 @@ debugModule.formatArgs = function (args) {
 
 const APP_NAME = 'backup'
 
-const createLogger = (name: string): Logger => {
-  return logger(`${APP_NAME}:${name}`)
-}
+export const createLogger = (name: string): {
+	error: Logger
+	warn: Logger
+	info: Logger
+} => ({
+	error: logger(`${APP_NAME}:error:${name}`),
+	warn: logger(`${APP_NAME}:warning:${name}`),
+	info: logger(`${APP_NAME}:info:${name}`)
+})
 
 export const lifecycle = createLogger('lifecycle')
 export const tick = createLogger('tick')

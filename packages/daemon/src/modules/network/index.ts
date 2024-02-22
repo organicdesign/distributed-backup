@@ -12,6 +12,9 @@ import type { Provides as Sigint } from '@/modules/sigint/index.js'
 import type { Libp2p } from '@libp2p/interface'
 import type { Helia } from 'helia'
 import type { PinManager } from 'helia-pin-manager'
+import { createLogger } from '@/logger.js'
+
+export const logger = createLogger('network')
 
 const Config = z.object({
   serverMode: z.boolean().default(false),

@@ -22,6 +22,9 @@ import type { Provides as Network } from '@/modules/network/index.js'
 import type { Provides as RPC } from '@/modules/rpc/index.js'
 import type { Provides as Tick } from '@/modules/tick/index.js'
 import type { CID } from 'multiformats/cid'
+import { createLogger } from '@/logger.js'
+
+export const logger = createLogger('filesystem')
 
 export const Config = z.object({
   defaultRevisionStrategy: RevisionStrategies.default('all')

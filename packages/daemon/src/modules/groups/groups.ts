@@ -1,7 +1,7 @@
 import { Key } from 'interface-datastore'
-import { groups as logger } from 'logger'
 import { Manifest } from 'welo/manifest/index'
 import { decodeCbor } from 'welo/utils/block'
+import { logger } from './index.js'
 import type { Pair, KeyvalueDB } from '@/interface.js'
 import type { Startable } from '@libp2p/interfaces/startable'
 import type { Datastore } from 'interface-datastore'
@@ -61,7 +61,7 @@ export class Groups implements Startable {
 
     await this.datastore.put(new Key(database.address.cid.toString()), database.manifest.block.bytes)
 
-    logger(`[join] ${manifest.address.cid.toString()}`)
+    logger.info(`[groups] [join] ${manifest.address.cid.toString()}`)
   }
 
   get (group: CID): KeyvalueDB | undefined {
