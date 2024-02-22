@@ -36,14 +36,14 @@ const argv = await yargs(hideBin(process.argv))
 const client = createClient(argv.socket)
 
 const group = (() => {
-  let data: any
+  let data: Awaited<ReturnType<typeof client.list>>
   let ts = 0
 
   return {
-    query: async (): Promise<Array<{ path: string, size: number, timestamp: number, mode: 'file' }>> => {
+    query: async (): ReturnType<typeof client.list> => {
       if (Date.now() - ts > 5000) {
         ts = Date.now()
-        data = (await client.list({ group: argv.group })).map((d: Record<string, unknown>) => ({ ...d, mode: 'file' }))
+        data = await client.list({ group: argv.group })
       }
 
       return data
@@ -87,7 +87,7 @@ const opts: FuseOpts = {
         let mode: 'file' | 'dir' | null = null
 
         if (l.path === Path.join(path, l.name)) {
-          mode = l.mode
+          mode = 'file'
         } else if (l.path.startsWith(path)) {
           mode = 'dir'
         } else {
@@ -118,7 +118,7 @@ const opts: FuseOpts = {
     // Exact match is a file.
     if (file != null) {
       return stat({
-        mode: file.mode,
+        mode: 'file',
         size: file.size,
         atime: new Date(file.timestamp),
         ctime: new Date(file.timestamp),
