@@ -85,7 +85,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 
   const peers = await argv.client.countPeers(items.map(i => i.cid))
 
-	const getPeers = ({ cid }: { cid: string }): number =>
+  const getPeers = ({ cid }: { cid: string }): number =>
     peers.find(p => p.cid === cid)?.peers ?? 0
 
   const completed = {

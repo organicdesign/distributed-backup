@@ -45,7 +45,9 @@ const module: Module<Provides, Requires> = async (components) => {
     setupCommand(context, components)
   }
 
-  components.tick.register(async () => download(context))
+  download(context).catch(error => {
+    throw error
+  })
 
   return context
 }

@@ -10,7 +10,8 @@ export default async ({ groups, downloader }: Requires): Promise<void> => {
 
     for await (const { key, value } of tracker.process(`/${VERSION_KEY}`)) {
       const entry = decodeEntry(dagCbor.decode(value))
-      const fullKey = Path.join(database.manifest.address.cid.toString(), key)
+      const group = database.manifest.address.cid
+      const fullKey = Path.join('/', group.toString(), key)
 
       if (entry == null) {
         await downloader.pinManager.remove(fullKey)
