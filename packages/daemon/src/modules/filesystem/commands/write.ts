@@ -2,6 +2,7 @@ import { unixfs } from '@helia/unixfs'
 import { Write } from '@organicdesign/db-rpc-interfaces'
 import { CID } from 'multiformats/cid'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { FileSystemEvent } from '../events.js'
 import { getDagSize } from '../utils.js'
 import type { Provides, Requires } from '../index.js'
 import type { Entry } from '../interface.js'
@@ -10,6 +11,7 @@ import type { ModuleMethod } from '@/interface.js'
 const command: ModuleMethod<Provides, Requires> = (context, { rpc, base, network }) => {
   rpc.addMethod(Write.name, async (raw: unknown): Promise<Write.Return> => {
     const params = Write.Params.parse(raw)
+    const group = CID.parse(params.group)
     const fs = context.getFileSystem(CID.parse(params.group))
 
     if (fs == null) {
@@ -34,6 +36,8 @@ const command: ModuleMethod<Provides, Requires> = (context, { rpc, base, network
     }
 
     await fs.put(params.path, newEntry)
+
+    context.events.dispatchEvent(new FileSystemEvent('file:added', group, params.path, newEntry))
 
     return params.data.length
   })
