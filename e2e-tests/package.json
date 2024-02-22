@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "name": "e2e-tests",
+  "name": "@organicdesign/db-e2e-tests",
   "version": "0.1.0",
   "description": "E2E distributed backup tests.",
   "files": [],
@@ -16,10 +16,10 @@
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "aegir": "^42.1.0",
-    "cli": "^0.1.0",
-    "daemon": "^0.1.0",
-    "key-manager": "^0.1.0"
+    "aegir": "^42.2.4",
+    "@organicdesign/db-cli": "^0.1.0",
+    "@organicdesign/db-daemon": "^0.1.0",
+    "@organicdesign/db-key-manager": "^0.1.0"
   },
   "private": true,
   "sideEffects": false

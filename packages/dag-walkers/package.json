@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "name": "dag-walkers",
+  "name": "@organicdesign/db-dag-walkers",
   "version": "0.1.0",
   "description": "A set of dag-walkers.",
   "main": "dist/src/index.js",
@@ -25,15 +25,15 @@
   "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@helia/interface": "^4.0.0",
-    "aegir": "^42.1.0"
+    "aegir": "^42.2.4"
   },
   "private": true,
   "sideEffects": false,
   "dependencies": {
-    "@ipld/dag-cbor": "^9.1.0",
-    "@ipld/dag-json": "^10.1.7",
-    "@ipld/dag-pb": "^4.0.8",
-    "cborg": "^4.0.8",
-    "multiformats": "^13.0.1"
+    "@ipld/dag-cbor": "^9.2.0",
+    "@ipld/dag-json": "^10.2.0",
+    "@ipld/dag-pb": "^4.1.0",
+    "cborg": "^4.0.9",
+    "multiformats": "^13.1.0"
   }
 }

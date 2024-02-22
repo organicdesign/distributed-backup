@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "name": "cli",
+  "name": "@organicdesign/db-cli",
   "version": "0.1.0",
   "description": "The distributed backup client.",
   "main": "dist/src/index.js",
@@ -25,14 +25,14 @@
   "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@types/yargs": "^17.0.32",
-    "aegir": "^42.1.0"
+    "aegir": "^42.2.4"
   },
   "private": true,
   "sideEffects": false,
   "dependencies": {
-    "client": "^0.1.0",
-    "multiformats": "^13.0.1",
-    "rpc-interfaces": "^0.1.0",
+    "@organicdesign/db-client": "^0.1.0",
+    "multiformats": "^13.1.0",
+    "@organicdesign/db-rpc-interfaces": "^0.1.0",
     "yargs": "^17.7.2",
     "zod": "^3.22.4"
   }

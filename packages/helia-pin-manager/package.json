@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "name": "helia-pin-manager",
+  "name": "@organicdesign/db-helia-pin-manager",
   "version": "0.1.0",
   "description": "A pin manager for helia.",
   "main": "dist/src/index.js",
@@ -26,23 +26,23 @@
   "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@helia/interface": "^4.0.0",
-    "@ipld/dag-pb": "^4.0.8",
-    "aegir": "^42.1.0",
+    "@ipld/dag-pb": "^4.1.0",
+    "aegir": "^42.2.4",
     "helia": "^4.0.1",
-    "interface-blockstore": "^5.2.9"
+    "interface-blockstore": "^5.2.10"
   },
   "private": true,
   "sideEffects": false,
   "dependencies": {
-    "cborg": "^4.0.8",
-    "dag-walkers": "^0.1.0",
-    "interface-datastore": "^8.2.10",
+    "cborg": "^4.0.9",
+    "@organicdesign/db-dag-walkers": "^0.1.0",
+    "interface-datastore": "^8.2.11",
     "it-all": "^3.0.4",
-    "multiformats": "^13.0.1",
+    "multiformats": "^13.1.0",
     "p-queue": "^8.0.1",
-    "sequelize": "^6.36.0",
+    "sequelize": "^6.37.1",
     "sqlite3": "^5.1.7",
     "ts-event-target": "^0.1.5",
-    "uint8arrays": "^5.0.1"
+    "uint8arrays": "^5.0.2"
   }
 }

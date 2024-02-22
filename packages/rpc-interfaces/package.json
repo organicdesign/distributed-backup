@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "name": "rpc-interfaces",
+  "name": "@organicdesign/db-rpc-interfaces",
   "version": "0.1.0",
   "description": "Interfaces for the RPC API.",
   "main": "dist/src/index.js",
@@ -28,13 +28,13 @@
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "aegir": "^42.1.0"
+    "aegir": "^42.2.4"
   },
   "private": true,
   "sideEffects": false,
   "dependencies": {
     "@multiformats/multiaddr": "^12.1.14",
-    "multiformats": "^13.0.1",
+    "multiformats": "^13.1.0",
     "uint8arrays": "^5.0.2",
     "zod": "^3.22.4"
   }

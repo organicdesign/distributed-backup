@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "name": "cipher",
+  "name": "@organicdesign/db-cipher",
   "version": "0.1.0",
   "description": "An encryption package.",
   "main": "dist/src/index.js",
@@ -25,10 +25,10 @@
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "aegir": "^42.1.0",
+    "aegir": "^42.2.4",
     "it-all": "^3.0.4",
-    "key-manager": "^0.1.0",
-    "uint8arrays": "^5.0.1"
+    "@organicdesign/db-key-manager": "^0.1.0",
+    "uint8arrays": "^5.0.2"
   },
   "private": true,
   "sideEffects": false

@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "name": "namespace-datastore",
+  "name": "@organicdesign/db-namespace-datastore",
   "version": "0.1.0",
   "description": "A fixed namespaced datastore.",
   "main": "dist/src/index.js",
@@ -24,14 +24,14 @@
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "aegir": "^42.1.0",
-    "interface-store": "^5.1.7"
+    "aegir": "^42.2.4",
+    "interface-store": "^5.1.8"
   },
   "private": true,
   "sideEffects": false,
   "dependencies": {
-    "datastore-core": "^9.2.7",
-    "interface-datastore": "^8.2.10",
+    "datastore-core": "^9.2.8",
+    "interface-datastore": "^8.2.11",
     "it-map": "^3.0.5"
   }
 }

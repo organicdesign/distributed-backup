@@ -13,6 +13,12 @@
   "references": [
     {
       "path": "../packages/key-manager"
+    },
+    {
+      "path": "../packages/cli"
+    },
+    {
+      "path": "../packages/daemon"
     }
   ]
 }

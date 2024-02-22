@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "name": "fuse",
+  "name": "@organicdesign/db-fuse",
   "version": "0.1.0",
   "description": "A FUSE client for the distributed backup.",
   "main": "dist/src/index.js",
@@ -24,14 +24,14 @@
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "aegir": "^42.1.0"
+    "aegir": "^42.2.4"
   },
   "private": true,
   "sideEffects": false,
   "dependencies": {
-    "@cocalc/fuse-native": "^2.4.0",
-    "client": "^0.1.0",
-    "uint8arrays": "^5.0.1",
+    "@cocalc/fuse-native": "^2.4.1",
+    "@organicdesign/db-client": "^0.1.0",
+    "uint8arrays": "^5.0.2",
     "yargs": "^17.7.2"
   }
 }

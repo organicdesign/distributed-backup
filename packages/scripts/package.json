@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "name": "scripts",
+  "name": "@organicdesign/db-scripts",
   "version": "0.1.0",
   "description": "Helper scripts for the distributed backup.",
   "main": "dist/src/index.js",
@@ -25,12 +25,12 @@
   "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@types/yargs": "^17.0.32",
-    "aegir": "^42.1.0"
+    "aegir": "^42.2.4"
   },
   "private": true,
   "sideEffects": false,
   "dependencies": {
-    "key-manager": "^0.1.0",
+    "@organicdesign/db-key-manager": "^0.1.0",
     "multiaddr": "^10.0.1",
     "yargs": "^17.7.2"
   }
