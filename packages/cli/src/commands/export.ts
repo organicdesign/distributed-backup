@@ -18,6 +18,14 @@ export const builder = createBuilder({
   outPath: {
     required: true,
     type: 'string'
+  },
+
+  author: {
+    type: 'string'
+  },
+
+  sequence: {
+    type: 'number'
   }
 })
 
@@ -26,7 +34,11 @@ export const handler = createHandler<typeof builder>(async argv => {
     throw new Error('Failed to connect to daemon.')
   }
 
-  await argv.client.export(argv.group, argv.path, argv.outPath)
+  if (argv.author != null && argv.sequence != null) {
+    await argv.client.exportRevision(argv.group, argv.path, argv.author, argv.sequence, argv.outPath)
+  } else {
+    await argv.client.export(argv.group, argv.path, argv.outPath)
+  }
 
   if (argv.json === true) {
     return JSON.stringify({ success: true })

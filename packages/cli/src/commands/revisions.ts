@@ -21,7 +21,7 @@ export const handler = createHandler<typeof builder>(async argv => {
     throw new Error('Failed to connect to daemon.')
   }
 
-  const result = await argv.client.revisions(argv.group, argv.path)
+  const result = await argv.client.listRevisions(argv.group, argv.path)
 
   if (argv.json === true) {
     return JSON.stringify(result)

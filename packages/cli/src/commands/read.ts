@@ -23,6 +23,14 @@ export const builder = createBuilder({
   length: {
     type: 'number',
     default: 1024
+  },
+
+  author: {
+    type: 'string'
+  },
+
+  sequence: {
+    type: 'number'
   }
 })
 
@@ -31,10 +39,19 @@ export const handler = createHandler<typeof builder>(async argv => {
     throw new Error('Failed to connect to daemon.')
   }
 
-  const data = await argv.client.read(argv.group, argv.path, {
-    position: argv.position,
-    length: argv.length
-  })
+  let data: Awaited<ReturnType<typeof argv.client.read>>
+
+  if (argv.author != null && argv.sequence != null) {
+    data = await argv.client.readRevision(argv.group, argv.path, argv.author, argv.sequence, {
+      position: argv.position,
+      length: argv.length
+    })
+  } else {
+    data = await argv.client.read(argv.group, argv.path, {
+      position: argv.position,
+      length: argv.length
+    })
+  }
 
   if (argv.json === true) {
     return data
