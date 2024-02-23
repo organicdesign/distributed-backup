@@ -60,7 +60,7 @@ const group = (() => {
               return d
             }
 
-            const revisions = await client.revisions(argv.group, d.path)
+            const revisions = await client.listRevisions(argv.group, d.path)
 
             for (const revision of revisions) {
               if (revision.timestamp < argv.at) {
