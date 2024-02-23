@@ -6,15 +6,17 @@ import {
   CreateGroup,
   Delete,
   Edit,
+  ExportRevision,
   Export,
   GetStatus,
   ID,
   Import,
   JoinGroup,
   ListGroups,
+  ListRevisions,
   List,
+  ReadRevision,
   Read,
-  Revisions,
   SetPriority,
   Sync,
   Write
@@ -81,6 +83,19 @@ export class Client {
     return Edit.Return.parse(raw)
   }
 
+  async exportRevision (
+    group: ExportRevision.Params['group'],
+    path: ExportRevision.Params['path'],
+    author: ExportRevision.Params['author'],
+    sequence: ExportRevision.Params['sequence'],
+    outPath: ExportRevision.Params['outPath']
+  ): Promise<ExportRevision.Return> {
+    const params: ExportRevision.Params = { group, path, outPath, author, sequence }
+    const raw = await this.client.rpc.request(ExportRevision.name, params)
+
+    return ExportRevision.Return.parse(raw)
+  }
+
   async export (group: Export.Params['group'], path: Export.Params['path'], outPath: Export.Params['outPath']): Promise<Export.Return> {
     const params: Export.Params = { group, path, outPath }
     const raw = await this.client.rpc.request(Export.name, params)
@@ -123,6 +138,13 @@ export class Client {
     return ListGroups.Return.parse(raw)
   }
 
+  async listRevisions (group: ListRevisions.Params['group'], path: ListRevisions.Params['path']): Promise<ListRevisions.Return> {
+    const params: ListRevisions.Params = { group, path }
+    const raw = await this.client.rpc.request(ListRevisions.name, params)
+
+    return ListRevisions.Return.parse(raw)
+  }
+
   async list (options: List.Params = {}): Promise<List.Return> {
     const params: List.Params = { ...options }
     const raw = await this.client.rpc.request(List.name, params)
@@ -130,18 +152,24 @@ export class Client {
     return List.Return.parse(raw)
   }
 
+  async readRevision (
+    group: ReadRevision.Params['group'],
+    path: ReadRevision.Params['path'],
+    author: ReadRevision.Params['author'],
+    sequence: ReadRevision.Params['sequence'],
+    options: Omit<ReadRevision.Params, 'group' | 'path' | 'author' | 'sequence'>
+  ): Promise<ReadRevision.Return> {
+    const params: ReadRevision.Params = { group, path, author, sequence, ...options }
+    const raw = await this.client.rpc.request(ReadRevision.name, params)
+
+    return ReadRevision.Return.parse(raw)
+  }
+
   async read (group: Read.Params['group'], path: Read.Params['path'], options: Omit<Read.Params, 'group' | 'path'>): Promise<Read.Return> {
     const params: Read.Params = { group, path, ...options }
     const raw = await this.client.rpc.request(Read.name, params)
 
     return Read.Return.parse(raw)
-  }
-
-  async revisions (group: Revisions.Params['group'], path: Revisions.Params['path']): Promise<Revisions.Return> {
-    const params: Revisions.Params = { group, path }
-    const raw = await this.client.rpc.request(Revisions.name, params)
-
-    return Revisions.Return.parse(raw)
   }
 
   async setPriority (group: SetPriority.Params['group'], path: SetPriority.Params['path'], priority: SetPriority.Params['priority']): Promise<SetPriority.Return> {
