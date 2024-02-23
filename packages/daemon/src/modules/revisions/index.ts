@@ -1,6 +1,8 @@
 import { RevisionStrategies } from '@organicdesign/db-rpc-interfaces/zod'
 import { z } from 'zod'
-import revisions from './commands/revisions.js'
+import exportRevision from './commands/export-revision.js'
+import listRevisions from './commands/list-revisions.js'
+import readRevision from './commands/read-revision.js'
 import setup from './setup.js'
 import syncRevisions from './sync-revisions.js'
 import type { Revisions } from './revisions.js'
@@ -43,7 +45,7 @@ export interface Provides extends Record<string, unknown> {
 const module: Module<Provides, Requires> = async (components) => {
   const context = await setup(components)
 
-  for (const setupCommand of [revisions]) {
+  for (const setupCommand of [listRevisions, exportRevision, readRevision]) {
     setupCommand(context, components)
   }
 

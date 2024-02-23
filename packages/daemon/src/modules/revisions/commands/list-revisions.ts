@@ -1,13 +1,13 @@
-import { Revisions } from '@organicdesign/db-rpc-interfaces'
+import { ListRevisions } from '@organicdesign/db-rpc-interfaces'
 import { CID } from 'multiformats/cid'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import type { Provides, Requires } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 
 const command: ModuleMethod<Provides, Requires> = (context, { rpc }) => {
-  rpc.addMethod(Revisions.name, async (raw: unknown): Promise<Revisions.Return> => {
-    const params = Revisions.Params.parse(raw)
-    const rs: Revisions.Return = []
+  rpc.addMethod(ListRevisions.name, async (raw: unknown): Promise<ListRevisions.Return> => {
+    const params = ListRevisions.Params.parse(raw)
+    const rs: ListRevisions.Return = []
     const revisions = context.getRevisions(CID.parse(params.group))
 
     if (revisions == null) {
