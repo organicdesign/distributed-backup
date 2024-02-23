@@ -35,14 +35,14 @@ const argv = await yargs(hideBin(process.argv))
     at: {
       alias: 't',
       type: 'number',
-      default: 0
+      required: false
     }
   })
   .parse()
 
 const client = createClient(argv.socket)
 
-type RT = Pick<Awaited<ReturnType<typeof client.list>>[number], 'path' | 'timestamp' | 'size'>
+type RT = Pick<Awaited<ReturnType<typeof client.list>>[number], 'path' | 'timestamp' | 'size'> & Partial<{ sequence: number, author: string }>
 
 const group = (() => {
   let data: RT[]
@@ -54,16 +54,18 @@ const group = (() => {
         ts = Date.now()
         data = await client.list({ group: argv.group })
 
-        if (argv.at > 0) {
+        if (argv.at != null) {
+          const at = argv.at
+
           const rs = await Promise.all(data.map(async d => {
-            if (d.timestamp < argv.at) {
+            if (d.timestamp < at) {
               return d
             }
 
             const revisions = await client.listRevisions(argv.group, d.path)
 
             for (const revision of revisions) {
-              if (revision.timestamp < argv.at) {
+              if (revision.timestamp < at) {
                 return { ...revision, path: d.path }
               }
             }
@@ -176,11 +178,26 @@ const opts: FuseOpts = {
   async release () {},
 
   async read (path, _, buffer, length, position) {
-    const str = await client.read(
-      argv.group,
-      path,
-      { position, length }
-    )
+    const data = await group.query()
+    const file = data.find(d => d.path === path)
+
+    let str: string
+
+    if (file?.author != null && file?.sequence != null) {
+      str = await client.readRevision(
+        argv.group,
+        path,
+        file.author,
+        file.sequence,
+        { position, length }
+      )
+    } else {
+      str = await client.read(
+        argv.group,
+        path,
+        { position, length }
+      )
+    }
 
     if (str.length !== 0) {
       buffer.write(str)
