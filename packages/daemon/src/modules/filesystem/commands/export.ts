@@ -15,11 +15,9 @@ const command: ModuleMethod<Provides, Requires> = (context, { rpc, base }) => {
     }
 
     for await (const pair of fs.getDir(params.path)) {
-      const virtualPath = pair.key.toString().replace('/r', '')
-
       await exportPlaintext(
         base.blockstore,
-        Path.join(params.outPath, virtualPath.replace(params.path, '')),
+        Path.join(params.outPath, pair.key.toString().replace(params.path, '')),
         pair.value.cid
       )
     }
