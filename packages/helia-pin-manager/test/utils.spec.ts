@@ -1,8 +1,9 @@
 import assert from 'assert/strict'
-import { createHelia, type Helia } from 'helia'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import { addPinRef, addBlockRef } from '../src/utils.js'
+import createHelia from './utils/helia.js'
+import type { Helia } from 'helia'
 
 const cid = CID.parse('QmdmQXB2mzChmMeKY47C43LxUdg1NDJ5MWcKMKxDu7RgQm').toV1()
 let helia: Helia

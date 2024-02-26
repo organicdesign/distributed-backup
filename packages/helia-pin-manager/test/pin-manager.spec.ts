@@ -1,12 +1,15 @@
 import assert from 'assert/strict'
 import EventEmitter from 'events'
-import { createHelia } from 'helia'
+import { NamespaceDatastore } from '@organicdesign/db-namespace-datastore'
+import * as cborg from 'cborg'
+import { MemoryDatastore } from 'datastore-core'
+import { Key, type Datastore } from 'interface-datastore'
 import all from 'it-all'
-import { type CID } from 'multiformats/cid'
+import { CID } from 'multiformats/cid'
 import { PinManager, type Components } from '../src/pin-manager.js'
-import createDatabase from '../src/sequelize.js'
 import { addBlocks } from './utils/blocks.js'
 import { createDag } from './utils/dag.js'
+import createHelia from './utils/helia.js'
 
 const DAG_WIDTH = 2
 const DAG_DEPTH = 3
@@ -16,6 +19,9 @@ EventEmitter.setMaxListeners(100)
 describe('pin manager', () => {
   let components: Components
   let pm: PinManager
+  let pinsDatastore: Datastore
+  let blocksDatastore: Datastore
+  let downloadsDatastore: Datastore
   let dag: CID[]
 
   const data: {
@@ -26,15 +32,44 @@ describe('pin manager', () => {
     blocks: []
   }
 
+  const createPins = async (data: Array<{ cid: CID, depth: number, state: string }>): Promise<void> => {
+    const pairs = data.map(d => ({
+      key: new Key(d.cid.toString()),
+      value: cborg.encode({ depth: d.depth, state: d.state })
+    }))
+
+    await all(pinsDatastore.putMany(pairs))
+  }
+
+  const createBlocks = async (data: Array<{ cid: CID, pinnedBy: CID, depth: number, size: number }>): Promise<void> => {
+    const pairs = data.map(d => ({
+      key: new Key(`/${d.pinnedBy.toString()}/${d.cid.toString()}`),
+      value: cborg.encode({ depth: d.depth, size: d.size })
+    }))
+
+    await all(blocksDatastore.putMany(pairs))
+  }
+
+  const createDownloads = async (data: Array<{ cid: CID, pinnedBy: CID, depth: number }>): Promise<void> => {
+    const pairs = data.map(d => ({
+      key: new Key(`/${d.pinnedBy.toString()}/${d.cid.toString()}`),
+      value: cborg.encode({ depth: d.depth })
+    }))
+
+    await all(downloadsDatastore.putMany(pairs))
+  }
+
   before(async () => {
-    const [helia, database] = await Promise.all([
-      createHelia(),
-      createDatabase()
-    ])
+    const helia = await createHelia()
+    const datastore = new MemoryDatastore()
+
+    pinsDatastore = new NamespaceDatastore(datastore, new Key('pins'))
+    blocksDatastore = new NamespaceDatastore(datastore, new Key('blocks'))
+    downloadsDatastore = new NamespaceDatastore(datastore, new Key('downloads'))
 
     components = {
       helia,
-      ...database
+      datastore
     }
 
     dag = await createDag(components.helia, DAG_DEPTH, DAG_WIDTH)
@@ -49,21 +84,17 @@ describe('pin manager', () => {
   })
 
   after(async () => {
-    await Promise.all([
-      components.helia.stop(),
-      components.sequelize.close()
-    ])
-
-    // If it doesn't exit by itself, force it.
-    setTimeout(() => process.exit(0), 1000)
+    await components.helia.stop()
   })
 
   afterEach(async () => {
-    await Promise.all([
-      components.blocks.destroy({ where: {} }),
-      components.pins.destroy({ where: {} }),
-      components.downloads.destroy({ where: {} })
-    ])
+    const promises = []
+
+    for await (const key of components.datastore.queryKeys({})) {
+      promises.push(components.datastore.delete(key))
+    }
+
+    await Promise.all(promises)
   })
 
   it('constructs', () => {
@@ -73,7 +104,7 @@ describe('pin manager', () => {
   })
 
   it('all returns all the pins', async () => {
-    await components.pins.bulkCreate(data.pins)
+    await createPins(data.pins)
 
     const pins = await pm.all()
 
@@ -84,26 +115,25 @@ describe('pin manager', () => {
 
   describe('unpin', () => {
     it('destorys the pin row', async () => {
-      await components.pins.bulkCreate(data.pins)
+      await createPins(data.pins)
 
       await Promise.all(data.pins.map(async pin => {
         await pm.unpin(pin.cid)
 
-        const p = await components.pins.findOne({ where: { cid: pin.cid.toString() } })
+        const p = (async (): Promise<Uint8Array> => pinsDatastore.get(new Key(pin.cid.toString()))) as () => Promise<Uint8Array>
 
-        assert(p == null)
+        await assert.rejects(p)
       }))
-      // This test can take a while - give it 2 mins.
-    }).timeout(1000 * 60 * 2)
+    })
 
     it('destorys all linked blocks', async () => {
       const pin = data.pins[0]
 
-      await components.pins.create(pin)
-      await components.blocks.bulkCreate(data.blocks.map(b => ({ ...b, pinnedBy: pin.cid })))
+      await createPins([pin])
+      await createBlocks(data.blocks.map(b => ({ ...b, pinnedBy: pin.cid })))
       await pm.unpin(pin.cid)
 
-      const blocks = await components.blocks.findAll({ where: {} })
+      const blocks = await all(blocksDatastore.query({}))
 
       assert.equal(blocks.length, 0)
     })
@@ -111,11 +141,11 @@ describe('pin manager', () => {
     it('destorys all linked downloads', async () => {
       const pin = data.pins[0]
 
-      await components.pins.create(pin)
-      await components.downloads.bulkCreate(data.blocks.map(b => ({ ...b, pinnedBy: pin.cid })))
+      await createPins([pin])
+      await createDownloads(data.blocks.map(b => ({ ...b, pinnedBy: pin.cid })))
       await pm.unpin(pin.cid)
 
-      const downloads = await components.downloads.findAll({ where: {} })
+      const downloads = await all(downloadsDatastore.query({}))
 
       assert.equal(downloads.length, 0)
     })
@@ -124,7 +154,7 @@ describe('pin manager', () => {
       const pin = data.pins[0]
 
       await all(components.helia.pins.add(pin.cid))
-      await components.pins.create(pin)
+      await createPins([pin])
       await pm.unpin(pin.cid)
 
       const isPinned = await components.helia.pins.isPinned(pin.cid)
@@ -157,10 +187,10 @@ describe('pin manager', () => {
 
       await pm.pinLocal(root)
 
-      const pin = await components.pins.findOne({ where: { cid: root.toString() } })
+      const raw = await pinsDatastore.get(new Key(root.toString()))
+      const data = cborg.decode(raw)
 
-      assert(pin)
-      assert(pin.cid.equals(root))
+      assert(data)
     })
 
     it('adds all the items in the dag as blocks', async () => {
@@ -168,12 +198,12 @@ describe('pin manager', () => {
 
       await pm.pinLocal(root)
 
-      const blocks = await components.blocks.findAll({ where: { pinnedBy: root.toString() } })
+      const pairs = await all(blocksDatastore.query({ prefix: `/${root.toString()}` }))
 
-      assert.equal(blocks.length, Object.values(dag).length)
+      assert.equal(pairs.length, Object.values(dag).length)
 
-      for (const block of blocks) {
-        assert(dag.find(b => b.equals(block.cid)))
+      for (const { key } of pairs) {
+        assert(dag.find(b => b.equals(CID.parse(key.baseNamespace()))))
       }
     })
 
@@ -212,11 +242,11 @@ describe('pin manager', () => {
 
       await pm.pin(root)
 
-      const pin = await components.pins.findOne({ where: { cid: root.toString() } })
+      const raw = await pinsDatastore.get(new Key(root.toString()))
+      const data = cborg.decode(raw)
 
-      assert(pin)
-      assert(pin.cid.equals(root))
-      assert.equal(pin.state, 'DOWNLOADING')
+      assert(data)
+      assert.equal(data.state, 'DOWNLOADING')
     })
 
     it('adds the root as a download', async () => {
@@ -224,20 +254,20 @@ describe('pin manager', () => {
 
       await pm.pin(root)
 
-      const downloads = await components.downloads.findAll({ where: { pinnedBy: root.toString() } })
+      const downloads = await all(downloadsDatastore.query({ prefix: `/${root.toString()}` }))
 
       assert.equal(downloads.length, 1)
-      assert(downloads[0].cid.equals(root))
+      assert(CID.parse(downloads[0].key.baseNamespace()).equals(root))
     })
 
     it('does nothing if the pin already exists', async () => {
       const root = dag[0]
 
-      await components.pins.create({ cid: root, depth: 1, state: 'COMPLETED' })
+      await createPins([{ cid: root, depth: 1, state: 'COMPLETED' }])
       await pm.pin(root)
 
-      const downloads = await components.downloads.findAll({ where: { pinnedBy: root.toString() } })
-      const pin = await components.pins.findOne({ where: { cid: root.toString() } })
+      const downloads = await all(downloadsDatastore.query({ prefix: `/${root.toString()}` }))
+      const pin = await pinsDatastore.get(new Key(root.toString()))
 
       assert.equal(downloads.length, 0)
       assert(pin)
@@ -263,7 +293,7 @@ describe('pin manager', () => {
     it('returns the pins state', async () => {
       await Promise.all(
         [...(['DOWNLOADING', 'COMPLETED', 'DESTROYED', 'UPLOADING'] as const).entries()].map(async ([i, state]) => {
-          await components.pins.create({ cid: dag[i], state })
+          await createPins([{ cid: dag[i], state, depth: DAG_DEPTH }])
           const gotState = await pm.getState(dag[i])
 
           assert.equal(gotState, state)
@@ -283,7 +313,7 @@ describe('pin manager', () => {
     it('returns only the pins in the DOWNLOADING state', async () => {
       await Promise.all(
         [...(['DOWNLOADING', 'COMPLETED', 'DESTROYED', 'UPLOADING'] as const).entries()].map(async ([i, state]) => {
-          await components.pins.create({ cid: dag[i], state })
+          await createPins([{ cid: dag[i], state, depth: DAG_DEPTH }])
         })
       )
 
@@ -296,7 +326,7 @@ describe('pin manager', () => {
 
   describe('getHeads', () => {
     it('returns all the block downloads for a pin', async () => {
-      await components.downloads.bulkCreate(dag.map(c => ({
+      await createDownloads(dag.map(c => ({
         cid: c,
         pinnedBy: dag[0],
         depth: DAG_DEPTH
@@ -312,7 +342,7 @@ describe('pin manager', () => {
     })
 
     it('returns no more than the limit', async () => {
-      await components.downloads.bulkCreate(dag.map(c => ({
+      await createDownloads(dag.map(c => ({
         cid: c,
         pinnedBy: dag[0],
         depth: DAG_DEPTH
@@ -329,7 +359,7 @@ describe('pin manager', () => {
     it('returns the sum of the size of all the blocks under a pin', async () => {
       const sizePerBlock = 10
 
-      await components.blocks.bulkCreate(dag.map(c => ({
+      await createBlocks(dag.map(c => ({
         cid: c,
         pinnedBy: dag[0],
         size: sizePerBlock,
@@ -344,7 +374,7 @@ describe('pin manager', () => {
 
   describe('getBlockCount', () => {
     it('returns the number of blocks under a pin', async () => {
-      await components.blocks.bulkCreate(dag.map(c => ({
+      await createBlocks(dag.map(c => ({
         cid: c,
         pinnedBy: dag[0],
         size: 10,
@@ -363,10 +393,11 @@ describe('pin manager', () => {
     })
 
     it('returns an empty array if it is in the COMPLETED state', async () => {
-      await components.pins.create({
+      await createPins([{
         cid: dag[0],
-        state: 'COMPLETED'
-      })
+        state: 'COMPLETED',
+        depth: DAG_DEPTH
+      }])
 
       const downloaders = await pm.downloadSync(dag[0])
 
@@ -374,12 +405,13 @@ describe('pin manager', () => {
     })
 
     it('returns all the downloaders for a pin', async () => {
-      await components.pins.create({
+      await createPins([{
         cid: dag[0],
-        state: 'DOWNLOADING'
-      })
+        state: 'DOWNLOADING',
+        depth: DAG_DEPTH
+      }])
 
-      await components.downloads.bulkCreate(dag.map(c => ({
+      await createDownloads(dag.map(c => ({
         cid: c,
         pinnedBy: dag[0],
         size: 10,
@@ -395,7 +427,7 @@ describe('pin manager', () => {
 
         assert(dag.map(d => d.toString()).includes(blockInfo.cid.toString()))
       }))
-    }).timeout(1000 * 60 * 2)
+    })
   })
 
   describe('downloadPin', () => {
@@ -404,10 +436,11 @@ describe('pin manager', () => {
     })
 
     it('returns an empty array if it is in the COMPLETED state', async () => {
-      await components.pins.create({
+      await createPins([{
         cid: dag[0],
-        state: 'COMPLETED'
-      })
+        state: 'COMPLETED',
+        depth: DAG_DEPTH
+      }])
 
       const downloaders = await all(pm.downloadPin(dag[0]))
 
@@ -415,16 +448,17 @@ describe('pin manager', () => {
     })
 
     it('returns existing downloads for a pin first', async () => {
-      await components.pins.create({
+      await createPins([{
         cid: dag[0],
-        state: 'DOWNLOADING'
-      })
+        state: 'DOWNLOADING',
+        depth: DAG_DEPTH
+      }])
 
-      await components.downloads.create({
+      await createDownloads([{
         cid: dag[0],
         pinnedBy: dag[0],
         depth: 1
-      })
+      }])
 
       const itr = pm.downloadPin(dag[0])
       const downloader = await itr.next()
@@ -433,8 +467,8 @@ describe('pin manager', () => {
 
       await downloader.value()
 
-      const blocks = await components.blocks.findAll()
-      const downloads = await components.downloads.findAll()
+      const blocks = await all(blocksDatastore.query({}))
+      const downloads = await all(downloadsDatastore.query({}))
 
       assert.equal(blocks.length, 1)
       assert.equal(downloads.length, DAG_WIDTH)

@@ -5,7 +5,8 @@ import { encodePinInfo, decodePinInfo } from './utils.js'
 import { logger } from './index.js'
 import type { PinInfo } from './interface.js'
 import type { Pair } from '@/interface.js'
-import type { PinManager as HeliaPinManager, BlockInfo } from '@organicdesign/db-helia-pin-manager'
+import type { BlockInfo } from '@organicdesign/db-helia-pin-manager'
+import type HeliaPinManager from '@organicdesign/db-helia-pin-manager'
 
 export class PinManager {
   private readonly datastore: Datastore
