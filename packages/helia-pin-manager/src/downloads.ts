@@ -49,7 +49,7 @@ export default class {
       return data
     }
 
-    await this.put(cid, pinnedBy, download)
+    await this.put(pinnedBy, cid, download)
 
     return download
   }

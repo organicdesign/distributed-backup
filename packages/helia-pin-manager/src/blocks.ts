@@ -44,13 +44,13 @@ export default class {
   }
 
   async getOrPut (pinnedBy: CID, cid: CID, block: Block): Promise<Block> {
-    const data = await this.get(cid, pinnedBy)
+    const data = await this.get(pinnedBy, cid)
 
     if (data != null) {
       return data
     }
 
-    await this.put(cid, pinnedBy, block)
+    await this.put(pinnedBy, cid, block)
 
     return block
   }
