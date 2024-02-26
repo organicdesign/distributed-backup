@@ -60,7 +60,7 @@ export class PinManager {
     this.downloads = new Downloads(new NamespaceDatastore(datastore, new Key('downloads')))
   }
 
-  async all (): Promise<Pin[]> {
+  async all (): Promise<(Pin & { cid: CID })[]> {
     return all(this.pins.all())
   }
 
