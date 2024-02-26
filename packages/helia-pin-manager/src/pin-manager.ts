@@ -191,7 +191,7 @@ export class PinManager {
       downloads.push(download)
       count++
 
-      if (options?.limit != null && count < options?.limit) {
+      if (options?.limit != null && count >= options?.limit) {
         break
       }
     }
