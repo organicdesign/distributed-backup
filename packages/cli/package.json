@@ -31,7 +31,6 @@
   "sideEffects": false,
   "dependencies": {
     "@organicdesign/db-client": "^0.1.0",
-    "multiformats": "^13.1.0",
     "@organicdesign/db-rpc-interfaces": "^0.1.0",
     "yargs": "^17.7.2",
     "zod": "^3.22.4"

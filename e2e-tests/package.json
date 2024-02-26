@@ -16,10 +16,14 @@
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
+    "@open-draft/deferred-promise": "^2.2.0",
+    "@organicdesign/db-key-manager": "^0.1.0",
     "aegir": "^42.2.4",
+    "uint8arrays": "^5.0.2"
+  },
+  "peerDependencies": {
     "@organicdesign/db-cli": "^0.1.0",
-    "@organicdesign/db-daemon": "^0.1.0",
-    "@organicdesign/db-key-manager": "^0.1.0"
+    "@organicdesign/db-daemon": "^0.1.0"
   },
   "private": true,
   "sideEffects": false
