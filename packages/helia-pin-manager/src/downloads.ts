@@ -1,58 +1,93 @@
+import * as cborg from 'cborg'
+import { Key } from 'interface-datastore'
 import { CID } from 'multiformats/cid'
-import { DataTypes, Model, type Sequelize, type InferAttributes, type InferCreationAttributes, type ModelCtor } from 'sequelize'
+import { z } from 'zod'
+import type { Datastore } from 'interface-datastore'
 
-/**
- * This class is for keeping track of blocks that need to be downloaded.
- */
+export const Download = z.object({
+  depth: z.number().int().min(0)
+})
 
-export class DownloadModel extends Model<InferAttributes<DownloadModel, { omit: 'cid' | 'pinnedBy' }> & { cid: string, pinnedBy: string }, InferCreationAttributes<DownloadModel>> {
-  declare cid: CID // Primary
-  declare pinnedBy: CID // Primary
-  declare depth: number
-}
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export type Download = z.infer<typeof Download>
 
-export type Downloads = ModelCtor<DownloadModel>
+export default class {
+  private readonly datastore: Datastore
 
-export const setupDownloads = (sequelize: Sequelize): Downloads => {
-  return sequelize.define<DownloadModel>(
-    'downloads',
-    {
-      cid: {
-        type: DataTypes.STRING(undefined, true),
-        allowNull: false,
-        primaryKey: true,
+  constructor (datastore: Datastore) {
+    this.datastore = datastore
+  }
 
-        get () {
-          const str = this.getDataValue('cid')
+  async get (pinnedBy: CID, cid: CID): Promise<Download | null> {
+    const key = new Key(`/${pinnedBy.toString()}/${cid.toString()}`)
 
-          return CID.parse(str)
-        },
+    try {
+      const value = await this.datastore.get(key)
 
-        set (value: CID) {
-          this.setDataValue('cid', value.toString())
-        }
-      },
+      return Download.parse(cborg.decode(value))
+    } catch (error) {
+      return null
+    }
+  }
 
-      pinnedBy: {
-        type: DataTypes.STRING(undefined, true),
-        allowNull: false,
-        primaryKey: true,
+  async put (pinnedBy: CID, cid: CID, download: Download): Promise<void> {
+    const key = new Key(`/${pinnedBy.toString()}/${cid.toString()}`)
 
-        get () {
-          const str = this.getDataValue('pinnedBy')
+    await this.datastore.put(key, cborg.encode(download))
+  }
 
-          return CID.parse(str)
-        },
+  async delete (pinnedBy: CID, cid: CID): Promise<void> {
+    const key = new Key(`/${pinnedBy.toString()}/${cid.toString()}`)
 
-        set (value: CID) {
-          this.setDataValue('pinnedBy', value.toString())
-        }
-      },
+    await this.datastore.delete(key)
+  }
 
-      depth: {
-        type: DataTypes.INTEGER(),
-        allowNull: false
+  async getOrPut (pinnedBy: CID, cid: CID, download: Download): Promise<Download> {
+    const data = await this.get(cid, pinnedBy)
+
+    if (data != null) {
+      return data
+    }
+
+    await this.put(cid, pinnedBy, download)
+
+    return download
+  }
+
+  async * all (pinnedBy: CID): AsyncGenerator<Download & { cid: CID, pinnedBy: CID }> {
+    const prefix = `/${pinnedBy.toString()}`
+
+    for await (const { key, value } of this.datastore.query({ prefix })) {
+      const parts = key.toString().split('/')
+      const pinnedBy = CID.parse(parts[1])
+      const cid = CID.parse(parts[2])
+      const data = Download.parse(cborg.decode(value))
+
+      yield {
+        cid,
+        pinnedBy,
+        ...data
       }
     }
-  )
+  }
+
+  async * allByCid (cid: CID): AsyncGenerator<Download & { cid: CID, pinnedBy: CID }> {
+    for await (const { key, value } of this.datastore.query({})) {
+      const parts = key.toString().split('/')
+      const thisCid = CID.parse(parts[2])
+
+      if (!cid.equals(thisCid)) {
+        continue
+      }
+
+      const pinnedBy = CID.parse(parts[1])
+      const data = Download.parse(cborg.decode(value))
+
+      yield {
+        cid,
+        pinnedBy,
+        ...data
+      }
+    }
+  }
 }

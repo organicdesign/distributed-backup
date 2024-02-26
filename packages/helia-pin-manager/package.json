@@ -34,14 +34,12 @@
   "private": true,
   "sideEffects": false,
   "dependencies": {
-    "cborg": "^4.0.9",
     "@organicdesign/db-dag-walkers": "^0.1.0",
+    "@organicdesign/db-namespace-datastore": "^0.1.0",
+    "cborg": "^4.0.9",
     "interface-datastore": "^8.2.11",
     "it-all": "^3.0.4",
     "multiformats": "^13.1.0",
-    "p-queue": "^8.0.1",
-    "sequelize": "^6.37.1",
-    "sqlite3": "^5.1.7",
     "ts-event-target": "^0.1.5",
     "uint8arrays": "^5.0.2"
   }
