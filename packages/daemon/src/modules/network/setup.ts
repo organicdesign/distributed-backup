@@ -1,6 +1,6 @@
 import fs from 'fs/promises'
 import Path from 'path'
-import createPinManager from '@organicdesign/db-helia-pin-manager'
+import PinManager from '@organicdesign/db-helia-pin-manager'
 import { MemoryDatastore } from 'datastore-core'
 import { FsDatastore } from 'datastore-fs'
 import { createHelia } from 'helia'
@@ -33,8 +33,9 @@ export default async ({ base }: Requires, config: Config): Promise<Provides> => 
     blockstore: base.blockstore
   })
 
-  const pinManager = await createPinManager(helia, {
-    storage: isMemory(config.storage) ? ':memory:' : Path.join(config.storage, 'sqlite')
+  const pinManager = new PinManager({
+    helia,
+    datastore: extendDatastore(base.datastore, 'pinManager')
   })
 
   pinManager.events.addEventListener('downloads:added', ({ cid }) => {
