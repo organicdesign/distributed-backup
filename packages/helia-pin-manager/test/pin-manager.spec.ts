@@ -3,13 +3,13 @@ import EventEmitter from 'events'
 import { NamespaceDatastore } from '@organicdesign/db-namespace-datastore'
 import * as cborg from 'cborg'
 import { MemoryDatastore } from 'datastore-core'
-import { createHelia } from 'helia'
 import { Key, type Datastore } from 'interface-datastore'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import { PinManager, type Components } from '../src/pin-manager.js'
 import { addBlocks } from './utils/blocks.js'
 import { createDag } from './utils/dag.js'
+import createHelia from './utils/helia.js'
 
 const DAG_WIDTH = 2
 const DAG_DEPTH = 3
