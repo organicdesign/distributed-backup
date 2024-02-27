@@ -7,7 +7,7 @@ import type { Datastore } from 'interface-datastore'
 export const Block = z.object({
   size: z.number().int().min(0),
   depth: z.number().int().min(0),
-	timestamp: z.number().int().min(0)
+  timestamp: z.number().int().min(0)
 })
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
