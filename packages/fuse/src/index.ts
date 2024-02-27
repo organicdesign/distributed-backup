@@ -207,6 +207,11 @@ const opts: FuseOpts = {
   },
 
   async write (path, _, buffer, length, position) {
+    if (argv.at !== null) {
+      // eslint-disable-next-line @typescript-eslint/no-throw-literal
+      throw Fuse.EACCES
+    }
+
     const written = await client.write(argv.group, path, uint8ArrayToString(buffer), {
       position,
       length
@@ -216,6 +221,11 @@ const opts: FuseOpts = {
   },
 
   async create (path) {
+    if (argv.at !== null) {
+      // eslint-disable-next-line @typescript-eslint/no-throw-literal
+      throw Fuse.EACCES
+    }
+
     await client.write(argv.group, path, uint8ArrayToString(new Uint8Array([])), {
       length: 0
     })
@@ -224,10 +234,20 @@ const opts: FuseOpts = {
   },
 
   async unlink (path: string) {
+    if (argv.at !== null) {
+      // eslint-disable-next-line @typescript-eslint/no-throw-literal
+      throw Fuse.EACCES
+    }
+
     await client.delete(argv.group, path)
   },
 
   async rename (src, dest) {
+    if (argv.at !== null) {
+      // eslint-disable-next-line @typescript-eslint/no-throw-literal
+      throw Fuse.EACCES
+    }
+
     const list = await group.query()
     const files = list.filter((l: { path: string }) => l.path.startsWith(Path.join(src, '/')) || l.path === src)
 
@@ -254,6 +274,11 @@ const opts: FuseOpts = {
   },
 
   async mkdir (path) {
+    if (argv.at !== null) {
+      // eslint-disable-next-line @typescript-eslint/no-throw-literal
+      throw Fuse.EACCES
+    }
+
     await client.write(
       argv.group,
       Path.join(path, '.PLACE_HOLDER'),
@@ -265,6 +290,11 @@ const opts: FuseOpts = {
   },
 
   async rmdir (path) {
+    if (argv.at !== null) {
+      // eslint-disable-next-line @typescript-eslint/no-throw-literal
+      throw Fuse.EACCES
+    }
+
     const list = await group.query()
     const files = list.filter((l: { path: string }) => l.path.startsWith(Path.join(path, '/')))
 
