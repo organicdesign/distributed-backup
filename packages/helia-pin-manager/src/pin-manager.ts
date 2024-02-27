@@ -170,7 +170,7 @@ export class PinManager {
   async getSpeed (cid: CID, range = 10000): Promise<number> {
     const pin = await this.pins.get(cid)
 
-    if (pin == null) {
+    if (pin == null || range <= 0) {
       return 0
     }
 
