@@ -52,7 +52,9 @@ const createJSON = (items: List.Return): JStruct => {
 }
 
 const formatPercent = (decimal: number): string => {
-  return `${Math.floor(decimal * 1000) / 10}%`
+  const percent = Math.floor(decimal * 1000) / 10
+
+  return `${isNaN(percent) ? 0 : percent}%`
 }
 
 export const handler = createHandler<typeof builder>(async argv => {
