@@ -13,7 +13,7 @@ export type Params = z.input<typeof Params>
 
 export const Return = z.array(z.object({
   cid: zCID(),
-  speed: z.number().int().min(0)
+  speed: z.number().min(0)
 }))
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
