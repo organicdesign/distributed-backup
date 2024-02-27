@@ -44,7 +44,7 @@ describe('pin manager', () => {
   const createBlocks = async (data: Array<{ cid: CID, pinnedBy: CID, depth: number, size: number }>): Promise<void> => {
     const pairs = data.map(d => ({
       key: new Key(`/${d.pinnedBy.toString()}/${d.cid.toString()}`),
-      value: cborg.encode({ depth: d.depth, size: d.size })
+      value: cborg.encode({ depth: d.depth, size: d.size, timestamp: Date.now() })
     }))
 
     await all(blocksDatastore.putMany(pairs))

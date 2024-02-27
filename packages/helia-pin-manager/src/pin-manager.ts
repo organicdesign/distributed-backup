@@ -121,7 +121,8 @@ export class PinManager {
 
       await this.blocks.getOrPut(cid, subCid, {
         size: block.length,
-        depth
+        depth,
+				timestamp: Date.now()
       })
 
       for await (const cid of dagWalker.walk(block)) {
@@ -346,7 +347,8 @@ export class PinManager {
       // Save the blocks to the database.
       await Promise.all(downloads.map(async d => this.blocks.getOrPut(d.pinnedBy, cid, {
         depth: d.depth,
-        size: block.length
+        size: block.length,
+				timestamp: Date.now()
       })))
 
       // Add the next blocks to download.
