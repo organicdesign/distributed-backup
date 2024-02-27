@@ -161,10 +161,12 @@ export const handler = createHandler<typeof builder>(async argv => {
   footer += 'Total'.padEnd(15)
   footer += 'Size'.padEnd(25)
   footer += 'Blocks'.padEnd(20)
+  footer += 'Speed'.padEnd(20)
   footer += '\n'
   footer += `${completed.count}/${total.count} (${formatPercent(completed.count / total.count)})`.slice(0, 13).padEnd(15)
   footer += `${formatSize(completed.size)}/${formatSize(total.size)} (${formatPercent(completed.size / total.size)})`.slice(0, 23).padEnd(25)
   footer += `${completed.blocks}/${total.blocks} (${formatPercent(completed.blocks / total.blocks)})`.slice(0, 18).padEnd(20)
+  footer += `${formatSize(speeds.reduce((a, c) => a + c.speed, 0))}s`.slice(0, 18).padEnd(20)
 
   response += `${footer}\n`
 
