@@ -94,9 +94,15 @@ export const handler = createHandler<typeof builder>(async argv => {
     count: items.map(getStatus).filter(i => i.state === 'COMPLETED').length
   }
 
+  const speeds = await argv.client.getSpeeds(items.map(i => i.cid))
+
+  const getSpeed = ({ cid }: { cid: string }): number =>
+    speeds.find(s => s.cid === cid)?.speed ?? 0
+
   let header = 'Name'.padEnd(20)
 
   header += 'Size'.padEnd(27)
+  header += 'Speed'.padEnd(27)
   header += 'Blocks'.padEnd(20)
   header += 'State'.padEnd(15)
   header += 'Priority'.padEnd(10)
@@ -123,6 +129,7 @@ export const handler = createHandler<typeof builder>(async argv => {
 
         str += `${'  '.repeat(depth)}${key}`.slice(0, 18).padEnd(20)
         str += `${formatSize(getStatus(item).size)}/${formatSize(item.size)} (${formatPercent(getStatus(item).size / item.size)})`.slice(0, 25).padEnd(27)
+        str += `${formatSize(getSpeed(item))}/s (${(item.size - getStatus(item).size) / getSpeed(item)}s)`.slice(0, 25).padEnd(27)
         str += `${getStatus(item).blocks}/${item.blocks} (${formatPercent(getStatus(item).blocks / item.blocks)})`.slice(0, 18).padEnd(20)
         str += getStatus(item).state.slice(0, 13).padEnd(15)
         str += `${item.priority}`.slice(0, 8).padEnd(10)
