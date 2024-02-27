@@ -127,11 +127,12 @@ export const handler = createHandler<typeof builder>(async argv => {
     for (const [key, subtree] of Object.entries(tree)) {
       try {
         const [item] = List.Return.parse([subtree])
+        const timeRemaining = (item.size - getStatus(item).size) / getSpeed(item)
         let str = ''
 
         str += `${'  '.repeat(depth)}${key}`.slice(0, 18).padEnd(20)
         str += `${formatSize(getStatus(item).size)}/${formatSize(item.size)} (${formatPercent(getStatus(item).size / item.size)})`.slice(0, 25).padEnd(27)
-        str += `${formatSize(getSpeed(item))}/s (${(item.size - getStatus(item).size) / getSpeed(item)}s)`.slice(0, 25).padEnd(27)
+        str += `${formatSize(getSpeed(item))}/s ${isNaN(timeRemaining) ? '' : `(${timeRemaining} s)`}`.slice(0, 25).padEnd(27)
         str += `${getStatus(item).blocks}/${item.blocks} (${formatPercent(getStatus(item).blocks / item.blocks)})`.slice(0, 18).padEnd(20)
         str += getStatus(item).state.slice(0, 13).padEnd(15)
         str += `${item.priority}`.slice(0, 8).padEnd(10)
