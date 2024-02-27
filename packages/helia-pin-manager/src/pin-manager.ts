@@ -184,7 +184,9 @@ export class PinManager {
       }
     }
 
-    return size / range
+		const speed = size / range
+
+    return isNaN(speed) ? 0 : speed
   }
 
   // Get all the pins that are actively downloading.
