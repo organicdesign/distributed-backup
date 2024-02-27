@@ -101,7 +101,7 @@ export class PinManager {
 
     const pin = await this.pins.getOrPut(cid, {
       state: 'UPLOADING',
-      depth: Infinity
+      depth: Number.MAX_SAFE_INTEGER
     })
 
     if (pin == null) {
@@ -150,11 +150,10 @@ export class PinManager {
       return
     }
 
-    await this.pins.put(cid, { depth: Infinity, state: 'DOWNLOADING' })
+    const depth = Number.MAX_SAFE_INTEGER
 
-    await this.downloads.getOrPut(cid, cid, {
-      depth: 0
-    })
+    await this.pins.put(cid, { depth, state: 'DOWNLOADING' })
+    await this.downloads.getOrPut(cid, cid, { depth })
 
     this.events.dispatchEvent(new CIDEvent('pins:adding', cid))
   }
