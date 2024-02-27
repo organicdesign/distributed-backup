@@ -121,7 +121,8 @@ export class PinManager {
 
       await this.blocks.getOrPut(cid, subCid, {
         size: block.length,
-        depth
+        depth,
+        timestamp: Date.now()
       })
 
       for await (const cid of dagWalker.walk(block)) {
@@ -164,6 +165,28 @@ export class PinManager {
     const pin = await this.pins.get(cid)
 
     return pin == null ? 'NOTFOUND' : pin.state
+  }
+
+  async getSpeed (cid: CID, range = 10000): Promise<number> {
+    const pin = await this.pins.get(cid)
+
+    if (pin == null || range <= 0) {
+      return 0
+    }
+
+    const now = Date.now()
+
+    let size = 0
+
+    for await (const block of this.blocks.all(cid)) {
+      if (block.timestamp >= now - range && block.timestamp <= now) {
+        size += block.size
+      }
+    }
+
+		const speed = size / range
+
+    return isNaN(speed) ? 0 : speed
   }
 
   // Get all the pins that are actively downloading.
@@ -345,7 +368,8 @@ export class PinManager {
       // Save the blocks to the database.
       await Promise.all(downloads.map(async d => this.blocks.getOrPut(d.pinnedBy, cid, {
         depth: d.depth,
-        size: block.length
+        size: block.length,
+        timestamp: Date.now()
       })))
 
       // Add the next blocks to download.

@@ -8,6 +8,7 @@ import {
   Edit,
   ExportRevision,
   Export,
+  GetSpeeds,
   GetStatus,
   ID,
   Import,
@@ -101,6 +102,13 @@ export class Client {
     const raw = await this.client.rpc.request(Export.name, params)
 
     return Export.Return.parse(raw)
+  }
+
+  async getSpeeds (cids: GetSpeeds.Params['cids'], range?: number): Promise<GetSpeeds.Return> {
+    const params: GetSpeeds.Params = { cids, range }
+    const raw = await this.client.rpc.request(GetSpeeds.name, params)
+
+    return GetSpeeds.Return.parse(raw)
   }
 
   async getStatus (cids: GetStatus.Params['cids']): Promise<GetStatus.Return> {

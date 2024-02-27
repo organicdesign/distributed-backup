@@ -52,7 +52,9 @@ const createJSON = (items: List.Return): JStruct => {
 }
 
 const formatPercent = (decimal: number): string => {
-  return `${Math.floor(decimal * 1000) / 10}%`
+  const percent = Math.floor(decimal * 1000) / 10
+
+  return `${isNaN(percent) ? 0 : percent}%`
 }
 
 export const handler = createHandler<typeof builder>(async argv => {
@@ -94,9 +96,15 @@ export const handler = createHandler<typeof builder>(async argv => {
     count: items.map(getStatus).filter(i => i.state === 'COMPLETED').length
   }
 
+  const speeds = await argv.client.getSpeeds(items.map(i => i.cid))
+
+  const getSpeed = ({ cid }: { cid: string }): number =>
+    speeds.find(s => s.cid === cid)?.speed ?? 0
+
   let header = 'Name'.padEnd(20)
 
   header += 'Size'.padEnd(27)
+  header += 'Speed'.padEnd(27)
   header += 'Blocks'.padEnd(20)
   header += 'State'.padEnd(15)
   header += 'Priority'.padEnd(10)
@@ -119,10 +127,12 @@ export const handler = createHandler<typeof builder>(async argv => {
     for (const [key, subtree] of Object.entries(tree)) {
       try {
         const [item] = List.Return.parse([subtree])
+        const timeRemaining = (item.size - getStatus(item).size) / getSpeed(item)
         let str = ''
 
         str += `${'  '.repeat(depth)}${key}`.slice(0, 18).padEnd(20)
         str += `${formatSize(getStatus(item).size)}/${formatSize(item.size)} (${formatPercent(getStatus(item).size / item.size)})`.slice(0, 25).padEnd(27)
+        str += `${formatSize(getSpeed(item))}/s ${isNaN(timeRemaining) ? '' : `(${timeRemaining} s)`}`.slice(0, 25).padEnd(27)
         str += `${getStatus(item).blocks}/${item.blocks} (${formatPercent(getStatus(item).blocks / item.blocks)})`.slice(0, 18).padEnd(20)
         str += getStatus(item).state.slice(0, 13).padEnd(15)
         str += `${item.priority}`.slice(0, 8).padEnd(10)
@@ -152,10 +162,12 @@ export const handler = createHandler<typeof builder>(async argv => {
   footer += 'Total'.padEnd(15)
   footer += 'Size'.padEnd(25)
   footer += 'Blocks'.padEnd(20)
+  footer += 'Speed'.padEnd(20)
   footer += '\n'
   footer += `${completed.count}/${total.count} (${formatPercent(completed.count / total.count)})`.slice(0, 13).padEnd(15)
   footer += `${formatSize(completed.size)}/${formatSize(total.size)} (${formatPercent(completed.size / total.size)})`.slice(0, 23).padEnd(25)
   footer += `${completed.blocks}/${total.blocks} (${formatPercent(completed.blocks / total.blocks)})`.slice(0, 18).padEnd(20)
+  footer += `${formatSize(speeds.reduce((a, c) => a + c.speed, 0))}s`.slice(0, 18).padEnd(20)
 
   response += `${footer}\n`
 
