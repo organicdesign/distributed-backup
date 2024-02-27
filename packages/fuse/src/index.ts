@@ -93,6 +93,7 @@ const opts: FuseOpts = {
       const pathParts = path.split('/').filter(p => Boolean(p))
 
       const filteredList = list
+				.filter(l => l.path.startsWith(path))
         .map(l => ({
           ...l,
           name: l.path.split('/').filter(p => Boolean(p)).slice(pathParts.length)[0]
