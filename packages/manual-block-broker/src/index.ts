@@ -16,6 +16,7 @@ export class ManualBlockBroker implements BlockRetriever {
     const promise = new DeferredPromise<Uint8Array>()
 
     signal?.addEventListener('abort', () => {
+      this.promises.delete(cid.toString())
       promise.reject('operation aborted')
     })
 
