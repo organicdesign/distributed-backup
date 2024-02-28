@@ -203,8 +203,8 @@ export class Client {
     return SneakernetReveive.Return.parse(raw)
   }
 
-  async sneakernetSend (path: SneakernetSend.Params['path'], peers: SneakernetSend.Params['peers'] = []): Promise<SneakernetSend.Return> {
-    const params: SneakernetSend.Params = { path, peers }
+  async sneakernetSend (path: SneakernetSend.Params['path'], options?: Omit<SneakernetSend.Params, 'path'>): Promise<SneakernetSend.Return> {
+    const params: SneakernetSend.Params = { path, ...options }
     const raw = await this.client.rpc.request(SneakernetSend.name, params)
 
     return SneakernetSend.Return.parse(raw)

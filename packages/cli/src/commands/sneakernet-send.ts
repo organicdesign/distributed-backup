@@ -14,6 +14,11 @@ export const builder = createBuilder({
   peers: {
     required: false,
     type: 'array'
+  },
+
+  size: {
+    required: false,
+    type: 'number'
   }
 })
 
@@ -22,7 +27,10 @@ export const handler = createHandler<typeof builder>(async argv => {
     throw new Error('Failed to connect to daemon.')
   }
 
-  await argv.client.sneakernetSend(argv.path, z.array(z.string()).optional().parse(argv.peers))
+  await argv.client.sneakernetSend(argv.path, {
+    peers: z.array(z.string()).optional().parse(argv.peers),
+    size: argv.size
+  })
 
   if (argv.json === true) {
     return JSON.stringify({ success: true })

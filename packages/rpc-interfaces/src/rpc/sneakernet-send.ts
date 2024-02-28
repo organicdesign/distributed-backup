@@ -5,7 +5,8 @@ export const name = 'sneakernet-send'
 
 export const Params = z.object({
   path: z.string(),
-  peers: z.array(zEncoding('base58btc'))
+  size: z.number().int().min(0).optional(),
+  peers: z.array(zEncoding('base58btc')).optional()
 })
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
