@@ -4,6 +4,7 @@
     "moduleResolution": "nodenext",
     "esModuleInterop": true,
     "outDir": "dist",
+    "baseUrl": ".",
     "module": "nodenext",
     "target": "ES2022"
   },
