@@ -4,9 +4,9 @@
     "moduleResolution": "nodenext",
     "esModuleInterop": true,
     "outDir": "dist",
+    "baseUrl": ".",
     "module": "nodenext",
     "target": "ES2022",
-		"baseUrl": ".",
 
     "paths": {
       "@/*": ["src/*"]
@@ -19,9 +19,6 @@
   "references": [
     {
       "path": "../dag-walkers"
-    },
-    {
-      "path": "../namespace-datastore"
     },
     {
       "path": "../helia-pin-manager"

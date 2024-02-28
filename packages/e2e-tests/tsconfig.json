@@ -3,6 +3,7 @@
   "compilerOptions": {
     "esModuleInterop": true,
     "outDir": "dist",
+    "baseUrl": ".",
     "module": "ES2022",
     "target": "ES2022"
   },
@@ -12,13 +13,13 @@
   ],
   "references": [
     {
-      "path": "../packages/key-manager"
+      "path": "../key-manager"
     },
     {
-      "path": "../packages/cli"
+      "path": "../cli"
     },
     {
-      "path": "../packages/daemon"
+      "path": "../daemon"
     }
   ]
 }

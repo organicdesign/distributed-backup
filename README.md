@@ -19,11 +19,21 @@ nodejs will need to be installed to run this project, it has been tested on v18,
 
 ## Setup
 
-### Dependencies
+### Enabling Fuse
 
-This project depends on the OS having FUSE installed which may already be installed by default on some linux distributions.
+The fuse package is disabled by default because it depends on the OS having FUSE installed. Fuse may already be installed by default on some linux distributions.
+
+You can enable fuse by editing the `workspaces` value in `package.json` to:
+
+```json
+"workspaces": [
+	"packages/!(e2e-tests)"
+]
+```
 
 #### Linux
+
+Building the fuse package depends on some system packages, install them by running the following command:
 
 ```
 sudo apt-get install pkg-config libfuse-dev make build-essential
