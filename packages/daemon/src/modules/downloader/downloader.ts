@@ -40,12 +40,16 @@ export default async (context: Provides): Promise<void> => {
     }
   }
 
-  await pipe(
-    loop,
-    getPins,
-    batchDownload,
-    i => parallel(i, { concurrency: context.config.slots, ordered: false }),
-    i => catcher(i),
-    async i => collect(i)
-  )
+  for (;;) {
+    await pipe(
+      loop,
+      getPins,
+      batchDownload,
+      i => parallel(i, { concurrency: context.config.slots, ordered: false }),
+      i => catcher(i),
+      async i => collect(i)
+    )
+
+    await new Promise(resolve => setTimeout(resolve, 100))
+  }
 }
