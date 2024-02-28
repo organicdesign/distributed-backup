@@ -37,6 +37,9 @@
     },
     {
       "path": "../rpc-interfaces"
+    },
+    {
+      "path": "../manual-block-broker"
     }
   ]
 }
