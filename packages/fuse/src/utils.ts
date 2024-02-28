@@ -82,5 +82,5 @@ export const convertOpts = (opts: FuseOpts): Fuse.OPERATIONS => {
     }
   }
 
-  return out as Fuse.OPERATIONS
+  return out
 }
