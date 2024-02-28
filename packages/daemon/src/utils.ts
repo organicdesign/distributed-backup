@@ -1,6 +1,6 @@
 import Path from 'path'
 import { fileURLToPath } from 'url'
-import { NamespaceDatastore } from '@organicdesign/db-namespace-datastore'
+import { NamespaceDatastore } from 'datastore-core'
 import * as cborg from 'cborg'
 import { type Datastore, Key } from 'interface-datastore'
 import { MEMORY_MAGIC } from './interface.js'

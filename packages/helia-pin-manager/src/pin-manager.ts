@@ -1,6 +1,6 @@
 import { DeferredPromise } from '@open-draft/deferred-promise'
 import { defaultDagWalkers } from '@organicdesign/db-dag-walkers'
-import { NamespaceDatastore } from '@organicdesign/db-namespace-datastore'
+import { NamespaceDatastore } from 'datastore-core'
 import { Key, type Datastore } from 'interface-datastore'
 import all from 'it-all'
 import { Event, EventTarget } from 'ts-event-target'
@@ -184,7 +184,7 @@ export class PinManager {
       }
     }
 
-		const speed = size / range
+    const speed = size / range
 
     return isNaN(speed) ? 0 : speed
   }
