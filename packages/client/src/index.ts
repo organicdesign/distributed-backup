@@ -19,6 +19,8 @@ import {
   ReadRevision,
   Read,
   SetPriority,
+  SneakernetReveive,
+  SneakernetSend,
   Sync,
   Write
 } from '@organicdesign/db-rpc-interfaces'
@@ -192,6 +194,20 @@ export class Client {
     const raw = await this.client.rpc.request(Sync.name, params)
 
     return Sync.Return.parse(raw)
+  }
+
+  async sneakernetReveive (path: SneakernetReveive.Params['path']): Promise<SneakernetReveive.Return> {
+    const params: SneakernetReveive.Params = { path }
+    const raw = await this.client.rpc.request(SneakernetReveive.name, params)
+
+    return SneakernetReveive.Return.parse(raw)
+  }
+
+  async sneakernetSend (path: SneakernetSend.Params['path'], peers: SneakernetSend.Params['peers'] = []): Promise<SneakernetSend.Return> {
+    const params: SneakernetSend.Params = { path, peers }
+    const raw = await this.client.rpc.request(SneakernetSend.name, params)
+
+    return SneakernetSend.Return.parse(raw)
   }
 
   async write (group: Write.Params['group'], path: Write.Params['path'], data: Write.Params['data'], options: Omit<Write.Params, 'group' | 'path' | 'data'>): Promise<Write.Return> {
