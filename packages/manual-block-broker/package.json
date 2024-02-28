@@ -26,8 +26,12 @@
   "devDependencies": {
     "@helia/interface": "^4.0.0",
     "aegir": "^42.2.4",
+    "interface-store": "^5.1.8",
     "multiformats": "^13.1.0"
   },
   "private": true,
-  "sideEffects": false
+  "sideEffects": false,
+  "dependencies": {
+    "@open-draft/deferred-promise": "^2.2.0"
+  }
 }
