@@ -5,7 +5,10 @@ export const PeerData = z.object({
   wants: z.array(z.instanceof(Uint8Array)),
 
   // This is a list of the heads this peer is known to have.
-  heads: z.array(z.instanceof(Uint8Array))
+  heads: z.array(z.object({
+    group: z.instanceof(Uint8Array),
+    cids: z.array(z.instanceof(Uint8Array))
+  }))
 })
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
