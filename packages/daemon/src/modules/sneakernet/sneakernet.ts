@@ -41,7 +41,14 @@ export class Sneakernet {
   }
 
   async import (path: string): Promise<void> {
-    const rawData = await fs.readFile(Path.join(path, 'manifest'))
+    await Promise.all([
+      this.importManifest(Path.join(path, 'manifest')),
+      this.importBlocks(Path.join(path, 'blocks.car'))
+    ])
+  }
+
+  private async importManifest (path: string): Promise<void> {
+    const rawData = await fs.readFile(path)
     const data = EncodedPeerData.parse(cborg.decode(rawData))
 
     await all(this.datastore.putMany(data.map(peerData => ({
@@ -51,17 +58,17 @@ export class Sneakernet {
         heads: peerData.heads
       })
     }))))
+  }
 
-    const blocksPath = Path.join(path, 'blocks.car')
-
+  private async importBlocks (path: string): Promise<void> {
     try {
-      await fs.stat(blocksPath)
+      await fs.stat(path)
     } catch (error) {
       // No blocks file - just return.
       return
     }
 
-    const inStream = fss.createReadStream(blocksPath)
+    const inStream = fss.createReadStream(path)
     const reader = await CarReader.fromIterable(inStream)
 
     await this.car.import(reader)
@@ -115,12 +122,14 @@ export class Sneakernet {
       }
     }
 
-    if (blocks.length > 0) {
-      const { writer, out } = await CarWriter.create(blocks)
-
-      Readable.from(out).pipe(fss.createWriteStream(path))
-
-      await this.car.export(blocks, writer)
+    if (blocks.length === 0) {
+      return
     }
+
+    const { writer, out } = await CarWriter.create(blocks)
+
+    Readable.from(out).pipe(fss.createWriteStream(path))
+
+    await this.car.export(blocks, writer)
   }
 }
