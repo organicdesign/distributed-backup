@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { createBuilder, createHandler } from '../utils.js'
 
-export const command = 'sneakernet-send [path] [...peers]'
+export const command = 'sneakernet-send [path] [peers...]'
 
 export const desc = 'Create sneakernet data ready for transport.'
 
