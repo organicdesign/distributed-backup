@@ -33,6 +33,13 @@ export class Sneakernet {
   }
 
   async export (path: string, peers: string[] = []): Promise<void> {
+    await Promise.all([
+      this.exportManifest(Path.join(path, 'manifest')),
+      this.exportBlocks(Path.join(path, 'blocks.car'), peers)
+    ])
+  }
+
+  private async exportManifest (path: string): Promise<void> {
     const pairs = await Promise.all(
       this.getGroups().map(async ({ value: database }) => ({
         group: database.address.cid.bytes,
@@ -48,42 +55,44 @@ export class Sneakernet {
 
     const data = cborg.encode(peerData)
 
-    await fs.writeFile(Path.join(path, 'manifest'), data)
+    await fs.writeFile(path, data)
+  }
 
-    // Encode blocks into a car file...
-    if (peers.length > 0) {
-      const blocks: CID[] = []
+  private async exportBlocks (path: string, peers: string[] = []): Promise<void> {
+    if (peers.length === 0) {
+      return
+    }
 
-      const addWants = async (wants: Uint8Array[]): Promise<void> => {
-        for (const cidData of wants) {
-          const cid = CID.decode(cidData)
+    const blocks: CID[] = []
 
-          if (await this.blockstore.has(cid)) {
-            blocks.push(cid)
-          }
+    const addWants = async (wants: Uint8Array[]): Promise<void> => {
+      for (const cidData of wants) {
+        const cid = CID.decode(cidData)
+
+        if (await this.blockstore.has(cid)) {
+          blocks.push(cid)
         }
       }
+    }
 
-      for (const peer of peers) {
-        try {
-          const key = new Key(uint8ArrayFromString(peer, 'base58btc'))
-          const data = await this.datastore.get(key)
-          const peerData = PeerData.parse(cborg.decode(data))
+    for (const peer of peers) {
+      try {
+        const key = new Key(uint8ArrayFromString(peer, 'base58btc'))
+        const data = await this.datastore.get(key)
+        const peerData = PeerData.parse(cborg.decode(data))
 
-          await addWants(peerData.wants)
-        } catch (error) {
-          // Ignore
-        }
+        await addWants(peerData.wants)
+      } catch (error) {
+        // Ignore
       }
+    }
 
-      if (blocks.length > 0) {
-        const { writer, out } = await CarWriter.create(blocks)
-        const blockPath = Path.join(path, 'blocks.car')
+    if (blocks.length > 0) {
+      const { writer, out } = await CarWriter.create(blocks)
 
-        Readable.from(out).pipe(fss.createWriteStream(blockPath))
+      Readable.from(out).pipe(fss.createWriteStream(path))
 
-        await this.car.export(blocks, writer)
-      }
+      await this.car.export(blocks, writer)
     }
   }
 }
