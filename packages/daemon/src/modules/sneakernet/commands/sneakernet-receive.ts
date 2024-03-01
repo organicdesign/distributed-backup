@@ -1,5 +1,8 @@
+import fss from 'fs'
 import fs from 'fs/promises'
 import Path from 'path'
+import { car } from '@helia/car'
+import { CarReader } from '@ipld/car'
 import { SneakernetReveive } from '@organicdesign/db-rpc-interfaces'
 import * as cborg from 'cborg'
 import { Key } from 'interface-datastore'
@@ -8,7 +11,7 @@ import { EncodedPeerData } from '../interface.js'
 import type { Provides, Requires } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 
-const command: ModuleMethod<Provides, Requires> = (context, { rpc }) => {
+const command: ModuleMethod<Provides, Requires> = (context, { rpc, network }) => {
   rpc.addMethod(SneakernetReveive.name, async (raw: unknown): Promise<SneakernetReveive.Return> => {
     const params = SneakernetReveive.Params.parse(raw)
 
@@ -22,6 +25,21 @@ const command: ModuleMethod<Provides, Requires> = (context, { rpc }) => {
         heads: peerData.heads
       })
     }))))
+
+    const path = Path.join(params.path, 'blocks.car')
+
+    try {
+      await fs.stat(path)
+    } catch (error) {
+      // No blocks file - just return.
+      return null
+    }
+
+    const c = car(network.helia)
+    const inStream = fss.createReadStream(path)
+    const reader = await CarReader.fromIterable(inStream)
+
+    await c.import(reader)
 
     return null
   })
