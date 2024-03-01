@@ -3,13 +3,14 @@ import fs from 'fs/promises'
 import Path from 'path'
 import { Readable } from 'stream'
 import { car, type Car } from '@helia/car'
-import { CarWriter } from '@ipld/car'
+import { CarWriter, CarReader } from '@ipld/car'
 import * as cborg from 'cborg'
 import { type Datastore, Key } from 'interface-datastore'
+import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { getHeads } from 'welo/utils/replicator'
-import { type EncodedPeerData, PeerData } from './interface.js'
+import { EncodedPeerData, PeerData } from './interface.js'
 import type { Requires } from './index.js'
 import type { KeyvalueDB, Pair } from '@/interface.js'
 import type { ManualBlockBroker } from '@organicdesign/db-manual-block-broker'
@@ -37,6 +38,33 @@ export class Sneakernet {
       this.exportManifest(Path.join(path, 'manifest')),
       this.exportBlocks(Path.join(path, 'blocks.car'), peers)
     ])
+  }
+
+  async import (path: string): Promise<void> {
+    const rawData = await fs.readFile(Path.join(path, 'manifest'))
+    const data = EncodedPeerData.parse(cborg.decode(rawData))
+
+    await all(this.datastore.putMany(data.map(peerData => ({
+      key: new Key(peerData.id),
+      value: cborg.encode({
+        wants: peerData.wants,
+        heads: peerData.heads
+      })
+    }))))
+
+    const blocksPath = Path.join(path, 'blocks.car')
+
+    try {
+      await fs.stat(blocksPath)
+    } catch (error) {
+      // No blocks file - just return.
+      return
+    }
+
+    const inStream = fss.createReadStream(blocksPath)
+    const reader = await CarReader.fromIterable(inStream)
+
+    await this.car.import(reader)
   }
 
   private async exportManifest (path: string): Promise<void> {
