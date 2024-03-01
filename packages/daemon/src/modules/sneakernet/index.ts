@@ -2,6 +2,7 @@ import { RevisionStrategies } from '@organicdesign/db-rpc-interfaces/zod'
 import { z } from 'zod'
 import setupSneakernetReceive from './commands/sneakernet-receive.js'
 import setupSneakernetSend from './commands/sneakernet-send.js'
+import { Sneakernet } from './sneakernet.js'
 import type { Module } from '@/interface.js'
 import type { Provides as Base } from '@/modules/base/index.js'
 import type { Provides as Groups } from '@/modules/groups/index.js'
@@ -29,11 +30,13 @@ export interface Requires extends Record<string, unknown> {
 
 export interface Provides extends Record<string, unknown> {
   peerData: Datastore
+  sneakernet: Sneakernet
 }
 
 const module: Module<Provides, Requires> = async (components) => {
   const peerData = extendDatastore(components.base.datastore, 'sneakernet')
-  const context = { peerData }
+  const sneakernet = new Sneakernet(components, peerData)
+  const context = { peerData, sneakernet }
 
   for (const setupCommand of [setupSneakernetSend, setupSneakernetReceive]) {
     setupCommand(context, components)
