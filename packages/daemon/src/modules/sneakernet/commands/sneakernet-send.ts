@@ -65,10 +65,10 @@ const command: ModuleMethod<Provides, Requires> = (context, { rpc, network, grou
 
       if (blocks.length > 0) {
         const c = car(network.helia)
-        const writer = await CarWriter.create(blocks)
+        const { writer, out } = await CarWriter.create(blocks)
         const path = Path.join(params.path, 'blocks.car')
 
-        Readable.from(writer.out).pipe(fss.createWriteStream(path))
+        Readable.from(out).pipe(fss.createWriteStream(path))
 
         await c.export(blocks, writer)
       }
