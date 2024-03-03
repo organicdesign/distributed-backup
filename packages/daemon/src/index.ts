@@ -8,6 +8,7 @@ import setupGroups from '@/modules/groups/index.js'
 import setupNetwork from '@/modules/network/index.js'
 import setupRevisions from '@/modules/revisions/index.js'
 import setupRPC from '@/modules/rpc/index.js'
+import setupScheduler from '@/modules/scheduler/index.js'
 import setupSigint from '@/modules/sigint/index.js'
 import setupSneakernet from '@/modules/sneakernet/index.js'
 import setupTick from '@/modules/tick/index.js'
@@ -29,6 +30,7 @@ const groups = await setupGroups({ sigint, base, network, rpc })
 const downloader = await setupDownloader({ config, base, network, rpc, tick })
 
 await setupSneakernet({ base, groups, rpc, network })
+await setupScheduler({ base, groups, rpc })
 
 const filesystem = await setupFilesystem({
   config,
