@@ -11,6 +11,7 @@ import type { Provides as RPC } from '@/modules/rpc/index.js'
 import type { Provides as Sigint } from '@/modules/sigint/index.js'
 import type { Libp2p } from '@libp2p/interface'
 import type PinManager from '@organicdesign/db-helia-pin-manager'
+import type { ManualBlockBroker } from '@organicdesign/db-manual-block-broker'
 import type { Helia } from 'helia'
 import { createLogger } from '@/logger.js'
 
@@ -42,6 +43,7 @@ export interface Provides extends Record<string, unknown> {
   helia: Helia
   pinManager: PinManager
   config: Config
+  manualBlockBroker: ManualBlockBroker
 }
 
 const module: Module<Provides, Requires> = async (components) => {

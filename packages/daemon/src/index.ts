@@ -9,6 +9,7 @@ import setupNetwork from '@/modules/network/index.js'
 import setupRevisions from '@/modules/revisions/index.js'
 import setupRPC from '@/modules/rpc/index.js'
 import setupSigint from '@/modules/sigint/index.js'
+import setupSneakernet from '@/modules/sneakernet/index.js'
 import setupTick from '@/modules/tick/index.js'
 
 const logger = createLogger('system')
@@ -26,6 +27,8 @@ const base = await setupBase({ argv, config })
 const network = await setupNetwork({ sigint, config, base, rpc })
 const groups = await setupGroups({ sigint, base, network, rpc })
 const downloader = await setupDownloader({ config, base, network, rpc, tick })
+
+await setupSneakernet({ base, groups, rpc, network })
 
 const filesystem = await setupFilesystem({
   config,

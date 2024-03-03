@@ -1,6 +1,8 @@
 import fs from 'fs/promises'
 import Path from 'path'
+import { bitswap } from '@helia/block-brokers'
 import PinManager from '@organicdesign/db-helia-pin-manager'
+import { ManualBlockBroker } from '@organicdesign/db-manual-block-broker'
 import { MemoryDatastore } from 'datastore-core'
 import { FsDatastore } from 'datastore-fs'
 import { createHelia } from 'helia'
@@ -27,10 +29,13 @@ export default async ({ base }: Requires, config: Config): Promise<Provides> => 
     ...config
   })
 
+  const manualBlockBroker = new ManualBlockBroker()
+
   const helia = await createHelia({
     datastore: extendDatastore(base.datastore, 'helia/datastore'),
     libp2p,
-    blockstore: base.blockstore
+    blockstore: base.blockstore,
+    blockBrokers: [bitswap(), () => manualBlockBroker]
   })
 
   const pinManager = new PinManager({
@@ -58,6 +63,7 @@ export default async ({ base }: Requires, config: Config): Promise<Provides> => 
     libp2p,
     helia,
     pinManager,
-    config
+    config,
+    manualBlockBroker
   }
 }

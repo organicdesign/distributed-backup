@@ -12,6 +12,8 @@ import * as list from './commands/list.js'
 import * as read from './commands/read.js'
 import * as revisions from './commands/revisions.js'
 import * as setPriority from './commands/set-priority.js'
+import * as sneakernetReveive from './commands/sneakernet-receive.js'
+import * as sneakernetSend from './commands/sneakernet-send.js'
 import * as sync from './commands/sync.js'
 import * as write from './commands/write.js'
 import type { Options } from 'yargs'
@@ -31,6 +33,8 @@ const commands = [
   read,
   revisions,
   setPriority,
+  sneakernetReveive,
+  sneakernetSend,
   sync,
   write
 ] as unknown as Array<{
