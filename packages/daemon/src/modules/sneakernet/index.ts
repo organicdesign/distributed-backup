@@ -32,6 +32,9 @@ export interface Provides extends Record<string, unknown> {
 }
 
 const module: Module<Provides, Requires> = async (components) => {
+  // This module needs to be improved once the next gen Welo is released.
+  // It only transfers missing blocks but if we could workout difference between
+  // heads we could pre-emptively transfer missing data.
   const datastore = extendDatastore(components.base.datastore, 'sneakernet')
   const sneakernet = new Sneakernet(components, datastore)
   const context = { sneakernet }
