@@ -8,7 +8,6 @@ import type { Provides as Base } from '@/modules/base/index.js'
 import type { Provides as Groups } from '@/modules/groups/index.js'
 import type { Provides as Network } from '@/modules/network/index.js'
 import type { Provides as RPC } from '@/modules/rpc/index.js'
-import type { Datastore } from 'interface-datastore'
 import { createLogger } from '@/logger.js'
 import { extendDatastore } from '@/utils.js'
 
@@ -29,14 +28,13 @@ export interface Requires extends Record<string, unknown> {
 }
 
 export interface Provides extends Record<string, unknown> {
-  peerData: Datastore
   sneakernet: Sneakernet
 }
 
 const module: Module<Provides, Requires> = async (components) => {
-  const peerData = extendDatastore(components.base.datastore, 'sneakernet')
-  const sneakernet = new Sneakernet(components, peerData)
-  const context = { peerData, sneakernet }
+  const datastore = extendDatastore(components.base.datastore, 'sneakernet')
+  const sneakernet = new Sneakernet(components, datastore)
+  const context = { sneakernet }
 
   for (const setupCommand of [setupSneakernetSend, setupSneakernetReceive]) {
     setupCommand(context, components)
