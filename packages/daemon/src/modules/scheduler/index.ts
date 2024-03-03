@@ -36,7 +36,7 @@ const module: Module<Provides, Requires> = async (components) => {
       return null
     }
 
-    return new Schedule(database)
+    return new Schedule(database, components.groups.welo.identity.id)
   }
 
   const context = { getSchedule }
