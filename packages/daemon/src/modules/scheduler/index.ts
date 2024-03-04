@@ -1,6 +1,7 @@
 import { RevisionStrategies } from '@organicdesign/db-rpc-interfaces/zod'
 import { z } from 'zod'
 import setupGetSchedule from './commands/get-schedule.js'
+import setupPutSchedule from './commands/put-schedule.js'
 import { Schedule } from './schedule.js'
 import type { Module } from '@/interface.js'
 import type { Provides as Base } from '@/modules/base/index.js'
@@ -41,7 +42,7 @@ const module: Module<Provides, Requires> = async (components) => {
 
   const context = { getSchedule }
 
-  for (const setupCommand of [setupGetSchedule]) {
+  for (const setupCommand of [setupGetSchedule, setupPutSchedule]) {
     setupCommand(context, components)
   }
 
