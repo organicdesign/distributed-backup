@@ -82,6 +82,6 @@ export class Schedule {
       this.write = write
     }
 
-    return Path.join('/', SCHEDULE_KEY, uint8ArrayToString(this.id), `${this.write}`, `${this.sequence}`)
+    return Path.join('/', SCHEDULE_KEY, uint8ArrayToString(this.id, 'base58btc'), `${this.write}`, `${this.sequence}`)
   }
 }
