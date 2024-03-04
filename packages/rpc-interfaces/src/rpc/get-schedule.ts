@@ -16,7 +16,8 @@ export type Params = z.input<typeof Params>
 export const Return = z.array(z.object({
   from: z.number(),
   to: z.number(),
-  context: z.record(z.any())
+  context: z.record(z.any()),
+  type: z.string()
 }))
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
