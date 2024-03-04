@@ -6,6 +6,7 @@ import * as del from './commands/delete.js'
 import * as exportData from './commands/export.js'
 import * as getSchedule from './commands/get-schedule.js'
 import * as id from './commands/id.js'
+import * as importPackage from './commands/import-package.js'
 import * as importData from './commands/import.js'
 import * as joinGroup from './commands/join-group.js'
 import * as listGroups from './commands/list-groups.js'
@@ -29,6 +30,7 @@ const commands = [
   exportData,
   getSchedule,
   id,
+  importPackage,
   importData,
   joinGroup,
   listGroups,

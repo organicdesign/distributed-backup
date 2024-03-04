@@ -12,6 +12,7 @@ import {
   GetSpeeds,
   GetStatus,
   ID,
+  ImportPackage,
   Import,
   JoinGroup,
   ListGroups,
@@ -134,6 +135,13 @@ export class Client {
     const raw = await this.client.rpc.request(ID.name, params)
 
     return ID.Return.parse(raw)
+  }
+
+  async importPackage (group: ImportPackage.Params['group'], path: ImportPackage.Params['path']): Promise<ImportPackage.Return> {
+    const params: ImportPackage.Params = { group, path }
+    const raw = await this.client.rpc.request(ImportPackage.name, params)
+
+    return ImportPackage.Return.parse(raw)
   }
 
   async import (group: Import.Params['group'], inPath: Import.Params['inPath'], options: Omit<Import.Params, 'group' | 'inPath'> = {}): Promise<Import.Return> {
