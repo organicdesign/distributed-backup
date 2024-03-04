@@ -110,7 +110,7 @@ export class Client {
 
   async getSchedule (group: GetSchedule.Params['group'], options?: Omit<GetSchedule.Params, 'group'>): Promise<GetSchedule.Return> {
     const params: GetSchedule.Params = { group, ...options }
-    const raw = await this.client.rpc.request(Export.name, params)
+    const raw = await this.client.rpc.request(GetSchedule.name, params)
 
     return GetSchedule.Return.parse(raw)
   }
