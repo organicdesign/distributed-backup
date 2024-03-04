@@ -7,6 +7,7 @@ export const EncodedEntry = z.union([
   z.object({
     from: z.number().min(0),
     to: z.number().min(0),
+    type: z.string(),
     context: z.record(z.string())
   }),
   z.null()

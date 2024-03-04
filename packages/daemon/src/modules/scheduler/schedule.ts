@@ -1,8 +1,10 @@
 import Path from 'path'
+import * as dagCbor from '@ipld/dag-cbor'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { encodeEntry } from './utils.js'
-import type { Entry, EncodedEntry } from './interface.js'
+import { type Entry, EncodedEntry } from './interface.js'
+import { encodeEntry, decodeEntry } from './utils.js'
 import type { KeyvalueDB } from '@/interface.js'
+import { decodeAny } from '@/utils.js'
 
 export class Schedule {
   private readonly database: KeyvalueDB
@@ -20,6 +22,27 @@ export class Schedule {
     const op = this.database.store.creators.put(this.key, encodedEntry)
 
     await this.database.replica.write(op)
+  }
+
+  async * all (): AsyncGenerator<Entry> {
+    const index = await this.database.store.latest()
+
+    for await (const pair of index.query({})) {
+      // Ignore null values...
+      if (decodeAny(pair.value) == null) {
+        continue
+      }
+
+      const encodedEntry = EncodedEntry.parse(dagCbor.decode(pair.value))
+
+      if (encodedEntry == null) {
+        continue
+      }
+
+      const entry = decodeEntry(encodedEntry)
+
+      yield entry
+    }
   }
 
   private get key (): string {
