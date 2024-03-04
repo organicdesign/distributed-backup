@@ -1,33 +1,58 @@
 import Path from 'path'
 import * as dagCbor from '@ipld/dag-cbor'
 import { type Entry, EncodedEntry } from './interface.js'
-import { encodeEntry, decodeEntry, keyToPath, pathToKey } from './utils.js'
+import { encodeEntry, decodeEntry, keyToPath, pathToKey, getDagSize } from './utils.js'
 import { logger } from './index.js'
 import type { KeyvalueDB, Pair } from '@/interface.js'
+import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
 import { decodeAny } from '@/utils.js'
 
 export class FileSystem {
   private readonly database: KeyvalueDB
+  private readonly blockstore: Blockstore
+  private readonly id: Uint8Array
 
-  constructor (database: KeyvalueDB) {
+  constructor ({ database, blockstore, id }: { database: KeyvalueDB, blockstore: Blockstore, id: Uint8Array }) {
     this.database = database
+    this.blockstore = blockstore
+    this.id = id
   }
 
   get group (): CID {
     return this.database.manifest.address.cid
   }
 
-  async put (path: string, entry: Entry): Promise<void> {
+  async put (path: string, entry: Pick<Entry, 'cid' | 'encrypted' | 'revisionStrategy' | 'priority'>): Promise<Entry> {
     logger.info(`[groups] [+] ${Path.join(this.group.toString(), path)}`)
 
+    const { blocks, size } = await getDagSize(this.blockstore, entry.cid)
+
+    const existing = await this.get(path)
+    let sequence = 0
+
+    if (existing != null) {
+      sequence = existing.sequence + 1
+    }
+
+    const fullEntry = {
+      ...entry,
+      blocks,
+      size,
+      sequence,
+      author: this.id,
+      timestamp: Date.now()
+    }
+
     const key = pathToKey(path)
-    const encodedEntry: EncodedEntry = encodeEntry(entry)
+    const encodedEntry: EncodedEntry = encodeEntry(fullEntry)
 
     // Update global database.
     const op = this.database.store.creators.put(key, encodedEntry)
 
     await this.database.replica.write(op)
+
+    return fullEntry
   }
 
   async get (path: string): Promise<Entry | null> {
