@@ -1,6 +1,7 @@
 import { RevisionStrategies } from '@organicdesign/db-rpc-interfaces/zod'
 import { z } from 'zod'
 import importPackage from './commands/import-package.js'
+import listPackages from './commands/list-packages.js'
 import { Packages } from './packages.js'
 import type { Module } from '@/interface.js'
 import type { Provides as Base } from '@/modules/base/index.js'
@@ -41,7 +42,7 @@ const module: Module<Provides, Requires> = async (components) => {
 
   const context = { getPackages }
 
-  for (const setupCommand of [importPackage]) {
+  for (const setupCommand of [importPackage, listPackages]) {
     setupCommand(context, components)
   }
 

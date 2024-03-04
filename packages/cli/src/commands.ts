@@ -10,6 +10,7 @@ import * as importPackage from './commands/import-package.js'
 import * as importData from './commands/import.js'
 import * as joinGroup from './commands/join-group.js'
 import * as listGroups from './commands/list-groups.js'
+import * as listPackages from './commands/list-packages.js'
 import * as list from './commands/list.js'
 import * as putSchedule from './commands/put-schedule.js'
 import * as read from './commands/read.js'
@@ -34,6 +35,7 @@ const commands = [
   importData,
   joinGroup,
   listGroups,
+  listPackages,
   list,
   putSchedule,
   read,

@@ -16,6 +16,7 @@ import {
   Import,
   JoinGroup,
   ListGroups,
+  ListPackages,
   ListRevisions,
   List,
   PutSchedule,
@@ -163,6 +164,13 @@ export class Client {
     const raw = await this.client.rpc.request(ListGroups.name, params)
 
     return ListGroups.Return.parse(raw)
+  }
+
+  async listPackages (group: ListPackages.Params['group']): Promise<ListPackages.Return> {
+    const params: ListPackages.Params = { group }
+    const raw = await this.client.rpc.request(ListPackages.name, params)
+
+    return ListPackages.Return.parse(raw)
   }
 
   async listRevisions (group: ListRevisions.Params['group'], path: ListRevisions.Params['path']): Promise<ListRevisions.Return> {

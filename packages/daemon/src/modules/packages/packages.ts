@@ -38,6 +38,6 @@ export class Packages {
   }
 
   private fromPath (path: string): string {
-    return path.replace(Path.join('/', PACKAGE_KEY), '').replace('.tar', '')
+    return path.replace(Path.join('/', PACKAGE_KEY), '').replace('.tar', '').replaceAll('/', '')
   }
 }
