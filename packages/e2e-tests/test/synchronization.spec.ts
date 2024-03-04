@@ -7,8 +7,8 @@ import runNode from './utils/run-node.js'
 const nodes = ['synchronization-peer-a', 'synchronization-peer-b'] as const
 
 const files = [
-  Path.join(projectPath, 'e2e-tests/test-data/file-1.txt'),
-  Path.join(projectPath, 'e2e-tests/test-data/file-2.txt')
+  Path.join(projectPath, 'packages/e2e-tests/test-data/file-1.txt'),
+  Path.join(projectPath, 'packages/e2e-tests/test-data/file-2.txt')
 ] as const
 
 describe('synchronization', () => {

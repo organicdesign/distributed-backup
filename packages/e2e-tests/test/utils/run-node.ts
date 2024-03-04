@@ -9,15 +9,15 @@ import projectPath from './project-path.js'
 const mnemonic = 'result dune cream slogan oil sock seminar either strong girl athlete jacket'
 
 export default async (name: string): Promise<{ start(): Promise<void>, stop(): Promise<void> }> => {
-  const keyPath = Path.join(projectPath, `e2e-tests/${name}.key`)
-  const socket = Path.join(projectPath, `e2e-tests/${name}.socket`)
+  const keyPath = Path.join(projectPath, `packages/e2e-tests/${name}.key`)
+  const socket = Path.join(projectPath, `packages/e2e-tests/${name}.socket`)
 
   await generateKeyFile(keyPath, mnemonic, name)
 
   const args = [
     Path.join(projectPath, 'node_modules/@organicdesign/db-daemon/dist/src/index.js'),
     '-k', keyPath,
-    '-c', Path.join(projectPath, 'e2e-tests/config.json'),
+    '-c', Path.join(projectPath, 'packages/e2e-tests/config.json'),
     '-s', socket
   ]
 

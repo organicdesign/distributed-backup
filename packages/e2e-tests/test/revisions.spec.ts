@@ -5,7 +5,7 @@ import runClient from './utils/run-client.js'
 import runNode from './utils/run-node.js'
 
 const node = 'revisions'
-const testDataDir = Path.join(projectPath, 'e2e-tests/test-data/file-1.txt')
+const testDataDir = Path.join(projectPath, 'packages/e2e-tests/test-data/file-1.txt')
 const virtualDir = '/data'
 
 describe('revisions', () => {

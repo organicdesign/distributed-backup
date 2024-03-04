@@ -8,7 +8,7 @@ const execFile = promisify(execFileCb)
 export default async (name: string, command: string, ...args: string[]): Promise<any> => {
   const socketArgs = [
     Path.join(projectPath, 'node_modules/@organicdesign/db-cli/dist/src/index.js'),
-    '-s', Path.join(projectPath, `e2e-tests/${name}.socket`),
+    '-s', Path.join(projectPath, `packages/e2e-tests/${name}.socket`),
     '--json', 'true'
   ]
 
