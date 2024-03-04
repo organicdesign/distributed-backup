@@ -8,6 +8,7 @@ import {
   Edit,
   ExportRevision,
   Export,
+  GetSchedule,
   GetSpeeds,
   GetStatus,
   ID,
@@ -104,6 +105,13 @@ export class Client {
     const raw = await this.client.rpc.request(Export.name, params)
 
     return Export.Return.parse(raw)
+  }
+
+  async getSchedule (group: GetSchedule.Params['group'], options?: Omit<GetSchedule.Params, 'group'>): Promise<GetSchedule.Return> {
+    const params: GetSchedule.Params = { group, ...options }
+    const raw = await this.client.rpc.request(Export.name, params)
+
+    return GetSchedule.Return.parse(raw)
   }
 
   async getSpeeds (cids: GetSpeeds.Params['cids'], range?: number): Promise<GetSpeeds.Return> {
