@@ -3,6 +3,7 @@ import * as connect from './commands/connect.js'
 import * as connections from './commands/connections.js'
 import * as createGroup from './commands/create-group.js'
 import * as del from './commands/delete.js'
+import * as exportPackage from './commands/export-package.js'
 import * as exportData from './commands/export.js'
 import * as getSchedule from './commands/get-schedule.js'
 import * as id from './commands/id.js'
@@ -28,6 +29,7 @@ const commands = [
   connections,
   createGroup,
   del,
+  exportPackage,
   exportData,
   getSchedule,
   id,

@@ -1,11 +1,13 @@
 import { RevisionStrategies } from '@organicdesign/db-rpc-interfaces/zod'
 import { z } from 'zod'
+import exportPackage from './commands/export-package.js'
 import importPackage from './commands/import-package.js'
 import listPackages from './commands/list-packages.js'
 import { Packages } from './packages.js'
 import type { Module } from '@/interface.js'
 import type { Provides as Base } from '@/modules/base/index.js'
 import type { Provides as FileSystem } from '@/modules/filesystem/index.js'
+import type { Provides as Network } from '@/modules/network/index.js'
 import type { Provides as RPC } from '@/modules/rpc/index.js'
 import type { CID } from 'multiformats/cid'
 import { createLogger } from '@/logger.js'
@@ -23,6 +25,7 @@ export interface Requires extends Record<string, unknown> {
   rpc: RPC
   filesystem: FileSystem
   base: Base
+  network: Network
 }
 
 export interface Provides extends Record<string, unknown> {
@@ -42,7 +45,7 @@ const module: Module<Provides, Requires> = async (components) => {
 
   const context = { getPackages }
 
-  for (const setupCommand of [importPackage, listPackages]) {
+  for (const setupCommand of [importPackage, listPackages, exportPackage]) {
     setupCommand(context, components)
   }
 

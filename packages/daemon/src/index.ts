@@ -54,6 +54,6 @@ await setupRevisions({
   rpc
 })
 
-await setupPackages({ base, filesystem, rpc })
+await setupPackages({ base, filesystem, rpc, network })
 
 logger.info('started')

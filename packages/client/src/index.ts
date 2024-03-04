@@ -6,6 +6,7 @@ import {
   CreateGroup,
   Delete,
   Edit,
+  ExportPackage,
   ExportRevision,
   Export,
   GetSchedule,
@@ -88,6 +89,13 @@ export class Client {
     const raw = await this.client.rpc.request(Edit.name, params)
 
     return Edit.Return.parse(raw)
+  }
+
+  async exportPackage (group: ExportPackage.Params['group'], path: ExportPackage.Params['path'], name: ExportPackage.Params['name']): Promise<ExportPackage.Return> {
+    const params: ExportPackage.Params = { group, path, name }
+    const raw = await this.client.rpc.request(ExportPackage.name, params)
+
+    return ExportPackage.Return.parse(raw)
   }
 
   async exportRevision (
