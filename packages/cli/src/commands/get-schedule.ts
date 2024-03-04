@@ -1,7 +1,7 @@
 import { GetSchedule } from '@organicdesign/db-rpc-interfaces'
 import { createBuilder, createHandler } from '../utils.js'
 
-export const command = 'read [group] [path] [position] [length]'
+export const command = 'get-schedule [group]'
 
 export const desc = 'Export files to the filesystem.'
 

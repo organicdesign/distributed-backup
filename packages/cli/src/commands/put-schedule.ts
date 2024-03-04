@@ -1,6 +1,6 @@
 import { createBuilder, createHandler } from '../utils.js'
 
-export const command = 'read [group] [path] [position] [length]'
+export const command = 'put-schedule [group] [type] [from] [to] [context]'
 
 export const desc = 'Export files to the filesystem.'
 
