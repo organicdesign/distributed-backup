@@ -10,6 +10,7 @@ import * as importData from './commands/import.js'
 import * as joinGroup from './commands/join-group.js'
 import * as listGroups from './commands/list-groups.js'
 import * as list from './commands/list.js'
+import * as putSchedule from './commands/put-schedule.js'
 import * as read from './commands/read.js'
 import * as revisions from './commands/revisions.js'
 import * as setPriority from './commands/set-priority.js'
@@ -32,6 +33,7 @@ const commands = [
   joinGroup,
   listGroups,
   list,
+  putSchedule,
   read,
   revisions,
   setPriority,
