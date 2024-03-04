@@ -10,8 +10,7 @@ const dagWalkers = defaultDagWalkers()
 export const encodeEntry = (entry: Entry): NonNullable<EncodedEntry> => {
   const ee: NonNullable<EncodedEntry> = {
     ...entry,
-    cid: entry.cid.bytes,
-    author: entry.author.bytes
+    cid: entry.cid.bytes
   }
 
   // Parse will strip foreign keys...
@@ -20,8 +19,7 @@ export const encodeEntry = (entry: Entry): NonNullable<EncodedEntry> => {
 
 export const decodeEntry = (entry: NonNullable<EncodedEntry>): Entry => ({
   ...entry,
-  cid: CID.decode(entry.cid),
-  author: CID.decode(entry.author)
+  cid: CID.decode(entry.cid)
 })
 
 export const walkDag = async function * (blockstore: Blockstore, cid: CID, maxDepth?: number, options?: AbortOptions): AsyncGenerator<() => Promise<{ cid: CID, depth: number, block: Uint8Array }>> {

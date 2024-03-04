@@ -39,7 +39,7 @@ const command: ModuleMethod<Provides, Requires> = (context, { rpc, groups }) => 
           priority: ref?.priority ?? entry.priority,
           revisionStrategy: ref?.revisionStrategy ?? entry.revisionStrategy,
           timestamp: entry.timestamp,
-          author: uint8arrayToString(entry.author.bytes, 'base58btc')
+          author: uint8arrayToString(entry.author, 'base58btc')
         })
       }
     }

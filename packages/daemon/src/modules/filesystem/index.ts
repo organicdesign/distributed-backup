@@ -67,7 +67,7 @@ const module: Module<Provides, Requires> = async (components) => {
     setupCommand(context, components)
   }
 
-  components.tick.register(async () => syncGroups(components))
+  components.tick.register(async () => syncGroups(components, context))
 
   return context
 }

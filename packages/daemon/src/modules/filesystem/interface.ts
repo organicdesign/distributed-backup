@@ -43,6 +43,6 @@ export const EncodedEntry = z.union([
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type EncodedEntry = z.infer<typeof EncodedEntry>
 
-export type Entry = {
-  [P in keyof NonNullable<EncodedEntry>]: NonNullable<EncodedEntry>[P] extends Uint8Array ? CID : NonNullable<EncodedEntry>[P]
+export interface Entry extends Omit<NonNullable<EncodedEntry>, 'cid'> {
+  cid: CID
 }

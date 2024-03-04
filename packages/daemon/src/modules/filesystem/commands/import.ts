@@ -4,7 +4,6 @@ import { Import } from '@organicdesign/db-rpc-interfaces'
 import { BlackHoleBlockstore } from 'blockstore-core/black-hole'
 import { CID } from 'multiformats/cid'
 import { type Provides, type Requires, logger } from '../index.js'
-import { encodeEntry, getDagSize } from '../utils.js'
 import type { ModuleMethod } from '@/interface.js'
 
 const command: ModuleMethod<Provides, Requires> = (context, { rpc, network, base }) => {
@@ -40,20 +39,13 @@ const command: ModuleMethod<Provides, Requires> = (context, { rpc, network, base
 
       logger.info('[add] imported %s', params.inPath)
 
-      const { size, blocks } = await getDagSize(base.blockstore, r.cid)
-
       // Create the action record.
-      const entry = encodeEntry({
-        cid: r.cid,
-        sequence: 0,
-        blocks,
-        size,
+      const entry = {
+        cid: r.cid.bytes,
         encrypted: encrypt,
-        timestamp: Date.now(),
         priority: params.priority ?? 1,
-        author: network.libp2p.peerId.toCID(),
         revisionStrategy: params.revisionStrategy ?? context.config.defaultRevisionStrategy
-      })
+      }
 
       const virtualPath = Path.join(params.path, r.path.replace(params.inPath, ''))
 
