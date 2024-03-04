@@ -27,6 +27,7 @@ import {
   SneakernetReveive,
   SneakernetSend,
   Sync,
+  UpdateSchedule,
   Write
 } from '@organicdesign/db-rpc-interfaces'
 import { createNetClient, type NetClient } from '@organicdesign/net-rpc'
@@ -235,13 +236,6 @@ export class Client {
     return SetPriority.Return.parse(raw)
   }
 
-  async sync (): Promise<Sync.Return> {
-    const params: Sync.Params = {}
-    const raw = await this.client.rpc.request(Sync.name, params)
-
-    return Sync.Return.parse(raw)
-  }
-
   async sneakernetReveive (path: SneakernetReveive.Params['path']): Promise<SneakernetReveive.Return> {
     const params: SneakernetReveive.Params = { path }
     const raw = await this.client.rpc.request(SneakernetReveive.name, params)
@@ -254,6 +248,20 @@ export class Client {
     const raw = await this.client.rpc.request(SneakernetSend.name, params)
 
     return SneakernetSend.Return.parse(raw)
+  }
+
+  async sync (): Promise<Sync.Return> {
+    const params: Sync.Params = {}
+    const raw = await this.client.rpc.request(Sync.name, params)
+
+    return Sync.Return.parse(raw)
+  }
+
+  async updateSchedule (group: UpdateSchedule.Params['group'], id: UpdateSchedule.Params['id'], context: UpdateSchedule.Params['context']): Promise<UpdateSchedule.Return> {
+    const params: UpdateSchedule.Params = { group, id, context }
+    const raw = await this.client.rpc.request(UpdateSchedule.name, params)
+
+    return UpdateSchedule.Return.parse(raw)
   }
 
   async write (group: Write.Params['group'], path: Write.Params['path'], data: Write.Params['data'], options: Omit<Write.Params, 'group' | 'path' | 'data'>): Promise<Write.Return> {

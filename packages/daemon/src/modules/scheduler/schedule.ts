@@ -18,13 +18,37 @@ export class Schedule {
   }
 
   async put (entry: Entry): Promise<string> {
-		const key = this.makeKey()
+    const key = this.makeKey()
     const encodedEntry: EncodedEntry = encodeEntry(entry)
     const op = this.database.store.creators.put(key, encodedEntry)
 
     await this.database.replica.write(op)
 
-		return key
+    return key
+  }
+
+  async get (id: string): Promise<Entry | null> {
+    const index = await this.database.store.latest()
+    const data = EncodedEntry.parse(this.database.store.selectors.get(index)(id))
+
+    if (data == null) {
+      return null
+    }
+
+    return decodeEntry(data)
+  }
+
+  async update (id: string, context: Record<string, unknown>): Promise<void> {
+    const entry = await this.get(id)
+
+    if (entry == null) {
+      throw new Error('no such event')
+    }
+
+    const encodedEntry: EncodedEntry = encodeEntry({ ...entry, context })
+    const op = this.database.store.creators.put(id, encodedEntry)
+
+    await this.database.replica.write(op)
   }
 
   async * all (): AsyncGenerator<Entry & { id: string }> {
