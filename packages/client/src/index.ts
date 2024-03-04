@@ -8,6 +8,7 @@ import {
   Edit,
   ExportRevision,
   Export,
+  GetSchedule,
   GetSpeeds,
   GetStatus,
   ID,
@@ -16,6 +17,7 @@ import {
   ListGroups,
   ListRevisions,
   List,
+  PutSchedule,
   ReadRevision,
   Read,
   SetPriority,
@@ -106,6 +108,13 @@ export class Client {
     return Export.Return.parse(raw)
   }
 
+  async getSchedule (group: GetSchedule.Params['group'], options?: Omit<GetSchedule.Params, 'group'>): Promise<GetSchedule.Return> {
+    const params: GetSchedule.Params = { group, ...options }
+    const raw = await this.client.rpc.request(GetSchedule.name, params)
+
+    return GetSchedule.Return.parse(raw)
+  }
+
   async getSpeeds (cids: GetSpeeds.Params['cids'], range?: number): Promise<GetSpeeds.Return> {
     const params: GetSpeeds.Params = { cids, range }
     const raw = await this.client.rpc.request(GetSpeeds.name, params)
@@ -160,6 +169,19 @@ export class Client {
     const raw = await this.client.rpc.request(List.name, params)
 
     return List.Return.parse(raw)
+  }
+
+  async putSchedule (
+    group: PutSchedule.Params['group'],
+    type: PutSchedule.Params['type'],
+    from: PutSchedule.Params['from'],
+    to: PutSchedule.Params['to'],
+    context: PutSchedule.Params['context']
+  ): Promise<PutSchedule.Return> {
+    const params: PutSchedule.Params = { group, type, from, to, context }
+    const raw = await this.client.rpc.request(PutSchedule.name, params)
+
+    return PutSchedule.Return.parse(raw)
   }
 
   async readRevision (
