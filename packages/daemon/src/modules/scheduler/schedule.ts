@@ -1,7 +1,7 @@
 import Path from 'path'
 import * as dagCbor from '@ipld/dag-cbor'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { type Entry, EncodedEntry } from './interface.js'
+import { type Entry, EncodedEntry, SCHEDULE_KEY } from './interface.js'
 import { encodeEntry, decodeEntry } from './utils.js'
 import type { KeyvalueDB } from '@/interface.js'
 import { decodeAny } from '@/utils.js'
@@ -27,7 +27,7 @@ export class Schedule {
   async * all (): AsyncGenerator<Entry> {
     const index = await this.database.store.latest()
 
-    for await (const pair of index.query({})) {
+    for await (const pair of index.query({ prefix: Path.join('/', SCHEDULE_KEY) })) {
       // Ignore null values...
       if (decodeAny(pair.value) == null) {
         continue
@@ -55,6 +55,6 @@ export class Schedule {
       this.write = write
     }
 
-    return Path.join('/', uint8ArrayToString(this.id), `${this.write}`, `${this.sequence}`)
+    return Path.join('/', SCHEDULE_KEY, uint8ArrayToString(this.id), `${this.write}`, `${this.sequence}`)
   }
 }
