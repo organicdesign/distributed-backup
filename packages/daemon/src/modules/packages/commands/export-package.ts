@@ -21,13 +21,15 @@ const command: ModuleMethod<Provides, Requires> = (context, { rpc, network }) =>
       throw new Error('no such package')
     }
 
+    const path = Path.join(params.path, `${params.name}.tar`)
+
     await exportPlaintext(
       network.helia.blockstore,
-      Path.join(params.path, `${params.name}.tar`),
+      path,
       pkg.cid
     )
 
-    return null
+    return path
   })
 }
 
