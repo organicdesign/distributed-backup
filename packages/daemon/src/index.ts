@@ -6,6 +6,7 @@ import setupDownloader from '@/modules/downloader/index.js'
 import setupFilesystem from '@/modules/filesystem/index.js'
 import setupGroups from '@/modules/groups/index.js'
 import setupNetwork from '@/modules/network/index.js'
+import setupPackages from '@/modules/packages/index.js'
 import setupRevisions from '@/modules/revisions/index.js'
 import setupRPC from '@/modules/rpc/index.js'
 import setupScheduler from '@/modules/scheduler/index.js'
@@ -52,5 +53,7 @@ await setupRevisions({
   tick,
   rpc
 })
+
+await setupPackages({ base, filesystem, rpc })
 
 logger.info('started')
