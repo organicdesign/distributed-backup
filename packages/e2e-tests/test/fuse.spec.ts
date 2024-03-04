@@ -7,8 +7,8 @@ import runFuse from './utils/run-fuse.js'
 import runNode from './utils/run-node.js'
 
 const node = 'fuse'
-const testDataDir = Path.join(projectPath, 'e2e-tests/test-data')
-const fuseDir = Path.join(projectPath, 'e2e-tests/fuse')
+const testDataDir = Path.join(projectPath, 'packages/e2e-tests/test-data')
+const fuseDir = Path.join(projectPath, 'packages/e2e-tests/fuse')
 
 describe('fuse', () => {
   let daemonProc: Awaited<ReturnType<typeof runNode>>

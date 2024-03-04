@@ -10,7 +10,7 @@ import runNode from './utils/run-node.js'
 const exec = promisify(execCb)
 
 const node = 'import-export'
-const testDataDir = Path.join(projectPath, 'e2e-tests/test-data')
+const testDataDir = Path.join(projectPath, 'packages/e2e-tests/test-data')
 
 const data = [
   {
