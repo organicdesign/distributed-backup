@@ -3,7 +3,7 @@ import { createBuilder, createHandler } from '../utils.js'
 
 export const command = 'get-schedule [group]'
 
-export const desc = 'Export files to the filesystem.'
+export const desc = 'Get the schedule of a group.'
 
 export const builder = createBuilder({
   group: {

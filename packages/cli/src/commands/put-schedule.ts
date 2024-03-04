@@ -2,7 +2,7 @@ import { createBuilder, createHandler } from '../utils.js'
 
 export const command = 'put-schedule [group] [type] [from] [to] [context]'
 
-export const desc = 'Export files to the filesystem.'
+export const desc = 'Add an item to the groups schedule.'
 
 export const builder = createBuilder({
   group: {
