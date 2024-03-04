@@ -17,7 +17,7 @@ export default async (components: Requires, config: Config): Promise<Provides> =
       return null
     }
 
-    return new FileSystem(database)
+    return new FileSystem({ database, blockstore: components.base.blockstore, id: components.groups.welo.identity.id })
   }
 
   const localSettings = new LocalSettings({
