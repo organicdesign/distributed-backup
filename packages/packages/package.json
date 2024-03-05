@@ -29,6 +29,7 @@
   "private": true,
   "sideEffects": false,
   "dependencies": {
-    "@organicdesign/db-client": "^0.1.0"
+    "@organicdesign/db-client": "^0.1.0",
+    "yargs": "^17.7.2"
   }
 }
