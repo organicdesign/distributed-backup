@@ -29,13 +29,19 @@ export class Schedule {
 
   async get (id: string): Promise<Entry | null> {
     const index = await this.database.store.latest()
-    const data = EncodedEntry.parse(this.database.store.selectors.get(index)(id))
+    const data = await this.database.store.selectors.get(index)(id)
 
     if (data == null) {
       return null
     }
 
-    return decodeEntry(data)
+    const ee = EncodedEntry.parse(data)
+
+    if (ee == null) {
+      return null
+    }
+
+    return decodeEntry(ee)
   }
 
   async update (id: string, context: Record<string, unknown>): Promise<void> {
