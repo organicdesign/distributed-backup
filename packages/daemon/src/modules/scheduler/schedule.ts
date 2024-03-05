@@ -17,14 +17,34 @@ export class Schedule {
     this.id = id
   }
 
-  async put (entry: Entry): Promise<void> {
-    const encodedEntry: EncodedEntry = encodeEntry(entry)
-    const op = this.database.store.creators.put(this.key, encodedEntry)
+  async get (id: string): Promise<Entry | null> {
+    const index = await this.database.store.latest()
+    const data = await this.database.store.selectors.get(index)(id)
 
-    await this.database.replica.write(op)
+    if (data == null) {
+      return null
+    }
+
+    const ee = EncodedEntry.parse(data)
+
+    if (ee == null) {
+      return null
+    }
+
+    return decodeEntry(ee)
   }
 
-  async * all (): AsyncGenerator<Entry> {
+  async put (entry: Entry): Promise<string> {
+    const key = this.makeKey()
+    const encodedEntry: EncodedEntry = encodeEntry(entry)
+    const op = this.database.store.creators.put(key, encodedEntry)
+
+    await this.database.replica.write(op)
+
+    return key
+  }
+
+  async * all (): AsyncGenerator<Entry & { id: string }> {
     const index = await this.database.store.latest()
 
     for await (const pair of index.query({ prefix: Path.join('/', SCHEDULE_KEY) })) {
@@ -41,11 +61,11 @@ export class Schedule {
 
       const entry = decodeEntry(encodedEntry)
 
-      yield entry
+      yield { ...entry, id: pair.key.toString() }
     }
   }
 
-  private get key (): string {
+  private makeKey (): string {
     const write = Date.now()
 
     if (this.write <= write) {
@@ -55,6 +75,6 @@ export class Schedule {
       this.write = write
     }
 
-    return Path.join('/', SCHEDULE_KEY, uint8ArrayToString(this.id), `${this.write}`, `${this.sequence}`)
+    return Path.join('/', SCHEDULE_KEY, uint8ArrayToString(this.id, 'base58btc'), `${this.write}`, `${this.sequence}`)
   }
 }

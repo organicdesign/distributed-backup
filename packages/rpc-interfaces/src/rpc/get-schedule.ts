@@ -14,6 +14,7 @@ export const Params = z.object({
 export type Params = z.input<typeof Params>
 
 export const Return = z.array(z.object({
+  id: z.string(),
   from: z.number(),
   to: z.number(),
   context: z.record(z.any()),
