@@ -56,8 +56,8 @@ export class PinManager {
     return this.pinManager.getState(cid)
   }
 
-  async getSpeed (cid: CID): Promise<number> {
-    return this.pinManager.getSpeed(cid)
+  async getSpeed (cid: CID, range?: number): Promise<number> {
+    return this.pinManager.getSpeed(cid, range)
   }
 
   async getSize (cid: CID): Promise<number> {

@@ -9,7 +9,7 @@ const command: ModuleMethod<Provides, Requires> = (context, { rpc }) => {
 
     return Promise.all(params.cids.map(async str => {
       const cid = CID.parse(str)
-      const speed = await context.pinManager.getSpeed(cid)
+      const speed = await context.pinManager.getSpeed(cid, params.range)
 
       return {
         cid: str,
