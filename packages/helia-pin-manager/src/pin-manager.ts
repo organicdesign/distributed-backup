@@ -167,7 +167,10 @@ export class PinManager {
     return pin == null ? 'NOTFOUND' : pin.state
   }
 
-  async getSpeed (cid: CID, range = 10000): Promise<number> {
+  /**
+   * Get the download speed in bytes / millisecond.
+   */
+  async getSpeed (cid: CID, range = 5000): Promise<number> {
     const pin = await this.pins.get(cid)
 
     if (pin == null || range <= 0) {
