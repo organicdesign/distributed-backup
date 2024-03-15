@@ -1,5 +1,14 @@
 import crypto from 'crypto'
-import type { Components, EncryptionParams } from './interface.js'
+
+export interface Components {
+  aesKey: Uint8Array
+  hmacKey: Uint8Array
+}
+
+export interface EncryptionParams {
+  salt: Uint8Array
+  iv: Uint8Array
+}
 
 /**
  * This class handles deterministic aes encryption of data.
