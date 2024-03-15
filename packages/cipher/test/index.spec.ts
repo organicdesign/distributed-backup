@@ -2,45 +2,33 @@ import assert from 'assert/strict'
 import { KeyManager, parseKeyData } from '@organicdesign/db-key-manager'
 import all from 'it-all'
 import { concat } from 'uint8arrays/concat'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Cipher } from '../src/index.js'
-
-const rawKeyData = {
-  key: 'DvXno3utxkbQ4WPXZCTzDcR8hbgnyZWR3bQjx65qrcva-3XxC865bs4H4vJE8pe54Swu3XyzUg788Dk83eQMS9LzQ',
-  psk: '/key/swarm/psk/1.0.0/\n/base16/\nefd6014a194d0c7af65aa408d0452e3e22d35e6e0be3ece264cd3a1bd68b48fa'
-}
-
-const data = [
-  {
-    plaintext: new Uint8Array([0, 1, 2]),
-    iv: new Uint8Array([216, 176, 205, 76, 193, 151, 212, 45, 102, 41, 232, 54, 239, 90, 72, 192]),
-    salt: new Uint8Array([101, 122, 186, 46, 211, 161, 94, 177, 188, 85, 241, 34, 204, 125, 161, 99]),
-    encrypted: new Uint8Array([255, 140, 25, 15, 115, 223, 81, 122, 42, 64, 190, 188, 119, 247, 99, 106])
-  }
-]
+import data from './data.js'
 
 describe('cipher', () => {
   let cipher: Cipher
 
   before(() => {
-    const keyManager = new KeyManager(parseKeyData(rawKeyData))
+    const keyManager = new KeyManager(parseKeyData(data))
     cipher = new Cipher(keyManager)
   })
 
   it('generates the IV and salt', async () => {
-    await Promise.all(data.map(async (data) => {
-      const encrypted = await cipher.generate([data.plaintext])
+    await Promise.all(data.data.map(async (data) => {
+      const encrypted = await cipher.generate([uint8ArrayFromString(data.plaintext, 'base64')])
 
-      assert.deepEqual(new Uint8Array(encrypted.iv), data.iv)
-      assert.deepEqual(new Uint8Array(encrypted.salt), data.salt)
+      assert.deepEqual(new Uint8Array(encrypted.iv), uint8ArrayFromString(data.iv, 'base64'))
+      assert.deepEqual(new Uint8Array(encrypted.salt), uint8ArrayFromString(data.salt, 'base64'))
     }))
   })
 
   it('encrypts data', async () => {
-    await Promise.all(data.map(async (data) => {
-      const itr = cipher.encrypt([data.plaintext], await cipher.generate([data.plaintext]))
+    await Promise.all(data.data.map(async (data): Promise<void> => {
+      const itr = cipher.encrypt([uint8ArrayFromString(data.plaintext, 'base64')], await cipher.generate([uint8ArrayFromString(data.plaintext, 'base64')]))
       const encrypted = concat(await all(itr))
 
-      assert.deepEqual(encrypted, data.encrypted)
+      assert.deepEqual(encrypted, uint8ArrayFromString(data.encrypted, 'base64'))
     }))
   })
 })
