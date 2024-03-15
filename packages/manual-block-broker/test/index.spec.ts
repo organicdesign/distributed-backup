@@ -71,4 +71,18 @@ describe('manual block broker', () => {
 
     assert.deepEqual(wants, [])
   })
+
+  it('getWants no longer returns the CID when it is aborted', async () => {
+    const bb = new ManualBlockBroker()
+    const controller = new AbortController()
+    const promise = bb.retrieve(cid, { signal: controller.signal })
+
+    controller.abort()
+
+    await assert.rejects(async () => promise)
+
+    const wants = [...bb.getWants()]
+
+    assert.deepEqual(wants, [])
+  })
 })
