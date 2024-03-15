@@ -25,9 +25,19 @@ describe('cipher', () => {
     }))
   })
 
-  it('encrypts data', async () => {
+  it('encrypts data without params', async () => {
     await Promise.all(data.data.map(async (data): Promise<void> => {
-      const itr = cipher.encrypt([parseStr(data.plaintext)], await cipher.generate([parseStr(data.plaintext)]))
+      const itr = cipher.encrypt([parseStr(data.plaintext)])
+      const encrypted = concat(await all(itr))
+
+      assert.deepEqual(encrypted, parseStr(data.encrypted))
+    }))
+  })
+
+  it('encrypts data with params', async () => {
+    await Promise.all(data.data.map(async (data): Promise<void> => {
+      const params = await cipher.generate([parseStr(data.plaintext)])
+      const itr = cipher.encrypt([parseStr(data.plaintext)], params)
       const encrypted = concat(await all(itr))
 
       assert.deepEqual(encrypted, parseStr(data.encrypted))
