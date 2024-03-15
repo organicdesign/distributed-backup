@@ -6,6 +6,8 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Cipher } from '../src/index.js'
 import data from './data.js'
 
+const parseStr = (data: string): Uint8Array => uint8ArrayFromString(data, 'base64')
+
 describe('cipher', () => {
   let cipher: Cipher
 
@@ -16,19 +18,19 @@ describe('cipher', () => {
 
   it('generates the IV and salt', async () => {
     await Promise.all(data.data.map(async (data) => {
-      const encrypted = await cipher.generate([uint8ArrayFromString(data.plaintext, 'base64')])
+      const encrypted = await cipher.generate([parseStr(data.plaintext)])
 
-      assert.deepEqual(new Uint8Array(encrypted.iv), uint8ArrayFromString(data.iv, 'base64'))
-      assert.deepEqual(new Uint8Array(encrypted.salt), uint8ArrayFromString(data.salt, 'base64'))
+      assert.deepEqual(new Uint8Array(encrypted.iv), parseStr(data.iv))
+      assert.deepEqual(new Uint8Array(encrypted.salt), parseStr(data.salt))
     }))
   })
 
   it('encrypts data', async () => {
     await Promise.all(data.data.map(async (data): Promise<void> => {
-      const itr = cipher.encrypt([uint8ArrayFromString(data.plaintext, 'base64')], await cipher.generate([uint8ArrayFromString(data.plaintext, 'base64')]))
+      const itr = cipher.encrypt([parseStr(data.plaintext)], await cipher.generate([parseStr(data.plaintext)]))
       const encrypted = concat(await all(itr))
 
-      assert.deepEqual(encrypted, uint8ArrayFromString(data.encrypted, 'base64'))
+      assert.deepEqual(encrypted, parseStr(data.encrypted))
     }))
   })
 })
