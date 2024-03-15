@@ -30,6 +30,7 @@ export class ManualBlockBroker implements BlockRetriever {
 
     if (promise != null) {
       promise.resolve(block)
+      this.promises.delete(cid.toString())
       return true
     }
 
