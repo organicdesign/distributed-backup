@@ -68,4 +68,21 @@ describe('addresses', () => {
       assert.deepEqual(res, addresses)
     }
   })
+
+  it('handles connect requests/responses', async () => {
+    const addresses = [
+      '/ip4/127.0.0.1/tcp/1234',
+      '/ip4/127.0.0.1/tcp/1235/ws'
+    ]
+
+    for (const address of addresses) {
+      const [req, res] = await Promise.all([
+        getRequest(interfaces.Connect.name, async () => null),
+        client.connect(address)
+      ])
+
+      assert.deepEqual(req, { address })
+      assert.deepEqual(res, null)
+    }
+  })
 })
