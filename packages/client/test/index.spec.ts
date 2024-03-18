@@ -283,4 +283,39 @@ describe('addresses', () => {
       assert.deepEqual(res, response)
     }
   })
+
+  it('handles edit requests/responses', async () => {
+    const requests = [
+      {
+        group: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+        path: '/'
+      },
+      {
+        group: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+        path: '/',
+        priority: 1
+      },
+      {
+        group: 'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
+        path: '/test/test.txt',
+        RevisionStrategy: 'all'
+      },
+      {
+        group: 'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
+        path: '/test/test-2.txt',
+        priority: 100,
+        RevisionStrategy: 'log'
+      }
+    ]
+
+    for (const params of requests) {
+      const [req, res] = await Promise.all([
+        getRequest(interfaces.Edit.name, async () => null),
+        client.edit(params.group, params.path, params)
+      ])
+
+      assert.deepEqual(req, params)
+      assert.deepEqual(res, null)
+    }
+  })
 })
