@@ -117,4 +117,77 @@ describe('addresses', () => {
       assert.deepEqual(res, addresses)
     }
   })
+
+  it('handles countPeers requests/responses', async () => {
+    const requests = [
+      {
+        params: [
+          'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'
+        ],
+        response: [
+          {
+            cid: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+            peers: 0
+          }
+        ]
+      },
+      {
+        params: [
+          'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+          'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa'
+        ],
+        response: [
+          {
+            cid: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+            peers: 0
+          },
+          {
+            cid: 'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
+            peers: 1
+          }
+        ]
+      },
+      {
+        params: [
+          'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+          'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
+          'QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb',
+          'QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt',
+          'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ'
+        ],
+        response: [
+          {
+            cid: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+            peers: 0
+          },
+          {
+            cid: 'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
+            peers: 1
+          },
+          {
+            cid: 'QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt',
+            peers: 3
+          },
+          {
+            cid: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+            peers: 50
+          },
+          {
+            cid: 'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
+            peers: 999
+          }
+        ]
+      }
+    ]
+
+    for (const { params, response } of requests) {
+      const [req, res] = await Promise.all([
+        getRequest(interfaces.CountPeers.name, async () => response),
+        client.countPeers(params)
+      ])
+
+      assert.deepEqual(req, { cids: params })
+      assert.deepEqual(res, response)
+    }
+  })
 })
