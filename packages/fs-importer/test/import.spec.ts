@@ -11,9 +11,9 @@ const dataPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), '../../
 const blockstore = new BlackHoleBlockstore()
 
 const importerConfig = {
-	chunker: selectChunker(),
-	hasher: selectHasher(),
-	cidVersion: 1
+  chunker: selectChunker(),
+  hasher: selectHasher(),
+  cidVersion: 1
 } as const
 
 const expectedData = [
