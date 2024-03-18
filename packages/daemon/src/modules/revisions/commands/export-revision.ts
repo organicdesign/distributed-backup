@@ -1,5 +1,5 @@
 import Path from 'path'
-import { exportPlaintext } from '@organicdesign/db-fs-exporter'
+import { exporter } from '@organicdesign/db-fs-exporter'
 import { ExportRevision } from '@organicdesign/db-rpc-interfaces'
 import { CID } from 'multiformats/cid'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -28,7 +28,7 @@ const command: ModuleMethod<Provides, Requires> = (context, { rpc, base, filesys
         continue
       }
 
-      await exportPlaintext(
+      await exporter(
         base.blockstore,
         outFile,
         revision.cid

@@ -1,5 +1,5 @@
 import Path from 'path'
-import { selectHasher, selectChunker, importRecursive, type ImporterConfig } from '@organicdesign/db-fs-importer'
+import { selectHasher, selectChunker, importer, type ImporterConfig } from '@organicdesign/db-fs-importer'
 import { Import } from '@organicdesign/db-rpc-interfaces'
 import { BlackHoleBlockstore } from 'blockstore-core/black-hole'
 import { CID } from 'multiformats/cid'
@@ -34,7 +34,7 @@ const command: ModuleMethod<Provides, Requires> = (context, { rpc, network, base
 
     const cids: Import.Return = []
 
-    for await (const r of importRecursive(store, params.inPath, config)) {
+    for await (const r of importer(store, params.inPath, config)) {
       await network.pinManager.pinLocal(r.cid)
 
       logger.info('[add] imported %s', params.inPath)

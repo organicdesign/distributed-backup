@@ -1,5 +1,5 @@
 import Path from 'path'
-import { exportPlaintext } from '@organicdesign/db-fs-exporter'
+import { exporter } from '@organicdesign/db-fs-exporter'
 import { Export } from '@organicdesign/db-rpc-interfaces'
 import { CID } from 'multiformats/cid'
 import type { Provides, Requires } from '../index.js'
@@ -15,7 +15,7 @@ const command: ModuleMethod<Provides, Requires> = (context, { rpc, base }) => {
     }
 
     for await (const pair of fs.getDir(params.path)) {
-      await exportPlaintext(
+      await exporter(
         base.blockstore,
         Path.join(params.outPath, pair.key.toString().replace(params.path, '')),
         pair.value.cid
