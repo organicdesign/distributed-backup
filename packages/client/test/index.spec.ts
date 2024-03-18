@@ -228,4 +228,59 @@ describe('addresses', () => {
       assert.deepEqual(res, response)
     }
   })
+
+  it('handles delete requests/responses', async () => {
+    const requests = [
+      {
+        params: {
+          group: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+          path: '/'
+        },
+        response: [
+          {
+            path: '/test/test.txt',
+            cid: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'
+          }
+        ]
+      },
+      {
+        params: {
+          group: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+          path: '/'
+        },
+        response: [
+          {
+            path: '/test/test.txt',
+            cid: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'
+          },
+          {
+            path: '/test/test-2.txt',
+            cid: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ'
+          }
+        ]
+      },
+      {
+        params: {
+          group: 'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
+          path: '/test/test.txt'
+        },
+        response: [
+          {
+            path: '/test/test.txt',
+            cid: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'
+          }
+        ]
+      }
+    ]
+
+    for (const { params, response } of requests) {
+      const [req, res] = await Promise.all([
+        getRequest(interfaces.Delete.name, async () => response),
+        client.delete(params.group, params.path)
+      ])
+
+      assert.deepEqual(req, params)
+      assert.deepEqual(res, response)
+    }
+  })
 })
