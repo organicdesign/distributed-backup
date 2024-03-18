@@ -8,7 +8,7 @@ import { MemoryBlockstore } from 'blockstore-core'
 import all from 'it-all'
 import { exporter } from '../src/index.js'
 
-const dataPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), '../../test-data')
+const inPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), '../../test-data')
 const outPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), '../../test-data-out')
 
 const blockstore = new MemoryBlockstore()
@@ -24,7 +24,7 @@ const paths = [
   'file-2.txt',
   'dir-1/file-3.txt'
 ].map(path => ({
-  in: Path.join(dataPath, path),
+  in: Path.join(inPath, path),
   out: Path.join(outPath, path)
 }))
 
@@ -55,6 +55,26 @@ describe('exporter', () => {
 
       await exporter(blockstore, path.out, results[0].cid)
 
+      const hashes = await Promise.all([hash(path.in), hash(path.out)])
+
+      assert.deepEqual(hashes[0], hashes[1])
+    }
+  })
+
+  it('exports a directory ', async () => {
+    const results = await all(importer(
+      blockstore,
+      inPath,
+      importerConfig
+    ))
+
+    for (const { cid, path } of results) {
+      const exportPath = path.replace(inPath, outPath)
+
+      await exporter(blockstore, exportPath, cid)
+    }
+
+    for (const path of paths) {
       const hashes = await Promise.all([hash(path.in), hash(path.out)])
 
       assert.deepEqual(hashes[0], hashes[1])
