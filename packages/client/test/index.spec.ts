@@ -190,4 +190,42 @@ describe('addresses', () => {
       assert.deepEqual(res, response)
     }
   })
+
+  it('handles createGroup requests/responses', async () => {
+    const requests = [
+      {
+        params: {
+          name: 'test'
+        },
+        response: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'
+      },
+      {
+        params: {
+          name: 'test',
+          peers: ['GZsJqUjmbVqZCUMbJoe5ye4xfdKZVPVwBoFFQiyCZYesq6Us5b']
+        },
+        response: 'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa'
+      },
+      {
+        params: {
+          name: 'test',
+          peers: [
+            'GZsJqUjmbVqZCUMbJoe5ye4xfdKZVPVwBoFFQiyCZYesq6Us5b',
+            'GZsJqUmyVjBm8bk7Gkdb3MVTspKUYYn1P5hriJMnxkahxp9jpi'
+          ]
+        },
+        response: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ'
+      }
+    ]
+
+    for (const { params, response } of requests) {
+      const [req, res] = await Promise.all([
+        getRequest(interfaces.CreateGroup.name, async () => response),
+        client.createGroup(params.name, params.peers)
+      ])
+
+      assert.deepEqual(req, { name: params.name, peers: params.peers ?? [] })
+      assert.deepEqual(res, response)
+    }
+  })
 })
