@@ -20,15 +20,22 @@ export const handler = createHandler<typeof builder>(async argv => {
   const peers = await argv.client.countPeers(groups.map(g => g.group))
   const getPeerCount = (cid: string): number => peers.find(p => p.cid === cid)?.peers ?? 0
 
+  const items = await Promise.all(groups.map(async ({ group }) => ({
+    group,
+    items: await argv.client?.list({ group })
+  })))
+
+  const getItemCount = (group: string): number => items.filter(i => i.group === group).length
+
   let out = `${'Name'.padEnd(34)}${'Items'.padEnd(10)}${'Peers'.padEnd(10)}${'CID'.padEnd(62)}\n`
 
-  for (const group of groups) {
+  for (const { group, name } of groups) {
     let str = ''
 
-    str += group.name.slice(0, 32).padEnd(34)
-    str += 'Not Implemented'.slice(0, 8).padEnd(10)
-    str += `${getPeerCount(group.group)}`.padEnd(10)
-    str += group.group.padEnd(62)
+    str += name.slice(0, 32).padEnd(34)
+    str += `${getItemCount(group)}`.slice(0, 8).padEnd(10)
+    str += `${getPeerCount(group)}`.padEnd(10)
+    str += group.padEnd(62)
 
     out += `${str}\n`
   }
