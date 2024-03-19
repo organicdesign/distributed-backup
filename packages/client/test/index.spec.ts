@@ -578,4 +578,21 @@ describe('addresses', () => {
       assert.deepEqual(res, response)
     }
   })
+
+  it('handles id requests/responses', async () => {
+    const ids = [
+      'GZsJqUjmbVqZCUMbJoe5ye4xfdKZVPVwBoFFQiyCZYesq6Us5b',
+      'GZsJqUmyVjBm8bk7Gkdb3MVTspKUYYn1P5hriJMnxkahxp9jpi'
+    ]
+
+    for (const id of ids) {
+      const [req, res] = await Promise.all([
+        getRequest(interfaces.ID.name, async () => id),
+        client.id()
+      ])
+
+      assert.deepEqual(req, {})
+      assert.deepEqual(res, id)
+    }
+  })
 })
