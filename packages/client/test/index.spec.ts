@@ -649,4 +649,21 @@ describe('addresses', () => {
       assert.deepEqual(res, response)
     }
   })
+
+  it('handles joinGroup requests/responses', async () => {
+    const groups = [
+      'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+      'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ'
+    ]
+
+    for (const group of groups) {
+      const [req, res] = await Promise.all([
+        getRequest(interfaces.JoinGroup.name, async () => null),
+        client.joinGroup(group)
+      ])
+
+      assert.deepEqual(req, { group })
+      assert.deepEqual(res, null)
+    }
+  })
 })
