@@ -68,8 +68,8 @@ export const handler = createHandler<typeof builder>(async argv => {
   items.sort((a, b) => a.path.localeCompare(b.path))
 
   const total = {
-    blocks: items.reduce((a, b) => a + b.blocks, 0), // items.reduce((a, b) => a + b.totalBlocks, 0),
-    size: items.reduce((a, b) => a + b.size, 0), // items.reduce((a, b) => a + b.totalSize, 0),
+    blocks: items.reduce((a, b) => a + b.blocks, 0),
+    size: items.reduce((a, b) => a + b.size, 0),
     count: items.length
   }
 
@@ -169,7 +169,7 @@ export const handler = createHandler<typeof builder>(async argv => {
   footer += `${completed.blocks}/${total.blocks} (${formatPercent(completed.blocks / total.blocks)})`.slice(0, 18).padEnd(20)
   footer += `${formatSize(speeds.reduce((a, c) => a + c.speed, 0) * 1000)}s`.slice(0, 18).padEnd(20)
 
-  response += `${footer}\n`
+  response += `${footer}`
 
   return response
 })
