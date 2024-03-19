@@ -985,4 +985,14 @@ describe('addresses', () => {
       assert.deepEqual(res, null)
     }
   })
+
+  it('handles sync requests/responses', async () => {
+    const [req, res] = await Promise.all([
+      getRequest(interfaces.Sync.name, async () => null),
+      client.sync()
+    ])
+
+    assert.deepEqual(req, {})
+    assert.deepEqual(res, null)
+  })
 })
