@@ -942,4 +942,21 @@ describe('addresses', () => {
       assert.deepEqual(res, null)
     }
   })
+
+  it('handles sneakernetReveive requests/responses', async () => {
+    const paths = [
+      '/test',
+      '/my/file'
+    ]
+
+    for (const path of paths) {
+      const [req, res] = await Promise.all([
+        getRequest(interfaces.SneakernetReveive.name, async () => null),
+        client.sneakernetReveive(path)
+      ])
+
+      assert.deepEqual(req, { path })
+      assert.deepEqual(res, null)
+    }
+  })
 })
