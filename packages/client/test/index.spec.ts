@@ -40,7 +40,7 @@ describe('client', () => {
   })
 })
 
-describe('addresses', () => {
+describe('client', () => {
   let client: Client
 
   before(async () => {
