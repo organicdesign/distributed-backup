@@ -522,4 +522,60 @@ describe('addresses', () => {
       assert.deepEqual(res, response)
     }
   })
+
+  it('handles getStatus requests/responses', async () => {
+    const requests = [
+      {
+        params: {
+          cids: ['QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN']
+        },
+        response: [
+          {
+            cid: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+            state: 'DOWNLOADING',
+            blocks: 12,
+            size: 1234
+          }
+        ]
+      },
+      {
+        params: {
+          cids: ['QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ']
+        },
+        response: []
+      },
+      {
+        params: {
+          cids: [
+            'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+            'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa'
+          ]
+        },
+        response: [
+          {
+            cid: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+            state: 'COMPLETED',
+            blocks: 1,
+            size: 0
+          },
+          {
+            cid: 'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
+            state: 'NOTFOUND',
+            blocks: 0,
+            size: 0
+          }
+        ]
+      }
+    ]
+
+    for (const { params, response } of requests) {
+      const [req, res] = await Promise.all([
+        getRequest(interfaces.GetStatus.name, async () => response),
+        client.getStatus(params.cids)
+      ])
+
+      assert.deepEqual(req, { ...params })
+      assert.deepEqual(res, response)
+    }
+  })
 })
