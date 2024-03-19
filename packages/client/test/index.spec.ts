@@ -882,4 +882,38 @@ describe('addresses', () => {
       assert.deepEqual(res, response)
     }
   })
+
+  it('handles read requests/responses', async () => {
+    const requests = [
+      {
+        params: {
+          group: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+          path: '/test'
+        },
+
+        response: ''
+      },
+
+      {
+        params: {
+          group: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+          path: '/my/file',
+          position: 100,
+          length: 256
+        },
+
+        response: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+      }
+    ]
+
+    for (const { params, response } of requests) {
+      const [req, res] = await Promise.all([
+        getRequest(interfaces.Read.name, async () => response),
+        client.read(params.group, params.path, params)
+      ])
+
+      assert.deepEqual(req, params)
+      assert.deepEqual(res, response)
+    }
+  })
 })
