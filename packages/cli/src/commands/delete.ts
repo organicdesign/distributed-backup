@@ -23,5 +23,9 @@ export const handler = createHandler<typeof builder>(async argv => {
 
   const del = await argv.client.delete(argv.group, argv.path)
 
+  if (argv.json === true) {
+    return JSON.stringify(del)
+  }
+
   return del.map(d => d.path).join('\n')
 })
