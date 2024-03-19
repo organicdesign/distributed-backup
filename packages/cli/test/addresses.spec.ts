@@ -1,29 +1,21 @@
 import assert from 'assert/strict'
 import { handler } from '../src/commands/addresses.js'
-
-const mockArgs = {
-	json: false,
-	socket: 'mockSocket',
-	_: [],
-	"$0": ''
-}
+import { mockParams } from './utils.js'
 
 describe('addresses', () => {
-	it('text', async () => {
-		const addresses = ['address-abc', 'address-def', 'address-ghi']
-		const client = { addresses: () => addresses }
-		// @ts-ignore
-		const response = await handler({ ...mockArgs, client })
+  const addresses = ['address-abc', 'address-def', 'address-ghi']
 
-		assert.equal(response, addresses.join('\n'));
-	})
+  it('text', async () => {
+    const params = mockParams({ addresses: async () => addresses })
+    const response = await handler(params)
 
-	it('json', async () => {
-		const addresses = ['address-abc', 'address-def', 'address-ghi']
-		const client = { addresses: () => addresses }
-		// @ts-ignore
-		const response = await handler({ ...mockArgs, client, json: true })
+    assert.equal(response, addresses.join('\n'))
+  })
 
-		assert.deepEqual(response, JSON.stringify(addresses));
-	})
+  it('json', async () => {
+    const params = mockParams({ addresses: async () => addresses }, { json: true })
+    const response = await handler(params)
+
+    assert.deepEqual(response, JSON.stringify(addresses))
+  })
 })
