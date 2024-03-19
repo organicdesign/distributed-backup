@@ -666,4 +666,35 @@ describe('addresses', () => {
       assert.deepEqual(res, null)
     }
   })
+
+  it('handles listGroups requests/responses', async () => {
+    const responses = [
+      [
+        {
+          group: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+          name: 'test'
+        }
+      ],
+      [
+        {
+          group: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+          name: 'test'
+        },
+        {
+          group: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+          name: 'test-2'
+        }
+      ]
+    ]
+
+    for (const response of responses) {
+      const [req, res] = await Promise.all([
+        getRequest(interfaces.ListGroups.name, async () => response),
+        client.listGroups()
+      ])
+
+      assert.deepEqual(req, {})
+      assert.deepEqual(res, response)
+    }
+  })
 })
