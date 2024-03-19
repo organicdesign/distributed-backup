@@ -595,4 +595,58 @@ describe('addresses', () => {
       assert.deepEqual(res, id)
     }
   })
+
+  it('handles import requests/responses', async () => {
+    const requests = [
+      {
+        params: {
+          group: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+          inPath: '/import/my/file'
+        },
+
+        response: [
+          {
+            cid: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+            inPath: '/import/my/file',
+            path: '/import/my/file'
+          }
+        ]
+      },
+      {
+        params: {
+          group: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+          inPath: '/import/my/file'
+        },
+        additional: {
+          cidVersion: 1,
+          hash: 'sha-256',
+          chunker: 'size-262144',
+          rawLeaves: true,
+          encrypt: false,
+          onlyHash: false,
+          priority: 10,
+          revisionStrategy: 'log',
+          path: '/my/file'
+        } as const,
+
+        response: [
+          {
+            cid: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+            inPath: '/import/my/file',
+            path: '/my/file'
+          }
+        ]
+      }
+    ]
+
+    for (const { params, additional, response } of requests) {
+      const [req, res] = await Promise.all([
+        getRequest(interfaces.Import.name, async () => response),
+        client.import(params.group, params.inPath, additional)
+      ])
+
+      assert.deepEqual(req, { ...params, ...additional })
+      assert.deepEqual(res, response)
+    }
+  })
 })
