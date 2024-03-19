@@ -959,4 +959,30 @@ describe('addresses', () => {
       assert.deepEqual(res, null)
     }
   })
+
+  it('handles sneakernetSend requests/responses', async () => {
+    const requests = [
+      {
+        path: '/test'
+      },
+      {
+        path: '/my/file',
+        size: 100000,
+        peers: [
+          'GZsJqUjmbVqZCUMbJoe5ye4xfdKZVPVwBoFFQiyCZYesq6Us5b',
+          'GZsJqUmyVjBm8bk7Gkdb3MVTspKUYYn1P5hriJMnxkahxp9jpi'
+        ]
+      }
+    ]
+
+    for (const params of requests) {
+      const [req, res] = await Promise.all([
+        getRequest(interfaces.SneakernetSend.name, async () => null),
+        client.sneakernetSend(params.path, params)
+      ])
+
+      assert.deepEqual(req, params)
+      assert.deepEqual(res, null)
+    }
+  })
 })
