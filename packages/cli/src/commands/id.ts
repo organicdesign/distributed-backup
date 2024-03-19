@@ -13,5 +13,9 @@ export const handler = createHandler<typeof builder>(async argv => {
 
   const id = await argv.client.id()
 
+  if (argv.json === true) {
+    return JSON.stringify({ success: true, id })
+  }
+
   return id
 })
