@@ -25,11 +25,11 @@ export const handler = createHandler<typeof builder>(async argv => {
     items: await argv.client?.list({ group })
   })))
 
-  const getItemCount = (group: string): number => items.filter(i => i.group === group).length
+  const getItemCount = (group: string): number => items.find(i => i.group === group)?.items?.length ?? 0
 
   let out = `${'Name'.padEnd(34)}${'Items'.padEnd(10)}${'Peers'.padEnd(10)}${'CID'.padEnd(62)}\n`
 
-  for (const { group, name } of groups) {
+  out += groups.map(({ group, name }) => {
     let str = ''
 
     str += name.slice(0, 32).padEnd(34)
@@ -37,8 +37,8 @@ export const handler = createHandler<typeof builder>(async argv => {
     str += `${getPeerCount(group)}`.padEnd(10)
     str += group.padEnd(62)
 
-    out += `${str}\n`
-  }
+    return str
+  }).join('\n')
 
   return out
 })
