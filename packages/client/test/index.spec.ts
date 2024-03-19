@@ -814,4 +814,34 @@ describe('addresses', () => {
       assert.deepEqual(res, response)
     }
   })
+
+  it('handles putSchedule requests/responses', async () => {
+    const requests = [
+      {
+        group: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+        type: 'test',
+        from: 123,
+        to: 456,
+        context: {}
+      },
+
+      {
+        group: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+        type: 'workflow',
+        from: 123,
+        to: 456,
+        context: { key: 'value' }
+      }
+    ]
+
+    for (const params of requests) {
+      const [req, res] = await Promise.all([
+        getRequest(interfaces.PutSchedule.name, async () => null),
+        client.putSchedule(params.group, params.type, params.from, params.to, params.context)
+      ])
+
+      assert.deepEqual(req, params)
+      assert.deepEqual(res, null)
+    }
+  })
 })
