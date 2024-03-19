@@ -347,4 +347,29 @@ describe('addresses', () => {
       assert.deepEqual(res, null)
     }
   })
+
+  it('handles export requests/responses', async () => {
+    const requests = [
+      {
+        group: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+        path: '/',
+        outPath: '/export/data'
+      },
+      {
+        group: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+        path: '/my/file',
+        outPath: '/export/data/file'
+      }
+    ]
+
+    for (const params of requests) {
+      const [req, res] = await Promise.all([
+        getRequest(interfaces.Export.name, async () => null),
+        client.export(params.group, params.path, params.outPath)
+      ])
+
+      assert.deepEqual(req, params)
+      assert.deepEqual(res, null)
+    }
+  })
 })
