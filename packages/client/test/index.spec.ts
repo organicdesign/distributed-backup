@@ -318,4 +318,33 @@ describe('addresses', () => {
       assert.deepEqual(res, null)
     }
   })
+
+  it('handles exportRevision requests/responses', async () => {
+    const requests = [
+      {
+        group: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+        path: '/',
+        author: 'GZsJqUjmbVqZCUMbJoe5ye4xfdKZVPVwBoFFQiyCZYesq6Us5b',
+        sequence: 0,
+        outPath: '/export/data'
+      },
+      {
+        group: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+        path: '/my/file',
+        author: 'GZsJqUmyVjBm8bk7Gkdb3MVTspKUYYn1P5hriJMnxkahxp9jpi',
+        sequence: 23,
+        outPath: '/export/data/file'
+      }
+    ]
+
+    for (const params of requests) {
+      const [req, res] = await Promise.all([
+        getRequest(interfaces.ExportRevision.name, async () => null),
+        client.exportRevision(params.group, params.path, params.author, params.sequence, params.outPath)
+      ])
+
+      assert.deepEqual(req, params)
+      assert.deepEqual(res, null)
+    }
+  })
 })
