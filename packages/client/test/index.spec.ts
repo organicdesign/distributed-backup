@@ -372,4 +372,102 @@ describe('addresses', () => {
       assert.deepEqual(res, null)
     }
   })
+
+  it('handles getSchedule requests/responses', async () => {
+    const requests = [
+      {
+        params: {
+          group: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'
+        },
+        response: [
+          {
+            from: 123,
+            to: 456,
+            type: 'test',
+            id: '123',
+            context: {}
+          }
+        ]
+      },
+      {
+        params: {
+          group: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+          from: 1710808436315,
+          to: 1710808439315
+        },
+        response: [
+          {
+            from: 1710808436320,
+            to: 1710808436330,
+            type: 'test',
+            id: '456',
+            context: {}
+          },
+          {
+            from: 1710808436325,
+            to: 1710808436335,
+            type: 'workflow',
+            id: '789',
+            context: { key: 'value' }
+          }
+        ]
+      },
+      {
+        params: {
+          group: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+          types: ['workflow']
+        },
+        response: [
+          {
+            from: 1710808436320,
+            to: 1710808436330,
+            type: 'workflow',
+            id: 'abc',
+            context: {}
+          },
+          {
+            from: 1710808436325,
+            to: 1710808436335,
+            type: 'workflow',
+            id: 'def',
+            context: { key: 'value' }
+          }
+        ]
+      },
+      {
+        params: {
+          group: 'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
+          from: 1710808436315,
+          to: 1710808439315,
+          types: ['workflow', 'download']
+        },
+        response: [
+          {
+            from: 1710808436320,
+            to: 1710808436330,
+            type: 'workflow',
+            id: 'ghi',
+            context: {}
+          },
+          {
+            from: 1710808436325,
+            to: 1710808436335,
+            type: 'download',
+            id: 'jkl',
+            context: { key: 'value' }
+          }
+        ]
+      }
+    ]
+
+    for (const { params, response } of requests) {
+      const [req, res] = await Promise.all([
+        getRequest(interfaces.GetSchedule.name, async () => response),
+        client.getSchedule(params.group, params)
+      ])
+
+      assert.deepEqual(req, { ...params })
+      assert.deepEqual(res, response)
+    }
+  })
 })
