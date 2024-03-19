@@ -758,4 +758,60 @@ describe('addresses', () => {
       assert.deepEqual(res, response)
     }
   })
+
+  it('handles list requests/responses', async () => {
+    const requests = [
+      {
+        params: {},
+
+        response: [
+          {
+            path: '/test',
+            cid: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+            name: 'test',
+            group: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+            priority: 10,
+            revisionStrategy: 'log',
+            blocks: 50,
+            size: 500,
+            encrypted: false,
+            author: 'GZsJqUjmbVqZCUMbJoe5ye4xfdKZVPVwBoFFQiyCZYesq6Us5b',
+            timestamp: 123456
+          }
+        ]
+      },
+
+      {
+        params: {
+          group: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ'
+        },
+
+        response: [
+          {
+            path: '/test',
+            cid: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+            name: 'test',
+            group: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+            priority: 1,
+            revisionStrategy: 'all',
+            blocks: 50,
+            size: 500,
+            encrypted: false,
+            author: 'GZsJqUjmbVqZCUMbJoe5ye4xfdKZVPVwBoFFQiyCZYesq6Us5b',
+            timestamp: 123456
+          }
+        ]
+      }
+    ]
+
+    for (const { params, response } of requests) {
+      const [req, res] = await Promise.all([
+        getRequest(interfaces.List.name, async () => response),
+        client.list(params)
+      ])
+
+      assert.deepEqual(req, params)
+      assert.deepEqual(res, response)
+    }
+  })
 })
