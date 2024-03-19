@@ -916,4 +916,30 @@ describe('addresses', () => {
       assert.deepEqual(res, response)
     }
   })
+
+  it('handles setPriority requests/responses', async () => {
+    const requests = [
+      {
+        group: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+        path: '/test',
+        priority: 1
+      },
+
+      {
+        group: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+        path: '/my/file',
+        priority: 100
+      }
+    ]
+
+    for (const params of requests) {
+      const [req, res] = await Promise.all([
+        getRequest(interfaces.SetPriority.name, async () => null),
+        client.setPriority(params.group, params.path, params.priority)
+      ])
+
+      assert.deepEqual(req, params)
+      assert.deepEqual(res, null)
+    }
+  })
 })
