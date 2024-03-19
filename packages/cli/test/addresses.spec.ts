@@ -6,14 +6,14 @@ describe('addresses', () => {
   const addresses = ['address-abc', 'address-def', 'address-ghi']
 
   it('text', async () => {
-    const params = mockParams({ addresses: async () => addresses })
+    const params = mockParams({ addresses })
     const response = await handler(params)
 
     assert.equal(response, addresses.join('\n'))
   })
 
   it('json', async () => {
-    const params = mockParams({ addresses: async () => addresses }, { json: true })
+    const params = mockParams({ addresses }, { json: true })
     const response = await handler(params)
 
     assert.deepEqual(response, JSON.stringify(addresses))
