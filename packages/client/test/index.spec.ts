@@ -697,4 +697,65 @@ describe('addresses', () => {
       assert.deepEqual(res, response)
     }
   })
+
+  it('handles listRevisions requests/responses', async () => {
+    const requests = [
+      {
+        params: {
+          group: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+          path: '/'
+        },
+
+        response: [
+          {
+            cid: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+            author: 'GZsJqUjmbVqZCUMbJoe5ye4xfdKZVPVwBoFFQiyCZYesq6Us5b',
+            sequence: 0,
+            blocks: 50,
+            size: 500,
+            encrypted: false,
+            timestamp: 123456
+          }
+        ]
+      },
+
+      {
+        params: {
+          group: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+          path: '/import/my/file'
+        },
+
+        response: [
+          {
+            cid: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+            author: 'GZsJqUjmbVqZCUMbJoe5ye4xfdKZVPVwBoFFQiyCZYesq6Us5b',
+            sequence: 0,
+            blocks: 50,
+            size: 500,
+            encrypted: false,
+            timestamp: 123456
+          },
+          {
+            cid: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+            author: 'GZsJqUmyVjBm8bk7Gkdb3MVTspKUYYn1P5hriJMnxkahxp9jpi',
+            sequence: 1,
+            blocks: 500,
+            size: 5000,
+            encrypted: false,
+            timestamp: 56789
+          }
+        ]
+      }
+    ]
+
+    for (const { params, response } of requests) {
+      const [req, res] = await Promise.all([
+        getRequest(interfaces.ListRevisions.name, async () => response),
+        client.listRevisions(params.group, params.path)
+      ])
+
+      assert.deepEqual(req, params)
+      assert.deepEqual(res, response)
+    }
+  })
 })
