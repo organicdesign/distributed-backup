@@ -5,7 +5,7 @@ import { NamespaceDatastore } from 'datastore-core'
 import { type Datastore, Key } from 'interface-datastore'
 import { MEMORY_MAGIC } from './interface.js'
 
-export const projectPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), '../../../../..')
+export const projectPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), '../../../..')
 
 export const isMemory = (storage?: string): boolean => storage === MEMORY_MAGIC
 
