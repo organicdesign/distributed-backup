@@ -3,8 +3,9 @@ import fs from 'fs/promises'
 import Path from 'path'
 import { z } from 'zod'
 import config from '../../src/modules/config/index.js'
-import { testPath } from '../utils/paths.js'
+import { mkTestPath } from '../utils/paths.js'
 
+const testPath = mkTestPath('config')
 const configPath = Path.join(testPath, 'config.json')
 
 const configData = {
@@ -18,12 +19,12 @@ const configData = {
 }
 
 before(async () => {
-  await fs.mkdir(Path.join(configPath, '..'), { recursive: true })
+  await fs.mkdir(testPath, { recursive: true })
   await fs.writeFile(configPath, JSON.stringify(configData))
 })
 
 after(async () => {
-  await fs.rm(Path.join(configPath, '..'), { recursive: true })
+  await fs.rm(testPath, { recursive: true })
 })
 
 describe('config', () => {

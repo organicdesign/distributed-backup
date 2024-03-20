@@ -1,6 +1,8 @@
 import Path from 'path'
-import { testPath } from '../utils/paths.js'
+import { mkTestPath } from '../utils/paths.js'
 import type { Provides } from '../../src/modules/argv/index.js'
+
+const testPath = mkTestPath('argv')
 
 const provs = async (): Promise<Provides> => {
   return {
