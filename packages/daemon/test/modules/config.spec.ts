@@ -3,9 +3,9 @@ import fs from 'fs/promises'
 import Path from 'path'
 import { z } from 'zod'
 import config from '../../src/modules/config/index.js'
-import { projectPath } from '@/utils.js'
+import { testPath } from '../utils/paths.js'
 
-const configPath = Path.join(projectPath, 'packages/daemon/test-out/config.json')
+const configPath = Path.join(testPath, 'config.json')
 
 const configData = {
   private: true,
