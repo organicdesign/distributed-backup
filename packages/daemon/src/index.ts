@@ -27,7 +27,7 @@ const tick = await setupTick({ config, sigint })
 const base = await setupBase({ argv, config })
 const network = await setupNetwork({ sigint, config, base, rpc })
 const groups = await setupGroups({ sigint, base, network, rpc })
-const downloader = await setupDownloader({ config, base, network, rpc, tick })
+const downloader = await setupDownloader({ config, base, network, rpc, tick, sigint })
 
 await setupSneakernet({ base, groups, rpc, network })
 await setupScheduler({ base, groups, rpc })

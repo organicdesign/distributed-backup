@@ -4,16 +4,16 @@ import { createLogger } from '@/logger.js'
 export const logger = createLogger('sigint')
 
 export interface Provides extends Record<string, unknown> {
-  onInterupt (method: (...args: any[]) => any): void
-  interupt (force?: boolean): void
+  onInterupt (method: () => unknown): void
+  interupt (): void
 }
 
 const module: Module<Provides> = async () => {
-  const methods: Array<(...args: any[]) => any> = []
+  const methods: Array<() => unknown> = []
 
   let exiting = false
 
-  const interupt = (force = true): void => {
+  const interupt = (): void => {
     if (exiting) {
       logger.warn('force exiting')
       process.exit(1)
@@ -29,10 +29,6 @@ const module: Module<Provides> = async () => {
       }
 
       logger.info('exiting...')
-
-      if (force) {
-        process.exit()
-      }
     })().catch(error => {
       throw error
     })

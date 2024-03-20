@@ -9,6 +9,7 @@ import type { Provides as Base } from '@/modules/base/index.js'
 import type { Provides as ConfigModule } from '@/modules/config/index.js'
 import type { Provides as Network } from '@/modules/network/index.js'
 import type { Provides as RPC } from '@/modules/rpc/index.js'
+import type { Provides as Sigint } from '@/modules/sigint/index.js'
 import type { Provides as Tick } from '@/modules/tick/index.js'
 import { createLogger } from '@/logger.js'
 import { extendDatastore } from '@/utils.js'
@@ -28,6 +29,7 @@ export interface Requires extends Record<string, unknown> {
   rpc: RPC
   tick: Tick
   config: ConfigModule
+  sigint: Sigint
 }
 
 export interface Provides extends Record<string, unknown> {
@@ -49,9 +51,13 @@ const module: Module<Provides, Requires> = async (components) => {
     setupCommand(context, components)
   }
 
-  download(context).catch(error => {
+  const controller = new AbortController()
+
+  download(context, { signal: controller.signal }).catch(error => {
     throw error
   })
+
+  components.sigint.onInterupt(() => { controller.abort() })
 
   return context
 }
