@@ -1,6 +1,7 @@
 import assert from 'assert/strict'
 import fs from 'fs/promises'
 import Path from 'path'
+import { z } from 'zod'
 import config from '../../src/modules/config/index.js'
 import { projectPath } from '@/utils.js'
 
@@ -32,5 +33,21 @@ describe('config', () => {
     })
 
     assert.deepEqual(m.config, configData)
+  })
+
+  it('gets config from schema', async () => {
+    const m = await config({
+      argv: { config: configPath, key: '', socket: '' }
+    })
+
+    assert.deepEqual(
+      m.get(z.object({ bootstrap: z.array(z.string()) })),
+      { bootstrap: configData.bootstrap }
+    )
+
+    assert.deepEqual(
+      m.get(z.object({ tickInterval: z.number(), private: z.boolean() })),
+      { tickInterval: configData.tickInterval, private: configData.private }
+    )
   })
 })
