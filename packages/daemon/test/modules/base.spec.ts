@@ -1,6 +1,8 @@
 import assert from 'assert/strict'
 import fs from 'fs/promises'
 import Path from 'path'
+import { MemoryBlockstore } from 'blockstore-core'
+import { MemoryDatastore } from 'datastore-core'
 import { fromString as uint8ArrayFromString } from 'uint8arrays'
 import base from '../../src/modules/base/index.js'
 import mockArgv from './mock-argv.js'
@@ -28,8 +30,6 @@ describe('base', () => {
   })
 
   it('returns the key manager', async () => {
-    const argv = await mockArgv()
-
     const m = await base({
       config: mockConfig({ storage: ':memory:' }),
       argv
@@ -59,5 +59,23 @@ describe('base', () => {
       m.keyManager.getPskKey(),
       parseStr('L2tleS9zd2FybS9wc2svMS4wLjAvCi9iYXNlMTYvCjU2ZDNjMTgyODJmMWYxYjFiM2UwNGU0MGRkNWQ4YmY0NGNhZmE4YmM5YzliYzdjNTc3MTZhNzc2NmZhMmM1NTA')
     )
+  })
+
+  it('uses memory blockstore when memory is specified', async () => {
+    const m = await base({
+      config: mockConfig({ storage: ':memory:' }),
+      argv
+    })
+
+    assert(m.blockstore instanceof MemoryBlockstore)
+  })
+
+  it('uses memory datastore when memory is specified', async () => {
+    const m = await base({
+      config: mockConfig({ storage: ':memory:' }),
+      argv
+    })
+
+    assert(m.datastore instanceof MemoryDatastore)
   })
 })
