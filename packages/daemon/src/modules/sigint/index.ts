@@ -5,7 +5,7 @@ export const logger = createLogger('sigint')
 
 export interface Provides extends Record<string, unknown> {
   onInterupt (method: (...args: any[]) => any): void
-  interupt (): void
+  interupt (force: boolean): void
 }
 
 const module: Module<Provides> = async () => {
@@ -13,7 +13,7 @@ const module: Module<Provides> = async () => {
 
   let exiting = false
 
-  const interupt = (): void => {
+  const interupt = (force = true): void => {
     if (exiting) {
       logger.warn('force exiting')
       process.exit(1)
@@ -30,7 +30,9 @@ const module: Module<Provides> = async () => {
 
       logger.info('exiting...')
 
-      process.exit()
+      if (force) {
+        process.exit()
+      }
     })().catch(error => {
       throw error
     })
