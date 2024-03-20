@@ -54,7 +54,7 @@ export const handler = createHandler<typeof builder>(async argv => {
   }
 
   if (argv.json === true) {
-    return data
+    return JSON.stringify({ data })
   }
 
   return data
