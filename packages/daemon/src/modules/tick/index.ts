@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import type { Module } from '@/interface.js'
 import type { Provides as ConfigModule } from '@/modules/config/index.js'
+import type { Provides as Sigint } from '@/modules/sigint/index.js'
 import { createLogger } from '@/logger.js'
 
 export const logger = createLogger('tick')
@@ -14,6 +15,7 @@ export type Config = z.output<typeof Config>
 
 export interface Requires extends Record<string, unknown> {
   config: ConfigModule
+  sigint: Sigint
 }
 
 export interface Provides extends Record<string, unknown> {
@@ -36,7 +38,21 @@ const module: Module<Provides, Requires> = async (components) => {
         }
       }
 
-      await new Promise(resolve => setTimeout(resolve, config.tickInterval))
+      const b = await new Promise(resolve => {
+        const timeout = setTimeout(() => { resolve(false) }, config.tickInterval)
+
+        components.sigint.onInterupt(() => {
+          if (timeout != null) {
+            clearTimeout(timeout)
+          }
+
+          resolve(true)
+        })
+      })
+
+      if (b === true) {
+        break
+      }
     }
   })()
 
