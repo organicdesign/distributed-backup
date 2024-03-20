@@ -1,6 +1,6 @@
 import Path from 'path'
-import type { Provides } from '../../src/modules/argv/index.js'
 import { testPath } from '../utils/paths.js'
+import type { Provides } from '../../src/modules/argv/index.js'
 
 const provs = async (): Promise<Provides> => {
   return {
