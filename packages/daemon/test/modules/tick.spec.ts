@@ -31,4 +31,24 @@ describe('tick', () => {
 
     sigint.interupt(false)
   })
+
+  it('returns ticks every interval', async () => {
+    const tickInterval = 5
+    const sigint = await setupSigint()
+
+    const m = await tick({
+      config: mockConfig({ tickInterval }),
+      sigint
+    })
+
+    let timesCalled = 0
+
+    m.register(() => timesCalled++)
+
+    await new Promise(resolve => setTimeout(resolve, 33))
+
+    assert.equal(timesCalled, 6)
+
+    sigint.interupt(false)
+  })
 })
