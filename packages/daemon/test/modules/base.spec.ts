@@ -2,14 +2,18 @@ import assert from 'assert/strict'
 import fs from 'fs/promises'
 import Path from 'path'
 import { MemoryBlockstore } from 'blockstore-core'
+import { FsBlockstore } from 'blockstore-fs'
 import { MemoryDatastore } from 'datastore-core'
+import { CID } from 'multiformats/cid'
 import { fromString as uint8ArrayFromString } from 'uint8arrays'
 import base from '../../src/modules/base/index.js'
+import { mkTestPath } from '../utils/paths.js'
 import mockArgv from './mock-argv.js'
 import mockConfig from './mock-config.js'
 import type { Provides as Argv } from '../../src/modules/argv/index.js'
 
 const parseStr = (data: string): Uint8Array => uint8ArrayFromString(data, 'base64')
+const testPath = mkTestPath('base')
 
 describe('base', () => {
   let argv: Argv
@@ -18,6 +22,7 @@ describe('base', () => {
     argv = await mockArgv()
 
     await fs.mkdir(Path.join(argv.key, '..'), { recursive: true })
+    await fs.mkdir(testPath, { recursive: true })
 
     await fs.writeFile(argv.key, JSON.stringify({
       key: '5TP9VimJU1WdSoTxZGLhSuPKqCpXirPHDK4ZjHxzetex-8zAV14C4oLe4dytUSVzznTuQ659pY1dSMG8HAQenDqVQ',
@@ -27,6 +32,7 @@ describe('base', () => {
 
   after(async () => {
     await fs.rm(Path.join(argv.key, '..'), { recursive: true })
+    await fs.rm(testPath, { recursive: true })
   })
 
   it('returns the key manager', async () => {
@@ -77,5 +83,29 @@ describe('base', () => {
     })
 
     assert(m.datastore instanceof MemoryDatastore)
+  })
+
+  it('uses fs blockstore when a path is specified', async () => {
+    const blockstorePath = Path.join(testPath, 'blockstore')
+
+    const m = await base({
+      config: mockConfig({ storage: testPath }),
+      argv
+    })
+
+    assert(m.blockstore instanceof FsBlockstore)
+
+    await m.blockstore.put(CID.parse('QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ'), uint8ArrayFromString('test'))
+
+    const out = await fs.readdir(blockstorePath, { recursive: true })
+
+    assert.deepEqual(out, [
+      '7I',
+      '7I/BCIQLASSX2QHMUE4IBHYTTJ3LCICEGM6DOQBZDSN7DTU5RYQ2PEQQX7I.data'
+    ])
+
+    const blockData = await fs.readFile(Path.join(blockstorePath, '7I/BCIQLASSX2QHMUE4IBHYTTJ3LCICEGM6DOQBZDSN7DTU5RYQ2PEQQX7I.data'))
+
+    assert.deepEqual(new Uint8Array(blockData), uint8ArrayFromString('test'))
   })
 })
