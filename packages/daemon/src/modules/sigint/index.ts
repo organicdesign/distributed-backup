@@ -34,8 +34,6 @@ const module: Module<Provides> = async () => {
     })
   }
 
-  process.on('SIGINT', interupt)
-
   return {
     onInterupt: (method) => methods.push(method),
     interupt

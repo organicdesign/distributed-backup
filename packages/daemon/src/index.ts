@@ -53,4 +53,6 @@ await setupRevisions({
   rpc
 })
 
+process.on('SIGINT', sigint.interupt)
+
 logger.info('started')
