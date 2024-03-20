@@ -5,7 +5,7 @@ export const logger = createLogger('sigint')
 
 export interface Provides extends Record<string, unknown> {
   onInterupt (method: (...args: any[]) => any): void
-  interupt (force: boolean): void
+  interupt (force?: boolean): void
 }
 
 const module: Module<Provides> = async () => {
