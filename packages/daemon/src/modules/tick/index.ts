@@ -28,6 +28,12 @@ const module: Module<Provides, Requires> = async (components) => {
   const methods: Array<(...args: any[]) => any> = []
   const register = (method: (...args: any[]) => any): void => { methods.push(method) }
 
+  let stopping = false
+
+  components.sigint.onInterupt(() => {
+    stopping = true
+  })
+
   void (async () => {
     for (;;) {
       for (const method of methods) {
@@ -36,9 +42,13 @@ const module: Module<Provides, Requires> = async (components) => {
         } catch (error) {
           logger.warn('method threw: ', error)
         }
+
+        if (stopping) {
+          return true
+        }
       }
 
-      const b = await new Promise(resolve => {
+      const b = await new Promise<boolean>(resolve => {
         const timeout = setTimeout(() => { resolve(false) }, config.tickInterval)
 
         components.sigint.onInterupt(() => {
@@ -50,8 +60,8 @@ const module: Module<Provides, Requires> = async (components) => {
         })
       })
 
-      if (b === true) {
-        break
+      if (b) {
+        return
       }
     }
   })()
