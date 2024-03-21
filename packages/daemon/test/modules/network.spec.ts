@@ -245,4 +245,26 @@ describe('network', () => {
 
     client.close()
   })
+
+  it('rpc - connections returns the peers connections', async () => {
+    const libp2p = await createLibp2p({})
+    const m = await network(components)
+    const client = createNetClient(components.argv.socket)
+
+    assert.deepEqual(await client.rpc.request('connections', {}), [])
+
+    await libp2p.dial(m.libp2p.getMultiaddrs())
+
+    const connections = await client.rpc.request('connections', {})
+
+    assert.equal(connections.length, 1)
+
+    assert.deepEqual(
+      connections,
+      m.libp2p.getConnections().map(a => a.remoteAddr.toString())
+    )
+
+    await libp2p.stop()
+    client.close()
+  })
 })
