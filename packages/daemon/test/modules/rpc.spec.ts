@@ -1,6 +1,5 @@
 import assert from 'assert/strict'
 import fs from 'fs/promises'
-import Path from 'path'
 import { createNetClient } from '@organicdesign/net-rpc'
 import rpc from '../../src/modules/rpc/index.js'
 import createSigint from '../../src/modules/sigint/index.js'
@@ -16,10 +15,9 @@ describe('rpc', () => {
   let sigint: Sigint
 
   before(async () => {
-    argv = mockArgv()
+    argv = mockArgv(testPath)
     sigint = await createSigint()
 
-    await fs.mkdir(Path.join(argv.key, '..'), { recursive: true })
     await fs.mkdir(testPath, { recursive: true })
 
     await fs.writeFile(argv.key, JSON.stringify({
@@ -29,7 +27,6 @@ describe('rpc', () => {
   })
 
   after(async () => {
-    await fs.rm(Path.join(argv.key, '..'), { recursive: true })
     await fs.rm(testPath, { recursive: true })
 
     sigint.interupt()
