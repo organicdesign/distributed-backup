@@ -168,4 +168,33 @@ describe('network', () => {
 
     await libp2p.stop()
   })
+
+  it.skip('relays when server mode is set', async () => {
+    const [libp2p1, libp2p2] = await Promise.all([
+      createLibp2p({ addresses: ['/ip4/127.0.0.1/tcp/0'] }),
+      createLibp2p({ addresses: ['/ip4/127.0.0.1/tcp/0/ws'] })
+    ])
+
+    const m = await network({
+      ...components,
+      config: mockConfig({
+        private: false,
+        serverMode: true
+      })
+    })
+
+    await Promise.all([
+      libp2p1.dial(m.libp2p.getMultiaddrs()),
+      libp2p2.dial(m.libp2p.getMultiaddrs())
+    ])
+
+    await new Promise(resolve => setTimeout(resolve, 5000))
+
+    await libp2p1.dial(libp2p2.getMultiaddrs())
+
+    await Promise.all([
+      libp2p1.stop(),
+      libp2p2.stop()
+    ])
+  })
 })
