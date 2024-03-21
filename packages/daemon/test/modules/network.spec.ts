@@ -71,7 +71,7 @@ describe('network', () => {
   })
 
   it('is not connectable from outside when private is set to true', async () => {
-    const config = mockConfig({ storage: ':memory:', private: true })
+    const config = mockConfig({ private: true })
 
     const m = await network({
       ...components,
@@ -94,7 +94,7 @@ describe('network', () => {
   })
 
   it('is connectable from outside when private is set to false', async () => {
-    const config = mockConfig({ storage: ':memory:', private: false })
+    const config = mockConfig({ private: false })
 
     const m = await network({
       ...components,
@@ -117,7 +117,7 @@ describe('network', () => {
   })
 
   it('is connectable from inside when private is set to true', async () => {
-    const config = mockConfig({ storage: ':memory:', private: true })
+    const config = mockConfig({ private: true })
 
     const m = await network({
       ...components,
@@ -141,5 +141,31 @@ describe('network', () => {
       libp2p1.stop(),
       libp2p2.stop()
     ])
+  })
+
+  it('bootstraps when a bootstrap peer is set', async () => {
+    const libp2p = await createLibp2p({})
+
+    const config = mockConfig({
+      private: false,
+      bootstrap: libp2p.getMultiaddrs().map(a => a.toString())
+    })
+
+    const m = await network({
+      ...components,
+      config
+    })
+
+    const peer = await new Promise<Uint8Array>((resolve, reject) => {
+      setTimeout(() => { reject(new Error('timeout')) }, 5000)
+
+      m.libp2p.addEventListener('peer:connect', (a) => {
+        resolve(a.detail.toBytes())
+      })
+    })
+
+    assert.deepEqual(peer, libp2p.peerId.toBytes())
+
+    await libp2p.stop()
   })
 })
