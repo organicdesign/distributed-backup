@@ -1,5 +1,7 @@
 import assert from 'assert/strict'
 import fs from 'fs/promises'
+import { Key } from 'interface-datastore'
+import { CID } from 'multiformats/cid'
 import network from '../../src/modules/network/index.js'
 import createRpc from '../../src/modules/rpc/index.js'
 import createSigint from '../../src/modules/sigint/index.js'
@@ -47,5 +49,22 @@ describe('network', () => {
     assert.deepEqual(m.config.bootstrap, [])
     assert.equal(m.config.private, false)
     assert.equal(m.config.serverMode, false)
+  })
+
+  it('uses the stores derived form base for helia', async () => {
+    const m = await network(components)
+    const cid = CID.parse('QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ')
+
+    assert(!(await m.helia.blockstore.has(cid)))
+
+    await components.base.blockstore.put(cid, new Uint8Array())
+
+    assert(await m.helia.blockstore.has(cid))
+
+    assert(!(await m.helia.datastore.has(new Key('/test'))))
+
+    await components.base.datastore.put(new Key('/helia/datastore/test'), new Uint8Array())
+
+    assert(await m.helia.datastore.has(new Key('/test')))
   })
 })
