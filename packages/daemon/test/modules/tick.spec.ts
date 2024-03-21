@@ -34,6 +34,7 @@ describe('tick', () => {
 
   it('returns ticks every interval', async () => {
     const tickInterval = 5
+    const checkTimes = 6
     const sigint = await setupSigint()
 
     const m = await tick({
@@ -41,13 +42,27 @@ describe('tick', () => {
       sigint
     })
 
-    let timesCalled = 0
+    const before = Date.now()
 
-    m.register(() => timesCalled++)
+    await new Promise<void>((resolve, reject) => {
+      setTimeout(() => { reject(new Error('timeout')) }, (checkTimes + 4) * tickInterval)
+      let timesCalled = 0
 
-    await new Promise(resolve => setTimeout(resolve, 33))
+      m.register(() => {
+        timesCalled++
 
-    assert.equal(timesCalled, 6)
+        if (timesCalled >= checkTimes) {
+          resolve()
+        }
+      })
+    })
+
+    const after = Date.now()
+
+    const delta = after - before
+
+    assert(delta < tickInterval * (checkTimes + 2))
+    assert(delta > tickInterval * (checkTimes - 2))
 
     sigint.interupt()
   })
