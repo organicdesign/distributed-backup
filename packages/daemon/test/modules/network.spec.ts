@@ -267,4 +267,20 @@ describe('network', () => {
     await libp2p.stop()
     client.close()
   })
+
+  it('rpc - connection connects to another peer', async () => {
+    const libp2p = await createLibp2p({})
+    const m = await network(components)
+    const client = createNetClient(components.argv.socket)
+
+    await client.rpc.request('connect', { address: libp2p.getMultiaddrs()[0] })
+
+    const connections = m.libp2p.getConnections()
+
+    assert.equal(connections.length, 1)
+    assert.deepEqual(connections[0].remotePeer.toBytes(), libp2p.peerId.toBytes())
+
+    await libp2p.stop()
+    client.close()
+  })
 })
