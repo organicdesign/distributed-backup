@@ -79,7 +79,7 @@ describe('network', () => {
 
     const libp2p = await createLibp2p({})
 
-		const mkSignal = () => AbortSignal.timeout(50)
+    const mkSignal = (): AbortSignal => AbortSignal.timeout(1000)
 
     const dialTo = libp2p.dial(m.libp2p.getMultiaddrs(), { signal: mkSignal() })
     const dialFrom = m.libp2p.dial(libp2p.getMultiaddrs(), { signal: mkSignal() })
@@ -90,5 +90,28 @@ describe('network', () => {
     ])
 
     await libp2p.stop()
+  })
+
+  it('is connectable from outside when private is set to false', async () => {
+    const config = mockConfig({ storage: ':memory:', private: false })
+
+    const m = await network({
+      ...components,
+      config
+    })
+
+    const [libp2p1, libp2p2] = await Promise.all([createLibp2p({}), createLibp2p({})])
+
+    const mkSignal = (): AbortSignal => AbortSignal.timeout(1000)
+
+    await Promise.all([
+      libp2p1.dial(m.libp2p.getMultiaddrs(), { signal: mkSignal() }),
+      m.libp2p.dial(libp2p2.getMultiaddrs(), { signal: mkSignal() })
+    ])
+
+    await Promise.all([
+      libp2p1.stop(),
+      libp2p2.stop()
+    ])
   })
 })
