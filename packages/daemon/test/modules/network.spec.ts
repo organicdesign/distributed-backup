@@ -1,7 +1,10 @@
 import assert from 'assert/strict'
 import fs from 'fs/promises'
+import { unixfs } from '@helia/unixfs'
 import { createNetClient } from '@organicdesign/net-rpc'
+import { createHelia } from 'helia'
 import { Key } from 'interface-datastore'
+import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import network from '../../src/modules/network/index.js'
 import createRpc from '../../src/modules/rpc/index.js'
@@ -280,6 +283,28 @@ describe('network', () => {
     assert.equal(connections.length, 1)
     assert.deepEqual(connections[0].remotePeer.toBytes(), libp2p.peerId.toBytes())
 
+    await libp2p.stop()
+    client.close()
+  })
+
+  it('rpc - get peers returns a peer hosting content', async () => {
+    const data = new Uint8Array([0, 1, 2, 3])
+    const libp2p = await createLibp2p({})
+    const helia = await createHelia({ libp2p })
+    const ufs = unixfs(helia)
+    const m = await network(components)
+    const client = createNetClient(components.argv.socket)
+
+    await m.libp2p.dial(helia.libp2p.getMultiaddrs())
+
+    const cid = await ufs.addBytes(data)
+    await all(helia.pins.add(cid))
+
+    const result = await client.rpc.request('count-peers', { cids: [cid.toString()] })
+
+    assert.deepEqual(result, [{ cid: cid.toString(), peers: 1 }])
+
+    await helia.stop()
     await libp2p.stop()
     client.close()
   })
