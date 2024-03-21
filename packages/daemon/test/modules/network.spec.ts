@@ -1,5 +1,6 @@
 import assert from 'assert/strict'
 import fs from 'fs/promises'
+import { createNetClient } from '@organicdesign/net-rpc'
 import { Key } from 'interface-datastore'
 import { CID } from 'multiformats/cid'
 import network from '../../src/modules/network/index.js'
@@ -15,7 +16,7 @@ import createLibp2p from '@/modules/network/libp2p.js'
 
 describe('network', () => {
   const testPath = mkTestPath('network')
-  let components: NetworkComponents
+  let components: NetworkComponents & { argv: ReturnType<typeof mockArgv> }
 
   before(async () => {
     await fs.mkdir(testPath, { recursive: true })
@@ -27,6 +28,7 @@ describe('network', () => {
     const rpc = await createRpc({ argv, sigint })
 
     components = {
+      argv,
       sigint,
       config,
       base,
@@ -232,5 +234,15 @@ describe('network', () => {
 
     await sigints[1].interupt()
     await libp2p.stop()
+  })
+
+  it('rpc - addresses returns the peers addresses', async () => {
+    const m = await network(components)
+    const client = createNetClient(components.argv.socket)
+    const addresses = await client.rpc.request('addresses', {})
+
+    assert.deepEqual(addresses, m.libp2p.getMultiaddrs().map(a => a.toString()))
+
+    client.close()
   })
 })
