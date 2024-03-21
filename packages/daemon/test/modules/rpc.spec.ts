@@ -28,8 +28,7 @@ describe('rpc', () => {
 
   after(async () => {
     await fs.rm(testPath, { recursive: true })
-
-    sigint.interupt()
+    await sigint.interupt()
   })
 
   it('adds RPC methods', async () => {

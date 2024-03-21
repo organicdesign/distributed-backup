@@ -8,7 +8,7 @@ describe('sigint', () => {
     let called = 0
 
     m.onInterupt(() => called++)
-    m.interupt()
+    await m.interupt()
 
     assert.equal(called, 1)
   })

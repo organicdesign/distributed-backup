@@ -53,6 +53,8 @@ await setupRevisions({
   rpc
 })
 
-process.on('SIGINT', sigint.interupt)
+process.on('SIGINT', () => {
+  sigint.interupt().catch(() => {})
+})
 
 logger.info('started')

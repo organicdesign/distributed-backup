@@ -15,7 +15,7 @@ describe('tick', () => {
 
     assert.deepEqual(m.config, { tickInterval: 600 })
 
-    sigint.interupt()
+    await sigint.interupt()
   })
 
   it('returns config tick interval', async () => {
@@ -29,7 +29,7 @@ describe('tick', () => {
 
     assert.deepEqual(m.config, { tickInterval })
 
-    sigint.interupt()
+    await sigint.interupt()
   })
 
   it('returns ticks every interval', async () => {
@@ -64,6 +64,6 @@ describe('tick', () => {
     assert(delta < tickInterval * (checkTimes + 2))
     assert(delta > tickInterval * (checkTimes - 2))
 
-    sigint.interupt()
+    await sigint.interupt()
   })
 })
