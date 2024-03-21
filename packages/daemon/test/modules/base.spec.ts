@@ -4,6 +4,8 @@ import Path from 'path'
 import { MemoryBlockstore } from 'blockstore-core'
 import { FsBlockstore } from 'blockstore-fs'
 import { MemoryDatastore } from 'datastore-core'
+import { FsDatastore } from 'datastore-fs'
+import { Key } from 'interface-datastore'
 import { CID } from 'multiformats/cid'
 import { fromString as uint8ArrayFromString } from 'uint8arrays'
 import base from '../../src/modules/base/index.js'
@@ -11,6 +13,7 @@ import { mkTestPath } from '../utils/paths.js'
 import mockArgv from './mock-argv.js'
 import mockConfig from './mock-config.js'
 import type { Provides as Argv } from '../../src/modules/argv/index.js'
+import { extendDatastore } from '@/utils.js'
 
 const parseStr = (data: string): Uint8Array => uint8ArrayFromString(data, 'base64')
 const testPath = mkTestPath('base')
@@ -87,6 +90,7 @@ describe('base', () => {
 
   it('uses fs blockstore when a path is specified', async () => {
     const blockstorePath = Path.join(testPath, 'blockstore')
+    const testData = uint8ArrayFromString('test')
 
     const m = await base({
       config: mockConfig({ storage: testPath }),
@@ -95,7 +99,7 @@ describe('base', () => {
 
     assert(m.blockstore instanceof FsBlockstore)
 
-    await m.blockstore.put(CID.parse('QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ'), uint8ArrayFromString('test'))
+    await m.blockstore.put(CID.parse('QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ'), testData)
 
     const out = await fs.readdir(blockstorePath, { recursive: true })
 
@@ -106,6 +110,39 @@ describe('base', () => {
 
     const blockData = await fs.readFile(Path.join(blockstorePath, '7I/BCIQLASSX2QHMUE4IBHYTTJ3LCICEGM6DOQBZDSN7DTU5RYQ2PEQQX7I.data'))
 
-    assert.deepEqual(new Uint8Array(blockData), uint8ArrayFromString('test'))
+    assert.deepEqual(new Uint8Array(blockData), testData)
+  })
+
+  it('uses fs datastore when a path is specified', async () => {
+    const datastorePath = Path.join(testPath, 'datastore')
+
+    const m = await base({
+      config: mockConfig({ storage: testPath }),
+      argv
+    })
+
+    assert(m.datastore instanceof FsDatastore)
+
+    await m.datastore.put(new Key('key'), uint8ArrayFromString('value'))
+
+    const subDatastore = extendDatastore(extendDatastore(m.datastore, 'a'), 'b/c')
+    await subDatastore.put(new Key('d/e'), uint8ArrayFromString('test'))
+
+    const out = await fs.readdir(datastorePath, { recursive: true })
+
+    assert.deepEqual(out, [
+      'a',
+      'key.data',
+      'a/b',
+      'a/b/c',
+      'a/b/c/d',
+      'a/b/c/d/e.data'
+    ])
+
+    const data1 = await fs.readFile(Path.join(datastorePath, 'key.data'))
+    const data2 = await fs.readFile(Path.join(datastorePath, 'a/b/c/d/e.data'))
+
+    assert.deepEqual(new Uint8Array(data1), uint8ArrayFromString('value'))
+    assert.deepEqual(new Uint8Array(data2), uint8ArrayFromString('test'))
   })
 })
