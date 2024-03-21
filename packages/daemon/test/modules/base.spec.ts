@@ -22,7 +22,7 @@ describe('base', () => {
   let argv: Argv
 
   before(async () => {
-    argv = await mockArgv()
+    argv = mockArgv()
 
     await fs.mkdir(Path.join(argv.key, '..'), { recursive: true })
     await fs.mkdir(testPath, { recursive: true })

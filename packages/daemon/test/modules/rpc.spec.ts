@@ -16,7 +16,7 @@ describe('rpc', () => {
   let sigint: Sigint
 
   before(async () => {
-    argv = await mockArgv()
+    argv = mockArgv()
     sigint = await createSigint()
 
     await fs.mkdir(Path.join(argv.key, '..'), { recursive: true })
