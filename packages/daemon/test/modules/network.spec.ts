@@ -35,9 +35,9 @@ describe('network', () => {
   })
 
   after(async () => {
+    await components.sigint.interupt()
+    await new Promise(resolve => setTimeout(resolve, 1000))
     await fs.rm(testPath, { recursive: true })
-
-    components.sigint.interupt()
   })
 
   it('provides defaults for the config options', async () => {
@@ -196,5 +196,42 @@ describe('network', () => {
       libp2p1.stop(),
       libp2p2.stop()
     ])
+  })
+
+  it('libp2p remembers peers with persistant storage', async () => {
+    const libp2p = await createLibp2p({})
+    const sigints = await Promise.all([createSigint(), createSigint()])
+
+    const create = async (index: number): ReturnType<typeof network> => network({
+      ...components,
+
+      sigint: sigints[index],
+
+      base: mockBase(testPath),
+
+      config: mockConfig({
+        private: false,
+        storage: testPath
+      })
+    })
+
+    const m1 = await create(0)
+
+    await libp2p.dial(m1.libp2p.getMultiaddrs())
+
+    const [peer] = m1.libp2p.getPeers()
+
+    await m1.libp2p.peerStore.save(peer, peer)
+
+    await sigints[0].interupt()
+
+    const m2 = await create(1)
+
+    const peers = await m2.libp2p.peerStore.all()
+
+    assert.deepEqual(peers[0].id.toBytes(), peer.toBytes())
+
+    await sigints[1].interupt()
+    await libp2p.stop()
   })
 })
