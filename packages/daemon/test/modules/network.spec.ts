@@ -10,6 +10,7 @@ import mockArgv from './mock-argv.js'
 import mockBase from './mock-base.js'
 import mockConfig from './mock-config.js'
 import type { Requires as NetworkComponents } from '../../src/modules/network/index.js'
+import type { Libp2p } from '@libp2p/interface'
 import createLibp2p from '@/modules/network/libp2p.js'
 
 describe('network', () => {
@@ -101,6 +102,33 @@ describe('network', () => {
     })
 
     const [libp2p1, libp2p2] = await Promise.all([createLibp2p({}), createLibp2p({})])
+
+    const mkSignal = (): AbortSignal => AbortSignal.timeout(1000)
+
+    await Promise.all([
+      libp2p1.dial(m.libp2p.getMultiaddrs(), { signal: mkSignal() }),
+      m.libp2p.dial(libp2p2.getMultiaddrs(), { signal: mkSignal() })
+    ])
+
+    await Promise.all([
+      libp2p1.stop(),
+      libp2p2.stop()
+    ])
+  })
+
+  it('is connectable from inside when private is set to true', async () => {
+    const config = mockConfig({ storage: ':memory:', private: true })
+
+    const m = await network({
+      ...components,
+      config
+    })
+
+    const create = async (): Promise<Libp2p> => createLibp2p({
+      psk: components.base.keyManager.getPskKey()
+    })
+
+    const [libp2p1, libp2p2] = await Promise.all([create(), create()])
 
     const mkSignal = (): AbortSignal => AbortSignal.timeout(1000)
 
