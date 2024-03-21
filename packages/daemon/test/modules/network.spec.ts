@@ -210,8 +210,7 @@ describe('network', () => {
       base: mockBase(testPath),
 
       config: mockConfig({
-        private: false,
-        storage: testPath
+        private: false
       })
     })
 

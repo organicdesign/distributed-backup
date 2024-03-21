@@ -21,7 +21,6 @@ const Config = z.object({
   serverMode: z.boolean().default(false),
   private: z.boolean().default(false),
   bootstrap: z.array(z.string()).default([]),
-  storage: z.string().default(':memory:'),
   addresses: z.array(z.string()).default([
     '/ip4/127.0.0.1/tcp/0',
     '/ip4/127.0.0.1/tcp/0/ws'
