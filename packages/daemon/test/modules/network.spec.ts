@@ -10,6 +10,7 @@ import mockArgv from './mock-argv.js'
 import mockBase from './mock-base.js'
 import mockConfig from './mock-config.js'
 import type { Requires as NetworkComponents } from '../../src/modules/network/index.js'
+import createLibp2p from '@/modules/network/libp2p.js'
 
 describe('network', () => {
   const testPath = mkTestPath('network')
@@ -66,5 +67,28 @@ describe('network', () => {
     await components.base.datastore.put(new Key('/helia/datastore/test'), new Uint8Array())
 
     assert(await m.helia.datastore.has(new Key('/test')))
+  })
+
+  it('is not connectable from outside when private is set to true', async () => {
+    const config = mockConfig({ storage: ':memory:', private: true })
+
+    const m = await network({
+      ...components,
+      config
+    })
+
+    const libp2p = await createLibp2p({})
+
+		const mkSignal = () => AbortSignal.timeout(50)
+
+    const dialTo = libp2p.dial(m.libp2p.getMultiaddrs(), { signal: mkSignal() })
+    const dialFrom = m.libp2p.dial(libp2p.getMultiaddrs(), { signal: mkSignal() })
+
+    await Promise.all([
+      assert.rejects(async () => dialTo),
+      assert.rejects(async () => dialFrom)
+    ])
+
+    await libp2p.stop()
   })
 })
