@@ -273,4 +273,38 @@ describe('groups', () => {
     client.close()
     await sigint.interupt()
   })
+
+  it('rpc - sync groups', async () => {
+    const components = await Promise.all([create(), create('server')])
+    const client = createNetClient(components[0].argv.socket)
+    const key = '/test'
+    const value = 'test-value'
+
+    const groups = await client.rpc.request('list-groups', {})
+
+    assert.deepEqual(groups, [])
+
+    const group = await mkGroup(components[1].groups, 'test')
+    const database = components[1].groups.groups.get(group)
+
+    if (database == null) {
+      throw new Error('database creation failed')
+    }
+
+    const put = database.store.creators.put(key, value)
+
+    await database.replica.write(put)
+
+    await components[0].network.libp2p.dial(components[1].network.libp2p.getMultiaddrs())
+    await client.rpc.request('join-group', { group: group.toString() })
+    await client.rpc.request('sync', {})
+
+    const index = await database.store.latest()
+    const result = await database.store.selectors.get(index)(key)
+
+    assert.deepEqual(result, value)
+
+    client.close()
+    await Promise.all(components.map(async c => c.sigint.interupt()))
+  })
 })
