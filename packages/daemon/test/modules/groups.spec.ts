@@ -170,4 +170,12 @@ describe('groups', () => {
 
     await sigint.interupt()
   })
+
+  it('uses the identity from base in welo', async () => {
+    const { groups: m, sigint, base } = await create()
+
+    assert.deepEqual(m.welo.identity, await base.keyManager.getWeloIdentity())
+
+    await sigint.interupt()
+  })
 })
