@@ -213,7 +213,7 @@ describe('network', () => {
 
       sigint: sigints[index],
 
-      base: mockBase(testPath),
+      base: mockBase({ path: testPath }),
 
       config: mockConfig({
         private: false

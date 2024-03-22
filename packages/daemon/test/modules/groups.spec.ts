@@ -1,5 +1,7 @@
 import assert from 'assert/strict'
 import fs from 'fs/promises'
+import Path from 'path'
+import { KeyManager, parseKeyData } from '@organicdesign/db-key-manager'
 import { createNetClient } from '@organicdesign/net-rpc'
 import * as cborg from 'cborg'
 import all from 'it-all'
@@ -21,10 +23,6 @@ import type {
 
 describe('groups', () => {
   const testPath = mkTestPath('groups')
-  let components: Pick<GroupsComponents, 'config'> & {
-    argv: ReturnType<typeof mockArgv>
-    config: ReturnType<typeof mockConfig>
-  }
 
   const mkGroup = async (m: GroupsProvides, name: string, peers: Uint8Array[] = []): Promise<CID> => {
     const manifest = await m.welo.determine({
@@ -41,7 +39,7 @@ describe('groups', () => {
     return manifest.address.cid
   }
 
-  const create = async (): Promise<Pick<GroupsComponents, 'sigint' | 'config'> & {
+  const create = async (name?: string): Promise<Pick<GroupsComponents, 'sigint' | 'config'> & {
     argv: ReturnType<typeof mockArgv>
     config: ReturnType<typeof mockConfig>
     rpc: Awaited<ReturnType<typeof createRpc>>
@@ -49,13 +47,25 @@ describe('groups', () => {
     network: Awaited<ReturnType<typeof createNetwork>>
     groups: GroupsProvides
   }> => {
+    const path = name == null ? testPath : Path.join(testPath, name)
+
+    const keyManager = name == null
+      ? undefined
+      : new KeyManager(parseKeyData({
+        key: 'DpGbLiAX4wK4HHtG3DQb8cA6FG2ibv93X4ooZJ5LmMJJ-12FmenN8dbWysuYnzEHzmEF1hod4RGK8NfKFu1SEZ7XM',
+        psk: '/key/swarm/psk/1.0.0/\n/base16/\n023330a98e30315e2233d4a31a6dc65d741a89f7ce6248e7de40c73995d23157'
+      }))
+
+    await fs.mkdir(path, { recursive: true })
+
+    const argv = mockArgv(path)
+    const config = mockConfig({ storage: ':memory:' })
     const sigint = await createSigint()
-    const rpc = await createRpc({ ...components, sigint })
-    const base = mockBase()
-    const network = await createNetwork({ ...components, sigint, base, rpc })
+    const rpc = await createRpc({ argv, sigint })
+    const base = mockBase({ keyManager })
+    const network = await createNetwork({ config, sigint, base, rpc })
 
     const groups = await createGroups({
-      ...components,
       sigint,
       base,
       rpc,
@@ -63,7 +73,8 @@ describe('groups', () => {
     })
 
     return {
-      ...components,
+      argv,
+      config,
       sigint,
       rpc,
       base,
@@ -74,14 +85,6 @@ describe('groups', () => {
 
   before(async () => {
     await fs.mkdir(testPath, { recursive: true })
-
-    const argv = mockArgv(testPath)
-    const config = mockConfig({ storage: ':memory:' })
-
-    components = {
-      argv,
-      config
-    }
   })
 
   after(async () => {
@@ -230,5 +233,25 @@ describe('groups', () => {
 
     client.close()
     await sigint.interupt()
+  })
+
+  it('rpc - joins an external group', async () => {
+    const components = await Promise.all([create(), create('server')])
+    const client = createNetClient(components[0].argv.socket)
+    const name = 'test'
+    const group = await mkGroup(components[1].groups, name)
+
+    await components[0].network.libp2p.dial(components[1].network.libp2p.getMultiaddrs())
+    const res = await client.rpc.request('join-group', { group: group.toString() })
+
+    assert.equal(res, null)
+
+    const database = components[0].groups.groups.get(group)
+
+    assert(database)
+    assert.equal(database.manifest.name, name)
+
+    client.close()
+    await Promise.all(components.map(async c => c.sigint.interupt()))
   })
 })
