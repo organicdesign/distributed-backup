@@ -6,7 +6,6 @@ import createDownloader from '../../src/modules/downloader/index.js'
 import createNetwork from '../../src/modules/network/index.js'
 import createRpc from '../../src/modules/rpc/index.js'
 import createSigint from '../../src/modules/sigint/index.js'
-import createTick from '../../src/modules/tick/index.js'
 import { mkTestPath } from '../utils/paths.js'
 import mockArgv from './mock-argv.js'
 import mockBase from './mock-base.js'
@@ -44,14 +43,12 @@ describe('downloader', () => {
     const rpc = await createRpc({ argv, sigint })
     const base = mockBase({ keyManager })
     const network = await createNetwork({ config, sigint, base, rpc })
-    const tick = await createTick({ config, sigint })
 
     const downloader = await createDownloader({
       sigint,
       base,
       rpc,
       network,
-      tick,
       config
     })
 

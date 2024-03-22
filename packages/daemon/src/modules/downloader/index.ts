@@ -10,7 +10,6 @@ import type { Provides as ConfigModule } from '@/modules/config/index.js'
 import type { Provides as Network } from '@/modules/network/index.js'
 import type { Provides as RPC } from '@/modules/rpc/index.js'
 import type { Provides as Sigint } from '@/modules/sigint/index.js'
-import type { Provides as Tick } from '@/modules/tick/index.js'
 import { createLogger } from '@/logger.js'
 import { extendDatastore } from '@/utils.js'
 
@@ -27,7 +26,6 @@ export interface Requires extends Record<string, unknown> {
   base: Base
   network: Network
   rpc: RPC
-  tick: Tick
   config: ConfigModule
   sigint: Sigint
 }
