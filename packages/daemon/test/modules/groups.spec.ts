@@ -3,8 +3,9 @@ import fs from 'fs/promises'
 import { createNetClient } from '@organicdesign/net-rpc'
 import * as cborg from 'cborg'
 import all from 'it-all'
-import { type CID } from 'multiformats/cid'
-import { toString as uint8ArrayToString } from 'uint8arrays'
+import { CID } from 'multiformats/cid'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import createGroups from '../../src/modules/groups/index.js'
 import createNetwork from '../../src/modules/network/index.js'
 import createRpc from '../../src/modules/rpc/index.js'
@@ -188,6 +189,44 @@ describe('groups', () => {
     const id = await client.rpc.request('id', {})
 
     assert.equal(uint8ArrayToString(m.welo.identity.id, 'base58btc'), id)
+
+    client.close()
+    await sigint.interupt()
+  })
+
+  it('rpc - create groups creates a group without other peers', async () => {
+    const { groups: m, sigint, argv } = await create()
+    const client = createNetClient(argv.socket)
+    const name = 'test'
+
+    const cid = await client.rpc.request('create-group', { name, peers: [] })
+    const group = CID.parse(cid)
+    const database = m.groups.get(group)
+
+    assert(database != null)
+    assert.equal(database.manifest.name, name)
+    assert.deepEqual(database.manifest.access.config?.write, [m.welo.identity.id])
+
+    client.close()
+    await sigint.interupt()
+  })
+
+  it('rpc - create groups creates a group with other peers', async () => {
+    const { groups: m, sigint, argv } = await create()
+    const client = createNetClient(argv.socket)
+    const name = 'test'
+    const otherPeer = 'GZsJqUjmbVqZCUMbJoe5ye4xfdKZVPVwBoFFQiyCZYesq6Us5b'
+
+    const cid = await client.rpc.request('create-group', { name, peers: [otherPeer] })
+    const group = CID.parse(cid)
+    const database = m.groups.get(group)
+
+    assert(database != null)
+    assert.equal(database.manifest.name, name)
+    assert.deepEqual(database.manifest.access.config?.write, [
+      m.welo.identity.id,
+      uint8ArrayFromString(otherPeer, 'base58btc')
+    ])
 
     client.close()
     await sigint.interupt()
