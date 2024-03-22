@@ -236,7 +236,7 @@ describe('groups', () => {
   })
 
   it('rpc - joins an external group', async () => {
-    const components = await Promise.all([create(), create('server')])
+    const components = await Promise.all([create(), create('server-join-group')])
     const client = createNetClient(components[0].argv.socket)
     const name = 'test'
     const group = await mkGroup(components[1].groups, name)
@@ -275,7 +275,7 @@ describe('groups', () => {
   })
 
   it('rpc - sync groups', async () => {
-    const components = await Promise.all([create(), create('server')])
+    const components = await Promise.all([create(), create('server-sync-groups')])
     const client = createNetClient(components[0].argv.socket)
     const key = '/test'
     const value = 'test-value'
