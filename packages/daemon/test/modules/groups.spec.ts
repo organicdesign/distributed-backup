@@ -1,8 +1,10 @@
 import assert from 'assert/strict'
 import fs from 'fs/promises'
+import { createNetClient } from '@organicdesign/net-rpc'
 import * as cborg from 'cborg'
 import all from 'it-all'
 import { type CID } from 'multiformats/cid'
+import { toString as uint8ArrayToString } from 'uint8arrays'
 import createGroups from '../../src/modules/groups/index.js'
 import createNetwork from '../../src/modules/network/index.js'
 import createRpc from '../../src/modules/rpc/index.js'
@@ -176,6 +178,18 @@ describe('groups', () => {
 
     assert.deepEqual(m.welo.identity, await base.keyManager.getWeloIdentity())
 
+    await sigint.interupt()
+  })
+
+  it('rpc - id returns the base58btc formatted welo id', async () => {
+    const { groups: m, sigint, argv } = await create()
+    const client = createNetClient(argv.socket)
+
+    const id = await client.rpc.request('id', {})
+
+    assert.equal(uint8ArrayToString(m.welo.identity.id, 'base58btc'), id)
+
+    client.close()
     await sigint.interupt()
   })
 })
