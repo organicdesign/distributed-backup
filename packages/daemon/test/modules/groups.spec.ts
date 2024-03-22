@@ -254,4 +254,23 @@ describe('groups', () => {
     client.close()
     await Promise.all(components.map(async c => c.sigint.interupt()))
   })
+
+  it('rpc - list groups', async () => {
+    const { groups: m, sigint, argv } = await create()
+    const client = createNetClient(argv.socket)
+    const name = 'test'
+
+    let groups = await client.rpc.request('list-groups', {})
+
+    assert.deepEqual(groups, [])
+
+    const group = await mkGroup(m, name)
+
+    groups = await client.rpc.request('list-groups', {})
+
+    assert.deepEqual(groups, [{ group: group.toString(), name }])
+
+    client.close()
+    await sigint.interupt()
+  })
 })
