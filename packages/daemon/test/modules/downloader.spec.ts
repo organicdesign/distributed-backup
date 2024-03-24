@@ -3,11 +3,13 @@ import fs from 'fs/promises'
 import Path from 'path'
 import { KeyManager } from '@organicdesign/db-key-manager'
 import { createNetClient } from '@organicdesign/net-rpc'
+import { MemoryBlockstore } from 'blockstore-core'
 import { CID } from 'multiformats/cid'
 import createDownloader from '../../src/modules/downloader/index.js'
 import createNetwork from '../../src/modules/network/index.js'
 import createRpc from '../../src/modules/rpc/index.js'
 import createSigint from '../../src/modules/sigint/index.js'
+import { createDag } from '../utils/dag.js'
 import { generateKey } from '../utils/generate-key.js'
 import { mkTestPath } from '../utils/paths.js'
 import mockArgv from './mock-argv.js'
@@ -94,6 +96,65 @@ describe('downloader', () => {
 
     assert(pinData != null)
     assert.equal(pinData.priority, priority)
+
+    client.close()
+    await sigint.interupt()
+  })
+
+  it('rpc - get speed', async () => {
+    const { downloader: m, network, sigint, argv } = await create()
+    const blockstore = new MemoryBlockstore()
+    const dag = await createDag({ blockstore }, 2, 2)
+    const group = 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'
+    const path = '/test.txt'
+    const range = 500
+    const client = createNetClient(argv.socket)
+    const key = Path.join('/', group, path)
+
+    await m.pinManager.put(key, { priority: 1, cid: dag[0] })
+
+    const speed1 = await client.rpc.request('get-speeds', {
+      cids: [dag[0].toString()],
+      range
+    })
+
+    assert.deepEqual(speed1, [{ cid: dag[0].toString(), speed: 0 }])
+
+    const value = await blockstore.get(dag[0])
+
+    await network.helia.blockstore.put(dag[0], value)
+    await new Promise(resolve => setTimeout(resolve, range / 2))
+
+    const speed2 = await client.rpc.request('get-speeds', {
+      cids: [dag[0].toString()],
+      range
+    })
+
+    assert.deepEqual(speed2, [{ cid: dag[0].toString(), speed: value.length / range }])
+
+    await new Promise(resolve => setTimeout(resolve, range / 2))
+
+    const values = await Promise.all([
+      blockstore.get(dag[1]),
+      blockstore.get(dag[4])
+    ])
+
+    await Promise.all([
+      network.helia.blockstore.put(dag[1], values[0]),
+      network.helia.blockstore.put(dag[4], values[1])
+    ])
+
+    await new Promise(resolve => setTimeout(resolve, range / 2))
+
+    const speed3 = await client.rpc.request('get-speeds', {
+      cids: [dag[0].toString()],
+      range
+    })
+
+    assert.deepEqual(speed3, [{
+      cid: dag[0].toString(),
+      speed: values.reduce((a, c) => c.length + a, 0) / range
+    }])
 
     client.close()
     await sigint.interupt()
