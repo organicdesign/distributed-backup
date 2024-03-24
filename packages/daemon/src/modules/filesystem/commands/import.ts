@@ -17,20 +17,15 @@ const command: ModuleMethod<Provides, Requires> = (context, { rpc, network, base
       cidVersion: 1
     }
 
+    if (params.onlyHash) {
+      throw new Error('no implemented')
+    }
+
     if (!params.onlyHash) {
       logger.info('[add] importing %s', params.inPath)
     }
 
     const store = params.onlyHash ? new BlackHoleBlockstore() : base.blockstore
-
-    /*
-      const cipher = encrypt ? components.cipher : undefined;
-      const { cid } = await fsImport(store, params.localPath, config, cipher);
-
-      if (params.onlyHash) {
-        return cid;
-      }
-    */
 
     const cids: Import.Return = []
 
