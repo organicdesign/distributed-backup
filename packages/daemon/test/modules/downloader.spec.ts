@@ -1,11 +1,12 @@
 import assert from 'assert/strict'
 import fs from 'fs/promises'
 import Path from 'path'
-import { KeyManager, parseKeyData } from '@organicdesign/db-key-manager'
+import { KeyManager } from '@organicdesign/db-key-manager'
 import createDownloader from '../../src/modules/downloader/index.js'
 import createNetwork from '../../src/modules/network/index.js'
 import createRpc from '../../src/modules/rpc/index.js'
 import createSigint from '../../src/modules/sigint/index.js'
+import { generateKey } from '../utils/generate-key.js'
 import { mkTestPath } from '../utils/paths.js'
 import mockArgv from './mock-argv.js'
 import mockBase from './mock-base.js'
@@ -27,13 +28,7 @@ describe('downloader', () => {
     downloader: DownloaderProvides
   }> => {
     const path = name == null ? testPath : Path.join(testPath, name)
-
-    const keyManager = name == null
-      ? undefined
-      : new KeyManager(parseKeyData({
-        key: 'DpGbLiAX4wK4HHtG3DQb8cA6FG2ibv93X4ooZJ5LmMJJ-12FmenN8dbWysuYnzEHzmEF1hod4RGK8NfKFu1SEZ7XM',
-        psk: '/key/swarm/psk/1.0.0/\n/base16/\n023330a98e30315e2233d4a31a6dc65d741a89f7ce6248e7de40c73995d23157'
-      }))
+    const keyManager = new KeyManager(await generateKey())
 
     await fs.mkdir(path, { recursive: true })
 
