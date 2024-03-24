@@ -159,4 +159,78 @@ describe('downloader', () => {
     client.close()
     await sigint.interupt()
   })
+
+  it('rpc - get status', async () => {
+    const { downloader: m, network, sigint, argv } = await create()
+    const blockstore = new MemoryBlockstore()
+    const dag = await createDag({ blockstore }, 2, 2)
+    const group = 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'
+    const path = '/test.txt'
+    const client = createNetClient(argv.socket)
+    const key = Path.join('/', group, path)
+
+    const status1 = await client.rpc.request('get-status', {
+      cids: [dag[0].toString()]
+    })
+
+    assert.deepEqual(status1, [{
+      cid: dag[0].toString(),
+      blocks: 0,
+      size: 0,
+      state: 'NOTFOUND'
+    }])
+
+    await m.pinManager.put(key, { priority: 1, cid: dag[0] })
+
+    const status2 = await client.rpc.request('get-status', {
+      cids: [dag[0].toString()]
+    })
+
+    assert.deepEqual(status2, [{
+      cid: dag[0].toString(),
+      blocks: 0,
+      size: 0,
+      state: 'DOWNLOADING'
+    }])
+
+    const value = await blockstore.get(dag[0])
+
+    await network.helia.blockstore.put(dag[0], value)
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    const status3 = await client.rpc.request('get-status', {
+      cids: [dag[0].toString()]
+    })
+
+    assert.deepEqual(status3, [{
+      cid: dag[0].toString(),
+      blocks: 1,
+      size: value.length,
+      state: 'DOWNLOADING'
+    }])
+
+    const values = await Promise.all(dag.map(async cid => {
+      const value = await blockstore.get(cid)
+
+      await network.helia.blockstore.put(cid, value)
+
+      return value.length
+    }))
+
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    const status4 = await client.rpc.request('get-status', {
+      cids: [dag[0].toString()]
+    })
+
+    assert.deepEqual(status4, [{
+      cid: dag[0].toString(),
+      blocks: dag.length,
+      size: values.reduce((a, c) => a + c, 0),
+      state: 'COMPLETED'
+    }])
+
+    client.close()
+    await sigint.interupt()
+  })
 })
