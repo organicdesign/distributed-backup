@@ -2,6 +2,7 @@ import assert from 'assert/strict'
 import fs from 'fs/promises'
 import Path from 'path'
 import { KeyManager } from '@organicdesign/db-key-manager'
+import { CID } from 'multiformats/cid'
 import createDownloader from '../../src/modules/downloader/index.js'
 import createFilesystem from '../../src/modules/filesystem/index.js'
 import createGroups from '../../src/modules/groups/index.js'
@@ -9,6 +10,7 @@ import createNetwork from '../../src/modules/network/index.js'
 import createRpc from '../../src/modules/rpc/index.js'
 import createSigint from '../../src/modules/sigint/index.js'
 import createTick from '../../src/modules/tick/index.js'
+import { createGroup } from '../utils/create-group.js'
 import { generateKey } from '../utils/generate-key.js'
 import { mkTestPath } from '../utils/paths.js'
 import mockArgv from './mock-argv.js'
@@ -96,6 +98,25 @@ describe('filesystem', () => {
     const { filesystem: m, sigint } = await create()
 
     assert.equal(m.config.defaultRevisionStrategy, 'all')
+
+    await sigint.interupt()
+  })
+
+  it('returns null when wraping a group that doesn\'t exist', async () => {
+    const { filesystem: m, sigint } = await create()
+    const fs = m.getFileSystem(CID.parse('QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'))
+
+    assert.equal(fs, null)
+
+    await sigint.interupt()
+  })
+
+  it('wraps a group in a filesystem', async () => {
+    const { filesystem: m, groups, sigint } = await create()
+    const group = await createGroup(groups, 'test')
+    const fs = m.getFileSystem(group)
+
+    assert.notEqual(fs, null)
 
     await sigint.interupt()
   })
