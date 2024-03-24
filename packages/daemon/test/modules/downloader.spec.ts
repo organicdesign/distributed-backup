@@ -2,6 +2,8 @@ import assert from 'assert/strict'
 import fs from 'fs/promises'
 import Path from 'path'
 import { KeyManager } from '@organicdesign/db-key-manager'
+import { createNetClient } from '@organicdesign/net-rpc'
+import { CID } from 'multiformats/cid'
 import createDownloader from '../../src/modules/downloader/index.js'
 import createNetwork from '../../src/modules/network/index.js'
 import createRpc from '../../src/modules/rpc/index.js'
@@ -71,6 +73,29 @@ describe('downloader', () => {
 
     assert.equal(m.config.slots, 20)
 
+    await sigint.interupt()
+  })
+
+  it('rpc - set priority updates local priority', async () => {
+    const group = 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'
+    const path = '/test.txt'
+    const priority = 50
+    const { downloader: m, sigint, argv } = await create()
+    const client = createNetClient(argv.socket)
+    const key = Path.join('/', group, path)
+
+    await m.pinManager.put(key, { priority: 1, cid: CID.parse(group) })
+
+    const response = await client.rpc.request('set-priority', { group, path, priority })
+
+    assert.equal(response, null)
+
+    const pinData = await m.pinManager.get(key)
+
+    assert(pinData != null)
+    assert.equal(pinData.priority, priority)
+
+    client.close()
     await sigint.interupt()
   })
 })
