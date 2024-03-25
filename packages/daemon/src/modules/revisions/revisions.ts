@@ -4,7 +4,6 @@ import { type Entry, EncodedEntry } from './interface.js'
 import { pathToKey, decodeKey, encodeEntry, decodeEntry } from './utils.js'
 import { logger } from './index.js'
 import type { KeyvalueDB } from '@/interface.js'
-import type { PeerId } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 import { decodeAny } from '@/utils.js'
 
@@ -12,9 +11,9 @@ export class Revisions {
   private readonly database: KeyvalueDB
   private readonly author: Uint8Array
 
-  constructor (database: KeyvalueDB, peerId: PeerId) {
+  constructor (database: KeyvalueDB, author: Uint8Array) {
     this.database = database
-    this.author = peerId.toBytes()
+    this.author = author
   }
 
   get group (): CID {

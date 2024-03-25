@@ -5,7 +5,7 @@ import { pathToKey } from './utils.js'
 import { type Provides, type Requires, logger } from './index.js'
 import type { CID } from 'multiformats/cid'
 
-export default async ({ filesystem, network, groups }: Requires): Promise<Provides> => {
+export default async ({ filesystem, groups }: Requires): Promise<Provides> => {
   const getRevisions = (group: CID): Revisions | null => {
     const database = groups.groups.get(group)
 
@@ -13,7 +13,7 @@ export default async ({ filesystem, network, groups }: Requires): Promise<Provid
       return null
     }
 
-    return new Revisions(database, network.libp2p.peerId)
+    return new Revisions(database, groups.welo.identity.id)
   }
 
   filesystem.events.addEventListener('file:added', ({ group, path, entry }) => {
