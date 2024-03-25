@@ -7,6 +7,7 @@ import { unixfs } from '@helia/unixfs'
 import { importer, selectHasher, selectChunker } from '@organicdesign/db-fs-importer'
 import { KeyManager } from '@organicdesign/db-key-manager'
 import { createNetClient } from '@organicdesign/net-rpc'
+import { MemoryBlockstore } from 'blockstore-core'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import { compare as uint8ArrayCompare } from 'uint8arrays/compare'
@@ -610,6 +611,80 @@ describe('filesystem', () => {
     const read4 = await client.rpc.request('read', { group: group.toString(), path, position: 1, length: 3 })
 
     assert.deepEqual(read4, data.slice(1, 3 + 1))
+
+    client.close()
+    await sigint.interupt()
+  })
+
+  it('rpc - write', async () => {
+    const { filesystem: m, base, groups, sigint, argv } = await create()
+    const client = createNetClient(argv.socket)
+    const group = await createGroup(groups, 'test')
+    const fs = m.getFileSystem(group)
+    const ufs = unixfs({ blockstore: new MemoryBlockstore() })
+    const path = '/test'
+    const data = 'test-data'
+    const cid = await ufs.addBytes(uint8ArrayFromString(data))
+
+    assert(fs != null)
+
+    const before = Date.now()
+
+    const write1 = await client.rpc.request('write', { group: group.toString(), path, data })
+
+    assert.equal(write1, data.length)
+
+    const entry1 = await fs.get(path)
+
+    assert(entry1 != null)
+    assert.deepEqual(entry1.author, groups.welo.identity.id)
+    assert.equal(entry1.blocks, 1)
+    assert.deepEqual(entry1.cid, cid)
+    assert.equal(entry1.encrypted, false)
+    assert.equal(entry1.priority, 100)
+    assert.equal(entry1.revisionStrategy, 'all')
+    assert.equal(entry1.size, data.length)
+    assert(entry1.timestamp >= before)
+    assert(entry1.timestamp <= Date.now())
+
+    const newData2 = 'your-data-long'
+    const write2 = await client.rpc.request('write', { group: group.toString(), path, data: newData2 })
+
+    assert.equal(write2, newData2.length)
+
+    const entry2 = await fs.get(path)
+
+    assert(entry2 != null)
+
+    const value2 = await base.blockstore.get(entry2.cid)
+
+    assert.deepEqual(value2, uint8ArrayFromString(newData2))
+
+    const newData3 = 'test'
+    const write3 = await client.rpc.request('write', { group: group.toString(), path, data: newData3, length: newData3.length })
+
+    assert.equal(write3, newData3.length)
+
+    const entry3 = await fs.get(path)
+
+    assert(entry3 != null)
+
+    const value3 = await base.blockstore.get(entry3.cid)
+
+    assert.deepEqual(value3, uint8ArrayFromString('test-data-long'))
+
+    const newData4 = 'long'
+    const write4 = await client.rpc.request('write', { group: group.toString(), path, data: newData4, length: newData4.length, position: 5 })
+
+    assert.equal(write4, newData4.length)
+
+    const entry4 = await fs.get(path)
+
+    assert(entry4 != null)
+
+    const value4 = await base.blockstore.get(entry4.cid)
+
+    assert.deepEqual(value4, uint8ArrayFromString('test-long-long'))
 
     client.close()
     await sigint.interupt()
