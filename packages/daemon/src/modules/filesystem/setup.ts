@@ -10,6 +10,10 @@ import { extendDatastore } from '@/utils.js'
 export default async (components: Requires, config: Config): Promise<Provides> => {
   const events: Events = new EventTarget()
 
+  const localSettings = new LocalSettings({
+    datastore: extendDatastore(components.base.datastore, 'references')
+  })
+
   const getFileSystem = (group: CID): FileSystem | null => {
     const database = components.groups.groups.get(group)
 
@@ -17,12 +21,14 @@ export default async (components: Requires, config: Config): Promise<Provides> =
       return null
     }
 
-    return new FileSystem({ database, blockstore: components.base.blockstore, id: components.groups.welo.identity.id })
+    return new FileSystem({
+      database,
+      blockstore:
+      components.base.blockstore,
+      id: components.groups.welo.identity.id,
+      localSettings
+    })
   }
-
-  const localSettings = new LocalSettings({
-    datastore: extendDatastore(components.base.datastore, 'references')
-  })
 
   const uploads = await createUploadManager(
     { getFileSystem, events },

@@ -20,24 +20,17 @@ const command: ModuleMethod<Provides, Requires> = (context, { rpc, groups }) => 
         continue
       }
 
-      for await (const pair of fs.getDir(params.path)) {
-        const entry = pair.value
-
-        const ref = await context.localSettings.get(
-          CID.parse(group),
-          pair.key.toString().slice(2)
-        )
-
+      for await (const { key, value: entry } of fs.getDir(params.path)) {
         list.push({
-          path: pair.key.toString(),
+          path: key.toString(),
           cid: entry.cid.toString(),
           name: entry.cid.toString().slice(0, 8),
           group,
           encrypted: entry.encrypted,
           size: entry.size,
           blocks: entry.blocks,
-          priority: ref?.priority ?? entry.priority,
-          revisionStrategy: ref?.revisionStrategy ?? entry.revisionStrategy,
+          priority: entry.priority,
+          revisionStrategy: entry.revisionStrategy,
           timestamp: entry.timestamp,
           author: uint8arrayToString(entry.author, 'base58btc')
         })

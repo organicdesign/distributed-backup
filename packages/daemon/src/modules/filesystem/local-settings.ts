@@ -14,17 +14,17 @@ export class LocalSettings {
     this.datastore = components.datastore
   }
 
-  async set (group: CID, path: string, data: Partial<LocalEntryData>): Promise<void> {
+  async set (group: CID, path: string, data: LocalEntryData): Promise<void> {
     const key = new Key(`/${group.toString()}${path}`)
 
     await this.datastore.put(key, encodeAny(data))
   }
 
-  async get (group: CID, path: string): Promise<Partial<LocalEntryData> | null> {
+  async get (group: CID, path: string): Promise<LocalEntryData> {
     const key = new Key(`/${group.toString()}${path}`)
 
     if (!(await this.datastore.has(key))) {
-      return null
+      return {}
     }
 
     const raw = await this.datastore.get(key)

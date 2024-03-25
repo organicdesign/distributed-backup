@@ -20,7 +20,7 @@ export const DATA_KEY = 'r'
 export const LocalEntryData = z.object({
   priority: z.number().min(0).max(100),
   revisionStrategy: RevisionStrategies
-})
+}).partial()
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type LocalEntryData = z.infer<typeof LocalEntryData>

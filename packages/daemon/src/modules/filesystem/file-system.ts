@@ -3,6 +3,7 @@ import * as dagCbor from '@ipld/dag-cbor'
 import { type Entry, EncodedEntry } from './interface.js'
 import { encodeEntry, decodeEntry, keyToPath, pathToKey, getDagSize } from './utils.js'
 import { logger } from './index.js'
+import type { LocalSettings } from './local-settings.js'
 import type { KeyvalueDB, Pair } from '@/interface.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
@@ -12,11 +13,13 @@ export class FileSystem {
   private readonly database: KeyvalueDB
   private readonly blockstore: Blockstore
   private readonly id: Uint8Array
+  private readonly localSettings: LocalSettings
 
-  constructor ({ database, blockstore, id }: { database: KeyvalueDB, blockstore: Blockstore, id: Uint8Array }) {
+  constructor ({ database, blockstore, id, localSettings }: { database: KeyvalueDB, blockstore: Blockstore, id: Uint8Array, localSettings: LocalSettings }) {
     this.database = database
     this.blockstore = blockstore
     this.id = id
+    this.localSettings = localSettings
   }
 
   get group (): CID {
@@ -64,7 +67,10 @@ export class FileSystem {
       return null
     }
 
-    return decodeEntry(encodedEntry)
+    const entry = decodeEntry(encodedEntry)
+    const localSettings = await this.localSettings.get(this.group, path)
+
+    return { ...entry, ...localSettings }
   }
 
   async delete (path: string): Promise<void> {
@@ -93,10 +99,11 @@ export class FileSystem {
       }
 
       const entry = decodeEntry(encodedEntry)
+      const localSettings = await this.localSettings.get(this.group, path)
 
       yield {
         key: keyToPath(pair.key.toString()),
-        value: entry
+        value: { ...entry, ...localSettings }
       }
     }
   }
