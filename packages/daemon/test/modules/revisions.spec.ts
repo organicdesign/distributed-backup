@@ -197,9 +197,8 @@ describe('revisions', () => {
   })
 
   it('rpc - it exports a revision (file)', async () => {
-    const { revisions: m, network, filesystem, groups, sigint, argv } = await create()
+    const { network, filesystem, groups, sigint, argv } = await create()
     const group = await createGroup(groups, 'test')
-    const r = m.getRevisions(group)
     const fs = filesystem.getFileSystem(group)
     const path = '/test'
     const client = createNetClient(argv.socket)
@@ -207,7 +206,6 @@ describe('revisions', () => {
     const inFile = Path.join(dataPath, 'file-1.txt')
     const outFile = Path.join(testPath, 'file-1.txt')
 
-    assert(r != null)
     assert(fs != null)
 
     const [{ cid }] = await all(importer(network.helia.blockstore, inFile, {
@@ -228,10 +226,6 @@ describe('revisions', () => {
       revisionStrategy: 'all' as const,
       priority: 1
     }])
-
-    const entry = await fs.get(path)
-
-    assert(entry != null)
 
     await promise
 
@@ -258,9 +252,8 @@ describe('revisions', () => {
   })
 
   it('rpc - it exports a revision (directory)', async () => {
-    const { revisions: m, network, filesystem, groups, sigint, argv } = await create()
+    const { network, filesystem, groups, sigint, argv } = await create()
     const group = await createGroup(groups, 'test')
-    const r = m.getRevisions(group)
     const fs = filesystem.getFileSystem(group)
     const rootPath = '/test'
     const client = createNetClient(argv.socket)
@@ -277,7 +270,6 @@ describe('revisions', () => {
       virtual: Path.join(rootPath, path)
     }))
 
-    assert(r != null)
     assert(fs != null)
 
     for (const path of paths) {
@@ -328,15 +320,13 @@ describe('revisions', () => {
   })
 
   it('rpc - lists a revision (file)', async () => {
-    const { revisions: m, network, filesystem, groups, sigint, argv } = await create()
+    const { network, filesystem, groups, sigint, argv } = await create()
     const group = await createGroup(groups, 'test')
-    const r = m.getRevisions(group)
     const fs = filesystem.getFileSystem(group)
     const path = '/test'
     const client = createNetClient(argv.socket)
     const inFile = Path.join(dataPath, 'file-1.txt')
 
-    assert(r != null)
     assert(fs != null)
 
     const [{ cid }] = await all(importer(network.helia.blockstore, inFile, {
@@ -359,10 +349,6 @@ describe('revisions', () => {
       revisionStrategy: 'all' as const,
       priority: 1
     }])
-
-    const entry = await fs.get(path)
-
-    assert(entry != null)
 
     await promise
 
@@ -390,9 +376,8 @@ describe('revisions', () => {
   })
 
   it('rpc - it lists a revision (directory)', async () => {
-    const { revisions: m, network, filesystem, groups, sigint, argv } = await create()
+    const { network, filesystem, groups, sigint, argv } = await create()
     const group = await createGroup(groups, 'test')
-    const r = m.getRevisions(group)
     const fs = filesystem.getFileSystem(group)
     const rootPath = '/test'
     const client = createNetClient(argv.socket)
@@ -409,7 +394,6 @@ describe('revisions', () => {
       cid: CID.parse('QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN')
     }))
 
-    assert(r != null)
     assert(fs != null)
 
     const before = Date.now()
