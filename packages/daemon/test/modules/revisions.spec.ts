@@ -2,6 +2,7 @@ import assert from 'assert'
 import fs from 'fs/promises'
 import Path from 'path'
 import { KeyManager } from '@organicdesign/db-key-manager'
+import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import createDownloader from '../../src/modules/downloader/index.js'
 import createFilesystem from '../../src/modules/filesystem/index.js'
@@ -12,6 +13,7 @@ import createRpc from '../../src/modules/rpc/index.js'
 import createSigint from '../../src/modules/sigint/index.js'
 import createTick from '../../src/modules/tick/index.js'
 import { createGroup } from '../utils/create-group.js'
+import { createDag } from '../utils/dag.js'
 import { generateKey } from '../utils/generate-key.js'
 import { mkTestPath } from '../utils/paths.js'
 import mockArgv from './mock-argv.js'
@@ -19,7 +21,7 @@ import mockBase from './mock-base.js'
 import mockConfig from './mock-config.js'
 
 describe('revisions', () => {
-  const testPath = mkTestPath('filesystem')
+  const testPath = mkTestPath('revisions')
 
   const create = async (name?: string): Promise<{
     argv: ReturnType<typeof mockArgv>
@@ -122,6 +124,58 @@ describe('revisions', () => {
     const r = m.getRevisions(group)
 
     assert.notEqual(r, null)
+
+    await sigint.interupt()
+  })
+
+  it('creates a revision when a file is added to the filesystem', async () => {
+    const { revisions: m, filesystem, network, groups, sigint } = await create()
+    const group = await createGroup(groups, 'test')
+    const r = m.getRevisions(group)
+    const fs = filesystem.getFileSystem(group)
+    const dag = await createDag(network.helia, 2, 2)
+    const path = '/test'
+
+    assert(r != null)
+    assert(fs != null)
+
+    const promise = new Promise<void>((resolve, reject) => {
+      setTimeout(() => { reject(new Error('timeout')) }, 100)
+
+      filesystem.events.addEventListener('file:added', () => { resolve() }, { once: true })
+    })
+
+    await filesystem.uploads.add('put', [group.bytes, path, {
+      cid: dag[0].bytes,
+      encrypted: false,
+      revisionStrategy: 'all' as const,
+      priority: 1
+    }])
+
+    const entry = await fs.get(path)
+
+    assert(entry != null)
+
+    await promise
+
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    const entries = await all(r.getAll(path))
+
+    assert.deepEqual(entries, [{
+      path,
+      sequence: 0,
+      author: groups.welo.identity.id,
+
+      entry: {
+        cid: entry.cid,
+        encrypted: entry.encrypted,
+        timestamp: entry.timestamp,
+        blocks: entry.blocks,
+        size: entry.size,
+        priority: entry.priority
+      }
+    }])
 
     await sigint.interupt()
   })
