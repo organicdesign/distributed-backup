@@ -2,6 +2,8 @@ import assert from 'assert/strict'
 import fs from 'fs/promises'
 import Path from 'path'
 import { KeyManager } from '@organicdesign/db-key-manager'
+import { createNetClient } from '@organicdesign/net-rpc'
+import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import createDownloader from '../../src/modules/downloader/index.js'
 import createFilesystem from '../../src/modules/filesystem/index.js'
@@ -184,6 +186,67 @@ describe('filesystem', () => {
     assert(entry != null)
     assert.equal(entry.priority, 100)
 
+    await sigint.interupt()
+  })
+
+  it('rpc - delete (file)', async () => {
+    const { filesystem: m, groups, network, sigint, argv } = await create()
+    const client = createNetClient(argv.socket)
+    const group = await createGroup(groups, 'test')
+    const fs = m.getFileSystem(group)
+    const dag = await createDag(network.helia, 2, 2)
+    const path = '/test'
+
+    assert(fs != null)
+
+    await m.uploads.add('put', [group.bytes, path, {
+      cid: dag[0].bytes,
+      encrypted: false,
+      revisionStrategy: 'all' as const,
+      priority: 1
+    }])
+
+    const response = await client.rpc.request('delete', { group: group.toString(), path })
+
+    assert.deepEqual(response, [{ path, cid: dag[0].toString() }])
+
+    const entry = await fs.get(path)
+
+    assert.equal(entry, null)
+
+    client.close()
+    await sigint.interupt()
+  })
+
+  it('rpc - delete (directory)', async () => {
+    const { filesystem: m, groups, network, sigint, argv } = await create()
+    const client = createNetClient(argv.socket)
+    const group = await createGroup(groups, 'test')
+    const fs = m.getFileSystem(group)
+    const dag = await createDag(network.helia, 2, 2)
+    const rootPath = '/test'
+    const paths = [`${rootPath}/file1`, `${rootPath}/file2`, `${rootPath}/sub/file3`]
+
+    assert(fs != null)
+
+    await Promise.all(paths.map(async path =>
+      m.uploads.add('put', [group.bytes, path, {
+        cid: dag[0].bytes,
+        encrypted: false,
+        revisionStrategy: 'all' as const,
+        priority: 1
+      }])
+    ))
+
+    const response = await client.rpc.request('delete', { group: group.toString(), path: rootPath })
+
+    assert.deepEqual(response, paths.map(path => ({ path, cid: dag[0].toString() })))
+
+    const entries = await all(fs.getDir(rootPath))
+
+    assert.deepEqual(entries, [])
+
+    client.close()
     await sigint.interupt()
   })
 })
