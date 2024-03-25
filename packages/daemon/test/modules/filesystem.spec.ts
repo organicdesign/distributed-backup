@@ -11,6 +11,7 @@ import createRpc from '../../src/modules/rpc/index.js'
 import createSigint from '../../src/modules/sigint/index.js'
 import createTick from '../../src/modules/tick/index.js'
 import { createGroup } from '../utils/create-group.js'
+import { createDag } from '../utils/dag.js'
 import { generateKey } from '../utils/generate-key.js'
 import { mkTestPath } from '../utils/paths.js'
 import mockArgv from './mock-argv.js'
@@ -117,6 +118,45 @@ describe('filesystem', () => {
     const fs = m.getFileSystem(group)
 
     assert.notEqual(fs, null)
+
+    await sigint.interupt()
+  })
+
+  it('uploads show in filesystem', async () => {
+    const { filesystem: m, groups, network, sigint } = await create()
+    const group = await createGroup(groups, 'test')
+    const fs = m.getFileSystem(group)
+    const dag = await createDag(network.helia, 2, 2)
+    const path = '/test'
+
+    const entryData = {
+      cid: dag[0].bytes,
+      encrypted: false,
+      revisionStrategy: 'all' as const,
+      priority: 1
+    }
+
+    assert(fs != null)
+
+    const before = Date.now()
+
+    await m.uploads.add('put', [group.bytes, path, entryData])
+
+    const entry = await fs.get(path)
+    const values = await Promise.all(dag.map(async d => network.helia.blockstore.get(d)))
+    const size = values.reduce((a, c) => a + c.length, 0)
+
+    assert(entry != null)
+    assert.deepEqual(entry.author, groups.welo.identity.id)
+    assert.equal(entry.blocks, dag.length)
+    assert.deepEqual(entry.cid, dag[0])
+    assert.equal(entry.encrypted, false)
+    assert.equal(entry.priority, 1)
+    assert.equal(entry.revisionStrategy, 'all')
+    assert.equal(entry.sequence, 0)
+    assert.equal(entry.size, size)
+    assert(entry.timestamp >= before)
+    assert(entry.timestamp <= Date.now())
 
     await sigint.interupt()
   })
