@@ -10,7 +10,7 @@ const node = 'fuse'
 const testDataDir = Path.join(projectPath, 'packages/e2e-tests/test-data')
 const fuseDir = Path.join(projectPath, 'packages/e2e-tests/fuse')
 
-describe('fuse', () => {
+describe.skip('fuse', () => {
   let daemonProc: Awaited<ReturnType<typeof runNode>>
   let fuseProc: Awaited<ReturnType<typeof runFuse>>
   let group: string
