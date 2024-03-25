@@ -10,6 +10,7 @@ import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import { compare as uint8ArrayCompare } from 'uint8arrays/compare'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import createDownloader from '../../src/modules/downloader/index.js'
 import createFilesystem from '../../src/modules/filesystem/index.js'
 import createGroups from '../../src/modules/groups/index.js'
@@ -525,6 +526,52 @@ describe('filesystem', () => {
 
     assert.deepEqual(lCids, rCids)
     assert.deepEqual(lPaths, rPaths)
+
+    client.close()
+    await sigint.interupt()
+  })
+
+  it('rpc - list', async () => {
+    const { filesystem: m, groups, network, sigint, argv } = await create()
+    const client = createNetClient(argv.socket)
+    const group = await createGroup(groups, 'test')
+    const fs = m.getFileSystem(group)
+    const dag = await createDag(network.helia, 2, 2)
+    const rootPath = '/test'
+    const paths = [`${rootPath}/file1`, `${rootPath}/file2`, `${rootPath}/sub/file3`]
+
+    assert(fs != null)
+
+    const before = Date.now()
+
+    await Promise.all(paths.map(async path =>
+      m.uploads.add('put', [group.bytes, path, {
+        cid: dag[0].bytes,
+        encrypted: false,
+        revisionStrategy: 'all' as const,
+        priority: 1
+      }])
+    ))
+
+    const response = await client.rpc.request('list', { group: group.toString(), path: '/' })
+
+    assert(Array.isArray(response))
+
+    const values = await Promise.all(dag.map(async d => network.helia.blockstore.get(d)))
+    const size = values.reduce((a, c) => a + c.length, 0)
+
+    for (const entry of response) {
+      assert(entry != null)
+      assert.equal(entry.author, uint8ArrayToString(groups.welo.identity.id, 'base58btc'))
+      assert.equal(entry.blocks, dag.length)
+      assert.deepEqual(entry.cid, dag[0].toString())
+      assert.equal(entry.encrypted, false)
+      assert.equal(entry.priority, 1)
+      assert.equal(entry.revisionStrategy, 'all')
+      assert.equal(entry.size, size)
+      assert(entry.timestamp >= before)
+      assert(entry.timestamp <= Date.now())
+    }
 
     client.close()
     await sigint.interupt()
