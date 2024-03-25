@@ -344,4 +344,65 @@ describe('filesystem', () => {
     client.close()
     await sigint.interupt()
   })
+
+  it('rpc - export (directory)', async () => {
+    const { filesystem: m, network, groups, sigint, argv } = await create()
+    const client = createNetClient(argv.socket)
+    const group = await createGroup(groups, 'test')
+    const fs = m.getFileSystem(group)
+    const rootPath = '/test'
+    const chunker = selectChunker()
+    const hasher = selectHasher()
+    const outPath = Path.join(testPath, 'export-directory')
+
+    const paths = [
+      'file-1.txt',
+      'file-2.txt',
+      'dir-1/file-3.txt'
+    ].map(path => ({
+      in: Path.join(dataPath, path),
+      out: Path.join(outPath, path),
+      virtual: Path.join(rootPath, path)
+    }))
+
+    assert(fs != null)
+
+    await Promise.all(paths.map(async path => {
+      const result = await all(importer(
+        network.helia.blockstore,
+        path.in,
+        {
+          chunker,
+          hasher,
+          cidVersion: 1
+        }
+      ))
+
+      await m.uploads.add('put', [group.bytes, path.virtual, {
+        cid: result[0].cid.bytes,
+        encrypted: false,
+        revisionStrategy: 'all',
+        priority: 1
+      }])
+    }))
+
+    const response = await client.rpc.request('export', {
+      group: group.toString(),
+      path: rootPath,
+      outPath
+    })
+
+    assert.equal(response, null)
+
+    for (const path of paths) {
+      const [inHash, outHash] = await Promise.all([
+        hash(path.in),
+        hash(path.out)
+      ])
+      assert.deepEqual(inHash, outHash)
+    }
+
+    client.close()
+    await sigint.interupt()
+  })
 })
