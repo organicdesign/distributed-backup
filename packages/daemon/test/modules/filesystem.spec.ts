@@ -249,4 +249,26 @@ describe('filesystem', () => {
     client.close()
     await sigint.interupt()
   })
+
+  it('rpc - edit priority', async () => {
+    const { filesystem: m, groups, sigint, argv } = await create()
+    const client = createNetClient(argv.socket)
+    const group = await createGroup(groups, 'test')
+    const fs = m.getFileSystem(group)
+    const path = '/test'
+    const priority = 50
+
+    assert(fs != null)
+
+    const response = await client.rpc.request('edit', { group: group.toString(), path, priority })
+
+    assert.equal(response, null)
+
+    const localSettings = await m.localSettings.get(group, path)
+
+    assert.equal(localSettings.priority, priority)
+
+    client.close()
+    await sigint.interupt()
+  })
 })
