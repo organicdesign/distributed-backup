@@ -45,7 +45,9 @@ export default async (context: Pick<Provides, 'getFileSystem' | 'events'>, { net
       const cid = await ufs.addBytes(new Uint8Array([]))
       const pairs = await all(fs.getDir(path))
 
-      await Promise.all(pairs.map(async p => fs.delete(p.key.toString())))
+      for await (const p of pairs) {
+        await fs.delete(p.key.toString())
+      }
 
       const values = await all(take(1)(fs.getDir(parentPath)))
 
