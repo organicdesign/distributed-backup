@@ -324,4 +324,66 @@ describe('revisions', () => {
 
     await sigint.interupt()
   })
+
+  it('rpc - lists a revision (file)', async () => {
+    const { revisions: m, network, filesystem, groups, sigint, argv } = await create()
+    const group = await createGroup(groups, 'test')
+    const r = m.getRevisions(group)
+    const fs = filesystem.getFileSystem(group)
+    const path = '/test'
+    const client = createNetClient(argv.socket)
+    const inFile = Path.join(dataPath, 'file-1.txt')
+
+    assert(r != null)
+    assert(fs != null)
+
+    const [{ cid }] = await all(importer(network.helia.blockstore, inFile, {
+      cidVersion: 1,
+      hasher: selectHasher(),
+      chunker: selectChunker()
+    }))
+
+    const promise = new Promise<void>((resolve, reject) => {
+      setTimeout(() => { reject(new Error('timeout')) }, 100)
+
+      filesystem.events.addEventListener('file:added', () => { resolve() }, { once: true })
+    })
+
+    const before = Date.now()
+
+    await filesystem.uploads.add('put', [group.bytes, path, {
+      cid: cid.bytes,
+      encrypted: false,
+      revisionStrategy: 'all' as const,
+      priority: 1
+    }])
+
+    const entry = await fs.get(path)
+
+    assert(entry != null)
+
+    await promise
+
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    const response = await client.rpc.request('list', {
+      group: group.toString(),
+      path
+    })
+
+    assert(Array.isArray(response))
+    assert.equal(response.length, 1)
+    assert.equal(response[0].author, uint8ArrayToString(groups.welo.identity.id, 'base58btc'))
+    assert.equal(response[0].blocks, 1)
+    assert.equal(response[0].cid, cid.toString())
+    assert.equal(response[0].encrypted, false)
+    assert.equal(response[0].path, path)
+    assert.equal(response[0].priority, 1)
+    assert.equal(response[0].revisionStrategy, 'all')
+    assert.equal(response[0].size, 458)
+    assert(response[0].timestamp >= before)
+    assert(response[0].timestamp <= Date.now())
+
+    await sigint.interupt()
+  })
 })
