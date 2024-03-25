@@ -1,9 +1,14 @@
 import assert from 'assert'
+import { createHash } from 'crypto'
 import fs from 'fs/promises'
 import Path from 'path'
+import { fileURLToPath } from 'url'
+import { importer, selectHasher, selectChunker } from '@organicdesign/db-fs-importer'
 import { KeyManager } from '@organicdesign/db-key-manager'
+import { createNetClient } from '@organicdesign/net-rpc'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import createDownloader from '../../src/modules/downloader/index.js'
 import createFilesystem from '../../src/modules/filesystem/index.js'
 import createGroups from '../../src/modules/groups/index.js'
@@ -20,8 +25,17 @@ import mockArgv from './mock-argv.js'
 import mockBase from './mock-base.js'
 import mockConfig from './mock-config.js'
 
+const hash = async (path: string): Promise<Uint8Array> => {
+  const hasher = createHash('sha256')
+
+  hasher.write(await fs.readFile(path))
+
+  return hasher.digest()
+}
+
 describe('revisions', () => {
   const testPath = mkTestPath('revisions')
+  const dataPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), '../../../test-data')
 
   const create = async (name?: string): Promise<{
     argv: ReturnType<typeof mockArgv>
@@ -176,6 +190,67 @@ describe('revisions', () => {
         priority: entry.priority
       }
     }])
+
+    await sigint.interupt()
+  })
+
+  it('rpc - it exports a revision (file)', async () => {
+    const { revisions: m, network, filesystem, groups, sigint, argv } = await create()
+    const group = await createGroup(groups, 'test')
+    const r = m.getRevisions(group)
+    const fs = filesystem.getFileSystem(group)
+    const path = '/test'
+    const client = createNetClient(argv.socket)
+    const sequence = 0
+    const inFile = Path.join(dataPath, 'file-1.txt')
+    const outFile = Path.join(testPath, 'file-1.txt')
+
+    assert(r != null)
+    assert(fs != null)
+
+    const [{ cid }] = await all(importer(network.helia.blockstore, inFile, {
+      cidVersion: 1,
+      hasher: selectHasher(),
+      chunker: selectChunker()
+    }))
+
+    const promise = new Promise<void>((resolve, reject) => {
+      setTimeout(() => { reject(new Error('timeout')) }, 100)
+
+      filesystem.events.addEventListener('file:added', () => { resolve() }, { once: true })
+    })
+
+    await filesystem.uploads.add('put', [group.bytes, path, {
+      cid: cid.bytes,
+      encrypted: false,
+      revisionStrategy: 'all' as const,
+      priority: 1
+    }])
+
+    const entry = await fs.get(path)
+
+    assert(entry != null)
+
+    await promise
+
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    const response = await client.rpc.request('export-revision', {
+      group: group.toString(),
+      path,
+      author: uint8ArrayToString(groups.welo.identity.id, 'base58btc'),
+      sequence,
+      outPath: outFile
+    })
+
+    assert.equal(response, null)
+
+    const [hash1, hash2] = await Promise.all([
+      hash(inFile),
+      hash(outFile)
+    ])
+
+    assert.deepEqual(hash1, hash2)
 
     await sigint.interupt()
   })
