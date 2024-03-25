@@ -178,6 +178,30 @@ describe('filesystem', () => {
     await sigint.interupt()
   })
 
+  it('emits the file:added event when the FS was written to', async () => {
+    const { filesystem: m, groups, network, sigint } = await create()
+    const group = await createGroup(groups, 'test')
+    const dag = await createDag(network.helia, 2, 2)
+    const path = '/test'
+
+    const promise = new Promise<void>((resolve, reject) => {
+      setTimeout(() => { reject(new Error('timeout')) }, 100)
+
+      m.events.addEventListener('file:added', () => { resolve() }, { once: true })
+    })
+
+    await m.uploads.add('put', [group.bytes, path, {
+      cid: dag[0].bytes,
+      encrypted: false,
+      revisionStrategy: 'all' as const,
+      priority: 1
+    }])
+
+    await promise
+
+    await sigint.interupt()
+  })
+
   it('local settings change FS output', async () => {
     const { filesystem: m, groups, network, sigint } = await create()
     const group = await createGroup(groups, 'test')
