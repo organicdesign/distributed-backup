@@ -254,4 +254,74 @@ describe('revisions', () => {
 
     await sigint.interupt()
   })
+
+  it('rpc - it exports a revision (directory)', async () => {
+    const { revisions: m, network, filesystem, groups, sigint, argv } = await create()
+    const group = await createGroup(groups, 'test')
+    const r = m.getRevisions(group)
+    const fs = filesystem.getFileSystem(group)
+    const rootPath = '/test'
+    const client = createNetClient(argv.socket)
+    const sequence = 0
+    const outPath = Path.join(testPath, 'export-directory')
+
+    const paths = [
+      'file-1.txt',
+      'file-2.txt',
+      'dir-1/file-3.txt'
+    ].map(path => ({
+      in: Path.join(dataPath, path),
+      out: Path.join(outPath, path),
+      virtual: Path.join(rootPath, path)
+    }))
+
+    assert(r != null)
+    assert(fs != null)
+
+    for (const path of paths) {
+      const [{ cid }] = await all(importer(network.helia.blockstore, path.in, {
+        cidVersion: 1,
+        hasher: selectHasher(),
+        chunker: selectChunker()
+      }))
+
+      const promise = new Promise<void>((resolve, reject) => {
+        setTimeout(() => { reject(new Error('timeout')) }, 100)
+
+        filesystem.events.addEventListener('file:added', () => { resolve() }, { once: true })
+      })
+
+      await filesystem.uploads.add('put', [group.bytes, path.virtual, {
+        cid: cid.bytes,
+        encrypted: false,
+        revisionStrategy: 'all' as const,
+        priority: 1
+      }])
+
+      await promise
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    const response = await client.rpc.request('export-revision', {
+      group: group.toString(),
+      path: rootPath,
+      author: uint8ArrayToString(groups.welo.identity.id, 'base58btc'),
+      sequence,
+      outPath
+    })
+
+    assert.equal(response, null)
+
+    for (const path of paths) {
+      const [hash1, hash2] = await Promise.all([
+        hash(path.in),
+        hash(path.out)
+      ])
+
+      assert.deepEqual(hash1, hash2)
+    }
+
+    await sigint.interupt()
+  })
 })
