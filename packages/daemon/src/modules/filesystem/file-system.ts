@@ -57,7 +57,8 @@ export class FileSystem {
 
   async get (path: string): Promise<Entry | null> {
     const key = pathToKey(path)
-    const encodedEntry = await this.database.store.selectors.get(this.database.store.index)(key) as EncodedEntry
+    const index = await this.database.store.latest()
+    const encodedEntry = await this.database.store.selectors.get(index)(key) as EncodedEntry
 
     if (encodedEntry == null) {
       return null

@@ -36,7 +36,8 @@ export class Revisions {
 
   async get (path: string, author: Uint8Array, sequence: number): Promise<Entry | null> {
     const key = pathToKey(path, author, sequence)
-    const encodedEntry = await this.database.store.selectors.get(this.database.store.index)(key) as EncodedEntry
+    const index = await this.database.store.latest()
+    const encodedEntry = await this.database.store.selectors.get(index)(key) as EncodedEntry
 
     if (encodedEntry == null) {
       return null
