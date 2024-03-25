@@ -3,6 +3,7 @@ import { createHash } from 'crypto'
 import fs from 'fs/promises'
 import Path from 'path'
 import { fileURLToPath } from 'url'
+import { unixfs } from '@helia/unixfs'
 import { importer, selectHasher, selectChunker } from '@organicdesign/db-fs-importer'
 import { KeyManager } from '@organicdesign/db-key-manager'
 import { createNetClient } from '@organicdesign/net-rpc'
@@ -572,6 +573,43 @@ describe('filesystem', () => {
       assert(entry.timestamp >= before)
       assert(entry.timestamp <= Date.now())
     }
+
+    client.close()
+    await sigint.interupt()
+  })
+
+  it('rpc - read', async () => {
+    const { filesystem: m, groups, network, sigint, argv } = await create()
+    const client = createNetClient(argv.socket)
+    const group = await createGroup(groups, 'test')
+    const ufs = unixfs(network.helia)
+    const path = '/test'
+    const data = 'test-data'
+
+    const cid = await ufs.addBytes(uint8ArrayFromString(data))
+
+    await m.uploads.add('put', [group.bytes, path, {
+      cid: cid.bytes,
+      encrypted: false,
+      revisionStrategy: 'all' as const,
+      priority: 1
+    }])
+
+    const read1 = await client.rpc.request('read', { group: group.toString(), path })
+
+    assert.deepEqual(read1, data)
+
+    const read2 = await client.rpc.request('read', { group: group.toString(), path, position: 1 })
+
+    assert.deepEqual(read2, data.slice(1))
+
+    const read3 = await client.rpc.request('read', { group: group.toString(), path, length: 3 })
+
+    assert.deepEqual(read3, data.slice(0, 3))
+
+    const read4 = await client.rpc.request('read', { group: group.toString(), path, position: 1, length: 3 })
+
+    assert.deepEqual(read4, data.slice(1, 3 + 1))
 
     client.close()
     await sigint.interupt()
