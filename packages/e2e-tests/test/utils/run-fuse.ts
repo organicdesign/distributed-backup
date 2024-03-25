@@ -21,7 +21,7 @@ export default async (name: string, path: string, group: string): Promise<{ star
       const promise = new DeferredPromise<void>()
 
       const listener = (chunk: Uint8Array): void => {
-        if (uint8ArrayToString(chunk).includes('INIT')) {
+        if (uint8ArrayToString(chunk).includes('INIT') === true) {
           promise.resolve()
         }
       }
