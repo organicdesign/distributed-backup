@@ -386,4 +386,88 @@ describe('revisions', () => {
 
     await sigint.interupt()
   })
+
+  it('rpc - it lists a revision (directory)', async () => {
+    const { revisions: m, network, filesystem, groups, sigint, argv } = await create()
+    const group = await createGroup(groups, 'test')
+    const r = m.getRevisions(group)
+    const fs = filesystem.getFileSystem(group)
+    const rootPath = '/test'
+    const client = createNetClient(argv.socket)
+    const outPath = Path.join(testPath, 'export-directory')
+
+    const paths = [
+      'file-1.txt',
+      'file-2.txt',
+      'dir-1/file-3.txt'
+    ].map(path => ({
+      in: Path.join(dataPath, path),
+      out: Path.join(outPath, path),
+      virtual: Path.join(rootPath, path),
+      cid: CID.parse('QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN')
+    }))
+
+    assert(r != null)
+    assert(fs != null)
+
+    const before = Date.now()
+
+    for (const path of paths) {
+      const [{ cid }] = await all(importer(network.helia.blockstore, path.in, {
+        cidVersion: 1,
+        hasher: selectHasher(),
+        chunker: selectChunker()
+      }))
+
+      path.cid = cid
+
+      const promise = new Promise<void>((resolve, reject) => {
+        setTimeout(() => { reject(new Error('timeout')) }, 100)
+
+        filesystem.events.addEventListener('file:added', () => { resolve() }, { once: true })
+      })
+
+      await filesystem.uploads.add('put', [group.bytes, path.virtual, {
+        cid: cid.bytes,
+        encrypted: false,
+        revisionStrategy: 'all' as const,
+        priority: 1
+      }])
+
+      await promise
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    const response = await client.rpc.request('list', {
+      group: group.toString(),
+      path: rootPath
+    })
+
+    assert(Array.isArray(response))
+    assert.equal(response.length, 3)
+
+    for (const item of response) {
+      assert.equal(item.author, uint8ArrayToString(groups.welo.identity.id, 'base58btc'))
+      assert.equal(item.blocks, 1)
+      assert.equal(item.encrypted, false)
+      assert.equal(item.priority, 1)
+      assert.equal(item.revisionStrategy, 'all')
+      assert(item.timestamp >= before)
+      assert(item.timestamp <= Date.now())
+    }
+
+    for (const path of paths) {
+      const item = response.find(d => d.path === path.virtual)
+
+      assert(item != null)
+      assert(item.cid === path.cid.toString())
+
+      const size = (await network.helia.blockstore.get(path.cid)).length
+
+      assert(item.size === size)
+    }
+
+    await sigint.interupt()
+  })
 })
