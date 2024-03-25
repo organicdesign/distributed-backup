@@ -405,4 +405,52 @@ describe('filesystem', () => {
     client.close()
     await sigint.interupt()
   })
+
+  it('rpc - import (file)', async () => {
+    const { filesystem: m, groups, sigint, argv } = await create()
+    const client = createNetClient(argv.socket)
+    const group = await createGroup(groups, 'test')
+    const fs = m.getFileSystem(group)
+    const rootPath = '/test'
+    const outPath = Path.join(testPath, 'export-file')
+
+    const paths = [
+      {
+        name: 'file-1.txt',
+        cid: 'bafybeihoqexapn3tusc4rrkqztzzemz7y57esnzg7eutsua4ehjkylmjqe'
+      },
+      {
+        name: 'file-2.txt',
+        cid: 'bafybeibac7pp5mcxkj7s55bjdbr7tj3pj7col4janvm36y4fjvxqs67fsi'
+      },
+      {
+        name: 'dir-1/file-3.txt',
+        cid: 'bafybeihxa6uyvmdl6wdjxnwpluocix2csrq3ifunemjr2jxy35wjkl2v64'
+      }
+    ].map(path => ({
+      ...path,
+      in: Path.join(dataPath, path.name),
+      out: Path.join(outPath, path.name),
+      virtual: Path.join(rootPath, path.name)
+    }))
+
+    assert(fs != null)
+
+    await Promise.all(paths.map(async path => {
+      const response = await client.rpc.request('import', {
+        group: group.toString(),
+        path: path.virtual,
+        inPath: path.in
+      })
+
+      assert.deepEqual(response, [{
+        path: path.virtual,
+        inPath: path.in,
+        cid: path.cid
+      }])
+    }))
+
+    client.close()
+    await sigint.interupt()
+  })
 })
