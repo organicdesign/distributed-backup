@@ -1,6 +1,9 @@
 import assert from 'assert/strict'
+import { createHash } from 'crypto'
 import fs from 'fs/promises'
 import Path from 'path'
+import { fileURLToPath } from 'url'
+import { importer, selectHasher, selectChunker } from '@organicdesign/db-fs-importer'
 import { KeyManager } from '@organicdesign/db-key-manager'
 import { createNetClient } from '@organicdesign/net-rpc'
 import all from 'it-all'
@@ -21,7 +24,16 @@ import mockBase from './mock-base.js'
 import mockConfig from './mock-config.js'
 import type { Provides as FSProvides } from '../../src/modules/filesystem/index.js'
 
+const hash = async (path: string): Promise<Uint8Array> => {
+  const hasher = createHash('sha256')
+
+  hasher.write(await fs.readFile(path))
+
+  return hasher.digest()
+}
+
 describe('filesystem', () => {
+  const dataPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), '../../../test-data')
   const testPath = mkTestPath('filesystem')
 
   const create = async (name?: string): Promise<{
@@ -267,6 +279,67 @@ describe('filesystem', () => {
     const localSettings = await m.localSettings.get(group, path)
 
     assert.equal(localSettings.priority, priority)
+
+    client.close()
+    await sigint.interupt()
+  })
+
+  it('rpc - export (file)', async () => {
+    const { filesystem: m, network, groups, sigint, argv } = await create()
+    const client = createNetClient(argv.socket)
+    const group = await createGroup(groups, 'test')
+    const fs = m.getFileSystem(group)
+    const rootPath = '/test'
+    const chunker = selectChunker()
+    const hasher = selectHasher()
+    const outPath = Path.join(testPath, 'export-file')
+
+    const paths = [
+      'file-1.txt',
+      'file-2.txt',
+      'dir-1/file-3.txt'
+    ].map(path => ({
+      in: Path.join(dataPath, path),
+      out: Path.join(outPath, path),
+      virtual: Path.join(rootPath, path)
+    }))
+
+    assert(fs != null)
+
+    await Promise.all(paths.map(async path => {
+      const result = await all(importer(
+        network.helia.blockstore,
+        path.in,
+        {
+          chunker,
+          hasher,
+          cidVersion: 1
+        }
+      ))
+
+      await m.uploads.add('put', [group.bytes, path.virtual, {
+        cid: result[0].cid.bytes,
+        encrypted: false,
+        revisionStrategy: 'all',
+        priority: 1
+      }])
+    }))
+
+    for (const path of paths) {
+      const response = await client.rpc.request('export', {
+        group: group.toString(),
+        path: path.virtual,
+        outPath: path.out
+      })
+
+      const [inHash, outHash] = await Promise.all([
+        hash(path.in),
+        hash(path.out)
+      ])
+
+      assert.equal(response, null)
+      assert.deepEqual(inHash, outHash)
+    }
 
     client.close()
     await sigint.interupt()
