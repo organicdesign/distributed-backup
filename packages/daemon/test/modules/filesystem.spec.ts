@@ -8,6 +8,8 @@ import { KeyManager } from '@organicdesign/db-key-manager'
 import { createNetClient } from '@organicdesign/net-rpc'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
+import { compare as uint8ArrayCompare } from 'uint8arrays/compare'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import createDownloader from '../../src/modules/downloader/index.js'
 import createFilesystem from '../../src/modules/filesystem/index.js'
 import createGroups from '../../src/modules/groups/index.js'
@@ -448,7 +450,81 @@ describe('filesystem', () => {
         inPath: path.in,
         cid: path.cid
       }])
+
+      const result = await fs.get(path.virtual)
+
+      assert(result != null)
+      assert.deepEqual(result.cid, CID.parse(path.cid))
     }))
+
+    client.close()
+    await sigint.interupt()
+  })
+
+  it('rpc - import (directory)', async () => {
+    const { filesystem: m, groups, sigint, argv } = await create()
+    const client = createNetClient(argv.socket)
+    const group = await createGroup(groups, 'test')
+    const fs = m.getFileSystem(group)
+    const rootPath = '/test'
+    const outPath = Path.join(testPath, 'export-file')
+
+    const paths = [
+      {
+        name: 'file-1.txt',
+        cid: 'bafybeihoqexapn3tusc4rrkqztzzemz7y57esnzg7eutsua4ehjkylmjqe'
+      },
+      {
+        name: 'file-2.txt',
+        cid: 'bafybeibac7pp5mcxkj7s55bjdbr7tj3pj7col4janvm36y4fjvxqs67fsi'
+      },
+      {
+        name: 'dir-1/file-3.txt',
+        cid: 'bafybeihxa6uyvmdl6wdjxnwpluocix2csrq3ifunemjr2jxy35wjkl2v64'
+      }
+    ].map(path => ({
+      ...path,
+      in: Path.join(dataPath, path.name),
+      out: Path.join(outPath, path.name),
+      virtual: Path.join(rootPath, path.name)
+    }))
+
+    assert(fs != null)
+
+    const response = await client.rpc.request('import', {
+      group: group.toString(),
+      path: rootPath,
+      inPath: dataPath
+    })
+
+    const cidSort = (a: { cid: string }, b: { cid: string }): number => uint8ArrayCompare(uint8ArrayFromString(a.cid), uint8ArrayFromString(b.cid))
+
+    response.sort(cidSort)
+
+    const expectedResponse = paths.map(path => ({
+      path: path.virtual,
+      inPath: path.in,
+      cid: path.cid
+    }))
+
+    expectedResponse.sort(cidSort)
+
+    assert.deepEqual(response, expectedResponse)
+
+    const fsResult = await all(fs.getDir(rootPath))
+
+    const lCids = fsResult.map(r => r.value.cid)
+    const rCids = paths.map(path => CID.parse(path.cid))
+    const lPaths = fsResult.map(r => r.key.toString())
+    const rPaths = paths.map(path => path.virtual)
+
+    lCids.sort((a, b) => uint8ArrayCompare(a.bytes, b.bytes))
+    rCids.sort((a, b) => uint8ArrayCompare(a.bytes, b.bytes))
+    lPaths.sort()
+    rPaths.sort()
+
+    assert.deepEqual(lCids, rCids)
+    assert.deepEqual(lPaths, rPaths)
 
     client.close()
     await sigint.interupt()
