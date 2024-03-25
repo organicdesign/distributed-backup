@@ -23,11 +23,12 @@ nodejs will need to be installed to run this project, it has been tested on v18,
 
 The fuse package is disabled by default because it depends on the OS having FUSE installed. Fuse may already be installed by default on some linux distributions.
 
-You can enable fuse by editing the `workspaces` value in `package.json` to:
+You can enable fuse by adding it to the `workspaces` value in `package.json`:
 
 ```json
 "workspaces": [
-	"packages/!(e2e-tests)"
+	"packages/!(fuse)",
+	"packages/fuse"
 ]
 ```
 
