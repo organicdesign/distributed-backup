@@ -3,11 +3,13 @@ import { createHash } from 'crypto'
 import fs from 'fs/promises'
 import Path from 'path'
 import { fileURLToPath } from 'url'
+import { unixfs } from '@helia/unixfs'
 import { importer, selectHasher, selectChunker } from '@organicdesign/db-fs-importer'
 import { KeyManager } from '@organicdesign/db-key-manager'
 import { createNetClient } from '@organicdesign/net-rpc'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import createDownloader from '../../src/modules/downloader/index.js'
 import createFilesystem from '../../src/modules/filesystem/index.js'
@@ -468,6 +470,60 @@ describe('revisions', () => {
       assert(item.size === size)
     }
 
+    await sigint.interupt()
+  })
+
+  it('rpc - read revision', async () => {
+    const { filesystem, groups, network, sigint, argv } = await create()
+    const client = createNetClient(argv.socket)
+    const group = await createGroup(groups, 'test')
+    const ufs = unixfs(network.helia)
+    const path = '/test'
+    const data = 'test-data'
+
+    const cid = await ufs.addBytes(uint8ArrayFromString(data))
+
+    const promise = new Promise<void>((resolve, reject) => {
+      setTimeout(() => { reject(new Error('timeout')) }, 100)
+
+      filesystem.events.addEventListener('file:added', () => { resolve() }, { once: true })
+    })
+
+    await filesystem.uploads.add('put', [group.bytes, path, {
+      cid: cid.bytes,
+      encrypted: false,
+      revisionStrategy: 'all' as const,
+      priority: 1
+    }])
+
+    await promise
+
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    const coreParams = {
+      group: group.toString(),
+      path,
+      sequence: 0,
+      author: uint8ArrayToString(groups.welo.identity.id, 'base58btc')
+    }
+
+    const read1 = await client.rpc.request('read', coreParams)
+
+    assert.deepEqual(read1, data)
+
+    const read2 = await client.rpc.request('read', { ...coreParams, position: 1 })
+
+    assert.deepEqual(read2, data.slice(1))
+
+    const read3 = await client.rpc.request('read', { ...coreParams, length: 3 })
+
+    assert.deepEqual(read3, data.slice(0, 3))
+
+    const read4 = await client.rpc.request('read', { ...coreParams, position: 1, length: 3 })
+
+    assert.deepEqual(read4, data.slice(1, 3 + 1))
+
+    client.close()
     await sigint.interupt()
   })
 })
