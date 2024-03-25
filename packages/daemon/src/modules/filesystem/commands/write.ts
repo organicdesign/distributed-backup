@@ -1,6 +1,8 @@
 import { unixfs } from '@helia/unixfs'
 import { Write } from '@organicdesign/db-rpc-interfaces'
+import all from 'it-all'
 import { CID } from 'multiformats/cid'
+import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { FileSystemEvent } from '../events.js'
 import type { Provides, Requires } from '../index.js'
@@ -19,7 +21,16 @@ const command: ModuleMethod<Provides, Requires> = (context, { rpc, network }) =>
 
     const entry: Partial<Entry> = await fs.get(params.path) ?? {}
     const ufs = unixfs(network.helia)
-    const cid = await ufs.addBytes(uint8ArrayFromString(params.data))
+
+    const existingData = (entry.cid != null) ? uint8ArrayConcat(await all(ufs.cat(entry.cid))) : new Uint8Array()
+
+    const dataToWrite = uint8ArrayConcat([
+      existingData.slice(0, params.position),
+      uint8ArrayFromString(params.data),
+      existingData.slice(params.position + params.length)
+    ])
+
+    const cid = await ufs.addBytes(dataToWrite)
 
     const newEntryParams = {
       cid,
