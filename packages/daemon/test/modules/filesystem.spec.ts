@@ -129,18 +129,16 @@ describe('filesystem', () => {
     const dag = await createDag(network.helia, 2, 2)
     const path = '/test'
 
-    const entryData = {
-      cid: dag[0].bytes,
-      encrypted: false,
-      revisionStrategy: 'all' as const,
-      priority: 1
-    }
-
     assert(fs != null)
 
     const before = Date.now()
 
-    await m.uploads.add('put', [group.bytes, path, entryData])
+    await m.uploads.add('put', [group.bytes, path, {
+      cid: dag[0].bytes,
+      encrypted: false,
+      revisionStrategy: 'all' as const,
+      priority: 1
+    }])
 
     const entry = await fs.get(path)
     const values = await Promise.all(dag.map(async d => network.helia.blockstore.get(d)))
@@ -157,6 +155,34 @@ describe('filesystem', () => {
     assert.equal(entry.size, size)
     assert(entry.timestamp >= before)
     assert(entry.timestamp <= Date.now())
+
+    await sigint.interupt()
+  })
+
+  it('local settings change FS output', async () => {
+    const { filesystem: m, groups, network, sigint } = await create()
+    const group = await createGroup(groups, 'test')
+    const fs = m.getFileSystem(group)
+    const dag = await createDag(network.helia, 2, 2)
+    const path = '/test'
+
+    assert(fs != null)
+
+    await m.uploads.add('put', [group.bytes, path, {
+      cid: dag[0].bytes,
+      encrypted: false,
+      revisionStrategy: 'all' as const,
+      priority: 1
+    }])
+
+    await m.localSettings.set(group, path, {
+      priority: 100
+    })
+
+    const entry = await fs.get(path)
+
+    assert(entry != null)
+    assert.equal(entry.priority, 100)
 
     await sigint.interupt()
   })
