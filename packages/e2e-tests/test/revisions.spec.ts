@@ -1,12 +1,11 @@
 import assert from 'assert/strict'
-import Path from 'path'
-import projectPath from './utils/project-path.js'
+import * as testData from '@organicdesign/db-test-data'
 import runClient from './utils/run-client.js'
 import runNode from './utils/run-node.js'
 
 const node = 'revisions'
-const testDataDir = Path.join(projectPath, 'packages/e2e-tests/test-data/file-1.txt')
 const virtualDir = '/data'
+const dataFile = testData.data[0]
 
 describe('revisions', () => {
   let proc: Awaited<ReturnType<typeof runNode>>
@@ -19,7 +18,7 @@ describe('revisions', () => {
 
     group = (await runClient(node, 'create-group', 'test')).group
 
-    const response = await runClient(node, 'import', group, testDataDir, virtualDir)
+    const response = await runClient(node, 'import', group, dataFile.path, virtualDir)
 
     assert(response.success)
   })
@@ -38,7 +37,7 @@ describe('revisions', () => {
   })
 
   it("has 0 revisions after overwrite with strategy 'none'", async () => {
-    const add = await runClient(node, 'import', group, testDataDir, virtualDir, '--revisionStrategy', 'none')
+    const add = await runClient(node, 'import', group, dataFile.path, virtualDir, '--revisionStrategy', 'none')
 
     assert(add.success)
 
@@ -53,7 +52,7 @@ describe('revisions', () => {
   })
 
   it("has 1 revisions after overwrite with strategy 'log'", async () => {
-    const add = await runClient(node, 'import', group, testDataDir, virtualDir, '--revisionStrategy', 'log')
+    const add = await runClient(node, 'import', group, dataFile.path, virtualDir, '--revisionStrategy', 'log')
 
     assert(add.success)
 
@@ -66,7 +65,7 @@ describe('revisions', () => {
   })
 
   it("has 2 revisions after overwrite with strategy 'all'", async () => {
-    const add = await runClient(node, 'import', group, testDataDir, virtualDir, '--revisionStrategy', 'all')
+    const add = await runClient(node, 'import', group, dataFile.path, virtualDir, '--revisionStrategy', 'all')
 
     assert(add.success)
 
@@ -80,7 +79,7 @@ describe('revisions', () => {
   })
 
   it("reduces to 1 revision after overwrite with strategy 'log'", async () => {
-    const add = await runClient(node, 'import', group, testDataDir, virtualDir, '--revisionStrategy', 'log')
+    const add = await runClient(node, 'import', group, dataFile.path, virtualDir, '--revisionStrategy', 'log')
 
     assert(add.success)
 
@@ -93,7 +92,7 @@ describe('revisions', () => {
   })
 
   it("reduces to 0 revisions after overwrite with strategy 'none'", async () => {
-    const add = await runClient(node, 'import', group, testDataDir, virtualDir, '--revisionStrategy', 'none')
+    const add = await runClient(node, 'import', group, dataFile.path, virtualDir, '--revisionStrategy', 'none')
 
     assert(add.success)
 
