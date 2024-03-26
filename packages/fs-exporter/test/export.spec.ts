@@ -34,7 +34,7 @@ describe('exporter', () => {
 
       const valid = await data.validate(exportPath)
 
-      assert(valid)
+      assert.equal(valid, true)
     }
   })
 
@@ -58,9 +58,9 @@ describe('exporter', () => {
 
     for (const data of testData.data) {
       const exportPath = data.generatePath(outPath)
-      const valid = data.validate(exportPath)
+      const valid = await data.validate(exportPath)
 
-      assert(valid)
+      assert.equal(valid, true)
     }
   })
 })
