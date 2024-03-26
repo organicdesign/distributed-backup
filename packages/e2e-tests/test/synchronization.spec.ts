@@ -1,15 +1,9 @@
 import assert from 'assert/strict'
-import Path from 'path'
-import projectPath from './utils/project-path.js'
+import * as testData from '@organicdesign/db-test-data'
 import runClient from './utils/run-client.js'
 import runNode from './utils/run-node.js'
 
 const nodes = ['synchronization-peer-a', 'synchronization-peer-b'] as const
-
-const files = [
-  Path.join(projectPath, 'packages/e2e-tests/test-data/file-1.txt'),
-  Path.join(projectPath, 'packages/e2e-tests/test-data/file-2.txt')
-] as const
 
 describe('synchronization', () => {
   let proc: Array<Awaited<ReturnType<typeof runNode>>>
@@ -40,7 +34,14 @@ describe('synchronization', () => {
 
   it('syncs a pre-existing file', async () => {
     const virtualPath = '/file-1'
-    const addRes = await runClient(nodes[0], 'import', group, files[0], virtualPath)
+
+    const addRes = await runClient(
+      nodes[0],
+      'import',
+      group,
+      testData.data[0].path,
+      virtualPath
+    )
 
     assert(addRes.success)
 
@@ -68,7 +69,14 @@ describe('synchronization', () => {
 
   it('syncs a new file', async () => {
     const virtualPath = '/file-2'
-    const addRes = await runClient(nodes[0], 'import', group, files[1], virtualPath)
+
+    const addRes = await runClient(
+      nodes[0],
+      'import',
+      group,
+      testData.data[1].path,
+      virtualPath
+    )
 
     assert(addRes.success)
 
