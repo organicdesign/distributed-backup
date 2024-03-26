@@ -1,8 +1,8 @@
 {
   "type": "module",
-  "name": "@organicdesign/db-test-data",
+  "name": "@organicdesign/db-test-utils",
   "version": "0.1.0",
-  "description": "Test data and helpers to assist with testing FS imports and exports.",
+  "description": "Test data and helpers to assist with testing.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "files": [

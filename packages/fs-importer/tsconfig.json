@@ -14,7 +14,7 @@
   ],
   "references": [
     {
-      "path": "../test-data"
+      "path": "../test-utils"
     }
   ]
 }

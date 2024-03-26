@@ -39,7 +39,7 @@
       "path": "../manual-block-broker"
     },
     {
-      "path": "../test-data"
+      "path": "../test-utils"
     }
   ]
 }

@@ -19,7 +19,7 @@
       "path": "../fs-importer"
     },
     {
-      "path": "../test-data"
+      "path": "../test-utils"
     }
   ]
 }

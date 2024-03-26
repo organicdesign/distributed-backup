@@ -22,7 +22,7 @@
       "path": "../daemon"
     },
     {
-      "path": "../test-data"
+      "path": "../test-utils"
     }
   ]
 }

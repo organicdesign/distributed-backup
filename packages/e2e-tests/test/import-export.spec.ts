@@ -1,7 +1,7 @@
 import assert from 'assert/strict'
 import fs from 'fs/promises'
 import Path from 'path'
-import * as testData from '@organicdesign/db-test-data'
+import * as testData from '@organicdesign/db-test-utils'
 import projectPath from './utils/project-path.js'
 import runClient from './utils/run-client.js'
 import runNode from './utils/run-node.js'

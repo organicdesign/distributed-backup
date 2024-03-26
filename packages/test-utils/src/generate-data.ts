@@ -18,7 +18,7 @@ const generateHash = async (path: string): Promise<Uint8Array> => {
 const blockstore = new BlackHoleBlockstore()
 const ufs = unixfs({ blockstore })
 
-export const root = Path.join(Path.dirname(fileURLToPath(import.meta.url)), '../../test-data')
+export const root = Path.join(Path.dirname(fileURLToPath(import.meta.url)), '../../data')
 
 export default async (): Promise<TestData[]> => {
   const structure = await fs.readdir(root, { recursive: true, withFileTypes: true })

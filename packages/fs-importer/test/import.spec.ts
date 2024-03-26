@@ -1,5 +1,5 @@
 import assert from 'assert/strict'
-import * as testData from '@organicdesign/db-test-data'
+import * as testData from '@organicdesign/db-test-utils'
 import { BlackHoleBlockstore } from 'blockstore-core/black-hole'
 import all from 'it-all'
 import { importer } from '../src/index.js'

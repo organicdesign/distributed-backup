@@ -1,5 +1,5 @@
 import assert from 'assert/strict'
-import * as testData from '@organicdesign/db-test-data'
+import * as testData from '@organicdesign/db-test-utils'
 import runClient from './utils/run-client.js'
 import runNode from './utils/run-node.js'
 
