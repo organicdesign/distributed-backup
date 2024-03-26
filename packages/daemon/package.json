@@ -57,7 +57,6 @@
     "@libp2p/upnp-nat": "^1.0.13",
     "@libp2p/websockets": "^8.0.15",
     "@multiformats/multiaddr": "^12.1.14",
-    "@organicdesign/db-dag-walkers": "^0.1.0",
     "@organicdesign/db-helia-pin-manager": "^0.1.0",
     "@organicdesign/db-key-manager": "^0.1.0",
     "@organicdesign/db-rpc-interfaces": "^0.1.0",

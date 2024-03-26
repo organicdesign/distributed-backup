@@ -36,13 +36,12 @@
   "sideEffects": false,
   "dependencies": {
     "@open-draft/deferred-promise": "^2.2.0",
-    "@organicdesign/db-dag-walkers": "^0.1.0",
     "cborg": "^4.0.9",
+    "datastore-core": "^9.2.9",
     "interface-datastore": "^8.2.11",
     "it-all": "^3.0.4",
     "multiformats": "^13.1.0",
     "ts-event-target": "^0.1.5",
-    "datastore-core": "^9.2.9",
     "uint8arrays": "^5.0.2",
     "zod": "^3.22.4"
   }

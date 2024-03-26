@@ -1,5 +1,5 @@
 import { DeferredPromise } from '@open-draft/deferred-promise'
-import { defaultDagWalkers } from '@organicdesign/db-dag-walkers'
+import { getDagWalker } from '@organicdesign/db-utils'
 import { NamespaceDatastore } from 'datastore-core'
 import { Key, type Datastore } from 'interface-datastore'
 import all from 'it-all'
@@ -8,20 +8,8 @@ import Blocks from './blocks.js'
 import Downloads, { type Download } from './downloads.js'
 import Pins, { type Pin } from './pins.js'
 import { addBlockRef, addPinRef } from './utils.js'
-import type { DAGWalker, Helia } from '@helia/interface'
+import type { Helia } from '@helia/interface'
 import type { CID } from 'multiformats/cid'
-
-const dagWalkers = defaultDagWalkers()
-
-const getDagWalker = (cid: CID): DAGWalker => {
-  const dagWalker = Object.values(dagWalkers).find(dw => dw.codec === cid.code)
-
-  if (dagWalker == null) {
-    throw new Error(`No dag walker found for cid codec ${cid.code}`)
-  }
-
-  return dagWalker
-}
 
 export interface Components {
   helia: Helia

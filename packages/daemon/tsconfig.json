@@ -18,9 +18,6 @@
   ],
   "references": [
     {
-      "path": "../dag-walkers"
-    },
-    {
       "path": "../helia-pin-manager"
     },
     {

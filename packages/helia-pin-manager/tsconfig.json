@@ -13,7 +13,7 @@
   ],
   "references": [
     {
-      "path": "../dag-walkers"
+      "path": "../utils"
     }
   ]
 }

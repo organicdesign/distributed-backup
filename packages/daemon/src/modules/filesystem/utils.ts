@@ -1,11 +1,9 @@
 import Path from 'path'
-import { defaultDagWalkers } from '@organicdesign/db-dag-walkers'
+import { getDagWalker } from '@organicdesign/db-utils'
 import { CID } from 'multiformats/cid'
 import { DATA_KEY, EncodedEntry, type Entry } from './interface.js'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
-
-const dagWalkers = defaultDagWalkers()
 
 export const encodeEntry = (entry: Entry): NonNullable<EncodedEntry> => {
   const ee: NonNullable<EncodedEntry> = {
@@ -29,7 +27,7 @@ export const walkDag = async function * (blockstore: Blockstore, cid: CID, maxDe
   const enqueue = (cid: CID, depth: number): void => {
     queue.push(async () => {
       const promise = Promise.resolve().then(async () => {
-        const dagWalker = Object.values(dagWalkers).find(dw => dw.codec === cid.code)
+        const dagWalker = getDagWalker(cid)
 
         if (dagWalker == null) {
           throw new Error(`No dag walker found for cid codec ${cid.code}`)
