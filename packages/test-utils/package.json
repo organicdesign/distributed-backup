@@ -32,6 +32,7 @@
   "dependencies": {
     "@helia/unixfs": "^3.0.2",
     "blockstore-core": "^4.4.0",
+    "it-all": "^3.0.4",
     "uint8arrays": "^5.0.3"
   }
 }

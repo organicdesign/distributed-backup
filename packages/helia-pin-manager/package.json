@@ -36,6 +36,7 @@
   "sideEffects": false,
   "dependencies": {
     "@open-draft/deferred-promise": "^2.2.0",
+    "@organicdesign/db-utils": "^0.1.0",
     "cborg": "^4.0.9",
     "datastore-core": "^9.2.9",
     "interface-datastore": "^8.2.11",
