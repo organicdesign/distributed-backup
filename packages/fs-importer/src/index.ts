@@ -19,7 +19,7 @@ export const selectChunker = selectChunkerFunc
 // export const importPlaintext = importPlaintextFunc
 // export const importEncrypted = importEncryptedFunc
 
-export const importer = async function * (blockstore: Blockstore, path: string, options: AddOptions): AsyncIterable<ImportResult & { path: string }> {
+export const importer = async function * (blockstore: Blockstore, path: string, options: AddOptions = {}): AsyncIterable<ImportResult & { path: string }> {
   const ufs = unixfs({ blockstore })
 
   const stat = await fs.lstat(path)

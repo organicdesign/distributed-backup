@@ -2,23 +2,16 @@ import assert from 'assert/strict'
 import * as testData from '@organicdesign/db-test-data'
 import { BlackHoleBlockstore } from 'blockstore-core/black-hole'
 import all from 'it-all'
-import { importer, selectChunker, selectHasher } from '../src/index.js'
+import { importer } from '../src/index.js'
 
 const blockstore = new BlackHoleBlockstore()
-
-const importerConfig = {
-  chunker: selectChunker(),
-  hasher: selectHasher(),
-  cidVersion: 1
-} as const
 
 describe('importer', () => {
   it('imports files ', async () => {
     for (const data of testData.data) {
       const [result] = await all(importer(
         blockstore,
-        data.path,
-        importerConfig
+        data.path
       ))
 
       const dataFile = testData.getDataFile(result.path)
@@ -31,11 +24,7 @@ describe('importer', () => {
   })
 
   it('imports a directory ', async () => {
-    const results = await all(importer(
-      blockstore,
-      testData.root,
-      importerConfig
-    ))
+    const results = await all(importer(blockstore, testData.root))
 
     assert.equal(results.length, testData.data.length)
 

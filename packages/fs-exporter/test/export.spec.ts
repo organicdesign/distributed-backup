@@ -25,8 +25,7 @@ describe('exporter', () => {
     for (const data of testData.data) {
       const [{ cid }] = await all(importer(
         blockstore,
-        data.path,
-        {}
+        data.path
       ))
 
       const exportPath = data.generatePath(outPath)
@@ -42,8 +41,7 @@ describe('exporter', () => {
   it('exports a directory ', async () => {
     const results = await all(importer(
       blockstore,
-      testData.root,
-      {}
+      testData.root
     ))
 
     assert.equal(results.length, testData.data.length)
