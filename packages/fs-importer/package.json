@@ -25,6 +25,7 @@
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
+    "@organicdesign/db-test-data": "^0.1.0",
     "aegir": "^42.2.4",
     "blockstore-core": "^4.4.0",
     "interface-blockstore": "^5.2.10"
