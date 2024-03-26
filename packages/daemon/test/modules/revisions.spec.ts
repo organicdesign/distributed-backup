@@ -1,11 +1,10 @@
 import assert from 'assert'
-import { createHash } from 'crypto'
 import fs from 'fs/promises'
 import Path from 'path'
-import { fileURLToPath } from 'url'
 import { unixfs } from '@helia/unixfs'
 import { importer, selectChunker } from '@organicdesign/db-fs-importer'
 import { KeyManager } from '@organicdesign/db-key-manager'
+import * as testData from '@organicdesign/db-test-data'
 import { createNetClient } from '@organicdesign/net-rpc'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
@@ -27,17 +26,8 @@ import mockArgv from './mock-argv.js'
 import mockBase from './mock-base.js'
 import mockConfig from './mock-config.js'
 
-const hash = async (path: string): Promise<Uint8Array> => {
-  const hasher = createHash('sha256')
-
-  hasher.write(await fs.readFile(path))
-
-  return hasher.digest()
-}
-
 describe('revisions', () => {
   const testPath = mkTestPath('revisions')
-  const dataPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), '../../../test-data')
 
   const create = async (name?: string): Promise<{
     argv: ReturnType<typeof mockArgv>
@@ -203,12 +193,12 @@ describe('revisions', () => {
     const path = '/test'
     const client = createNetClient(argv.socket)
     const sequence = 0
-    const inFile = Path.join(dataPath, 'file-1.txt')
-    const outFile = Path.join(testPath, 'file-1.txt')
+    const dataFile = testData.data[0]
+    const exportPath = dataFile.generatePath(testPath)
 
     assert(fs != null)
 
-    const [{ cid }] = await all(importer(network.helia.blockstore, inFile, {
+    const [{ cid }] = await all(importer(network.helia.blockstore, dataFile.path, {
       cidVersion: 1,
       chunker: selectChunker()
     }))
@@ -235,17 +225,14 @@ describe('revisions', () => {
       path,
       author: uint8ArrayToString(groups.welo.identity.id, 'base58btc'),
       sequence,
-      outPath: outFile
+      outPath: exportPath
     })
 
     assert.equal(response, null)
 
-    const [hash1, hash2] = await Promise.all([
-      hash(inFile),
-      hash(outFile)
-    ])
+    const valid = await dataFile.validate(exportPath)
 
-    assert.deepEqual(hash1, hash2)
+    assert.equal(valid, true)
 
     await sigint.interupt()
   })
@@ -259,20 +246,12 @@ describe('revisions', () => {
     const sequence = 0
     const outPath = Path.join(testPath, 'export-directory')
 
-    const paths = [
-      'file-1.txt',
-      'file-2.txt',
-      'dir-1/file-3.txt'
-    ].map(path => ({
-      in: Path.join(dataPath, path),
-      out: Path.join(outPath, path),
-      virtual: Path.join(rootPath, path)
-    }))
-
     assert(fs != null)
 
-    for (const path of paths) {
-      const [{ cid }] = await all(importer(network.helia.blockstore, path.in, {
+    for (const dataFile of testData.data) {
+      const virtualPath = dataFile.generatePath(rootPath)
+
+      const [{ cid }] = await all(importer(network.helia.blockstore, dataFile.path, {
         cidVersion: 1,
         chunker: selectChunker()
       }))
@@ -283,7 +262,7 @@ describe('revisions', () => {
         filesystem.events.addEventListener('file:added', () => { resolve() }, { once: true })
       })
 
-      await filesystem.uploads.add('put', [group.bytes, path.virtual, {
+      await filesystem.uploads.add('put', [group.bytes, virtualPath, {
         cid: cid.bytes,
         encrypted: false,
         revisionStrategy: 'all' as const,
@@ -305,13 +284,11 @@ describe('revisions', () => {
 
     assert.equal(response, null)
 
-    for (const path of paths) {
-      const [hash1, hash2] = await Promise.all([
-        hash(path.in),
-        hash(path.out)
-      ])
+    for (const dataFile of testData.data) {
+      const exportPath = dataFile.generatePath(outPath)
+      const valid = await dataFile.validate(exportPath)
 
-      assert.deepEqual(hash1, hash2)
+      assert.equal(valid, true)
     }
 
     await sigint.interupt()
@@ -323,11 +300,11 @@ describe('revisions', () => {
     const fs = filesystem.getFileSystem(group)
     const path = '/test'
     const client = createNetClient(argv.socket)
-    const inFile = Path.join(dataPath, 'file-1.txt')
+    const dataFile = testData.data[0]
 
     assert(fs != null)
 
-    const [{ cid }] = await all(importer(network.helia.blockstore, inFile, {
+    const [{ cid }] = await all(importer(network.helia.blockstore, dataFile.path, {
       cidVersion: 1,
       chunker: selectChunker()
     }))
@@ -378,30 +355,18 @@ describe('revisions', () => {
     const fs = filesystem.getFileSystem(group)
     const rootPath = '/test'
     const client = createNetClient(argv.socket)
-    const outPath = Path.join(testPath, 'export-directory')
-
-    const paths = [
-      'file-1.txt',
-      'file-2.txt',
-      'dir-1/file-3.txt'
-    ].map(path => ({
-      in: Path.join(dataPath, path),
-      out: Path.join(outPath, path),
-      virtual: Path.join(rootPath, path),
-      cid: CID.parse('QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN')
-    }))
 
     assert(fs != null)
 
     const before = Date.now()
 
-    for (const path of paths) {
-      const [{ cid }] = await all(importer(network.helia.blockstore, path.in, {
+    for (const dataFile of testData.data) {
+      const virtualPath = dataFile.generatePath(rootPath)
+
+      const [{ cid }] = await all(importer(network.helia.blockstore, dataFile.path, {
         cidVersion: 1,
         chunker: selectChunker()
       }))
-
-      path.cid = cid
 
       const promise = new Promise<void>((resolve, reject) => {
         setTimeout(() => { reject(new Error('timeout')) }, 100)
@@ -409,7 +374,7 @@ describe('revisions', () => {
         filesystem.events.addEventListener('file:added', () => { resolve() }, { once: true })
       })
 
-      await filesystem.uploads.add('put', [group.bytes, path.virtual, {
+      await filesystem.uploads.add('put', [group.bytes, virtualPath, {
         cid: cid.bytes,
         encrypted: false,
         revisionStrategy: 'all' as const,
@@ -439,15 +404,13 @@ describe('revisions', () => {
       assert(item.timestamp <= Date.now())
     }
 
-    for (const path of paths) {
-      const item = response.find(d => d.path === path.virtual)
+    for (const dataFile of testData.data) {
+      const virtualPath = dataFile.generatePath(rootPath)
+      const item = response.find(d => d.path === virtualPath)
 
       assert(item != null)
-      assert(item.cid === path.cid.toString())
-
-      const size = (await network.helia.blockstore.get(path.cid)).length
-
-      assert(item.size === size)
+      assert(item.cid === dataFile.cid.toString())
+      assert(BigInt(item.size) === dataFile.size)
     }
 
     await sigint.interupt()
