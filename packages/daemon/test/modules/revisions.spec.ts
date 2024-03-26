@@ -2,7 +2,7 @@ import assert from 'assert'
 import fs from 'fs/promises'
 import Path from 'path'
 import { unixfs } from '@helia/unixfs'
-import { importer, selectChunker } from '@organicdesign/db-fs-importer'
+import { importer } from '@organicdesign/db-fs-importer'
 import { KeyManager } from '@organicdesign/db-key-manager'
 import * as testData from '@organicdesign/db-test-data'
 import { createNetClient } from '@organicdesign/net-rpc'
@@ -198,10 +198,7 @@ describe('revisions', () => {
 
     assert(fs != null)
 
-    const [{ cid }] = await all(importer(network.helia.blockstore, dataFile.path, {
-      cidVersion: 1,
-      chunker: selectChunker()
-    }))
+    const [{ cid }] = await all(importer(network.helia.blockstore, dataFile.path))
 
     const promise = new Promise<void>((resolve, reject) => {
       setTimeout(() => { reject(new Error('timeout')) }, 100)
@@ -251,10 +248,7 @@ describe('revisions', () => {
     for (const dataFile of testData.data) {
       const virtualPath = dataFile.generatePath(rootPath)
 
-      const [{ cid }] = await all(importer(network.helia.blockstore, dataFile.path, {
-        cidVersion: 1,
-        chunker: selectChunker()
-      }))
+      const [{ cid }] = await all(importer(network.helia.blockstore, dataFile.path))
 
       const promise = new Promise<void>((resolve, reject) => {
         setTimeout(() => { reject(new Error('timeout')) }, 100)
@@ -304,10 +298,7 @@ describe('revisions', () => {
 
     assert(fs != null)
 
-    const [{ cid }] = await all(importer(network.helia.blockstore, dataFile.path, {
-      cidVersion: 1,
-      chunker: selectChunker()
-    }))
+    const [{ cid }] = await all(importer(network.helia.blockstore, dataFile.path))
 
     const promise = new Promise<void>((resolve, reject) => {
       setTimeout(() => { reject(new Error('timeout')) }, 100)
@@ -363,10 +354,7 @@ describe('revisions', () => {
     for (const dataFile of testData.data) {
       const virtualPath = dataFile.generatePath(rootPath)
 
-      const [{ cid }] = await all(importer(network.helia.blockstore, dataFile.path, {
-        cidVersion: 1,
-        chunker: selectChunker()
-      }))
+      const [{ cid }] = await all(importer(network.helia.blockstore, dataFile.path))
 
       const promise = new Promise<void>((resolve, reject) => {
         setTimeout(() => { reject(new Error('timeout')) }, 100)

@@ -2,7 +2,7 @@ import assert from 'assert/strict'
 import fs from 'fs/promises'
 import Path from 'path'
 import { unixfs } from '@helia/unixfs'
-import { importer, selectChunker } from '@organicdesign/db-fs-importer'
+import { importer } from '@organicdesign/db-fs-importer'
 import { KeyManager } from '@organicdesign/db-key-manager'
 import * as testData from '@organicdesign/db-test-data'
 import { createNetClient } from '@organicdesign/net-rpc'
@@ -308,20 +308,12 @@ describe('filesystem', () => {
     const group = await createGroup(groups, 'test')
     const fs = m.getFileSystem(group)
     const rootPath = '/test'
-    const chunker = selectChunker()
     const outPath = Path.join(testPath, 'export-file')
 
     assert(fs != null)
 
     await Promise.all(testData.data.map(async data => {
-      const result = await all(importer(
-        network.helia.blockstore,
-        data.path,
-        {
-          chunker,
-          cidVersion: 1
-        }
-      ))
+      const result = await all(importer(network.helia.blockstore, data.path))
 
       await m.uploads.add('put', [group.bytes, data.generatePath(rootPath), {
         cid: result[0].cid.bytes,
@@ -356,20 +348,12 @@ describe('filesystem', () => {
     const group = await createGroup(groups, 'test')
     const fs = m.getFileSystem(group)
     const rootPath = '/test'
-    const chunker = selectChunker()
     const outPath = Path.join(testPath, 'export-directory')
 
     assert(fs != null)
 
     await Promise.all(testData.data.map(async data => {
-      const result = await all(importer(
-        network.helia.blockstore,
-        data.path,
-        {
-          chunker,
-          cidVersion: 1
-        }
-      ))
+      const result = await all(importer(network.helia.blockstore, data.path))
 
       await m.uploads.add('put', [group.bytes, data.generatePath(rootPath), {
         cid: result[0].cid.bytes,
