@@ -18,9 +18,10 @@ const generateHash = async (path: string): Promise<Uint8Array> => {
 const blockstore = new BlackHoleBlockstore()
 const ufs = unixfs({ blockstore })
 
+export const root = Path.join(Path.dirname(fileURLToPath(import.meta.url)), '../../test-data')
+
 export default async (): Promise<TestData[]> => {
-  const rootPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), '../../test-data')
-  const structure = await fs.readdir(rootPath, { recursive: true, withFileTypes: true })
+  const structure = await fs.readdir(root, { recursive: true, withFileTypes: true })
   const paths: TestData[] = []
 
   for (const dirent of structure) {
@@ -33,16 +34,17 @@ export default async (): Promise<TestData[]> => {
 
     const data = await fs.readFile(inPath)
     const all = (await import('it-all')).default
-    const [{ cid }] = await all(ufs.addAll([{ path: inPath, content: data }]))
+    const [{ cid, size }] = await all(ufs.addAll([{ path: inPath, content: data }]))
 
     paths.push({
       cid,
+      size,
       path: inPath,
       hash: inHash,
       name: dirent.name,
 
       generatePath (path: string = '/') {
-        const tail = inPath.replace(rootPath, '')
+        const tail = inPath.replace(root, '')
 
         return Path.join(path, tail)
       },

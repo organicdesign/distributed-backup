@@ -1,3 +1,10 @@
-import generatePaths from './generate-paths.js'
+import generateData from './generate-data.js'
+import type { TestData } from './interface.js'
 
-export const paths = await generatePaths()
+export { root } from './generate-data.js'
+
+export const data = await generateData()
+
+export const getDataFile = (path: string): TestData | null => {
+  return data.find(p => p.path === path) ?? null
+}
