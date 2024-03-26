@@ -18,10 +18,19 @@ export const selectChunker = selectChunkerFunc
 // No longer want to support these methods, keeping them here for reference.
 // export const importPlaintext = importPlaintextFunc
 // export const importEncrypted = importEncryptedFunc
+
 export const importer = async function * (blockstore: Blockstore, path: string, options: AddOptions): AsyncIterable<ImportResult & { path: string }> {
   const ufs = unixfs({ blockstore })
 
-  for await (const src of globSource(path, '**/*')) {
+  const stat = await fs.lstat(path)
+
+  const globPattern = stat.isFile() ? path.split('/').pop() ?? '' : '**/*'
+
+  if (stat.isFile()) {
+    path = Path.join(path, '..')
+  }
+
+  for await (const src of globSource(path, globPattern)) {
     assert(src.path != null)
 
     const rPath = Path.join(path, src.path)

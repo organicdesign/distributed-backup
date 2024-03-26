@@ -15,20 +15,18 @@ const importerConfig = {
 describe('importer', () => {
   it('imports files ', async () => {
     for (const data of testData.data) {
-      const results = await all(importer(
+      const [result] = await all(importer(
         blockstore,
         data.path,
         importerConfig
       ))
 
-      for (const result of results) {
-        const dataFile = testData.getDataFile(result.path)
+      const dataFile = testData.getDataFile(result.path)
 
-        assert(dataFile != null)
-        assert.deepEqual(result.cid, dataFile.cid)
-        assert.deepEqual(result.path, dataFile.path)
-        assert.deepEqual(result.size, dataFile.size)
-      }
+      assert(dataFile != null)
+      assert.deepEqual(result.cid, dataFile.cid)
+      assert.deepEqual(result.path, dataFile.path)
+      assert.deepEqual(result.size, dataFile.size)
     }
   })
 
@@ -38,6 +36,8 @@ describe('importer', () => {
       testData.root,
       importerConfig
     ))
+
+    assert.equal(results.length, testData.data.length)
 
     for (const result of results) {
       const dataFile = testData.getDataFile(result.path)
