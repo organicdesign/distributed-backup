@@ -1,6 +1,6 @@
 import Path from 'path'
-import { exporter } from '@organicdesign/db-fs-exporter'
 import { Export } from '@organicdesign/db-rpc-interfaces'
+import { exporter } from '@organicdesign/db-utils'
 import { CID } from 'multiformats/cid'
 import type { Provides, Requires } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'

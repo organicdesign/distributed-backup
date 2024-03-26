@@ -2,11 +2,11 @@ import assert from 'assert/strict'
 import fs from 'fs/promises'
 import Path from 'path'
 import { fileURLToPath } from 'url'
-import { importer } from '@organicdesign/db-fs-importer'
 import * as testData from '@organicdesign/db-test-utils'
 import { MemoryBlockstore } from 'blockstore-core'
 import all from 'it-all'
-import { exporter } from '../src/index.js'
+import { exporter } from '../src/exporter.js'
+import { importer } from '../src/importer.js'
 
 const outPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), '../../test-data-out')
 

@@ -27,10 +27,7 @@
       "path": "../key-manager"
     },
     {
-      "path": "../fs-importer"
-    },
-    {
-      "path": "../fs-exporter"
+      "path": "../utils"
     },
     {
       "path": "../rpc-interfaces"

@@ -4,8 +4,7 @@
     "esModuleInterop": true,
     "outDir": "dist",
     "baseUrl": ".",
-    "moduleResolution": "nodenext",
-    "module": "nodenext",
+    "module": "ES2022",
     "target": "ES2022"
   },
   "include": [

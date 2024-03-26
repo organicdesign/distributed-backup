@@ -1,10 +1,8 @@
 import type { Chunker } from 'ipfs-unixfs-importer/chunker'
 import type { CID, Version } from 'multiformats/cid'
-import type { Hasher } from 'multiformats/hashes/hasher'
 
 export interface ImporterConfig {
   chunker: Chunker
-  hasher: Hasher<string, number>
   cidVersion: Version
 }
 

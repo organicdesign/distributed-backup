@@ -1,8 +1,8 @@
 {
   "type": "module",
-  "name": "@organicdesign/db-fs-importer",
+  "name": "@organicdesign/db-utils",
   "version": "0.1.0",
-  "description": "A filesystem blockstore importer.",
+  "description": "Various utilities for the distributed backup.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "files": [
@@ -28,17 +28,15 @@
     "@organicdesign/db-test-utils": "^0.1.0",
     "aegir": "^42.2.4",
     "blockstore-core": "^4.4.0",
-    "interface-blockstore": "^5.2.10"
+    "interface-blockstore": "^5.2.10",
+    "it-all": "^3.0.4"
   },
   "private": true,
   "sideEffects": false,
   "dependencies": {
-    "@ipld/dag-pb": "^4.1.0",
-    "@multiformats/blake2": "^2.0.2",
-    "ipfs-unixfs": "^11.1.3",
+    "@helia/unixfs": "^3.0.2",
+    "ipfs-unixfs-exporter": "^13.5.0",
     "ipfs-unixfs-importer": "^15.2.4",
-    "multiformats": "^13.1.0",
-    "streaming-iterables": "^8.0.1",
-    "uint8arrays": "^5.0.2"
+    "multiformats": "^13.1.0"
   }
 }

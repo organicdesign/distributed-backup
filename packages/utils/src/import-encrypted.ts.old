@@ -10,7 +10,7 @@ import {
   toString as uint8ArrayToString,
   concat as concatUint8Arrays
 } from 'uint8arrays'
-import type { ImportResult, ImporterConfig, Cipher } from './interfaces.js'
+import type { ImportResult, ImporterConfig, Cipher } from './interface.js'
 import type { Blockstore } from 'interface-blockstore'
 
 type Config = ImporterConfig & { cipher: Cipher }

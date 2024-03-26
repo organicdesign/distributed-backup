@@ -4,11 +4,13 @@ import * as dagPb from '@ipld/dag-pb'
 import { UnixFS } from 'ipfs-unixfs'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
-import type { ImportResult, ImporterConfig } from './interfaces.js'
-import type { PBLink } from '@ipld/dag-pb'
+import { parallelMerge } from 'streaming-iterables'
+import type { ImportResult, ImporterConfig } from './interface.js'
 import type { Blockstore } from 'interface-blockstore'
 
-export const importFile = async (path: string, config: ImporterConfig, blockstore: Blockstore): Promise<ImportResult> => {
+type Config = Pick<ImporterConfig, 'chunker' | 'hasher' | 'cidVersion'>
+
+export const importFile = async (blockstore: Blockstore, path: string, config: Config): Promise<ImportResult> => {
   const stream = fs.createReadStream(path, { highWaterMark: 16 * 1024 })
   const { size } = await fs.promises.stat(path)
   const links: Array<{ cid: CID, size: number, chunk: Uint8Array }> = []
@@ -50,36 +52,25 @@ export const importFile = async (path: string, config: ImporterConfig, blockstor
   return { cid, size }
 }
 
-export const importDir = async (path: string, config: ImporterConfig, blockstore: Blockstore): Promise<ImportResult> => {
-  const dirents = await fs.promises.readdir(path, { withFileTypes: true })
-  const links: PBLink[] = []
+export const importDir = async function * (blockstore: Blockstore, path: string, config: Config): AsyncIterable<ImportResult & { path: string }> {
+  const stat = await fs.promises.stat(path)
 
-  for (const dirent of dirents) {
-    const subPath = Path.join(path, dirent.name)
-    const load = dirent.isDirectory() ? importDir : importFile
+  if (!stat.isDirectory()) {
+    const result = await importFile(blockstore, path, config)
 
-    const { cid, size } = await load(subPath, config, blockstore)
-
-    links.push({ Hash: cid, Tsize: size, Name: dirent.name })
+    yield { ...result, path }
+    return
   }
 
-  const block = dagPb.encode({
-    Data: new UnixFS({ type: 'directory' }).marshal(),
-    Links: links
+  const dirents = await fs.promises.readdir(path, { withFileTypes: true })
+
+  const itrs = dirents.map(dirent => {
+    const subPath = Path.join(path, dirent.name)
+
+    return importDir(blockstore, subPath, config)
   })
 
-  const hash = await config.hasher.digest(block)
-  const cid = CID.create(config.cidVersion, dagPb.code, hash)
-  const size = links.reduce((p, c) => p + (c.Tsize ?? 0), 0)
-
-  await blockstore.put(cid, block)
-
-  return { cid, size }
+  yield * parallelMerge(...itrs)
 }
 
-export default async (blockstore: Blockstore, path: string, config: ImporterConfig): Promise<ImportResult> => {
-  const stat = await fs.promises.stat(path)
-  const load = stat.isDirectory() ? importDir : importFile
-
-  return load(path, config, blockstore)
-}
+export default importDir

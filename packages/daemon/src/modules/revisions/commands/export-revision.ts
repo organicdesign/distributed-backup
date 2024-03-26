@@ -1,6 +1,6 @@
 import Path from 'path'
-import { exporter } from '@organicdesign/db-fs-exporter'
 import { ExportRevision } from '@organicdesign/db-rpc-interfaces'
+import { exporter } from '@organicdesign/db-utils'
 import { CID } from 'multiformats/cid'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import type { Provides, Requires } from '../index.js'

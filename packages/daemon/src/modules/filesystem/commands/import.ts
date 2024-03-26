@@ -1,6 +1,6 @@
 import Path from 'path'
-import { selectHasher, selectChunker, importer, type ImporterConfig } from '@organicdesign/db-fs-importer'
 import { Import } from '@organicdesign/db-rpc-interfaces'
+import { selectChunker, importer, type ImporterConfig } from '@organicdesign/db-utils'
 import { BlackHoleBlockstore } from 'blockstore-core/black-hole'
 import { CID } from 'multiformats/cid'
 import { type Provides, type Requires, logger } from '../index.js'
@@ -13,7 +13,6 @@ const command: ModuleMethod<Provides, Requires> = (context, { rpc, network, base
 
     const config: ImporterConfig = {
       chunker: selectChunker(),
-      hasher: selectHasher(),
       cidVersion: 1
     }
 
