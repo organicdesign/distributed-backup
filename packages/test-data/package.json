@@ -24,11 +24,14 @@
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "aegir": "^42.2.4"
+    "aegir": "^42.2.4",
+    "multiformats": "^13.1.0"
   },
   "private": true,
   "sideEffects": false,
   "dependencies": {
+    "@helia/unixfs": "^3.0.2",
+    "blockstore-core": "^4.4.0",
     "uint8arrays": "^5.0.3"
   }
 }
