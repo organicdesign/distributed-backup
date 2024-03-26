@@ -37,6 +37,9 @@
     },
     {
       "path": "../manual-block-broker"
+    },
+    {
+      "path": "../test-data"
     }
   ]
 }

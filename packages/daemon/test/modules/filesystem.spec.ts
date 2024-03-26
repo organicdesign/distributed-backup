@@ -1,16 +1,14 @@
 import assert from 'assert/strict'
-import { createHash } from 'crypto'
 import fs from 'fs/promises'
 import Path from 'path'
-import { fileURLToPath } from 'url'
 import { unixfs } from '@helia/unixfs'
 import { importer, selectChunker } from '@organicdesign/db-fs-importer'
 import { KeyManager } from '@organicdesign/db-key-manager'
+import * as testData from '@organicdesign/db-test-data'
 import { createNetClient } from '@organicdesign/net-rpc'
 import { MemoryBlockstore } from 'blockstore-core'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
-import { compare as uint8ArrayCompare } from 'uint8arrays/compare'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import createDownloader from '../../src/modules/downloader/index.js'
@@ -29,16 +27,7 @@ import mockBase from './mock-base.js'
 import mockConfig from './mock-config.js'
 import type { Provides as FSProvides } from '../../src/modules/filesystem/index.js'
 
-const hash = async (path: string): Promise<Uint8Array> => {
-  const hasher = createHash('sha256')
-
-  hasher.write(await fs.readFile(path))
-
-  return hasher.digest()
-}
-
 describe('filesystem', () => {
-  const dataPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), '../../../test-data')
   const testPath = mkTestPath('filesystem')
 
   const create = async (name?: string): Promise<{
@@ -322,29 +311,19 @@ describe('filesystem', () => {
     const chunker = selectChunker()
     const outPath = Path.join(testPath, 'export-file')
 
-    const paths = [
-      'file-1.txt',
-      'file-2.txt',
-      'dir-1/file-3.txt'
-    ].map(path => ({
-      in: Path.join(dataPath, path),
-      out: Path.join(outPath, path),
-      virtual: Path.join(rootPath, path)
-    }))
-
     assert(fs != null)
 
-    await Promise.all(paths.map(async path => {
+    await Promise.all(testData.data.map(async data => {
       const result = await all(importer(
         network.helia.blockstore,
-        path.in,
+        data.path,
         {
           chunker,
           cidVersion: 1
         }
       ))
 
-      await m.uploads.add('put', [group.bytes, path.virtual, {
+      await m.uploads.add('put', [group.bytes, data.generatePath(rootPath), {
         cid: result[0].cid.bytes,
         encrypted: false,
         revisionStrategy: 'all',
@@ -352,20 +331,19 @@ describe('filesystem', () => {
       }])
     }))
 
-    for (const path of paths) {
+    for (const data of testData.data) {
+      const exportPath = data.generatePath(outPath)
+
       const response = await client.rpc.request('export', {
         group: group.toString(),
-        path: path.virtual,
-        outPath: path.out
+        path: data.generatePath(rootPath),
+        outPath: exportPath
       })
 
-      const [inHash, outHash] = await Promise.all([
-        hash(path.in),
-        hash(path.out)
-      ])
+      const valid = await data.validate(exportPath)
 
       assert.equal(response, null)
-      assert.deepEqual(inHash, outHash)
+      assert.equal(valid, true)
     }
 
     client.close()
@@ -381,29 +359,19 @@ describe('filesystem', () => {
     const chunker = selectChunker()
     const outPath = Path.join(testPath, 'export-directory')
 
-    const paths = [
-      'file-1.txt',
-      'file-2.txt',
-      'dir-1/file-3.txt'
-    ].map(path => ({
-      in: Path.join(dataPath, path),
-      out: Path.join(outPath, path),
-      virtual: Path.join(rootPath, path)
-    }))
-
     assert(fs != null)
 
-    await Promise.all(paths.map(async path => {
+    await Promise.all(testData.data.map(async data => {
       const result = await all(importer(
         network.helia.blockstore,
-        path.in,
+        data.path,
         {
           chunker,
           cidVersion: 1
         }
       ))
 
-      await m.uploads.add('put', [group.bytes, path.virtual, {
+      await m.uploads.add('put', [group.bytes, data.generatePath(rootPath), {
         cid: result[0].cid.bytes,
         encrypted: false,
         revisionStrategy: 'all',
@@ -419,12 +387,11 @@ describe('filesystem', () => {
 
     assert.equal(response, null)
 
-    for (const path of paths) {
-      const [inHash, outHash] = await Promise.all([
-        hash(path.in),
-        hash(path.out)
-      ])
-      assert.deepEqual(inHash, outHash)
+    for (const data of testData.data) {
+      const exportPath = data.generatePath(outPath)
+      const valid = await data.validate(exportPath)
+
+      assert.equal(valid, true)
     }
 
     client.close()
@@ -437,47 +404,28 @@ describe('filesystem', () => {
     const group = await createGroup(groups, 'test')
     const fs = m.getFileSystem(group)
     const rootPath = '/test'
-    const outPath = Path.join(testPath, 'export-file')
-
-    const paths = [
-      {
-        name: 'file-1.txt',
-        cid: 'bafkreig5rpawfjnti2uck52ndflv6o4urk6rtqexwpspmpcv3tc7xilfui'
-      },
-      {
-        name: 'file-2.txt',
-        cid: 'bafkreifjsfnld3qc5kwru3qkzcpqbryanuj6ocyjhgpguoukwn7jjjgaa4'
-      },
-      {
-        name: 'dir-1/file-3.txt',
-        cid: 'bafkreifuptapcbfwfvghymf422h5rztwcpripxck3dbrb3yqzow6vhcdqa'
-      }
-    ].map(path => ({
-      ...path,
-      in: Path.join(dataPath, path.name),
-      out: Path.join(outPath, path.name),
-      virtual: Path.join(rootPath, path.name)
-    }))
 
     assert(fs != null)
 
-    await Promise.all(paths.map(async path => {
+    await Promise.all(testData.data.map(async data => {
+      const virtualPath = data.generatePath(rootPath)
+
       const response = await client.rpc.request('import', {
         group: group.toString(),
-        path: path.virtual,
-        inPath: path.in
+        path: virtualPath,
+        inPath: data.path
       })
 
       assert.deepEqual(response, [{
-        path: path.virtual,
-        inPath: path.in,
-        cid: path.cid
+        path: virtualPath,
+        inPath: data.path,
+        cid: data.cid.toString()
       }])
 
-      const result = await fs.get(path.virtual)
+      const result = await fs.get(virtualPath)
 
       assert(result != null)
-      assert.deepEqual(result.cid, CID.parse(path.cid))
+      assert.deepEqual(result.cid, data.cid)
     }))
 
     client.close()
@@ -490,64 +438,38 @@ describe('filesystem', () => {
     const group = await createGroup(groups, 'test')
     const fs = m.getFileSystem(group)
     const rootPath = '/test'
-    const outPath = Path.join(testPath, 'export-file')
-
-    const paths = [
-      {
-        name: 'file-1.txt',
-        cid: 'bafkreig5rpawfjnti2uck52ndflv6o4urk6rtqexwpspmpcv3tc7xilfui'
-      },
-      {
-        name: 'file-2.txt',
-        cid: 'bafkreifjsfnld3qc5kwru3qkzcpqbryanuj6ocyjhgpguoukwn7jjjgaa4'
-      },
-      {
-        name: 'dir-1/file-3.txt',
-        cid: 'bafkreifuptapcbfwfvghymf422h5rztwcpripxck3dbrb3yqzow6vhcdqa'
-      }
-    ].map(path => ({
-      ...path,
-      in: Path.join(dataPath, path.name),
-      out: Path.join(outPath, path.name),
-      virtual: Path.join(rootPath, path.name)
-    }))
 
     assert(fs != null)
 
     const response = await client.rpc.request('import', {
       group: group.toString(),
       path: rootPath,
-      inPath: dataPath
+      inPath: testData.root
     })
 
-    const cidSort = (a: { cid: string }, b: { cid: string }): number => uint8ArrayCompare(uint8ArrayFromString(a.cid), uint8ArrayFromString(b.cid))
+    assert(Array.isArray(response))
+    assert.equal(response.length, testData.data.length)
 
-    response.sort(cidSort)
+    for (const data of response) {
+      const dataFile = testData.getDataFile(data.inPath)
 
-    const expectedResponse = paths.map(path => ({
-      path: path.virtual,
-      inPath: path.in,
-      cid: path.cid
-    }))
-
-    expectedResponse.sort(cidSort)
-
-    assert.deepEqual(response, expectedResponse)
+      assert(dataFile != null)
+      assert.equal(data.path, dataFile.generatePath(rootPath))
+      assert.equal(data.cid, dataFile.cid.toString())
+    }
 
     const fsResult = await all(fs.getDir(rootPath))
 
-    const lCids = fsResult.map(r => r.value.cid)
-    const rCids = paths.map(path => CID.parse(path.cid))
-    const lPaths = fsResult.map(r => r.key.toString())
-    const rPaths = paths.map(path => path.virtual)
+    assert(Array.isArray(fsResult))
+    assert.equal(fsResult.length, testData.data.length)
 
-    lCids.sort((a, b) => uint8ArrayCompare(a.bytes, b.bytes))
-    rCids.sort((a, b) => uint8ArrayCompare(a.bytes, b.bytes))
-    lPaths.sort()
-    rPaths.sort()
+    for (const dataFile of testData.data) {
+      const virtualPath = dataFile.generatePath(rootPath)
+      const r = fsResult.find(r => r.key === virtualPath)
 
-    assert.deepEqual(lCids, rCids)
-    assert.deepEqual(lPaths, rPaths)
+      assert(r != null)
+      assert.deepEqual(r.value.cid, dataFile.cid)
+    }
 
     client.close()
     await sigint.interupt()
