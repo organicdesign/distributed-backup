@@ -4,7 +4,7 @@ import fs from 'fs/promises'
 import Path from 'path'
 import { fileURLToPath } from 'url'
 import { unixfs } from '@helia/unixfs'
-import { importer, selectHasher, selectChunker } from '@organicdesign/db-fs-importer'
+import { importer, selectChunker } from '@organicdesign/db-fs-importer'
 import { KeyManager } from '@organicdesign/db-key-manager'
 import { createNetClient } from '@organicdesign/net-rpc'
 import { MemoryBlockstore } from 'blockstore-core'
@@ -320,7 +320,6 @@ describe('filesystem', () => {
     const fs = m.getFileSystem(group)
     const rootPath = '/test'
     const chunker = selectChunker()
-    const hasher = selectHasher()
     const outPath = Path.join(testPath, 'export-file')
 
     const paths = [
@@ -341,7 +340,6 @@ describe('filesystem', () => {
         path.in,
         {
           chunker,
-          hasher,
           cidVersion: 1
         }
       ))
@@ -381,7 +379,6 @@ describe('filesystem', () => {
     const fs = m.getFileSystem(group)
     const rootPath = '/test'
     const chunker = selectChunker()
-    const hasher = selectHasher()
     const outPath = Path.join(testPath, 'export-directory')
 
     const paths = [
@@ -402,7 +399,6 @@ describe('filesystem', () => {
         path.in,
         {
           chunker,
-          hasher,
           cidVersion: 1
         }
       ))
@@ -446,15 +442,15 @@ describe('filesystem', () => {
     const paths = [
       {
         name: 'file-1.txt',
-        cid: 'bafybeihoqexapn3tusc4rrkqztzzemz7y57esnzg7eutsua4ehjkylmjqe'
+        cid: 'bafkreig5rpawfjnti2uck52ndflv6o4urk6rtqexwpspmpcv3tc7xilfui'
       },
       {
         name: 'file-2.txt',
-        cid: 'bafybeibac7pp5mcxkj7s55bjdbr7tj3pj7col4janvm36y4fjvxqs67fsi'
+        cid: 'bafkreifjsfnld3qc5kwru3qkzcpqbryanuj6ocyjhgpguoukwn7jjjgaa4'
       },
       {
         name: 'dir-1/file-3.txt',
-        cid: 'bafybeihxa6uyvmdl6wdjxnwpluocix2csrq3ifunemjr2jxy35wjkl2v64'
+        cid: 'bafkreifuptapcbfwfvghymf422h5rztwcpripxck3dbrb3yqzow6vhcdqa'
       }
     ].map(path => ({
       ...path,
@@ -499,15 +495,15 @@ describe('filesystem', () => {
     const paths = [
       {
         name: 'file-1.txt',
-        cid: 'bafybeihoqexapn3tusc4rrkqztzzemz7y57esnzg7eutsua4ehjkylmjqe'
+        cid: 'bafkreig5rpawfjnti2uck52ndflv6o4urk6rtqexwpspmpcv3tc7xilfui'
       },
       {
         name: 'file-2.txt',
-        cid: 'bafybeibac7pp5mcxkj7s55bjdbr7tj3pj7col4janvm36y4fjvxqs67fsi'
+        cid: 'bafkreifjsfnld3qc5kwru3qkzcpqbryanuj6ocyjhgpguoukwn7jjjgaa4'
       },
       {
         name: 'dir-1/file-3.txt',
-        cid: 'bafybeihxa6uyvmdl6wdjxnwpluocix2csrq3ifunemjr2jxy35wjkl2v64'
+        cid: 'bafkreifuptapcbfwfvghymf422h5rztwcpripxck3dbrb3yqzow6vhcdqa'
       }
     ].map(path => ({
       ...path,

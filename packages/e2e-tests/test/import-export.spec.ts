@@ -56,7 +56,7 @@ describe('import/export', () => {
       success: true,
       imports: [
         {
-          cid: 'bafybeihoqexapn3tusc4rrkqztzzemz7y57esnzg7eutsua4ehjkylmjqe',
+          cid: 'bafkreig5rpawfjnti2uck52ndflv6o4urk6rtqexwpspmpcv3tc7xilfui',
           path: data[0].virtual,
           inPath: data[0].import
         }
@@ -69,17 +69,17 @@ describe('import/export', () => {
 
     const expectedImports = [
       {
-        cid: 'bafybeihoqexapn3tusc4rrkqztzzemz7y57esnzg7eutsua4ehjkylmjqe',
+        cid: 'bafkreig5rpawfjnti2uck52ndflv6o4urk6rtqexwpspmpcv3tc7xilfui',
         path: Path.join(data[1].virtual, 'file-1.txt'),
         inPath: Path.join(data[1].import, 'file-1.txt')
       },
       {
-        cid: 'bafybeibac7pp5mcxkj7s55bjdbr7tj3pj7col4janvm36y4fjvxqs67fsi',
+        cid: 'bafkreifjsfnld3qc5kwru3qkzcpqbryanuj6ocyjhgpguoukwn7jjjgaa4',
         path: Path.join(data[1].virtual, 'file-2.txt'),
         inPath: Path.join(data[1].import, 'file-2.txt')
       },
       {
-        cid: 'bafybeihxa6uyvmdl6wdjxnwpluocix2csrq3ifunemjr2jxy35wjkl2v64',
+        cid: 'bafkreifuptapcbfwfvghymf422h5rztwcpripxck3dbrb3yqzow6vhcdqa',
         path: Path.join(data[1].virtual, 'dir-1/file-3.txt'),
         inPath: Path.join(data[1].import, 'dir-1/file-3.txt')
       }
@@ -101,7 +101,7 @@ describe('import/export', () => {
       success: true,
       imports: [
         {
-          cid: 'bafybeihxa6uyvmdl6wdjxnwpluocix2csrq3ifunemjr2jxy35wjkl2v64',
+          cid: 'bafkreifuptapcbfwfvghymf422h5rztwcpripxck3dbrb3yqzow6vhcdqa',
           path: Path.join(data[2].virtual, 'file-3.txt'),
           inPath: Path.join(data[2].import, 'file-3.txt')
         }

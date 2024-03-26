@@ -4,7 +4,7 @@ import fs from 'fs/promises'
 import Path from 'path'
 import { fileURLToPath } from 'url'
 import { unixfs } from '@helia/unixfs'
-import { importer, selectHasher, selectChunker } from '@organicdesign/db-fs-importer'
+import { importer, selectChunker } from '@organicdesign/db-fs-importer'
 import { KeyManager } from '@organicdesign/db-key-manager'
 import { createNetClient } from '@organicdesign/net-rpc'
 import all from 'it-all'
@@ -210,7 +210,6 @@ describe('revisions', () => {
 
     const [{ cid }] = await all(importer(network.helia.blockstore, inFile, {
       cidVersion: 1,
-      hasher: selectHasher(),
       chunker: selectChunker()
     }))
 
@@ -275,7 +274,6 @@ describe('revisions', () => {
     for (const path of paths) {
       const [{ cid }] = await all(importer(network.helia.blockstore, path.in, {
         cidVersion: 1,
-        hasher: selectHasher(),
         chunker: selectChunker()
       }))
 
@@ -331,7 +329,6 @@ describe('revisions', () => {
 
     const [{ cid }] = await all(importer(network.helia.blockstore, inFile, {
       cidVersion: 1,
-      hasher: selectHasher(),
       chunker: selectChunker()
     }))
 
@@ -368,7 +365,7 @@ describe('revisions', () => {
     assert.equal(response[0].path, path)
     assert.equal(response[0].priority, 1)
     assert.equal(response[0].revisionStrategy, 'all')
-    assert.equal(response[0].size, 458)
+    assert.equal(response[0].size, 447)
     assert(response[0].timestamp >= before)
     assert(response[0].timestamp <= Date.now())
 
@@ -401,7 +398,6 @@ describe('revisions', () => {
     for (const path of paths) {
       const [{ cid }] = await all(importer(network.helia.blockstore, path.in, {
         cidVersion: 1,
-        hasher: selectHasher(),
         chunker: selectChunker()
       }))
 
