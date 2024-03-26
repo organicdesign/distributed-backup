@@ -17,6 +17,9 @@
     },
     {
       "path": "../fs-importer"
+    },
+    {
+      "path": "../test-data"
     }
   ]
 }
