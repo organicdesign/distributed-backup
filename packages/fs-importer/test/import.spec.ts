@@ -18,19 +18,19 @@ const importerConfig = {
 
 const expectedData = [
   {
-    cid: CID.parse('bafybeihoqexapn3tusc4rrkqztzzemz7y57esnzg7eutsua4ehjkylmjqe'),
+    cid: CID.parse('bafkreig5rpawfjnti2uck52ndflv6o4urk6rtqexwpspmpcv3tc7xilfui'),
     path: Path.join(dataPath, 'file-1.txt'),
-    size: 447
+    size: 447n
   },
   {
-    cid: CID.parse('bafybeibac7pp5mcxkj7s55bjdbr7tj3pj7col4janvm36y4fjvxqs67fsi'),
+    cid: CID.parse('bafkreifjsfnld3qc5kwru3qkzcpqbryanuj6ocyjhgpguoukwn7jjjgaa4'),
     path: Path.join(dataPath, 'file-2.txt'),
-    size: 1791
+    size: 1791n
   },
   {
-    cid: CID.parse('bafybeihxa6uyvmdl6wdjxnwpluocix2csrq3ifunemjr2jxy35wjkl2v64'),
+    cid: CID.parse('bafkreifuptapcbfwfvghymf422h5rztwcpripxck3dbrb3yqzow6vhcdqa'),
     path: Path.join(dataPath, 'dir-1/file-3.txt'),
-    size: 45
+    size: 45n
   }
 ]
 
@@ -43,6 +43,10 @@ describe('importer', () => {
         importerConfig
       ))
 
+      for (const result of results) {
+        delete result.unixfs
+      }
+
       assert.deepEqual(results, [data])
     }
   })
@@ -53,6 +57,10 @@ describe('importer', () => {
       dataPath,
       importerConfig
     ))
+
+    for (const result of results) {
+      delete result.unixfs
+    }
 
     assert.deepEqual(results, expectedData)
   })
