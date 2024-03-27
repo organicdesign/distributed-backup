@@ -13,8 +13,7 @@
     }
   },
   "include": [
-    "src",
-    "test"
+    "src"
   ],
   "references": [
     {
