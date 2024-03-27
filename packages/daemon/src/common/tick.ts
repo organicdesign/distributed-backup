@@ -20,6 +20,7 @@ export class Tick implements Startable {
   private readonly methods: Method[] = []
   private readonly events: Events = new EventTarget()
   private controller: AbortController = new AbortController()
+  private loopPromise: Promise<void> | null = null
 
   constructor (interval: number) {
     this.interval = interval
@@ -30,12 +31,15 @@ export class Tick implements Startable {
   }
 
   async start (): Promise<void> {
-    void this.loop()
+    await this.loopPromise
+    this.controller = new AbortController()
+    this.loopPromise = this.loop()
   }
 
   async stop (): Promise<void> {
     this.controller.abort()
-		this.controller = new AbortController()
+
+    await this.loopPromise
   }
 
   private get signal (): AbortSignal {
@@ -46,7 +50,7 @@ export class Tick implements Startable {
     return this.controller.signal.aborted
   }
 
-  private async loop () {
+  private async loop (): Promise<void> {
     for (;;) {
       for (const method of this.methods) {
         try {
@@ -58,7 +62,7 @@ export class Tick implements Startable {
         }
 
         if (this.isAborted) {
-          return true
+          return
         }
       }
 
