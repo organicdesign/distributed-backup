@@ -11,8 +11,6 @@ export class MethodErrorEvent extends Event<'method:error'> {
   }
 }
 
-type Events = EventTarget<[MethodErrorEvent]>
-
 interface Method { (signal?: AbortSignal): any }
 
 export class Tick implements Startable {
@@ -20,7 +18,7 @@ export class Tick implements Startable {
   private readonly methods: Method[] = []
   private controller: AbortController = new AbortController()
   private loopPromise: Promise<void> | null = null
-  readonly events: Events = new EventTarget()
+  readonly events = new EventTarget<[MethodErrorEvent]>()
 
   constructor (interval: number) {
     this.interval = interval
