@@ -10,6 +10,7 @@ import { FsDatastore } from 'datastore-fs'
 import { createHelia } from 'helia'
 import { createWelo, pubsubReplicator, bootstrapReplicator } from 'welo'
 import { createDownloader } from './downloader/index.js'
+import { createGroups } from './groups.js'
 import { Config } from './interface.js'
 import createLibp2p from './libp2p.js'
 import parseArgv from './parse-argv.js'
@@ -62,6 +63,15 @@ export default async () => {
     identity: await keyManager.getWeloIdentity()
   })
 
+  const groups = await createGroups({
+    datastore: extendDatastore(datastore, 'groups'),
+    welo
+  })
+
+  groups.events.addEventListener('groups:joined', ({ cid }) => {
+    logger.info(`[groups] [join] ${cid.toString()}`)
+  })
+
   const heliaPinManager = new HeliaPinManager({
     helia,
     datastore: extendDatastore(datastore, 'pinManager')
@@ -107,8 +117,9 @@ export default async () => {
   controller.signal.addEventListener('abort', () => {
     (async () => {
       await tick.stop()
-      await welo.stop()
       await downloader.stop()
+      await groups.stop()
+      await welo.stop()
       await helia.stop()
       await libp2p.stop()
     })().catch(error => {
