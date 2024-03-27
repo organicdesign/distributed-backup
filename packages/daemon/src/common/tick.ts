@@ -13,7 +13,7 @@ export class MethodErrorEvent extends Event<'method:error'> {
 
 type Events = EventTarget<[MethodErrorEvent]>
 
-interface Method { (...args: any[]): any }
+interface Method { (signal?: AbortSignal): any }
 
 export class Tick implements Startable {
   private readonly interval: number
@@ -54,7 +54,7 @@ export class Tick implements Startable {
     for (;;) {
       for (const method of this.methods) {
         try {
-          await method()
+          await method(this.signal)
         } catch (e) {
           const error = e instanceof Error ? e : new Error(JSON.stringify(e))
 
