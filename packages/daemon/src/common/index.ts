@@ -13,6 +13,7 @@ import { createWelo, pubsubReplicator, bootstrapReplicator } from 'welo'
 import { createDownloader } from './downloader/index.js'
 import { EntryTracker } from './entry-tracker.js'
 import { createGroups } from './groups.js'
+import handleCommands from './handle-commands.js'
 import { Config, type Components } from './interface.js'
 import createLibp2p from './libp2p.js'
 import parseArgv from './parse-argv.js'
@@ -161,6 +162,8 @@ export default async (): Promise<Components> => {
     heliaPinManager,
     events
   }
+
+  handleCommands(components)
 
   return components
 }
