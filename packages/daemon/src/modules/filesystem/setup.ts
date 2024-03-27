@@ -1,8 +1,6 @@
-import { EventTarget } from 'ts-event-target'
 import { FileSystem } from './file-system.js'
 import { LocalSettings } from './local-settings.js'
 import createUploadManager from './upload-operations.js'
-import type { Events } from './events.js'
 import type { Context, Config } from './index.js'
 import type { Components } from '@/common/interface.js'
 import type { CID } from 'multiformats/cid'
@@ -10,7 +8,6 @@ import { extendDatastore } from '@/utils.js'
 
 export default async (components: Components, config: Config): Promise<Context> => {
   const { groups, datastore, blockstore, welo } = components
-  const events: Events = new EventTarget()
 
   const localSettings = new LocalSettings({
     datastore: extendDatastore(datastore, 'references')
@@ -32,7 +29,7 @@ export default async (components: Components, config: Config): Promise<Context> 
   }
 
   const uploads = await createUploadManager(
-    { getFileSystem, events },
+    { getFileSystem },
     components,
     extendDatastore(datastore, 'upload-operations')
   )
@@ -41,7 +38,6 @@ export default async (components: Components, config: Config): Promise<Context> 
     localSettings,
     uploads,
     config,
-    getFileSystem,
-    events
+    getFileSystem
   }
 }

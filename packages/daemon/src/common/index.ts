@@ -32,6 +32,7 @@ export default async (): Promise<Components> => {
   const controller = new AbortController()
   const net = await createNetServer(argv.socket)
   const config = getConfig(Config)
+  const events = new EventTarget()
 
   const datastore = isMemory(config.storage)
     ? new MemoryDatastore()
@@ -157,7 +158,8 @@ export default async (): Promise<Components> => {
     groups,
     pinManager,
     welo,
-    heliaPinManager
+    heliaPinManager,
+    events
   }
 
   return components

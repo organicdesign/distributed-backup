@@ -6,7 +6,7 @@ import { type Context, logger } from './index.js'
 import type { Components } from '@/common/interface.js'
 import type { CID } from 'multiformats/cid'
 
-export default async ({ groups, welo }: Components): Promise<Context> => {
+export default async ({ groups, welo, events }: Components): Promise<Context> => {
   const getRevisions = (group: CID): Revisions | null => {
     const database = groups.get(group)
 
@@ -17,8 +17,14 @@ export default async ({ groups, welo }: Components): Promise<Context> => {
     return new Revisions(database, welo.identity.id)
   }
 
-  filesystem.events.addEventListener('file:added', ({ group, path, entry }) => {
-    (async () => {
+  events.addEventListener('file:added', (event) => {
+    if (!(event instanceof CustomEvent)) {
+      return
+    }
+
+    const { detail: { group, path, entry } } = event
+
+    ;(async () => {
       const revisions = getRevisions(group)
 
       if (revisions == null) {

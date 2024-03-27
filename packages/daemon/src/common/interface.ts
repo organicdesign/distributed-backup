@@ -46,4 +46,5 @@ export interface Components {
   groups: Groups
   pinManager: PinManager
   heliaPinManager: HeliaPinManager
+  events: EventTarget
 }
