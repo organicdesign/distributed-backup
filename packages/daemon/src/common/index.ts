@@ -155,7 +155,8 @@ export default async (): Promise<Components> => {
     getConfig,
     controller,
     groups,
-    pinManager
+    pinManager,
+    welo
   }
 
   return components
