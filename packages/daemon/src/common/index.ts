@@ -131,7 +131,7 @@ export default async (): Promise<Components> => {
   })
 
   controller.signal.addEventListener('abort', () => {
-		logger.info('exiting...')
+    logger.info('cleaning up...')
 
     ;(async () => {
       await net.close()
@@ -141,6 +141,7 @@ export default async (): Promise<Components> => {
       await welo.stop()
       await helia.stop()
       await libp2p.stop()
+			logger.info('exiting...')
     })().catch(error => {
       logger.error(error)
     })

@@ -5,6 +5,7 @@ import { pathToKey } from './utils.js'
 import { type Context, logger } from './index.js'
 import type { Components } from '@/common/interface.js'
 import type { CID } from 'multiformats/cid'
+import { CustomEvent } from '@libp2p/interface'
 
 export default async ({ groups, welo, events }: Components): Promise<Context> => {
   const getRevisions = (group: CID): Revisions | null => {
