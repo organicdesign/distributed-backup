@@ -141,7 +141,7 @@ export default async (): Promise<Components> => {
       await welo.stop()
       await helia.stop()
       await libp2p.stop()
-			logger.info('exiting...')
+      logger.info('exiting...')
     })().catch(error => {
       logger.error(error)
     })
