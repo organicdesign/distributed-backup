@@ -28,7 +28,7 @@ import { isMemory, extendDatastore } from '@/utils.js'
 export default async (): Promise<Components> => {
   const argv = await parseArgv()
   const logger = createLogger('common')
-  const getConfig = await parseConfig(argv.socket)
+  const getConfig = await parseConfig(argv.config)
   const keyManager = await createKeyManager(argv.key)
   const controller = new AbortController()
   const net = await createNetServer(argv.socket)
@@ -64,7 +64,7 @@ export default async (): Promise<Components> => {
 
   const welo = await createWelo({
     // @ts-expect-error Helia version mismatch here.
-    ipfs: network.helia,
+    ipfs: helia,
     replicators: [bootstrapReplicator(), pubsubReplicator()],
     identity: await keyManager.getWeloIdentity()
   })
@@ -131,7 +131,9 @@ export default async (): Promise<Components> => {
   })
 
   controller.signal.addEventListener('abort', () => {
-    (async () => {
+		logger.info('exiting...')
+
+    ;(async () => {
       await net.close()
       await tick.stop()
       await downloader.stop()
