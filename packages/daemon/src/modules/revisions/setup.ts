@@ -1,3 +1,4 @@
+import { CustomEvent } from '@libp2p/interface'
 import all from 'it-all'
 import { Revisions } from './revisions.js'
 import selectRevisions from './select-revisions.js'
@@ -5,7 +6,6 @@ import { pathToKey } from './utils.js'
 import { type Context, logger } from './index.js'
 import type { Components } from '@/common/interface.js'
 import type { CID } from 'multiformats/cid'
-import { CustomEvent } from '@libp2p/interface'
 
 export default async ({ groups, welo, events }: Components): Promise<Context> => {
   const getRevisions = (group: CID): Revisions | null => {

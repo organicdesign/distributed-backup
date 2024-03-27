@@ -1,5 +1,6 @@
 import Path from 'path'
 import { unixfs } from '@helia/unixfs'
+import { CustomEvent } from '@libp2p/interface'
 import { type RevisionStrategies } from '@organicdesign/db-rpc-interfaces/zod'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
@@ -10,7 +11,6 @@ import type { Components } from '@/common/interface.js'
 import type { Pair } from '@/interface.js'
 import type { Datastore } from 'interface-datastore'
 import { OperationManager } from '@/operation-manager.js'
-import { CustomEvent } from '@libp2p/interface'
 
 export default async (context: Pick<Context, 'getFileSystem'>, { events, pinManager, helia }: Components, datastore: Datastore): Promise<OperationManager<{
   put(groupData: Uint8Array, path: string, encodedEntry: { cid: Uint8Array, encrypted: boolean, revisionStrategy: RevisionStrategies, priority: number }): Promise<void>

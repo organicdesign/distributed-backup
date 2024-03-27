@@ -1,4 +1,5 @@
 import { unixfs } from '@helia/unixfs'
+import { CustomEvent } from '@libp2p/interface'
 import { Write } from '@organicdesign/db-rpc-interfaces'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
@@ -7,7 +8,6 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import type { Context } from '../index.js'
 import type { Entry } from '../interface.js'
 import type { ModuleMethod } from '@/interface.js'
-import { CustomEvent } from '@libp2p/interface'
 
 const command: ModuleMethod<Context> = ({ net, helia, events }, context) => {
   net.rpc.addMethod(Write.name, async (raw: unknown): Promise<Write.Return> => {
