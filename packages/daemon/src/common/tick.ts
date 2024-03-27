@@ -18,9 +18,9 @@ interface Method { (signal?: AbortSignal): any }
 export class Tick implements Startable {
   private readonly interval: number
   private readonly methods: Method[] = []
-  private readonly events: Events = new EventTarget()
   private controller: AbortController = new AbortController()
   private loopPromise: Promise<void> | null = null
+  readonly events: Events = new EventTarget()
 
   constructor (interval: number) {
     this.interval = interval
