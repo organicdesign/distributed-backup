@@ -14,13 +14,6 @@ import type { Events } from './events.js'
 import type { LocalSettings } from './local-settings.js'
 import type createUploadManager from './upload-operations.js'
 import type { Module } from '@/interface.js'
-import type { Provides as Base } from '@/modules/base/index.js'
-import type { Provides as ConfigModule } from '@/modules/config/index.js'
-import type { Provides as Downloader } from '@/modules/downloader/index.js'
-import type { Provides as Groups } from '@/modules/groups/index.js'
-import type { Provides as Network } from '@/modules/network/index.js'
-import type { Provides as RPC } from '@/modules/rpc/index.js'
-import type { Provides as Tick } from '@/modules/tick/index.js'
 import type { CID } from 'multiformats/cid'
 import { createLogger } from '@/logger.js'
 
@@ -33,17 +26,7 @@ export const Config = z.object({
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type Config = z.output<typeof Config>
 
-export interface Requires extends Record<string, unknown> {
-  base: Base
-  network: Network
-  groups: Groups
-  downloader: Downloader
-  tick: Tick
-  rpc: RPC
-  config: ConfigModule
-}
-
-export interface Provides extends Record<string, unknown> {
+export interface Context extends Record<string, unknown> {
   uploads: Awaited<ReturnType<typeof createUploadManager>>
   localSettings: LocalSettings
   config: Config
@@ -51,8 +34,8 @@ export interface Provides extends Record<string, unknown> {
   events: Events
 }
 
-const module: Module<Provides, Requires> = async (components) => {
-  const config = components.config.get(Config)
+const module: Module<Context> = async (components) => {
+  const config = components.getConfig(Config)
   const context = await setup(components, config)
 
   for (const setupCommand of [
@@ -67,7 +50,7 @@ const module: Module<Provides, Requires> = async (components) => {
     setupCommand(context, components)
   }
 
-  components.tick.register(async () => syncGroups(components, context))
+  components.tick.add(async () => syncGroups(components, context))
 
   return context
 }

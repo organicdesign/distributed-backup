@@ -1,15 +1,15 @@
 import { List } from '@organicdesign/db-rpc-interfaces'
 import { CID } from 'multiformats/cid'
 import { toString as uint8arrayToString } from 'uint8arrays'
-import type { Provides, Requires } from '../index.js'
+import type { Context } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 
-const command: ModuleMethod<Provides, Requires> = (context, { rpc, groups }) => {
-  rpc.addMethod(List.name, async (raw: unknown): Promise<List.Return> => {
+const command: ModuleMethod<Context> = ({ net, groups }, context) => {
+  net.rpc.addMethod(List.name, async (raw: unknown): Promise<List.Return> => {
     const params = List.Params.parse(raw)
     const list: List.Return = []
 
-    for (const { key: group } of groups.groups.all()) {
+    for (const { key: group } of groups.all()) {
       if (params.group != null && group !== params.group) {
         continue
       }
