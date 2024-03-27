@@ -8,6 +8,7 @@ import { FsBlockstore } from 'blockstore-fs'
 import { MemoryDatastore } from 'datastore-core'
 import { FsDatastore } from 'datastore-fs'
 import { createHelia } from 'helia'
+import { createWelo, pubsubReplicator, bootstrapReplicator } from 'welo'
 import { createDownloader } from './downloader/index.js'
 import { Config } from './interface.js'
 import createLibp2p from './libp2p.js'
@@ -52,6 +53,13 @@ export default async () => {
     libp2p,
     blockstore,
     blockBrokers: [bitswap(), () => manualBlockBroker]
+  })
+
+  const welo = await createWelo({
+    // @ts-expect-error Helia version mismatch here.
+    ipfs: network.helia,
+    replicators: [bootstrapReplicator(), pubsubReplicator()],
+    identity: await keyManager.getWeloIdentity()
   })
 
   const heliaPinManager = new HeliaPinManager({
@@ -99,6 +107,8 @@ export default async () => {
   controller.signal.addEventListener('abort', () => {
     (async () => {
       await tick.stop()
+      await welo.stop()
+      await downloader.stop()
       await helia.stop()
       await libp2p.stop()
     })().catch(error => {
