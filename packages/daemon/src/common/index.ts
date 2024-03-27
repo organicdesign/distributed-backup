@@ -156,7 +156,8 @@ export default async (): Promise<Components> => {
     controller,
     groups,
     pinManager,
-    welo
+    welo,
+    heliaPinManager
   }
 
   return components

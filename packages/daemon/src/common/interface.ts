@@ -8,6 +8,7 @@ import type { Tick } from './tick.js'
 import type { KeyvalueDB } from '@/interface.js'
 import type { Helia } from '@helia/interface'
 import type { Libp2p } from '@libp2p/interface'
+import type HeliaPinManager from '@organicdesign/db-helia-pin-manager'
 import type { NetServer } from '@organicdesign/net-rpc'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
@@ -44,4 +45,5 @@ export interface Components {
   downloader: Downloader
   groups: Groups
   pinManager: PinManager
+  heliaPinManager: HeliaPinManager
 }
