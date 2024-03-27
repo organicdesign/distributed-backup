@@ -11,6 +11,7 @@ import type { Libp2p } from '@libp2p/interface'
 import type { NetServer } from '@organicdesign/net-rpc'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
+import type { Welo } from 'welo'
 
 export const Config = z.object({
   storage: z.string().default(':memory:'),
@@ -31,6 +32,7 @@ export type Config = z.output<typeof Config>
 export interface Components {
   helia: Helia
   libp2p: Libp2p
+  welo: Welo
   datastore: Datastore
   blockstore: Blockstore
   controller: AbortController

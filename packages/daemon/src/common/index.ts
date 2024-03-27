@@ -142,7 +142,7 @@ export default async (): Promise<Components> => {
     })
   })
 
-	const components: Components = {
+  const components: Components = {
     sneakernet,
     getTracker,
     helia,
@@ -156,7 +156,7 @@ export default async (): Promise<Components> => {
     controller,
     groups,
     pinManager
-	}
+  }
 
   return components
 }
