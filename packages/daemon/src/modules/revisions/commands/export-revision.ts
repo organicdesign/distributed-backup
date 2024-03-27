@@ -3,11 +3,11 @@ import { ExportRevision } from '@organicdesign/db-rpc-interfaces'
 import { exporter } from '@organicdesign/db-utils'
 import { CID } from 'multiformats/cid'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import type { Provides, Requires } from '../index.js'
+import type { Context } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 
-const command: ModuleMethod<Provides, Requires> = (context, { rpc, base, filesystem }) => {
-  rpc.addMethod(ExportRevision.name, async (raw: unknown): Promise<ExportRevision.Return> => {
+const command: ModuleMethod<Context> = ({ net, blockstore }, context) => {
+  net.rpc.addMethod(ExportRevision.name, async (raw: unknown): Promise<ExportRevision.Return> => {
     const params = ExportRevision.Params.parse(raw)
     const group = CID.parse(params.group)
     const revisions = context.getRevisions(group)
@@ -29,7 +29,7 @@ const command: ModuleMethod<Provides, Requires> = (context, { rpc, base, filesys
       }
 
       await exporter(
-        base.blockstore,
+        blockstore,
         outFile,
         revision.cid
       )
