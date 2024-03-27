@@ -17,11 +17,9 @@ export interface ModuleMethod<
 export type Optional<T> = T extends undefined ? ReturnType<() => void> : T
 
 export interface Module<
-  Provides extends Record<string, unknown> = Record<string, unknown>,
-  Requires extends Record<string, unknown> | undefined = undefined,
-  Init extends Record<string, unknown> | undefined = undefined,
+  Context extends Record<string, unknown> = Record<string, unknown>
 > {
-  (components: Optional<Requires>, init: Optional<Init>): Promise<Provides>
+  (components: Components): Promise<Context>
 }
 
 export interface Pair<Key = unknown, Value = unknown> {
