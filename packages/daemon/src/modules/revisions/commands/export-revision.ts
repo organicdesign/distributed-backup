@@ -11,16 +11,14 @@ const command: ModuleMethod<Context> = ({ net, blockstore }, context) => {
     const params = ExportRevision.Params.parse(raw)
     const group = CID.parse(params.group)
     const revisions = context.getRevisions(group)
-    const fs = filesystem.getFileSystem(group)
 
-    if (revisions == null || fs == null) {
+    if (revisions == null) {
       throw new Error('no such group')
     }
 
     const author = uint8ArrayFromString(params.author, 'base58btc')
 
-    for await (const pair of fs.getDir(params.path)) {
-      const path = pair.key.toString()
+    for await (const { path } of revisions.getAll(params.path)) {
       const outFile = Path.join(params.outPath, path.replace(params.path, ''))
       const revision = await revisions.get(path, author, params.sequence)
 

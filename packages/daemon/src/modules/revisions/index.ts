@@ -27,7 +27,7 @@ const module: Module<Context> = async (components) => {
   const context = await setup(components)
 
   for (const setupCommand of [listRevisions, exportRevision, readRevision]) {
-    setupCommand(context, components)
+    setupCommand(components, context)
   }
 
   components.tick.add(async () => syncRevisions(components))
