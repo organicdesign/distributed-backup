@@ -65,7 +65,7 @@ export class Tick implements Startable {
       }
 
       await new Promise<void>(resolve => {
-        const listener = () => {
+        const listener = (): void => {
           if (timeout != null) {
             clearTimeout(timeout)
             this.signal.removeEventListener('abort', listener)

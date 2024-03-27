@@ -29,18 +29,18 @@ export class Downloader implements Startable {
     this.pinManager = pinManager
   }
 
-  async start () {
+  async start (): Promise<void> {
     await this.loopPromise
     this.controller = new AbortController()
     this.loopPromise = this.loop()
   }
 
-  async stop () {
+  async stop (): Promise<void> {
     this.controller.abort()
     await this.loopPromise
   }
 
-  private async loop () {
+  private async loop (): Promise<void> {
     for (;;) {
       if (this.isAborted) {
         return
