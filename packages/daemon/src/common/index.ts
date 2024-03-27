@@ -10,13 +10,16 @@ import { FsDatastore } from 'datastore-fs'
 import { createHelia } from 'helia'
 import { createWelo, pubsubReplicator, bootstrapReplicator } from 'welo'
 import { createDownloader } from './downloader/index.js'
+import { EntryTracker } from './entry-tracker.js'
 import { createGroups } from './groups.js'
 import { Config } from './interface.js'
 import createLibp2p from './libp2p.js'
 import parseArgv from './parse-argv.js'
 import parseConfig from './parse-config.js'
 import { PinManager } from './pin-manager/index.js'
+import { Sneakernet } from './sneakernet/index.js'
 import { createTick } from './tick.js'
+import type { KeyvalueDB } from '@/interface.js'
 import { createLogger } from '@/logger.js'
 import { isMemory, extendDatastore } from '@/utils.js'
 
@@ -72,6 +75,16 @@ export default async () => {
     logger.info(`[groups] [join] ${cid.toString()}`)
   })
 
+  const sneakernet = new Sneakernet({
+    welo,
+    helia,
+    datastore: extendDatastore(datastore, 'sneakernet'),
+    manualBlockBroker,
+    groups
+  })
+
+  const getTracker = (database: KeyvalueDB): EntryTracker => new EntryTracker(database)
+
   const heliaPinManager = new HeliaPinManager({
     helia,
     datastore: extendDatastore(datastore, 'pinManager')
@@ -126,4 +139,9 @@ export default async () => {
       logger.error(error)
     })
   })
+
+  return {
+    sneakernet,
+    getTracker
+  }
 }
