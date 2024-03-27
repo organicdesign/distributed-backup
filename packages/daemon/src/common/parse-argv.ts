@@ -3,7 +3,11 @@ import { hideBin } from 'yargs/helpers'
 import yargs from 'yargs/yargs'
 import { projectPath } from '@/utils.js'
 
-export default async () => {
+export default async (): Promise<{
+  socket: string
+  key: string
+  config: string
+}> => {
   const argv = await yargs(hideBin(process.argv))
     .option({
       socket: {

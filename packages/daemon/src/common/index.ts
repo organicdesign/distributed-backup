@@ -3,6 +3,7 @@ import { bitswap } from '@helia/block-brokers'
 import HeliaPinManager from '@organicdesign/db-helia-pin-manager'
 import { createKeyManager } from '@organicdesign/db-key-manager'
 import { ManualBlockBroker } from '@organicdesign/db-manual-block-broker'
+import { createNetServer } from '@organicdesign/net-rpc'
 import { MemoryBlockstore } from 'blockstore-core'
 import { FsBlockstore } from 'blockstore-fs'
 import { MemoryDatastore } from 'datastore-core'
@@ -12,7 +13,7 @@ import { createWelo, pubsubReplicator, bootstrapReplicator } from 'welo'
 import { createDownloader } from './downloader/index.js'
 import { EntryTracker } from './entry-tracker.js'
 import { createGroups } from './groups.js'
-import { Config } from './interface.js'
+import { Config, type Components } from './interface.js'
 import createLibp2p from './libp2p.js'
 import parseArgv from './parse-argv.js'
 import parseConfig from './parse-config.js'
@@ -22,15 +23,14 @@ import { createTick } from './tick.js'
 import type { KeyvalueDB } from '@/interface.js'
 import { createLogger } from '@/logger.js'
 import { isMemory, extendDatastore } from '@/utils.js'
-import { createNetServer } from '@organicdesign/net-rpc'
 
-export default async () => {
+export default async (): Promise<Components> => {
   const argv = await parseArgv()
   const logger = createLogger('common')
   const getConfig = await parseConfig(argv.socket)
   const keyManager = await createKeyManager(argv.key)
   const controller = new AbortController()
-	const net = await createNetServer(argv.socket)
+  const net = await createNetServer(argv.socket)
   const config = getConfig(Config)
 
   const datastore = isMemory(config.storage)
@@ -130,7 +130,7 @@ export default async () => {
 
   controller.signal.addEventListener('abort', () => {
     (async () => {
-			await net.close()
+      await net.close()
       await tick.stop()
       await downloader.stop()
       await groups.stop()
@@ -142,8 +142,21 @@ export default async () => {
     })
   })
 
-  return {
+	const components: Components = {
     sneakernet,
-    getTracker
-  }
+    getTracker,
+    helia,
+    libp2p,
+    blockstore,
+    datastore,
+    net,
+    tick,
+    downloader,
+    getConfig,
+    controller,
+    groups,
+    pinManager
+	}
+
+  return components
 }
