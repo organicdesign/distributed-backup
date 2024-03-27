@@ -22,6 +22,7 @@ import { createTick } from './tick.js'
 import type { KeyvalueDB } from '@/interface.js'
 import { createLogger } from '@/logger.js'
 import { isMemory, extendDatastore } from '@/utils.js'
+import { createNetServer } from '@organicdesign/net-rpc'
 
 export default async () => {
   const argv = await parseArgv()
@@ -29,7 +30,7 @@ export default async () => {
   const getConfig = await parseConfig(argv.socket)
   const keyManager = await createKeyManager(argv.key)
   const controller = new AbortController()
-
+	const net = await createNetServer(argv.socket)
   const config = getConfig(Config)
 
   const datastore = isMemory(config.storage)
@@ -129,6 +130,7 @@ export default async () => {
 
   controller.signal.addEventListener('abort', () => {
     (async () => {
+			await net.close()
       await tick.stop()
       await downloader.stop()
       await groups.stop()
