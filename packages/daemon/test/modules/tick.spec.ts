@@ -1,46 +1,11 @@
 import assert from 'assert/strict'
-import { type z } from 'zod'
-import setupSigint from '../../src/modules/sigint/index.js'
-import tick from '../../src/modules/tick/index.js'
-import mockConfig from './mock-config.js'
+import { createTick } from '../../src/common/tick.js'
 
 describe('tick', () => {
-  it('returns default tick interval', async () => {
-    const sigint = await setupSigint()
-
-    const m = await tick({
-      config: { config: {}, get: (schema: z.AnyZodObject) => schema.parse({}) },
-      sigint
-    })
-
-    assert.deepEqual(m.config, { tickInterval: 600 })
-
-    await sigint.interupt()
-  })
-
-  it('returns config tick interval', async () => {
-    const tickInterval = 100
-    const sigint = await setupSigint()
-
-    const m = await tick({
-      config: mockConfig({ tickInterval }),
-      sigint
-    })
-
-    assert.deepEqual(m.config, { tickInterval })
-
-    await sigint.interupt()
-  })
-
   it('returns ticks every interval', async () => {
     const tickInterval = 5
     const checkTimes = 6
-    const sigint = await setupSigint()
-
-    const m = await tick({
-      config: mockConfig({ tickInterval }),
-      sigint
-    })
+    const tick = await createTick(tickInterval)
 
     const before = Date.now()
 
@@ -48,7 +13,7 @@ describe('tick', () => {
       setTimeout(() => { reject(new Error('timeout')) }, (checkTimes + 4) * tickInterval)
       let timesCalled = 0
 
-      m.register(() => {
+      tick.add(() => {
         timesCalled++
 
         if (timesCalled >= checkTimes) {
@@ -59,11 +24,11 @@ describe('tick', () => {
 
     const after = Date.now()
 
+		await tick.stop()
+
     const delta = after - before
 
     assert(delta < tickInterval * (checkTimes + 2))
     assert(delta > tickInterval * (checkTimes - 2))
-
-    await sigint.interupt()
   })
 })
