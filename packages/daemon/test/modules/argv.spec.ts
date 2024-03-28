@@ -1,13 +1,11 @@
 import assert from 'assert/strict'
-import Path from 'path'
 import parseArgv from '../../src/common/parse-argv.js'
-import { projectPath } from '@/utils.js'
 
 describe('argv', () => {
   it('returns defaults for every argv parameter', async () => {
     const argv = await parseArgv()
 
-    assert.equal(argv.key, Path.join(projectPath, 'config/key.json'))
+    assert.equal(argv.key, undefined)
     assert.equal(argv.config, undefined)
     assert.equal(argv.socket, '/tmp/server.socket')
   })

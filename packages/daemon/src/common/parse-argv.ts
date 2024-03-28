@@ -1,11 +1,10 @@
 import Path from 'path'
 import { hideBin } from 'yargs/helpers'
 import yargs from 'yargs/yargs'
-import { projectPath } from '@/utils.js'
 
 export default async (): Promise<{
   socket: string
-  key: string
+  key?: string
   config?: string
 }> => {
   const argv = await yargs(hideBin(process.argv))
@@ -19,8 +18,7 @@ export default async (): Promise<{
     .option({
       key: {
         alias: 'k',
-        type: 'string',
-        default: Path.join(projectPath, 'config/key.json')
+        type: 'string'
       }
     })
     .option({
@@ -33,7 +31,7 @@ export default async (): Promise<{
 
   return {
     socket: Path.resolve(argv.socket),
-    key: Path.resolve(argv.key),
-    config: argv.config ? Path.resolve(argv.config) : undefined
+    key: argv.key != null ? Path.resolve(argv.key) : undefined,
+    config: argv.config != null ? Path.resolve(argv.config) : undefined
   }
 }
