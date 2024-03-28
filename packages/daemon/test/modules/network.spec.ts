@@ -2,6 +2,7 @@ import assert from 'assert/strict'
 import fs from 'fs/promises'
 import Path from 'path'
 import { unixfs } from '@helia/unixfs'
+import { createKeyManager } from '@organicdesign/db-key-manager'
 import { createNetClient } from '@organicdesign/net-rpc'
 import { createHelia } from 'helia'
 import { Key } from 'interface-datastore'
@@ -174,7 +175,16 @@ describe('network', () => {
 
   it('libp2p remembers peers with persistant storage', async () => {
     const libp2p = await createLibp2p({})
-    const start = async (): Promise<Components> => setup({ socket, config: { private: false, storage: testPath } })
+    const keyManager = await createKeyManager()
+
+    const start = async (): Promise<Components> => setup({
+      socket,
+      keyManager,
+      config: {
+        private: false,
+        storage: testPath
+      }
+    })
 
     let components = await start()
 
@@ -190,7 +200,7 @@ describe('network', () => {
 
     const [saved] = await components.libp2p.peerStore.all()
 
-    assert.deepEqual(saved.id.toString(), peer.toString())
+    assert.deepEqual(saved.id.toBytes(), peer.toBytes())
 
     await components.stop()
     await libp2p.stop()
