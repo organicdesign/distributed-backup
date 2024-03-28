@@ -1,7 +1,7 @@
 import Path from 'path'
 import { bitswap } from '@helia/block-brokers'
 import HeliaPinManager from '@organicdesign/db-helia-pin-manager'
-import { createKeyManager } from '@organicdesign/db-key-manager'
+import { createKeyManager, type KeyManager } from '@organicdesign/db-key-manager'
 import { ManualBlockBroker } from '@organicdesign/db-manual-block-broker'
 import { createNetServer } from '@organicdesign/net-rpc'
 import { MemoryBlockstore } from 'blockstore-core'
@@ -28,18 +28,18 @@ interface Setup {
   socket: string
   config: Record<string, unknown>
   key?: string
+  keyManager: KeyManager
 }
 
 export default async (settings: Partial<Setup> = {}): Promise<Components> => {
-  const setup: Setup = {
+  const setup: Pick<Setup, 'socket' | 'config'> = {
     socket: settings.socket ?? '/tmp/server.socket',
-    config: settings.config ?? {},
-    key: settings.key
+    config: settings.config ?? {}
   }
 
   const logger = createLogger('common')
   const parseConfig = <T extends z.AnyZodObject>(shape: T): z.infer<T> => shape.parse(setup.config)
-  const keyManager = await createKeyManager(setup.key)
+  const keyManager = settings.keyManager ?? await createKeyManager(settings.key)
   const net = await createNetServer(setup.socket)
   const config = parseConfig(Config)
   const events = new EventTarget()
