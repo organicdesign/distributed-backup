@@ -22,13 +22,13 @@ import { createDag } from '../utils/dag.js'
 describe('revisions', () => {
   const testPath = mkTestPath('revisions')
 
-  const create = async (name?: string): Promise<{
+  const create = async (): Promise<{
 		revisions: RevisionsContext
 		filesystem: FilesystemContext
 		components: Components
 		socket: string
 	}> => {
-		const socket = Path.join(testPath, `${name ?? 'server'}.socket`)
+		const socket = Path.join(testPath, `${Math.random()}.socket`)
     const components = await setup({ socket })
 		const filesystem = await setupFilesystem(components)
 		const revisions = await setupRevisions(components)
