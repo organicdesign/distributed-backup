@@ -89,7 +89,8 @@ describe('network', () => {
 
     await Promise.all([
       libp2p1.stop(),
-      libp2p2.stop()
+      libp2p2.stop(),
+			components.stop()
     ])
   })
 
@@ -137,6 +138,7 @@ describe('network', () => {
     assert.deepEqual(peer, libp2p.peerId.toBytes())
 
     await libp2p.stop()
+		await components.stop()
   })
 
   // Something is failing inside websockets...
@@ -165,7 +167,8 @@ describe('network', () => {
 
     await Promise.all([
       libp2p1.stop(),
-      libp2p2.stop()
+      libp2p2.stop(),
+			components.stop()
     ])
   })
 
@@ -240,6 +243,7 @@ describe('network', () => {
     assert.deepEqual(connections[0].remotePeer.toBytes(), libp2p.peerId.toBytes())
 
     await libp2p.stop()
+		await components.stop()
     client.close()
   })
 
@@ -263,6 +267,7 @@ describe('network', () => {
 
     await helia.stop()
     await libp2p.stop()
+		await components.stop()
     client.close()
   })
 })
