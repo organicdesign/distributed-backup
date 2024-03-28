@@ -1,8 +1,7 @@
 import { type CID } from 'multiformats/cid'
-import type { Groups } from '../../src/common/groups.js'
-import type { Welo } from 'welo'
+import type { Components } from '../../src/common/interface.js'
 
-export const createGroup = async (groups: Groups, welo: Welo, name: string, peers: Uint8Array[] = []): Promise<CID> => {
+export const createGroup = async ({ welo, groups }: Components, name: string, peers: Uint8Array[] = []): Promise<CID> => {
   const manifest = await welo.determine({
     name,
     meta: { type: 'group' },

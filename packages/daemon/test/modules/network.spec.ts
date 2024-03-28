@@ -188,9 +188,9 @@ describe('network', () => {
 
     components = await start()
 
-    const peers = await components.libp2p.peerStore.all()
+    const [saved] = await components.libp2p.peerStore.all()
 
-    assert.deepEqual(peers[0].id.toBytes(), peer.toBytes())
+    assert.deepEqual(saved.id.toBytes(), peer.toBytes())
 
     await components.stop()
     await libp2p.stop()
