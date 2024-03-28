@@ -1,15 +1,15 @@
 import assert from 'assert/strict'
 import Path from 'path'
-import argv from '../../src/modules/argv/index.js'
+import parseArgv from '../../src/common/parse-argv.js'
 import { projectPath } from '@/utils.js'
 
 describe('argv', () => {
   it('returns defaults for every argv parameter', async () => {
-    const m = await argv()
+    const argv = await parseArgv()
 
-    assert.equal(m.key, Path.join(projectPath, 'config/key.json'))
-    assert.equal(m.config, Path.join(projectPath, 'config/config.json'))
-    assert.equal(m.socket, '/tmp/server.socket')
+    assert.equal(argv.key, Path.join(projectPath, 'config/key.json'))
+    assert.equal(argv.config, Path.join(projectPath, 'config/config.json'))
+    assert.equal(argv.socket, '/tmp/server.socket')
   })
 
   it('returns the value for every argv parameter', async () => {
@@ -24,10 +24,10 @@ describe('argv', () => {
     process.argv.push('--socket')
     process.argv.push(socket)
 
-    const m = await argv()
+    const argv = await parseArgv()
 
-    assert.equal(m.key, key)
-    assert.equal(m.config, config)
-    assert.equal(m.socket, socket)
+    assert.equal(argv.key, key)
+    assert.equal(argv.socket, socket)
+		assert.equal(argv.config, config)
   })
 })
