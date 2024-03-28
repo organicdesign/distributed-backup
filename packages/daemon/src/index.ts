@@ -18,7 +18,7 @@ await Promise.all([
 ])
 
 process.on('SIGINT', () => {
-  components.controller.abort()
+  void components.stop()
 })
 
 logger.info('started')

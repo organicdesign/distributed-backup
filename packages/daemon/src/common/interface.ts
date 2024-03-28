@@ -36,7 +36,7 @@ export interface Components {
   welo: Welo
   datastore: Datastore
   blockstore: Blockstore
-  controller: AbortController
+  stop: () => Promise<void>
   net: NetServer
   tick: Tick
   sneakernet: Sneakernet

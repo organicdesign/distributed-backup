@@ -30,7 +30,6 @@ export default async (): Promise<Components> => {
   const logger = createLogger('common')
   const getConfig = await parseConfig(argv.config)
   const keyManager = await createKeyManager(argv.key)
-  const controller = new AbortController()
   const net = await createNetServer(argv.socket)
   const config = getConfig(Config)
   const events = new EventTarget()
@@ -130,22 +129,19 @@ export default async (): Promise<Components> => {
     logger.error('downloader: ', error)
   })
 
-  controller.signal.addEventListener('abort', () => {
+  const stop = async () => {
     logger.info('cleaning up...')
 
-    ;(async () => {
-      await net.close()
-      await tick.stop()
-      await downloader.stop()
-      await groups.stop()
-      await welo.stop()
-      await helia.stop()
-      await libp2p.stop()
-      logger.info('exiting...')
-    })().catch(error => {
-      logger.error(error)
-    })
-  })
+    await net.close()
+    await tick.stop()
+    await downloader.stop()
+    await groups.stop()
+    await welo.stop()
+    await helia.stop()
+    await libp2p.stop()
+
+    logger.info('exiting...')
+  }
 
   const components: Components = {
     sneakernet,
@@ -158,7 +154,7 @@ export default async (): Promise<Components> => {
     tick,
     downloader,
     getConfig,
-    controller,
+    stop,
     groups,
     pinManager,
     welo,
