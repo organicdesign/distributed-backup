@@ -1,11 +1,12 @@
 import Path from 'path'
 import { DATA_KEY } from './interface.js'
 import { keyToPath } from './utils.js'
-import { type Requires, type Provides, logger } from './index.js'
+import { type Context, logger } from './index.js'
+import type { Components } from '@/common/interface.js'
 
-export default async ({ groups, downloader }: Requires, context: Provides): Promise<void> => {
-  for (const { value: database } of groups.groups.all()) {
-    const tracker = groups.getTracker(database)
+export default async ({ getTracker, groups, pinManager }: Components, context: Context): Promise<void> => {
+  for (const { value: database } of groups.all()) {
+    const tracker = getTracker(database)
 
     for await (const { key } of tracker.process(`/${DATA_KEY}`)) {
       const path = keyToPath(key)
@@ -22,11 +23,11 @@ export default async ({ groups, downloader }: Requires, context: Provides): Prom
       logger.info('[entry] syncing update:', fullKey)
 
       if (entry == null) {
-        await downloader.pinManager.remove(fullKey)
+        await pinManager.remove(fullKey)
         continue
       }
 
-      await downloader.pinManager.put(fullKey, { cid: entry.cid, priority: entry.priority })
+      await pinManager.put(fullKey, { cid: entry.cid, priority: entry.priority })
     }
   }
 }
