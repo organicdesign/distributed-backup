@@ -90,7 +90,7 @@ export default async (): Promise<Components> => {
 
   const heliaPinManager = new HeliaPinManager({
     helia,
-    datastore: extendDatastore(datastore, 'pinManager')
+    datastore: extendDatastore(datastore, 'heliaPinManager')
   })
 
   heliaPinManager.events.addEventListener('downloads:added', ({ cid }) => {
@@ -117,7 +117,7 @@ export default async (): Promise<Components> => {
 
   const pinManager = new PinManager({
     pinManager: heliaPinManager,
-    datastore
+    datastore: extendDatastore(datastore, 'pinManager')
   })
 
   pinManager.events.addEventListener('reference:removed', ({ key }) => {
