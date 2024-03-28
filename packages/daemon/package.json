@@ -19,7 +19,8 @@
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
     "prepublishOnly": "npm run build",
-    "build": "aegir build && tsc-alias"
+    "build": "aegir build && tsc-alias",
+    "test": "aegir test -t node -f './dist/test/**/*.spec.js'"
   },
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
