@@ -1,23 +1,31 @@
+import { CustomEvent } from '@libp2p/interface'
 import all from 'it-all'
 import { Revisions } from './revisions.js'
 import selectRevisions from './select-revisions.js'
 import { pathToKey } from './utils.js'
-import { type Provides, type Requires, logger } from './index.js'
+import { type Context, logger } from './index.js'
+import type { Components } from '@/common/interface.js'
 import type { CID } from 'multiformats/cid'
 
-export default async ({ filesystem, groups }: Requires): Promise<Provides> => {
+export default async ({ groups, welo, events }: Components): Promise<Context> => {
   const getRevisions = (group: CID): Revisions | null => {
-    const database = groups.groups.get(group)
+    const database = groups.get(group)
 
     if (database == null) {
       return null
     }
 
-    return new Revisions(database, groups.welo.identity.id)
+    return new Revisions(database, welo.identity.id)
   }
 
-  filesystem.events.addEventListener('file:added', ({ group, path, entry }) => {
-    (async () => {
+  events.addEventListener('file:added', (event) => {
+    if (!(event instanceof CustomEvent)) {
+      return
+    }
+
+    const { detail: { group, path, entry } } = event
+
+    ;(async () => {
       const revisions = getRevisions(group)
 
       if (revisions == null) {

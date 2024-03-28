@@ -2,7 +2,6 @@ import assert from 'assert'
 import fs from 'fs/promises'
 import Path from 'path'
 import { unixfs } from '@helia/unixfs'
-import { KeyManager } from '@organicdesign/db-key-manager'
 import * as testData from '@organicdesign/db-test-utils'
 import { importer } from '@organicdesign/db-utils'
 import { createNetClient } from '@organicdesign/net-rpc'
@@ -10,101 +9,31 @@ import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import createDownloader from '../../src/modules/downloader/index.js'
-import createFilesystem from '../../src/modules/filesystem/index.js'
-import createGroups from '../../src/modules/groups/index.js'
-import createNetwork from '../../src/modules/network/index.js'
-import createRevisions from '../../src/modules/revisions/index.js'
-import createRpc from '../../src/modules/rpc/index.js'
-import createSigint from '../../src/modules/sigint/index.js'
-import createTick from '../../src/modules/tick/index.js'
 import { createGroup } from '../utils/create-group.js'
 import { createDag } from '../utils/dag.js'
-import { generateKey } from '../utils/generate-key.js'
 import { mkTestPath } from '../utils/paths.js'
-import mockArgv from './mock-argv.js'
-import mockBase from './mock-base.js'
-import mockConfig from './mock-config.js'
+import type { Components } from '@/common/interface.js'
+import type { Context as FilesystemContext } from '@/modules/filesystem/index.js'
+import type { Context as RevisionsContext } from '@/modules/revisions/index.js'
+import setup from '@/common/index.js'
+import setupFilesystem from '@/modules/filesystem/index.js'
+import setupRevisions from '@/modules/revisions/index.js'
 
 describe('revisions', () => {
   const testPath = mkTestPath('revisions')
 
-  const create = async (name?: string): Promise<{
-    argv: ReturnType<typeof mockArgv>
-    config: ReturnType<typeof mockConfig>
-    rpc: Awaited<ReturnType<typeof createRpc>>
-    base: ReturnType<typeof mockBase>
-    network: Awaited<ReturnType<typeof createNetwork>>
-    groups: Awaited<ReturnType<typeof createGroups>>
-    filesystem: Awaited<ReturnType<typeof createFilesystem>>
-    sigint: Awaited<ReturnType<typeof createSigint>>
-    tick: Awaited<ReturnType<typeof createTick>>
-    revisions: Awaited<ReturnType<typeof createRevisions>>
+  const create = async (): Promise<{
+    revisions: RevisionsContext
+    filesystem: FilesystemContext
+    components: Components
+    socket: string
   }> => {
-    const path = name == null ? testPath : Path.join(testPath, name)
+    const socket = Path.join(testPath, `${Math.random()}.socket`)
+    const components = await setup({ socket })
+    const filesystem = await setupFilesystem(components)
+    const revisions = await setupRevisions(components)
 
-    const keyManager = new KeyManager(await generateKey())
-
-    await fs.mkdir(path, { recursive: true })
-
-    const argv = mockArgv(path)
-    const config = mockConfig({ storage: ':memory:' })
-    const sigint = await createSigint()
-    const rpc = await createRpc({ argv, sigint })
-    const base = mockBase({ keyManager })
-    const network = await createNetwork({ config, sigint, base, rpc })
-
-    const groups = await createGroups({
-      sigint,
-      base,
-      rpc,
-      network
-    })
-
-    const downloader = await createDownloader({
-      sigint,
-      base,
-      rpc,
-      network,
-      config
-    })
-
-    const tick = await createTick({ config, sigint })
-
-    const filesystem = await createFilesystem({
-      sigint,
-      base,
-      rpc,
-      network,
-      groups,
-      downloader,
-      tick,
-      config
-    })
-
-    const revisions = await createRevisions({
-      base,
-      network,
-      rpc,
-      groups,
-      filesystem,
-      config,
-      downloader,
-      tick
-    })
-
-    return {
-      argv,
-      config,
-      sigint,
-      rpc,
-      base,
-      network,
-      groups,
-      filesystem,
-      tick,
-      revisions
-    }
+    return { filesystem, revisions, components, socket }
   }
 
   before(async () => {
@@ -116,30 +45,30 @@ describe('revisions', () => {
   })
 
   it('returns null when wraping a group that doesn\'t exist', async () => {
-    const { revisions: m, sigint } = await create()
-    const r = m.getRevisions(CID.parse('QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'))
+    const { revisions, components } = await create()
+    const r = revisions.getRevisions(CID.parse('QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'))
 
     assert.equal(r, null)
 
-    await sigint.interupt()
+    await components.stop()
   })
 
   it('wraps a group in revisions', async () => {
-    const { revisions: m, groups, sigint } = await create()
-    const group = await createGroup(groups, 'test')
-    const r = m.getRevisions(group)
+    const { revisions, components } = await create()
+    const group = await createGroup(components, 'test')
+    const r = revisions.getRevisions(group)
 
     assert.notEqual(r, null)
 
-    await sigint.interupt()
+    await components.stop()
   })
 
   it('creates a revision when a file is added to the filesystem', async () => {
-    const { revisions: m, filesystem, network, groups, sigint } = await create()
-    const group = await createGroup(groups, 'test')
-    const r = m.getRevisions(group)
+    const { revisions, filesystem, components } = await create()
+    const group = await createGroup(components, 'test')
+    const r = revisions.getRevisions(group)
     const fs = filesystem.getFileSystem(group)
-    const dag = await createDag(network.helia, 2, 2)
+    const dag = await createDag(components.helia, 2, 2)
     const path = '/test'
 
     assert(r != null)
@@ -148,7 +77,7 @@ describe('revisions', () => {
     const promise = new Promise<void>((resolve, reject) => {
       setTimeout(() => { reject(new Error('timeout')) }, 100)
 
-      filesystem.events.addEventListener('file:added', () => { resolve() }, { once: true })
+      components.events.addEventListener('file:added', () => { resolve() }, { once: true })
     })
 
     await filesystem.uploads.add('put', [group.bytes, path, {
@@ -171,7 +100,7 @@ describe('revisions', () => {
     assert.deepEqual(entries, [{
       path,
       sequence: 0,
-      author: groups.welo.identity.id,
+      author: components.welo.identity.id,
 
       entry: {
         cid: entry.cid,
@@ -183,27 +112,27 @@ describe('revisions', () => {
       }
     }])
 
-    await sigint.interupt()
+    await components.stop()
   })
 
   it('rpc - it exports a revision (file)', async () => {
-    const { network, filesystem, groups, sigint, argv } = await create()
-    const group = await createGroup(groups, 'test')
+    const { filesystem, components, socket } = await create()
+    const group = await createGroup(components, 'test')
     const fs = filesystem.getFileSystem(group)
     const path = '/test'
-    const client = createNetClient(argv.socket)
+    const client = createNetClient(socket)
     const sequence = 0
     const dataFile = testData.data[0]
     const exportPath = dataFile.generatePath(testPath)
 
     assert(fs != null)
 
-    const [{ cid }] = await all(importer(network.helia.blockstore, dataFile.path))
+    const [{ cid }] = await all(importer(components.helia.blockstore, dataFile.path))
 
     const promise = new Promise<void>((resolve, reject) => {
       setTimeout(() => { reject(new Error('timeout')) }, 100)
 
-      filesystem.events.addEventListener('file:added', () => { resolve() }, { once: true })
+      components.events.addEventListener('file:added', () => { resolve() }, { once: true })
     })
 
     await filesystem.uploads.add('put', [group.bytes, path, {
@@ -220,7 +149,7 @@ describe('revisions', () => {
     const response = await client.rpc.request('export-revision', {
       group: group.toString(),
       path,
-      author: uint8ArrayToString(groups.welo.identity.id, 'base58btc'),
+      author: uint8ArrayToString(components.welo.identity.id, 'base58btc'),
       sequence,
       outPath: exportPath
     })
@@ -231,15 +160,15 @@ describe('revisions', () => {
 
     assert.equal(valid, true)
 
-    await sigint.interupt()
+    await components.stop()
   })
 
   it('rpc - it exports a revision (directory)', async () => {
-    const { network, filesystem, groups, sigint, argv } = await create()
-    const group = await createGroup(groups, 'test')
+    const { filesystem, components, socket } = await create()
+    const group = await createGroup(components, 'test')
     const fs = filesystem.getFileSystem(group)
     const rootPath = '/test'
-    const client = createNetClient(argv.socket)
+    const client = createNetClient(socket)
     const sequence = 0
     const outPath = Path.join(testPath, 'export-directory')
 
@@ -248,12 +177,12 @@ describe('revisions', () => {
     for (const dataFile of testData.data) {
       const virtualPath = dataFile.generatePath(rootPath)
 
-      const [{ cid }] = await all(importer(network.helia.blockstore, dataFile.path))
+      const [{ cid }] = await all(importer(components.helia.blockstore, dataFile.path))
 
       const promise = new Promise<void>((resolve, reject) => {
         setTimeout(() => { reject(new Error('timeout')) }, 100)
 
-        filesystem.events.addEventListener('file:added', () => { resolve() }, { once: true })
+        components.events.addEventListener('file:added', () => { resolve() }, { once: true })
       })
 
       await filesystem.uploads.add('put', [group.bytes, virtualPath, {
@@ -271,7 +200,7 @@ describe('revisions', () => {
     const response = await client.rpc.request('export-revision', {
       group: group.toString(),
       path: rootPath,
-      author: uint8ArrayToString(groups.welo.identity.id, 'base58btc'),
+      author: uint8ArrayToString(components.welo.identity.id, 'base58btc'),
       sequence,
       outPath
     })
@@ -285,25 +214,25 @@ describe('revisions', () => {
       assert.equal(valid, true)
     }
 
-    await sigint.interupt()
+    await components.stop()
   })
 
   it('rpc - lists a revision (file)', async () => {
-    const { network, filesystem, groups, sigint, argv } = await create()
-    const group = await createGroup(groups, 'test')
+    const { filesystem, components, socket } = await create()
+    const group = await createGroup(components, 'test')
     const fs = filesystem.getFileSystem(group)
     const path = '/test'
-    const client = createNetClient(argv.socket)
+    const client = createNetClient(socket)
     const dataFile = testData.data[0]
 
     assert(fs != null)
 
-    const [{ cid }] = await all(importer(network.helia.blockstore, dataFile.path))
+    const [{ cid }] = await all(importer(components.helia.blockstore, dataFile.path))
 
     const promise = new Promise<void>((resolve, reject) => {
       setTimeout(() => { reject(new Error('timeout')) }, 100)
 
-      filesystem.events.addEventListener('file:added', () => { resolve() }, { once: true })
+      components.events.addEventListener('file:added', () => { resolve() }, { once: true })
     })
 
     const before = Date.now()
@@ -326,7 +255,7 @@ describe('revisions', () => {
 
     assert(Array.isArray(response))
     assert.equal(response.length, 1)
-    assert.equal(response[0].author, uint8ArrayToString(groups.welo.identity.id, 'base58btc'))
+    assert.equal(response[0].author, uint8ArrayToString(components.welo.identity.id, 'base58btc'))
     assert.equal(response[0].blocks, 1)
     assert.equal(response[0].cid, cid.toString())
     assert.equal(response[0].encrypted, false)
@@ -337,15 +266,15 @@ describe('revisions', () => {
     assert(response[0].timestamp >= before)
     assert(response[0].timestamp <= Date.now())
 
-    await sigint.interupt()
+    await components.stop()
   })
 
   it('rpc - it lists a revision (directory)', async () => {
-    const { network, filesystem, groups, sigint, argv } = await create()
-    const group = await createGroup(groups, 'test')
+    const { filesystem, components, socket } = await create()
+    const group = await createGroup(components, 'test')
     const fs = filesystem.getFileSystem(group)
     const rootPath = '/test'
-    const client = createNetClient(argv.socket)
+    const client = createNetClient(socket)
 
     assert(fs != null)
 
@@ -354,12 +283,12 @@ describe('revisions', () => {
     for (const dataFile of testData.data) {
       const virtualPath = dataFile.generatePath(rootPath)
 
-      const [{ cid }] = await all(importer(network.helia.blockstore, dataFile.path))
+      const [{ cid }] = await all(importer(components.helia.blockstore, dataFile.path))
 
       const promise = new Promise<void>((resolve, reject) => {
         setTimeout(() => { reject(new Error('timeout')) }, 100)
 
-        filesystem.events.addEventListener('file:added', () => { resolve() }, { once: true })
+        components.events.addEventListener('file:added', () => { resolve() }, { once: true })
       })
 
       await filesystem.uploads.add('put', [group.bytes, virtualPath, {
@@ -383,7 +312,7 @@ describe('revisions', () => {
     assert.equal(response.length, 3)
 
     for (const item of response) {
-      assert.equal(item.author, uint8ArrayToString(groups.welo.identity.id, 'base58btc'))
+      assert.equal(item.author, uint8ArrayToString(components.welo.identity.id, 'base58btc'))
       assert.equal(item.blocks, 1)
       assert.equal(item.encrypted, false)
       assert.equal(item.priority, 1)
@@ -401,14 +330,14 @@ describe('revisions', () => {
       assert(BigInt(item.size) === dataFile.size)
     }
 
-    await sigint.interupt()
+    await components.stop()
   })
 
   it('rpc - read revision', async () => {
-    const { filesystem, groups, network, sigint, argv } = await create()
-    const client = createNetClient(argv.socket)
-    const group = await createGroup(groups, 'test')
-    const ufs = unixfs(network.helia)
+    const { filesystem, components, socket } = await create()
+    const client = createNetClient(socket)
+    const group = await createGroup(components, 'test')
+    const ufs = unixfs(components.helia)
     const path = '/test'
     const data = 'test-data'
 
@@ -417,7 +346,7 @@ describe('revisions', () => {
     const promise = new Promise<void>((resolve, reject) => {
       setTimeout(() => { reject(new Error('timeout')) }, 100)
 
-      filesystem.events.addEventListener('file:added', () => { resolve() }, { once: true })
+      components.events.addEventListener('file:added', () => { resolve() }, { once: true })
     })
 
     await filesystem.uploads.add('put', [group.bytes, path, {
@@ -435,7 +364,7 @@ describe('revisions', () => {
       group: group.toString(),
       path,
       sequence: 0,
-      author: uint8ArrayToString(groups.welo.identity.id, 'base58btc')
+      author: uint8ArrayToString(components.welo.identity.id, 'base58btc')
     }
 
     const read1 = await client.rpc.request('read', coreParams)
@@ -455,6 +384,6 @@ describe('revisions', () => {
     assert.deepEqual(read4, data.slice(1, 3 + 1))
 
     client.close()
-    await sigint.interupt()
+    await components.stop()
   })
 })

@@ -3,7 +3,13 @@ import { keys } from '@libp2p/crypto'
 import { encode as encodeBlock } from 'multiformats/block'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { Identity } from 'welo'
-import { importKeyFile, keyToPeerId } from './utils.js'
+import {
+  importKeyFile,
+  keyToPeerId,
+  generateKeyData,
+  generateMnemonic,
+  parseKeyData
+} from './utils.js'
 import type { KeyData } from './interface.js'
 import type { PeerId } from '@libp2p/interface'
 import type { BIP32Interface } from 'bip32'
@@ -90,7 +96,13 @@ export class KeyManager {
   }
 }
 
-export const createKeyManager = async (path: string): Promise<KeyManager> => {
+export const createKeyManager = async (path?: string): Promise<KeyManager> => {
+  if (path == null) {
+    const keys = await generateKeyData(generateMnemonic(), generateMnemonic()[0])
+
+    return new KeyManager(parseKeyData(keys))
+  }
+
   const keys = await importKeyFile(path)
 
   return new KeyManager(keys)

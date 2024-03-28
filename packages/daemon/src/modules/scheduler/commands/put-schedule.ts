@@ -1,10 +1,10 @@
 import { PutSchedule } from '@organicdesign/db-rpc-interfaces'
 import { CID } from 'multiformats/cid'
-import type { Provides, Requires } from '../index.js'
+import type { Context } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 
-const command: ModuleMethod<Provides, Requires> = (context, { rpc }) => {
-  rpc.addMethod(PutSchedule.name, async (raw: unknown): Promise<PutSchedule.Return> => {
+const command: ModuleMethod<Context> = ({ net }, context) => {
+  net.rpc.addMethod(PutSchedule.name, async (raw: unknown): Promise<PutSchedule.Return> => {
     const params = PutSchedule.Params.parse(raw)
     const group = CID.parse(params.group)
     const schedule = context.getSchedule(group)

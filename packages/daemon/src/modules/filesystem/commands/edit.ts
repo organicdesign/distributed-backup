@@ -1,10 +1,10 @@
 import { Edit } from '@organicdesign/db-rpc-interfaces'
 import { CID } from 'multiformats/cid'
-import { type Provides, type Requires, logger } from '../index.js'
+import { type Context, logger } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 
-const command: ModuleMethod<Provides, Requires> = (context, { rpc }) => {
-  rpc.addMethod(Edit.name, async (raw: unknown): Promise<Edit.Return> => {
+const command: ModuleMethod<Context> = ({ net }, context) => {
+  net.rpc.addMethod(Edit.name, async (raw: unknown): Promise<Edit.Return> => {
     const params = Edit.Params.parse(raw)
 
     if (params.revisionStrategy !== null) {

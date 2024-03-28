@@ -3,11 +3,11 @@ import { Import } from '@organicdesign/db-rpc-interfaces'
 import { selectChunker, importer, type ImporterConfig } from '@organicdesign/db-utils'
 import { BlackHoleBlockstore } from 'blockstore-core/black-hole'
 import { CID } from 'multiformats/cid'
-import { type Provides, type Requires, logger } from '../index.js'
+import { type Context, logger } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 
-const command: ModuleMethod<Provides, Requires> = (context, { rpc, network, base }) => {
-  rpc.addMethod(Import.name, async (raw: unknown): Promise<Import.Return> => {
+const command: ModuleMethod<Context> = ({ net, blockstore, heliaPinManager }, context) => {
+  net.rpc.addMethod(Import.name, async (raw: unknown): Promise<Import.Return> => {
     const params = Import.Params.parse(raw)
     const encrypt = Boolean(params.encrypt)
 
@@ -24,12 +24,12 @@ const command: ModuleMethod<Provides, Requires> = (context, { rpc, network, base
       logger.info('[add] importing %s', params.inPath)
     }
 
-    const store = params.onlyHash ? new BlackHoleBlockstore() : base.blockstore
+    const store = params.onlyHash ? new BlackHoleBlockstore() : blockstore
 
     const cids: Import.Return = []
 
     for await (const r of importer(store, params.inPath, config)) {
-      await network.pinManager.pinLocal(r.cid)
+      await heliaPinManager.pinLocal(r.cid)
 
       logger.info('[add] imported %s', params.inPath)
 

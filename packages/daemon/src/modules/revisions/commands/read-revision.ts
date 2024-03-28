@@ -5,11 +5,11 @@ import { collect } from 'streaming-iterables'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { Provides, Requires } from '../index.js'
+import type { Context } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 
-const command: ModuleMethod<Provides, Requires> = (context, { rpc, network }) => {
-  rpc.addMethod(ReadRevision.name, async (raw: unknown): Promise<ReadRevision.Return> => {
+const command: ModuleMethod<Context> = ({ net, helia }, context) => {
+  net.rpc.addMethod(ReadRevision.name, async (raw: unknown): Promise<ReadRevision.Return> => {
     const params = ReadRevision.Params.parse(raw)
     const group = CID.parse(params.group)
     const revisions = context.getRevisions(group)
@@ -26,7 +26,7 @@ const command: ModuleMethod<Provides, Requires> = (context, { rpc, network }) =>
       throw new Error(`no such revision: ${params.path}, ${author}, ${params.sequence}`)
     }
 
-    const ufs = unixfs(network.helia)
+    const ufs = unixfs(helia)
 
     return uint8ArrayToString(uint8ArrayConcat(await collect(ufs.cat(entry.cid, { offset: params.position, length: params.length }))))
   })

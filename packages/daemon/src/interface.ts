@@ -1,3 +1,4 @@
+import type { Components } from './common/interface.js'
 import type { Database, Keyvalue } from 'welo'
 
 export interface KeyvalueDB extends Database {
@@ -7,21 +8,18 @@ export interface KeyvalueDB extends Database {
 export const MEMORY_MAGIC = ':memory:'
 
 export interface ModuleMethod<
-  Context extends Record<string, unknown> = Record<string, unknown>,
-  Components extends Record<string, unknown> = Record<string, unknown>
+  Context extends Record<string, unknown> = Record<string, unknown>
 > {
-  (context: Context, components: Components): void
+  (components: Components, context: Context): void
 }
 
 // Optional type to get around linter void issues.
 export type Optional<T> = T extends undefined ? ReturnType<() => void> : T
 
 export interface Module<
-  Provides extends Record<string, unknown> = Record<string, unknown>,
-  Requires extends Record<string, unknown> | undefined = undefined,
-  Init extends Record<string, unknown> | undefined = undefined,
+  Context extends Record<string, unknown> = Record<string, unknown>
 > {
-  (components: Optional<Requires>, init: Optional<Init>): Promise<Provides>
+  (components: Components): Promise<Context>
 }
 
 export interface Pair<Key = unknown, Value = unknown> {

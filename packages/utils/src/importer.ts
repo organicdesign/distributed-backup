@@ -8,9 +8,7 @@ import type { ImportResult } from 'ipfs-unixfs-importer'
 
 export const importer = async function * (blockstore: Blockstore, path: string, options: AddOptions = {}): AsyncIterable<ImportResult & { path: string }> {
   const ufs = unixfs({ blockstore })
-
-  const stat = await fs.lstat(path)
-
+  const stat = await fs.stat(path)
   const globPattern = stat.isFile() ? path.split('/').pop() ?? '' : '**/*'
 
   if (stat.isFile()) {
@@ -21,7 +19,7 @@ export const importer = async function * (blockstore: Blockstore, path: string, 
     assert(src.path != null)
 
     const rPath = Path.join(path, src.path)
-    const stat = await fs.lstat(rPath)
+    const stat = await fs.stat(rPath)
 
     if (stat.isDirectory()) {
       continue

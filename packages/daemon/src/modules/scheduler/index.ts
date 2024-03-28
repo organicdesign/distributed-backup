@@ -4,9 +4,6 @@ import setupGetSchedule from './commands/get-schedule.js'
 import setupPutSchedule from './commands/put-schedule.js'
 import { Schedule } from './schedule.js'
 import type { Module } from '@/interface.js'
-import type { Provides as Base } from '@/modules/base/index.js'
-import type { Provides as Groups } from '@/modules/groups/index.js'
-import type { Provides as RPC } from '@/modules/rpc/index.js'
 import type { CID } from 'multiformats/cid'
 import { createLogger } from '@/logger.js'
 
@@ -19,31 +16,25 @@ export const Config = z.object({
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type Config = z.output<typeof Config>
 
-export interface Requires extends Record<string, unknown> {
-  groups: Groups
-  base: Base
-  rpc: RPC
-}
-
-export interface Provides extends Record<string, unknown> {
+export interface Context extends Record<string, unknown> {
   getSchedule(group: CID): Schedule | null
 }
 
-const module: Module<Provides, Requires> = async (components) => {
+const module: Module<Context> = async (components) => {
   const getSchedule = (group: CID): Schedule | null => {
-    const database = components.groups.groups.get(group)
+    const database = components.groups.get(group)
 
     if (database == null) {
       return null
     }
 
-    return new Schedule(database, components.groups.welo.identity.id)
+    return new Schedule(database, components.welo.identity.id)
   }
 
   const context = { getSchedule }
 
   for (const setupCommand of [setupGetSchedule, setupPutSchedule]) {
-    setupCommand(context, components)
+    setupCommand(components, context)
   }
 
   return context
