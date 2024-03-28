@@ -2,7 +2,7 @@ import assert from 'assert/strict'
 import fs from 'fs/promises'
 import Path from 'path'
 import { z } from 'zod'
-import config from '../../src/modules/config/index.js'
+import parseConfig from '../../src/common/parse-config.js'
 import { mkTestPath } from '../utils/paths.js'
 
 const testPath = mkTestPath('config')
@@ -28,26 +28,16 @@ after(async () => {
 })
 
 describe('config', () => {
-  it('returns parsed config from the file', async () => {
-    const m = await config({
-      argv: { config: configPath, key: '', socket: '' }
-    })
-
-    assert.deepEqual(m.config, configData)
-  })
-
   it('gets config from schema', async () => {
-    const m = await config({
-      argv: { config: configPath, key: '', socket: '' }
-    })
+		const getConfig = await parseConfig(configPath)
 
     assert.deepEqual(
-      m.get(z.object({ bootstrap: z.array(z.string()) })),
+      getConfig(z.object({ bootstrap: z.array(z.string()) })),
       { bootstrap: configData.bootstrap }
     )
 
     assert.deepEqual(
-      m.get(z.object({ tickInterval: z.number(), private: z.boolean() })),
+      getConfig(z.object({ tickInterval: z.number(), private: z.boolean() })),
       { tickInterval: configData.tickInterval, private: configData.private }
     )
   })
