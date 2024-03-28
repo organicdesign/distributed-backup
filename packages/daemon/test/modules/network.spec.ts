@@ -172,7 +172,7 @@ describe('network', () => {
     ])
   })
 
-  it.skip('libp2p remembers peers with persistant storage', async () => {
+  it('libp2p remembers peers with persistant storage', async () => {
     const libp2p = await createLibp2p({})
     const start = async (): Promise<Components> => setup({ socket, config: { private: false, storage: testPath } })
 
@@ -190,7 +190,7 @@ describe('network', () => {
 
     const [saved] = await components.libp2p.peerStore.all()
 
-    assert.deepEqual(saved.id.toBytes(), peer.toBytes())
+    assert.deepEqual(saved.id.toString(), peer.toString())
 
     await components.stop()
     await libp2p.stop()
