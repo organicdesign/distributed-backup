@@ -6,7 +6,7 @@ import { projectPath } from '@/utils.js'
 export default async (): Promise<{
   socket: string
   key: string
-  config: string
+  config?: string
 }> => {
   const argv = await yargs(hideBin(process.argv))
     .option({
@@ -26,8 +26,7 @@ export default async (): Promise<{
     .option({
       config: {
         alias: 'c',
-        type: 'string',
-        default: Path.join(projectPath, 'config/config.json')
+        type: 'string'
       }
     })
     .parse()
@@ -35,6 +34,6 @@ export default async (): Promise<{
   return {
     socket: Path.resolve(argv.socket),
     key: Path.resolve(argv.key),
-    config: Path.resolve(argv.config)
+    config: argv.config ? Path.resolve(argv.config) : undefined
   }
 }

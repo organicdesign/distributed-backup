@@ -8,7 +8,7 @@ describe('argv', () => {
     const argv = await parseArgv()
 
     assert.equal(argv.key, Path.join(projectPath, 'config/key.json'))
-    assert.equal(argv.config, Path.join(projectPath, 'config/config.json'))
+    assert.equal(argv.config, undefined)
     assert.equal(argv.socket, '/tmp/server.socket')
   })
 
