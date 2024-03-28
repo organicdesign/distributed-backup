@@ -1,5 +1,5 @@
 import assert from 'assert/strict'
-import parseArgv from '../../src/common/parse-argv.js'
+import parseArgv from '../../src/parse-argv.js'
 
 describe('argv', () => {
   it('returns defaults for every argv parameter', async () => {
@@ -26,6 +26,6 @@ describe('argv', () => {
 
     assert.equal(argv.key, key)
     assert.equal(argv.socket, socket)
-		assert.equal(argv.config, config)
+    assert.equal(argv.config, config)
   })
 })

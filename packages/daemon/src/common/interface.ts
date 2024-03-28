@@ -9,6 +9,7 @@ import type { KeyvalueDB } from '@/interface.js'
 import type { Helia } from '@helia/interface'
 import type { Libp2p } from '@libp2p/interface'
 import type HeliaPinManager from '@organicdesign/db-helia-pin-manager'
+import type { KeyManager } from '@organicdesign/db-key-manager'
 import type { NetServer } from '@organicdesign/net-rpc'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
@@ -36,15 +37,16 @@ export interface Components {
   welo: Welo
   datastore: Datastore
   blockstore: Blockstore
-  stop: () => Promise<void>
+  stop(): Promise<void>
   net: NetServer
   tick: Tick
   sneakernet: Sneakernet
   getTracker(keyvalueDB: KeyvalueDB): EntryTracker
-  getConfig<T extends z.AnyZodObject>(shape: T): z.infer<T>
+  parseConfig<T extends z.AnyZodObject>(shape: T): z.infer<T>
   downloader: Downloader
   groups: Groups
   pinManager: PinManager
   heliaPinManager: HeliaPinManager
   events: EventTarget
+  keyManager: KeyManager
 }

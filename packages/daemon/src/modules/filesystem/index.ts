@@ -33,7 +33,7 @@ export interface Context extends Record<string, unknown> {
 }
 
 const module: Module<Context> = async (components) => {
-  const config = components.getConfig(Config)
+  const config = components.parseConfig(Config)
   const context = await setup(components, config)
 
   for (const setupCommand of [

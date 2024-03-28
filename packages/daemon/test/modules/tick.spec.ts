@@ -24,7 +24,7 @@ describe('tick', () => {
 
     const after = Date.now()
 
-		await tick.stop()
+    await tick.stop()
 
     const delta = after - before
 
