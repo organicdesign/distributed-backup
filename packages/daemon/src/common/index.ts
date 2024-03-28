@@ -142,13 +142,32 @@ export default async (settings: Partial<Setup> = {}): Promise<Components> => {
   const stop = async (): Promise<void> => {
     logger.info('cleaning up...')
 
-    await net.close()
-    await tick.stop()
-    await downloader.stop()
-    await groups.stop()
-    await welo.stop()
-    await helia.stop()
-    await libp2p.stop()
+    const closeDatastore = async (): Promise<void> => {
+      if (datastore instanceof FsDatastore) {
+        await datastore.close()
+      }
+    }
+
+    const closeBlockstore = async (): Promise<void> => {
+      if (blockstore instanceof FsBlockstore) {
+        await blockstore.close()
+      }
+    }
+
+    await Promise.all([
+      net.close(),
+      tick.stop(),
+      downloader.stop(),
+      groups.stop(),
+      welo.stop(),
+      helia.stop(),
+      libp2p.stop()
+    ])
+
+    await Promise.all([
+      closeDatastore,
+      closeBlockstore
+    ])
 
     logger.info('exiting...')
   }
