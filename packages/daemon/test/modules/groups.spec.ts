@@ -7,10 +7,10 @@ import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import setup from '@/common/index.js'
 import { createGroup } from '../utils/create-group.js'
 import { mkTestPath } from '../utils/paths.js'
 import type { Components } from '@/common/interface.js'
+import setup from '@/common/index.js'
 
 describe('groups', () => {
   const testPath = mkTestPath('groups')
@@ -23,12 +23,12 @@ describe('groups', () => {
     await fs.rm(testPath, { recursive: true })
   })
 
-	const create = async (): Promise<{ components: Components, socket: string }> => {
-		const socket = Path.join(testPath, `${Math.random()}.socket`)
-		const components = await setup({ socket })
+  const create = async (): Promise<{ components: Components, socket: string }> => {
+    const socket = Path.join(testPath, `${Math.random()}.socket`)
+    const components = await setup({ socket })
 
-		return { components, socket }
-	}
+    return { components, socket }
+  }
 
   it('creates a group', async () => {
     const { components } = await create()

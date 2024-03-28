@@ -9,15 +9,15 @@ import { Key } from 'interface-datastore'
 import { CID } from 'multiformats/cid'
 import { fromString as uint8ArrayFromString } from 'uint8arrays'
 import { mkTestPath } from '../utils/paths.js'
-import { extendDatastore } from '@/utils.js'
 import setup from '@/common/index.js'
+import { extendDatastore } from '@/utils.js'
 
 const parseStr = (data: string): Uint8Array => uint8ArrayFromString(data, 'base64')
 const testPath = mkTestPath('base')
 
 describe('base', () => {
-	const keyPath = Path.join(testPath, 'key.json')
-	const socket = Path.join(testPath, 'server.socket')
+  const keyPath = Path.join(testPath, 'key.json')
+  const socket = Path.join(testPath, 'server.socket')
 
   before(async () => {
     await fs.mkdir(testPath, { recursive: true })
@@ -60,7 +60,7 @@ describe('base', () => {
       parseStr('L2tleS9zd2FybS9wc2svMS4wLjAvCi9iYXNlMTYvCjU2ZDNjMTgyODJmMWYxYjFiM2UwNGU0MGRkNWQ4YmY0NGNhZmE4YmM5YzliYzdjNTc3MTZhNzc2NmZhMmM1NTA')
     )
 
-		await components.stop()
+    await components.stop()
   })
 
   it('uses memory blockstore when memory is specified', async () => {
@@ -68,7 +68,7 @@ describe('base', () => {
 
     assert(components.blockstore instanceof MemoryBlockstore)
 
-		await components.stop()
+    await components.stop()
   })
 
   it('uses memory datastore when memory is specified', async () => {
@@ -76,14 +76,14 @@ describe('base', () => {
 
     assert(components.datastore instanceof MemoryDatastore)
 
-		await components.stop()
+    await components.stop()
   })
 
   it('uses fs blockstore when a path is specified', async () => {
     const blockstorePath = Path.join(testPath, 'blockstore')
     const testData = uint8ArrayFromString('test')
 
-		const components = await setup({ socket, config: { storage: testPath } })
+    const components = await setup({ socket, config: { storage: testPath } })
 
     assert(components.blockstore instanceof FsBlockstore)
 
@@ -100,17 +100,17 @@ describe('base', () => {
 
     assert.deepEqual(new Uint8Array(blockData), testData)
 
-		await components.stop()
+    await components.stop()
   })
 
   it('uses fs datastore when a path is specified', async () => {
     const datastorePath = Path.join(testPath, 'datastore', 'test')
 
-		const components = await setup({ socket, config: { storage: testPath } })
+    const components = await setup({ socket, config: { storage: testPath } })
 
     assert(components.datastore instanceof FsDatastore)
 
-		const datastore = extendDatastore(components.datastore, 'test')
+    const datastore = extendDatastore(components.datastore, 'test')
 
     await datastore.put(new Key('key'), uint8ArrayFromString('value'))
 
@@ -134,6 +134,6 @@ describe('base', () => {
     assert.deepEqual(new Uint8Array(data1), uint8ArrayFromString('value'))
     assert.deepEqual(new Uint8Array(data2), uint8ArrayFromString('test'))
 
-		await components.stop()
+    await components.stop()
   })
 })

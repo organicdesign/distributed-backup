@@ -1,9 +1,9 @@
 import assert from 'assert/strict'
 import fs from 'fs/promises'
+import Path from 'path'
 import { createNetClient } from '@organicdesign/net-rpc'
 import { mkTestPath } from '../utils/paths.js'
 import setup from '@/common/index.js'
-import Path from 'path'
 
 const testPath = mkTestPath('rpc')
 
@@ -19,7 +19,7 @@ describe('rpc', () => {
   })
 
   it('adds RPC methods', async () => {
-		const components = await setup({ socket })
+    const components = await setup({ socket })
     const testData = { key: 'value' }
     const returnData = { return: 'return-value' }
 
@@ -40,6 +40,6 @@ describe('rpc', () => {
     assert.deepEqual(await methodPromise, testData)
 
     client.close()
-		await components.stop()
+    await components.stop()
   })
 })

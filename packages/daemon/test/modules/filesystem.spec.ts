@@ -10,27 +10,27 @@ import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import setupFilesystem from '../../src/modules/filesystem/index.js'
 import { createGroup } from '../utils/create-group.js'
 import { createDag } from '../utils/dag.js'
 import { mkTestPath } from '../utils/paths.js'
 import type { Context as FilesystemContext } from '../../src/modules/filesystem/index.js'
 import type { Components } from '@/common/interface.js'
-import setupFilesystem from '../../src/modules/filesystem/index.js'
 import setup from '@/common/index.js'
 
 describe('filesystem', () => {
   const testPath = mkTestPath('filesystem')
 
-	const create = async (): Promise<{
-		filesystem: FilesystemContext
-		components: Components
-		socket: string
-	}> => {
-		const socket = Path.join(testPath, `${Math.random()}.socket`)
+  const create = async (): Promise<{
+    filesystem: FilesystemContext
+    components: Components
+    socket: string
+  }> => {
+    const socket = Path.join(testPath, `${Math.random()}.socket`)
     const components = await setup({ socket })
-		const filesystem = await setupFilesystem(components)
+    const filesystem = await setupFilesystem(components)
 
-		return { filesystem, components, socket }
+    return { filesystem, components, socket }
   }
 
   before(async () => {

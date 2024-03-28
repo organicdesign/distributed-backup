@@ -9,31 +9,31 @@ import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import setup from '@/common/index.js'
-import setupRevisions from '@/modules/revisions/index.js'
-import setupFilesystem from '@/modules/filesystem/index.js'
-import type { Context as RevisionsContext } from '@/modules/revisions/index.js'
-import type { Context as FilesystemContext } from '@/modules/filesystem/index.js'
-import { mkTestPath } from '../utils/paths.js'
-import type { Components } from '@/common/interface.js'
 import { createGroup } from '../utils/create-group.js'
 import { createDag } from '../utils/dag.js'
+import { mkTestPath } from '../utils/paths.js'
+import type { Components } from '@/common/interface.js'
+import type { Context as FilesystemContext } from '@/modules/filesystem/index.js'
+import type { Context as RevisionsContext } from '@/modules/revisions/index.js'
+import setup from '@/common/index.js'
+import setupFilesystem from '@/modules/filesystem/index.js'
+import setupRevisions from '@/modules/revisions/index.js'
 
 describe('revisions', () => {
   const testPath = mkTestPath('revisions')
 
   const create = async (): Promise<{
-		revisions: RevisionsContext
-		filesystem: FilesystemContext
-		components: Components
-		socket: string
-	}> => {
-		const socket = Path.join(testPath, `${Math.random()}.socket`)
+    revisions: RevisionsContext
+    filesystem: FilesystemContext
+    components: Components
+    socket: string
+  }> => {
+    const socket = Path.join(testPath, `${Math.random()}.socket`)
     const components = await setup({ socket })
-		const filesystem = await setupFilesystem(components)
-		const revisions = await setupRevisions(components)
+    const filesystem = await setupFilesystem(components)
+    const revisions = await setupRevisions(components)
 
-		return { filesystem, revisions, components, socket }
+    return { filesystem, revisions, components, socket }
   }
 
   before(async () => {

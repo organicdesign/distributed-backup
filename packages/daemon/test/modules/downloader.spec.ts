@@ -6,7 +6,7 @@ import { MemoryBlockstore } from 'blockstore-core'
 import { CID } from 'multiformats/cid'
 import { createDag } from '../utils/dag.js'
 import { mkTestPath } from '../utils/paths.js'
-import type { Components} from '@/common/interface.js'
+import type { Components } from '@/common/interface.js'
 import setup from '@/common/index.js'
 
 describe('downloader', () => {
