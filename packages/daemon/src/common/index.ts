@@ -23,7 +23,7 @@ import { Sneakernet } from './sneakernet/index.js'
 import { createTick } from './tick.js'
 import type { KeyvalueDB } from '@/interface.js'
 import { createLogger } from '@/logger.js'
-import { extendDatastore } from '@/utils.js'
+import { extendDatastore } from '@organicdesign/db-utils'
 
 interface Setup {
   socket: string

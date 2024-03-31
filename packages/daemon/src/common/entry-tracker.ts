@@ -3,7 +3,7 @@ import { Key, type Datastore } from 'interface-datastore'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { compare as uint8ArrayCompare } from 'uint8arrays/compare'
 import type { KeyvalueDB, Pair } from '@/interface.js'
-import { extendDatastore } from '@/utils.js'
+import { extendDatastore } from '@organicdesign/db-utils'
 
 // Get the hash data from raw data.
 const hashEntry = async (entry: unknown): Promise<Uint8Array> => {

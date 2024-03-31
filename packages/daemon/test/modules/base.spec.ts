@@ -10,7 +10,7 @@ import { CID } from 'multiformats/cid'
 import { fromString as uint8ArrayFromString } from 'uint8arrays'
 import { mkTestPath } from '../utils/paths.js'
 import setup from '@/common/index.js'
-import { extendDatastore } from '@/utils.js'
+import { extendDatastore } from '@organicdesign/db-utils'
 
 const parseStr = (data: string): Uint8Array => uint8ArrayFromString(data, 'base64')
 const testPath = mkTestPath('base')
