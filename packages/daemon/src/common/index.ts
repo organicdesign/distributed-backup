@@ -15,6 +15,7 @@ import { createDownloader } from './downloader/index.js'
 import { EntryTracker } from './entry-tracker.js'
 import { createGroups } from './groups.js'
 import handleCommands from './handle-commands.js'
+import handleEvents from './handle-events.js'
 import { Config, type Components } from './interface.js'
 import createLibp2p from './libp2p.js'
 import { PinManager } from './pin-manager/index.js'
@@ -83,10 +84,6 @@ export default async (settings: Partial<Setup> = {}): Promise<Components> => {
     welo
   })
 
-  groups.events.addEventListener('groups:joined', ({ cid }) => {
-    logger.info(`[groups] [join] ${cid.toString()}`)
-  })
-
   const sneakernet = new Sneakernet({
     welo,
     helia,
@@ -102,42 +99,14 @@ export default async (settings: Partial<Setup> = {}): Promise<Components> => {
     datastore: extendDatastore(datastore, 'heliaPinManager')
   })
 
-  heliaPinManager.events.addEventListener('downloads:added', ({ cid }) => {
-    logger.info(`[downloads] [+] ${cid}`)
-  })
-
-  heliaPinManager.events.addEventListener('pins:added', ({ cid }) => {
-    logger.info(`[pins] [+] ${cid}`)
-  })
-
-  heliaPinManager.events.addEventListener('pins:adding', ({ cid }) => {
-    logger.info(`[pins] [~] ${cid}`)
-  })
-
-  heliaPinManager.events.addEventListener('pins:removed', ({ cid }) => {
-    logger.info(`[pins] [-] ${cid}`)
-  })
-
   const tick = await createTick(config.tickInterval)
-
-  tick.events.addEventListener('method:error', ({ error }) => {
-    logger.error('tick: ', error)
-  })
 
   const pinManager = new PinManager({
     pinManager: heliaPinManager,
     datastore: extendDatastore(datastore, 'pinManager')
   })
 
-  pinManager.events.addEventListener('reference:removed', ({ key }) => {
-    logger.info(`[references] [-] ${key}`)
-  })
-
   const downloader = await createDownloader(pinManager, config.slots)
-
-  downloader.events.addEventListener('download:error', ({ error }) => {
-    logger.error('downloader: ', error)
-  })
 
   const stop = async (): Promise<void> => {
     logger.info('cleaning up...')
@@ -193,6 +162,7 @@ export default async (settings: Partial<Setup> = {}): Promise<Components> => {
   }
 
   handleCommands(components)
+  handleEvents(components, logger)
 
   return components
 }
