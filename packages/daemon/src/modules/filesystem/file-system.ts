@@ -1,5 +1,6 @@
 import Path from 'path'
 import * as dagCbor from '@ipld/dag-cbor'
+import * as cborg from 'cborg'
 import { type Entry, EncodedEntry } from './interface.js'
 import { encodeEntry, decodeEntry, keyToPath, pathToKey, getDagSize } from './utils.js'
 import { logger } from './index.js'
@@ -7,7 +8,6 @@ import type { LocalSettings } from './local-settings.js'
 import type { KeyvalueDB, Pair } from '@/interface.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
-import { decodeAny } from '@/utils.js'
 
 export class FileSystem {
   private readonly database: KeyvalueDB
@@ -88,7 +88,7 @@ export class FileSystem {
 
     for await (const pair of index.query({ prefix: key })) {
       // Ignore null values...
-      if (decodeAny(pair.value) == null) {
+      if (cborg.decode(pair.value) == null) {
         continue
       }
 

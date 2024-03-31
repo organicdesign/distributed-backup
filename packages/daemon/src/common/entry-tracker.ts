@@ -1,12 +1,13 @@
+import * as cborg from 'cborg'
 import { Key, type Datastore } from 'interface-datastore'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { compare as uint8ArrayCompare } from 'uint8arrays/compare'
 import type { KeyvalueDB, Pair } from '@/interface.js'
-import { encodeAny, extendDatastore } from '@/utils.js'
+import { extendDatastore } from '@/utils.js'
 
 // Get the hash data from raw data.
 const hashEntry = async (entry: unknown): Promise<Uint8Array> => {
-  const data = encodeAny(entry)
+  const data = cborg.encode(entry)
   const digest = await sha256.digest(data)
 
   return digest.bytes

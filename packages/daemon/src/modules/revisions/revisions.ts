@@ -1,11 +1,11 @@
 import Path from 'path'
 import * as dagCbor from '@ipld/dag-cbor'
+import * as cborg from 'cborg'
 import { type Entry, EncodedEntry } from './interface.js'
 import { pathToKey, decodeKey, encodeEntry, decodeEntry } from './utils.js'
 import { logger } from './index.js'
 import type { KeyvalueDB } from '@/interface.js'
 import type { CID } from 'multiformats/cid'
-import { decodeAny } from '@/utils.js'
 
 export class Revisions {
   private readonly database: KeyvalueDB
@@ -61,7 +61,7 @@ export class Revisions {
 
     for await (const pair of index.query({ prefix: key })) {
       // Ignore null values...
-      if (decodeAny(pair.value) == null) {
+      if (cborg.decode(pair.value) == null) {
         continue
       }
 

@@ -1,8 +1,9 @@
 import assert from 'assert/strict'
 import { MemoryBlockstore } from 'blockstore-core'
+import * as cborg from 'cborg'
 import { type CID } from 'multiformats/cid'
 import { MEMORY_MAGIC } from '../src/interface.js'
-import { isMemory, encodeAny, decodeAny } from '../src/utils.js'
+import { isMemory } from '../src/utils.js'
 import { createDag } from './utils/dag.js'
 import { walkDag, getDagSize } from '@/modules/filesystem/utils.js'
 
@@ -52,13 +53,13 @@ describe('cbor encoding and decoding', () => {
 
   it('encodes any data', () => {
     for (const { encoded, decoded } of data) {
-      assert.deepEqual(encoded, encodeAny(decoded))
+      assert.deepEqual(encoded, cborg.encode(decoded))
     }
   })
 
   it('decodes any data', () => {
     for (const { encoded, decoded } of data) {
-      assert.deepEqual(decodeAny(encoded), decoded)
+      assert.deepEqual(cborg.decode(encoded), decoded)
     }
   })
 })

@@ -1,10 +1,10 @@
 import Path from 'path'
 import * as dagCbor from '@ipld/dag-cbor'
+import * as cborg from 'cborg'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { type Entry, EncodedEntry, SCHEDULE_KEY } from './interface.js'
 import { encodeEntry, decodeEntry } from './utils.js'
 import type { KeyvalueDB } from '@/interface.js'
-import { decodeAny } from '@/utils.js'
 
 export class Schedule {
   private readonly database: KeyvalueDB
@@ -49,7 +49,7 @@ export class Schedule {
 
     for await (const pair of index.query({ prefix: Path.join('/', SCHEDULE_KEY) })) {
       // Ignore null values...
-      if (decodeAny(pair.value) == null) {
+      if (cborg.decode(pair.value) == null) {
         continue
       }
 

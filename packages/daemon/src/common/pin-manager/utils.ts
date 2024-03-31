@@ -1,9 +1,9 @@
+import * as cborg from 'cborg'
 import { CID } from 'multiformats/cid'
 import { EncodedPinInfo, type PinInfo } from './interface.js'
-import { decodeAny, encodeAny } from '@/utils.js'
 
 export const decodePinInfo = (data: Uint8Array): PinInfo | null => {
-  const obj = decodeAny(data)
+  const obj = cborg.decode(data)
 
   if (obj == null) {
     return null
@@ -26,5 +26,5 @@ export const encodePinInfo = (pinInfo: PinInfo): Uint8Array => {
   // This will strip foreign keys.
   const parsedEncodedPinInfo = EncodedPinInfo.parse(encodedPinInfo)
 
-  return encodeAny(parsedEncodedPinInfo)
+  return cborg.encode(parsedEncodedPinInfo)
 }

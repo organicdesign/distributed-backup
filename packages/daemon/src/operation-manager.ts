@@ -1,7 +1,7 @@
+import * as cborg from 'cborg'
 import { Key, type Datastore } from 'interface-datastore'
 import all from 'it-all'
 import Queue from 'p-queue'
-import { encodeAny, decodeAny } from './utils.js'
 
 type ArgumentTypes<F extends (...args: any[]) => any> = F extends (...args: infer A) => any ? A : never
 
@@ -33,7 +33,7 @@ export class OperationManager <T extends OperationMap> {
       this.logical = (Number(opData[opData.length - 1].key.toString().replace('/', ''))) + 1
     }
 
-    const operations: Array<{ key: Key, value: OperationTuples<T> }> = opData.map(d => ({ key: d.key, value: decodeAny(d.value) }))
+    const operations: Array<{ key: Key, value: OperationTuples<T> }> = opData.map(d => ({ key: d.key, value: cborg.decode(d.value) }))
 
     for (const { key, value: [method, params] } of operations) {
       await this.queue.add(async () => {
@@ -47,7 +47,7 @@ export class OperationManager <T extends OperationMap> {
     const key = new Key(`${this.logical}`)
     this.logical++
 
-    await this.datastore.put(key, encodeAny([method, params]))
+    await this.datastore.put(key, cborg.encode([method, params]))
 
     return this.queue.add(async () => {
       const value = await this.operations[method](...params)
