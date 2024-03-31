@@ -1,10 +1,10 @@
+import { extendDatastore } from '@organicdesign/db-utils'
 import { FileSystem } from './file-system.js'
 import { LocalSettings } from './local-settings.js'
 import createUploadManager from './upload-operations.js'
 import type { Context, Config } from './index.js'
 import type { Components } from '@/common/interface.js'
 import type { CID } from 'multiformats/cid'
-import { extendDatastore } from '@organicdesign/db-utils'
 
 export default async (components: Components, config: Config): Promise<Context> => {
   const { groups, datastore, blockstore, welo } = components

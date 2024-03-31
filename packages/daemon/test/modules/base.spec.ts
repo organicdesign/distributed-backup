@@ -1,6 +1,7 @@
 import assert from 'assert/strict'
 import fs from 'fs/promises'
 import Path from 'path'
+import { extendDatastore } from '@organicdesign/db-utils'
 import { MemoryBlockstore } from 'blockstore-core'
 import { FsBlockstore } from 'blockstore-fs'
 import { MemoryDatastore } from 'datastore-core'
@@ -10,7 +11,6 @@ import { CID } from 'multiformats/cid'
 import { fromString as uint8ArrayFromString } from 'uint8arrays'
 import { mkTestPath } from '../utils/paths.js'
 import setup from '@/common/index.js'
-import { extendDatastore } from '@organicdesign/db-utils'
 
 const parseStr = (data: string): Uint8Array => uint8ArrayFromString(data, 'base64')
 const testPath = mkTestPath('base')

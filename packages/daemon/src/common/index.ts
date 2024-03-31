@@ -3,6 +3,7 @@ import { bitswap } from '@helia/block-brokers'
 import HeliaPinManager from '@organicdesign/db-helia-pin-manager'
 import { createKeyManager, type KeyManager } from '@organicdesign/db-key-manager'
 import { ManualBlockBroker } from '@organicdesign/db-manual-block-broker'
+import { extendDatastore } from '@organicdesign/db-utils'
 import { createNetServer } from '@organicdesign/net-rpc'
 import { MemoryBlockstore } from 'blockstore-core'
 import { FsBlockstore } from 'blockstore-fs'
@@ -23,7 +24,6 @@ import { Sneakernet } from './sneakernet/index.js'
 import { createTick } from './tick.js'
 import type { KeyvalueDB } from '@/interface.js'
 import { createLogger } from '@/logger.js'
-import { extendDatastore } from '@organicdesign/db-utils'
 
 interface Setup {
   socket: string
