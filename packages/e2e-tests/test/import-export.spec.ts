@@ -2,12 +2,12 @@ import assert from 'assert/strict'
 import fs from 'fs/promises'
 import Path from 'path'
 import * as testData from '@organicdesign/db-test-utils'
-import projectPath from './utils/project-path.js'
+import { testPath } from './utils/paths.js'
 import runClient from './utils/run-client.js'
 import runNode from './utils/run-node.js'
 
 const node = 'import-export'
-const outPath = Path.join(projectPath, 'packages/e2e-tests/test-data-out')
+const outPath = Path.join(testPath, 'test-data-out')
 
 describe('import/export', () => {
   let proc: Awaited<ReturnType<typeof runNode>>

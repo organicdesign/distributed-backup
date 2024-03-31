@@ -1,14 +1,14 @@
 import assert from 'assert/strict'
 import fs from 'fs/promises'
 import Path from 'path'
-import projectPath from './utils/project-path.js'
+import { testPath } from './utils/paths.js'
 import runClient from './utils/run-client.js'
 import runFuse from './utils/run-fuse.js'
 import runNode from './utils/run-node.js'
 
 const node = 'fuse'
-const testDataDir = Path.join(projectPath, 'packages/e2e-tests/test-data')
-const fuseDir = Path.join(projectPath, 'packages/e2e-tests/fuse')
+const testDataDir = Path.join(testPath, 'test-data')
+const fuseDir = Path.join(testPath, 'fuse')
 
 describe.skip('fuse', () => {
   let daemonProc: Awaited<ReturnType<typeof runNode>>
