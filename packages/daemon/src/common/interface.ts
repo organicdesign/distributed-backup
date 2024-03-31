@@ -15,8 +15,10 @@ import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { Welo } from 'welo'
 
+export const MEMORY_MAGIC = ':memory:'
+
 export const Config = z.object({
-  storage: z.string().default(':memory:'),
+  storage: z.string().default(MEMORY_MAGIC),
   slots: z.number().int().min(1).max(100).default(20),
   tickInterval: z.number().default(10 * 60),
   serverMode: z.boolean().default(false),

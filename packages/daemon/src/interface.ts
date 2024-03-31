@@ -5,8 +5,6 @@ export interface KeyvalueDB extends Database {
   store: Keyvalue
 }
 
-export const MEMORY_MAGIC = ':memory:'
-
 export interface ModuleMethod<
   Context extends Record<string, unknown> = Record<string, unknown>
 > {

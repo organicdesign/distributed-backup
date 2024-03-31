@@ -16,14 +16,14 @@ import { EntryTracker } from './entry-tracker.js'
 import { createGroups } from './groups.js'
 import handleCommands from './handle-commands.js'
 import handleEvents from './handle-events.js'
-import { Config, type Components } from './interface.js'
+import { Config, MEMORY_MAGIC, type Components } from './interface.js'
 import createLibp2p from './libp2p.js'
 import { PinManager } from './pin-manager/index.js'
 import { Sneakernet } from './sneakernet/index.js'
 import { createTick } from './tick.js'
 import type { KeyvalueDB } from '@/interface.js'
 import { createLogger } from '@/logger.js'
-import { isMemory, extendDatastore } from '@/utils.js'
+import { extendDatastore } from '@/utils.js'
 
 interface Setup {
   socket: string
@@ -45,11 +45,11 @@ export default async (settings: Partial<Setup> = {}): Promise<Components> => {
   const config = parseConfig(Config)
   const events = new EventTarget()
 
-  const datastore = isMemory(config.storage)
+  const datastore = config.storage === MEMORY_MAGIC
     ? new MemoryDatastore()
     : new FsDatastore(Path.join(config.storage, 'datastore'))
 
-  const blockstore = isMemory(config.storage)
+  const blockstore = config.storage === MEMORY_MAGIC
     ? new MemoryBlockstore()
     : new FsBlockstore(Path.join(config.storage, 'blockstore'))
 
