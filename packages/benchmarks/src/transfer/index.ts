@@ -1,7 +1,11 @@
 /* eslint-disable no-console,no-loop-func */
+import fs from 'fs/promises'
+import Path from 'path'
 import debug from 'debug'
 import prettyBytes from 'pretty-bytes'
 import { Bench } from 'tinybench'
+import generateFile from '../utils/generate-file.js'
+import { packagePath } from '../utils/paths.js'
 import { createTransferBench } from './create-transfer-bench.js'
 import type { TransferBenchmark } from './interface.js'
 
@@ -14,7 +18,7 @@ const RESULT_PRECISION = 2
 const zeros = [
   0, // 1b
   3, // 1kb
-  6 // 1mb
+  6  // 1mb
 ]
 
 const sizes = zeros.map(z => 10 ** z)
@@ -22,21 +26,46 @@ const sizes = zeros.map(z => 10 ** z)
 const impls: Array<{
   name: string
   create(): Promise<TransferBenchmark & { size: number }>
-  results: number[] }
-> = sizes.map(size => ({
+  results: number[]
+  size: number
+}> = sizes.map(size => ({
   name: `${prettyBytes(size)}`,
   create: async () => {
     const bench = await createTransferBench(size)
 
     return { ...bench, size }
   },
-  results: []
+  results: [],
+  size
 }))
+
+const dataPath = Path.join(packagePath, 'test-out')
 
 async function main (): Promise<void> {
   const suite = new Bench({
     iterations: ITERATIONS,
-    time: MIN_TIME
+    time: MIN_TIME,
+    async setup (task) {
+      const impl = impls.find(({ name }) => task.name.includes(name))
+
+      if (impl == null) {
+        return
+      }
+
+      const dataFile = Path.join(dataPath, `${impl.size}.data`)
+      await generateFile(dataFile, impl.size)
+    },
+
+    async teardown (task) {
+      const impl = impls.find(({ name }) => task.name.includes(name))
+
+      if (impl == null) {
+        return
+      }
+
+      const dataFile = Path.join(dataPath, `${impl.size}.data`)
+      await fs.rm(dataFile)
+    }
   })
 
   for (const impl of impls) {

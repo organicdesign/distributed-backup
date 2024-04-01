@@ -1,7 +1,6 @@
 import fs from 'fs/promises'
 import Path from 'path'
 import { Client } from '@organicdesign/db-client'
-import generateFile from '../utils/generate-file.js'
 import { packagePath } from '../utils/paths.js'
 import runNode from '../utils/run-node.js'
 import type { TransferBenchmark } from './interface.js'
@@ -26,7 +25,6 @@ export const createTransferBench = async (size: number): Promise<TransferBenchma
   await fs.mkdir(dataPath, { recursive: true })
 
   const dataFile = Path.join(dataPath, `${size}.data`)
-  await generateFile(dataFile, size)
 
   const [{ cid }] = await clients[0].import(group, dataFile)
 
@@ -36,10 +34,7 @@ export const createTransferBench = async (size: number): Promise<TransferBenchma
         client.stop()
       }
 
-      await Promise.all([
-        ...procs.map(async p => p.stop()),
-        fs.rm(dataFile)
-      ])
+      await Promise.all(procs.map(async p => p.stop()))
     },
 
     async warmup () {
