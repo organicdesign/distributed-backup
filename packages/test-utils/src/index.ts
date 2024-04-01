@@ -8,3 +8,6 @@ export const data = await generateData()
 export const getDataFile = (path: string): TestData | null => {
   return data.find(p => p.path === path) ?? null
 }
+
+export * from './blocks.js'
+export * from './dag.js'

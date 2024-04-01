@@ -2,7 +2,7 @@ import assert from 'assert/strict'
 import { MemoryBlockstore } from 'blockstore-core'
 import * as cborg from 'cborg'
 import { type CID } from 'multiformats/cid'
-import { createDag } from './utils/dag.js'
+import { createDag } from '@organicdesign/db-test-utils'
 import { walkDag, getDagSize } from '@/modules/filesystem/utils.js'
 
 describe('cbor encoding and decoding', () => {
