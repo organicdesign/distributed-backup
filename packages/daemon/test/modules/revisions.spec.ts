@@ -2,8 +2,8 @@ import assert from 'assert'
 import fs from 'fs/promises'
 import Path from 'path'
 import { unixfs } from '@helia/unixfs'
-import * as testData from '@organicdesign/db-test-utils'
 import { createDag } from '@organicdesign/db-test-utils'
+import * as testData from '@organicdesign/db-test-utils/data'
 import { importer } from '@organicdesign/db-utils'
 import { createNetClient } from '@organicdesign/net-rpc'
 import all from 'it-all'
@@ -122,7 +122,7 @@ describe('revisions', () => {
     const path = '/test'
     const client = createNetClient(socket)
     const sequence = 0
-    const dataFile = testData.data[0]
+    const dataFile = testData.files[0]
     const exportPath = dataFile.generatePath(testPath)
 
     assert(fs != null)
@@ -174,7 +174,7 @@ describe('revisions', () => {
 
     assert(fs != null)
 
-    for (const dataFile of testData.data) {
+    for (const dataFile of testData.files) {
       const virtualPath = dataFile.generatePath(rootPath)
 
       const [{ cid }] = await all(importer(components.helia.blockstore, dataFile.path))
@@ -207,7 +207,7 @@ describe('revisions', () => {
 
     assert.equal(response, null)
 
-    for (const dataFile of testData.data) {
+    for (const dataFile of testData.files) {
       const exportPath = dataFile.generatePath(outPath)
       const valid = await dataFile.validate(exportPath)
 
@@ -223,7 +223,7 @@ describe('revisions', () => {
     const fs = filesystem.getFileSystem(group)
     const path = '/test'
     const client = createNetClient(socket)
-    const dataFile = testData.data[0]
+    const dataFile = testData.files[0]
 
     assert(fs != null)
 
@@ -280,7 +280,7 @@ describe('revisions', () => {
 
     const before = Date.now()
 
-    for (const dataFile of testData.data) {
+    for (const dataFile of testData.files) {
       const virtualPath = dataFile.generatePath(rootPath)
 
       const [{ cid }] = await all(importer(components.helia.blockstore, dataFile.path))
@@ -321,7 +321,7 @@ describe('revisions', () => {
       assert(item.timestamp <= Date.now())
     }
 
-    for (const dataFile of testData.data) {
+    for (const dataFile of testData.files) {
       const virtualPath = dataFile.generatePath(rootPath)
       const item = response.find(d => d.path === virtualPath)
 

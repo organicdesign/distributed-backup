@@ -1,7 +1,7 @@
 import assert from 'assert/strict'
 import fs from 'fs/promises'
 import Path from 'path'
-import * as testData from '@organicdesign/db-test-utils'
+import * as testData from '@organicdesign/db-test-utils/data'
 import { testPath } from './utils/paths.js'
 import runClient from './utils/run-client.js'
 import runNode from './utils/run-node.js'
@@ -34,7 +34,7 @@ describe('import/export', () => {
   })
 
   it('imports a file', async () => {
-    for (const data of testData.data) {
+    for (const data of testData.files) {
       const virtual = data.generatePath('/test-import-file')
       const response = await runClient(node, 'import', group, data.path, virtual)
 
@@ -57,10 +57,10 @@ describe('import/export', () => {
 
     assert.equal(response.success, true)
     assert(Array.isArray(response.imports))
-    assert.equal(response.imports.length, testData.data.length)
+    assert.equal(response.imports.length, testData.files.length)
 
     for (const file of response.imports) {
-      const dataFile = testData.getDataFile(file.inPath)
+      const dataFile = testData.getFile(file.inPath)
 
       assert(dataFile != null)
       assert.equal(file.cid, dataFile.cid.toString())
@@ -70,7 +70,7 @@ describe('import/export', () => {
   })
 
   it('exports a file', async () => {
-    for (const data of testData.data) {
+    for (const data of testData.files) {
       const virtual = data.generatePath('/test-import-file')
       const exportPath = data.generatePath(outPath)
       const response = await runClient(node, 'export', group, virtual, exportPath)
@@ -91,7 +91,7 @@ describe('import/export', () => {
       success: true
     })
 
-    for (const data of testData.data) {
+    for (const data of testData.files) {
       const exportDir = data.generatePath(outPath)
       const valid = await data.validate(exportDir)
 

@@ -26,6 +26,7 @@
   "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@helia/interface": "^4.1.0",
+    "@libp2p/interface": "^1.1.5",
     "@organicdesign/db-test-utils": "^0.1.0",
     "aegir": "^42.2.4",
     "blockstore-core": "^4.4.0",
@@ -40,6 +41,8 @@
     "@ipld/dag-json": "^10.2.0",
     "@ipld/dag-pb": "^4.1.0",
     "cborg": "^4.1.4",
+    "datastore-core": "^9.2.9",
+    "interface-datastore": "^8.2.11",
     "ipfs-unixfs-exporter": "^13.5.0",
     "ipfs-unixfs-importer": "^15.2.4",
     "multiformats": "^13.1.0"

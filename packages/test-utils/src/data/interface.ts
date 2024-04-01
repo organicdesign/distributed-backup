@@ -1,6 +1,6 @@
 import type { CID } from 'multiformats/cid'
 
-export interface TestData {
+export interface DataFile {
   cid: CID
   name: string
   path: string

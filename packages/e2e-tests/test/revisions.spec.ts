@@ -1,11 +1,11 @@
 import assert from 'assert/strict'
-import * as testData from '@organicdesign/db-test-utils'
+import * as testData from '@organicdesign/db-test-utils/data'
 import runClient from './utils/run-client.js'
 import runNode from './utils/run-node.js'
 
 const node = 'revisions'
 const virtualDir = '/data'
-const dataFile = testData.data[0]
+const dataFile = testData.files[0]
 
 describe('revisions', () => {
   let proc: Awaited<ReturnType<typeof runNode>>

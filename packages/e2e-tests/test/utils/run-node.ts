@@ -40,7 +40,7 @@ export default async (name: string): Promise<{ start(): Promise<void>, stop(): P
       const promise = new DeferredPromise<void>()
 
       const listener = (chunk: Uint8Array): void => {
-        if (uint8ArrayToString(chunk).includes('started') === true) {
+        if (uint8ArrayToString(chunk).includes('started')) {
           promise.resolve()
         }
       }
@@ -56,7 +56,7 @@ export default async (name: string): Promise<{ start(): Promise<void>, stop(): P
       const promise = new DeferredPromise<void>()
 
       const listener = (chunk: Uint8Array): void => {
-        if (uint8ArrayToString(chunk).includes('exiting...') === true) {
+        if (uint8ArrayToString(chunk).includes('exiting...')) {
           promise.resolve()
         }
       }

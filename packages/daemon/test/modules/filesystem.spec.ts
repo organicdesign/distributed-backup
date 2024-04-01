@@ -2,8 +2,8 @@ import assert from 'assert/strict'
 import fs from 'fs/promises'
 import Path from 'path'
 import { unixfs } from '@helia/unixfs'
-import * as testData from '@organicdesign/db-test-utils'
 import { createDag } from '@organicdesign/db-test-utils'
+import * as testData from '@organicdesign/db-test-utils/data'
 import { importer } from '@organicdesign/db-utils'
 import { createNetClient } from '@organicdesign/net-rpc'
 import { MemoryBlockstore } from 'blockstore-core'
@@ -250,7 +250,7 @@ describe('filesystem', () => {
 
     assert(fs != null)
 
-    await Promise.all(testData.data.map(async data => {
+    await Promise.all(testData.files.map(async data => {
       const result = await all(importer(components.helia.blockstore, data.path))
 
       await filesystem.uploads.add('put', [group.bytes, data.generatePath(rootPath), {
@@ -261,7 +261,7 @@ describe('filesystem', () => {
       }])
     }))
 
-    for (const data of testData.data) {
+    for (const data of testData.files) {
       const exportPath = data.generatePath(outPath)
 
       const response = await client.rpc.request('export', {
@@ -290,7 +290,7 @@ describe('filesystem', () => {
 
     assert(fs != null)
 
-    await Promise.all(testData.data.map(async data => {
+    await Promise.all(testData.files.map(async data => {
       const result = await all(importer(components.helia.blockstore, data.path))
 
       await filesystem.uploads.add('put', [group.bytes, data.generatePath(rootPath), {
@@ -309,7 +309,7 @@ describe('filesystem', () => {
 
     assert.equal(response, null)
 
-    for (const data of testData.data) {
+    for (const data of testData.files) {
       const exportPath = data.generatePath(outPath)
       const valid = await data.validate(exportPath)
 
@@ -329,7 +329,7 @@ describe('filesystem', () => {
 
     assert(fs != null)
 
-    await Promise.all(testData.data.map(async data => {
+    await Promise.all(testData.files.map(async data => {
       const virtualPath = data.generatePath(rootPath)
 
       const response = await client.rpc.request('import', {
@@ -370,10 +370,10 @@ describe('filesystem', () => {
     })
 
     assert(Array.isArray(response))
-    assert.equal(response.length, testData.data.length)
+    assert.equal(response.length, testData.files.length)
 
     for (const data of response) {
-      const dataFile = testData.getDataFile(data.inPath)
+      const dataFile = testData.getFile(data.inPath)
 
       assert(dataFile != null)
       assert.equal(data.path, dataFile.generatePath(rootPath))
@@ -383,9 +383,9 @@ describe('filesystem', () => {
     const fsResult = await all(fs.getDir(rootPath))
 
     assert(Array.isArray(fsResult))
-    assert.equal(fsResult.length, testData.data.length)
+    assert.equal(fsResult.length, testData.files.length)
 
-    for (const dataFile of testData.data) {
+    for (const dataFile of testData.files) {
       const virtualPath = dataFile.generatePath(rootPath)
       const r = fsResult.find(r => r.key === virtualPath)
 
