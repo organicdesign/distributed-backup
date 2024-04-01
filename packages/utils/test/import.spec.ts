@@ -2,7 +2,7 @@ import assert from 'assert/strict'
 import * as testData from '@organicdesign/db-test-utils/data'
 import { BlackHoleBlockstore } from 'blockstore-core/black-hole'
 import all from 'it-all'
-import { importer } from '../src/index.js'
+import { importer } from '../src/portation/importer.js'
 
 const blockstore = new BlackHoleBlockstore()
 

@@ -1,6 +1,6 @@
 import Path from 'path'
 import * as dagCbor from '@ipld/dag-cbor'
-import { getDagSize } from '@organicdesign/db-utils'
+import * as Dag from '@organicdesign/db-utils/dag'
 import * as cborg from 'cborg'
 import { type Entry, EncodedEntry } from './interface.js'
 import { encodeEntry, decodeEntry, keyToPath, pathToKey } from './utils.js'
@@ -30,7 +30,7 @@ export class FileSystem {
   async put (path: string, entry: Pick<Entry, 'cid' | 'encrypted' | 'revisionStrategy' | 'priority'>): Promise<Entry> {
     logger.info(`[groups] [+] ${Path.join(this.group.toString(), path)}`)
 
-    const { blocks, size } = await getDagSize(this.blockstore, entry.cid)
+    const { blocks, size } = await Dag.getSize(this.blockstore, entry.cid)
 
     const existing = await this.get(path)
     let sequence = 0

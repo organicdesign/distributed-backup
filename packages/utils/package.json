@@ -12,6 +12,14 @@
     ".": {
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
+    },
+    "./dag": {
+      "types": "./dist/src/dag/index.d.ts",
+      "import": "./dist/src/dag/index.js"
+    },
+    "./portation": {
+      "types": "./dist/src/portation/index.d.ts",
+      "import": "./dist/src/portation/index.js"
     }
   },
   "scripts": {

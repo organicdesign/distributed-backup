@@ -5,8 +5,8 @@ import { fileURLToPath } from 'url'
 import * as testData from '@organicdesign/db-test-utils/data'
 import { MemoryBlockstore } from 'blockstore-core'
 import all from 'it-all'
-import { exporter } from '../src/exporter.js'
-import { importer } from '../src/importer.js'
+import { exporter } from '../src/portation/exporter.js'
+import { importer } from '../src/portation/importer.js'
 
 const outPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), '../../test-data-out')
 
