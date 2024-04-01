@@ -29,7 +29,9 @@
   "private": true,
   "sideEffects": false,
   "dependencies": {
-    "@organicdesign/db-client": "^0.1.0"
+    "@organicdesign/db-client": "^0.1.0",
+    "debug": "^4.3.4",
+    "tinybench": "^2.6.0"
   },
   "peerDependencies": {
     "@organicdesign/db-daemon": "^0.1.0"
