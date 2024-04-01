@@ -8,19 +8,14 @@ import type { TransferBenchmark } from './interface.js'
 
 export const createTransferBench = async (size: number): Promise<TransferBenchmark> => {
   const dataPath = Path.join(packagePath, 'test-out')
-  const name = 'transfer'
 
-  const procs = await Promise.all([
-    runNode(`${name}-0`),
-    runNode(`${name}-1`)
-  ])
+  const names = [...Array(2).keys()].map(i => `transfer-${size}-${i}`)
+
+  const procs = await Promise.all(names.map(async n => runNode(n)))
 
   await Promise.all(procs.map(async p => p.start()))
 
-  const clients = [
-    new Client(Path.join(packagePath, `${name}-0.socket`)),
-    new Client(Path.join(packagePath, `${name}-1.socket`))
-  ]
+  const clients = names.map(n => new Client(Path.join(packagePath, `${n}.socket`)))
 
   const addresses = await clients[0].addresses()
 
@@ -30,10 +25,10 @@ export const createTransferBench = async (size: number): Promise<TransferBenchma
 
   await fs.mkdir(dataPath, { recursive: true })
 
-  const kbTestPath = Path.join(dataPath, '1kb.data')
-  await generateFile(kbTestPath, size)
+  const dataFile = Path.join(dataPath, `${size}.data`)
+  await generateFile(dataFile, size)
 
-  const [{ cid }] = await clients[0].import(group, kbTestPath)
+  const [{ cid }] = await clients[0].import(group, dataFile)
 
   return {
     async teardown () {
@@ -41,7 +36,10 @@ export const createTransferBench = async (size: number): Promise<TransferBenchma
         client.stop()
       }
 
-      await Promise.all(procs.map(async p => p.stop()))
+      await Promise.all([
+        ...procs.map(async p => p.stop()),
+        fs.rm(dataFile)
+      ])
     },
 
     async warmup () {

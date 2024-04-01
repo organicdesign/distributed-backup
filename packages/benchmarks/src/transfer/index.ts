@@ -1,9 +1,9 @@
 /* eslint-disable no-console,no-loop-func */
 import debug from 'debug'
+import prettyBytes from 'pretty-bytes'
 import { Bench } from 'tinybench'
-import { createTransferBench } from './transfer-1kb.js'
+import { createTransferBench } from './create-transfer-bench.js'
 import type { TransferBenchmark } from './interface.js'
-import prettyBytes from 'pretty-bytes';
 
 const log = debug('bench:transfer')
 
@@ -12,10 +12,9 @@ const MIN_TIME = parseInt(process.env.MIN_TIME ?? '1')
 const RESULT_PRECISION = 2
 
 const zeros = [
-	0, // 1b
-	3, // 1kb
-	6, // 1mb
-	8, // 100mb
+  0, // 1b
+  3, // 1kb
+  6 // 1mb
 ]
 
 const sizes = zeros.map(z => 10 ** z)
