@@ -1,5 +1,5 @@
 import assert from 'assert/strict'
-import * as testData from '@organicdesign/db-test-utils'
+import * as testData from '@organicdesign/db-test-utils/data'
 import runClient from './utils/run-client.js'
 import runNode from './utils/run-node.js'
 
@@ -39,7 +39,7 @@ describe('synchronization', () => {
       nodes[0],
       'import',
       group,
-      testData.data[0].path,
+      testData.files[0].path,
       virtualPath
     )
 
@@ -74,7 +74,7 @@ describe('synchronization', () => {
       nodes[0],
       'import',
       group,
-      testData.data[1].path,
+      testData.files[1].path,
       virtualPath
     )
 

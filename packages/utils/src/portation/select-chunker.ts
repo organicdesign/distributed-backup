@@ -8,7 +8,7 @@ const parseNumber = (input?: string): number | null => {
   return isNaN(Number(input)) ? null : Number(input)
 }
 
-export default (chunker?: string): Chunker => {
+export const selectChunker = (chunker?: string): Chunker => {
   if (chunker == null) {
     return fixedSize()
   }

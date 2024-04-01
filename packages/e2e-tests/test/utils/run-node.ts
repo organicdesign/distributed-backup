@@ -4,20 +4,20 @@ import Path from 'path'
 import { DeferredPromise } from '@open-draft/deferred-promise'
 import { generateKeyFile } from '@organicdesign/db-key-manager'
 import { toString as uint8ArrayToString } from 'uint8arrays'
-import projectPath from './project-path.js'
+import { testPath, modulesPath } from './paths.js'
 
 const mnemonic = 'result dune cream slogan oil sock seminar either strong girl athlete jacket'
 
 export default async (name: string): Promise<{ start(): Promise<void>, stop(): Promise<void> }> => {
-  const keyPath = Path.join(projectPath, `packages/e2e-tests/${name}.key`)
-  const socket = Path.join(projectPath, `packages/e2e-tests/${name}.socket`)
+  const keyPath = Path.join(testPath, `${name}.key`)
+  const socket = Path.join(testPath, `${name}.socket`)
 
   await generateKeyFile(keyPath, mnemonic, name)
 
   const args = [
-    Path.join(projectPath, 'node_modules/@organicdesign/db-daemon/dist/src/index.js'),
+    Path.join(modulesPath, '/@organicdesign/db-daemon/dist/src/index.js'),
     '-k', keyPath,
-    '-c', Path.join(projectPath, 'packages/e2e-tests/config.json'),
+    '-c', Path.join(testPath, 'config.json'),
     '-s', socket
   ]
 
@@ -40,7 +40,7 @@ export default async (name: string): Promise<{ start(): Promise<void>, stop(): P
       const promise = new DeferredPromise<void>()
 
       const listener = (chunk: Uint8Array): void => {
-        if (uint8ArrayToString(chunk).includes('started') === true) {
+        if (uint8ArrayToString(chunk).includes('started')) {
           promise.resolve()
         }
       }
@@ -56,7 +56,7 @@ export default async (name: string): Promise<{ start(): Promise<void>, stop(): P
       const promise = new DeferredPromise<void>()
 
       const listener = (chunk: Uint8Array): void => {
-        if (uint8ArrayToString(chunk).includes('exiting...') === true) {
+        if (uint8ArrayToString(chunk).includes('exiting...')) {
           promise.resolve()
         }
       }

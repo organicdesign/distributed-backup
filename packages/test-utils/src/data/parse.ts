@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 import { unixfs } from '@helia/unixfs'
 import { BlackHoleBlockstore } from 'blockstore-core'
 import { compare as uint8ArrayCompareString } from 'uint8arrays/compare'
-import type { TestData } from './interface.js'
+import type { DataFile } from './interface.js'
 
 const generateHash = async (path: string): Promise<Uint8Array> => {
   const hasher = createHash('sha256')
@@ -15,14 +15,13 @@ const generateHash = async (path: string): Promise<Uint8Array> => {
   return hasher.digest()
 }
 
-const blockstore = new BlackHoleBlockstore()
-const ufs = unixfs({ blockstore })
+const ufs = unixfs({ blockstore: new BlackHoleBlockstore() })
 
-export const root = Path.join(Path.dirname(fileURLToPath(import.meta.url)), '../../data')
+export const root = Path.join(Path.dirname(fileURLToPath(import.meta.url)), '../../../data')
 
-export default async (): Promise<TestData[]> => {
+export const parse = async (): Promise<DataFile[]> => {
   const structure = await fs.readdir(root, { recursive: true, withFileTypes: true })
-  const paths: TestData[] = []
+  const paths: DataFile[] = []
 
   for (const dirent of structure) {
     if (dirent.isDirectory()) {

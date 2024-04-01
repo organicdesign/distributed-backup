@@ -1,6 +1,6 @@
 import Path from 'path'
 import { Import } from '@organicdesign/db-rpc-interfaces'
-import { selectChunker, importer, type ImporterConfig } from '@organicdesign/db-utils'
+import { selectChunker, importer } from '@organicdesign/db-utils/portation'
 import { BlackHoleBlockstore } from 'blockstore-core/black-hole'
 import { CID } from 'multiformats/cid'
 import { type Context, logger } from '../index.js'
@@ -11,10 +11,10 @@ const command: ModuleMethod<Context> = ({ net, blockstore, heliaPinManager }, co
     const params = Import.Params.parse(raw)
     const encrypt = Boolean(params.encrypt)
 
-    const config: ImporterConfig = {
+    const config = {
       chunker: selectChunker(),
       cidVersion: 1
-    }
+    } as const
 
     if (params.onlyHash) {
       throw new Error('no implemented')

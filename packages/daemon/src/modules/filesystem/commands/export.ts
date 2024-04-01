@@ -1,6 +1,6 @@
 import Path from 'path'
 import { Export } from '@organicdesign/db-rpc-interfaces'
-import { exporter } from '@organicdesign/db-utils'
+import { exporter } from '@organicdesign/db-utils/portation'
 import { CID } from 'multiformats/cid'
 import type { Context } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'

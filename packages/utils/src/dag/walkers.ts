@@ -59,7 +59,7 @@ export const dagCborWalker: DAGWalker = {
   * walk (block) {
     const cids: CID[] = []
     const tags: cborg.TagDecoder[] = []
-    tags[CID_TAG] = (bytes) => {
+    tags[CID_TAG] = (bytes: Uint8Array) => {
       if (bytes[0] !== 0) {
         throw new Error('Invalid CID for CBOR tag 42; expected leading 0x00')
       }
@@ -157,7 +157,7 @@ export const dagJsonWalker: DAGWalker = {
   * walk (block) {
     const cids: CID[] = []
     const tags: cborg.TagDecoder[] = []
-    tags[CID_TAG] = (string) => {
+    tags[CID_TAG] = (string: string) => {
       const cid = CID.parse(string)
 
       cids.push(cid)

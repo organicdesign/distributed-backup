@@ -1,5 +1,5 @@
 import { DeferredPromise } from '@open-draft/deferred-promise'
-import { getDagWalker } from '@organicdesign/db-utils'
+import { getWalker } from '@organicdesign/db-utils/dag'
 import { NamespaceDatastore } from 'datastore-core'
 import { Key, type Datastore } from 'interface-datastore'
 import all from 'it-all'
@@ -97,7 +97,7 @@ export class PinManager {
     }
 
     const walk = async (subCid: CID, depth: number): Promise<void> => {
-      const dagWalker = getDagWalker(subCid)
+      const dagWalker = getWalker(subCid)
 
       if (!await this.helia.blockstore.has(subCid)) {
         throw new Error('pin does not exist locally')
@@ -364,7 +364,7 @@ export class PinManager {
       })))
 
       // Add the next blocks to download.
-      const dagWalker = getDagWalker(cid)
+      const dagWalker = getWalker(cid)
       const promises: Array<Promise<unknown>> = []
       const links: CID[] = []
 

@@ -2,14 +2,14 @@ import { spawn, type ChildProcessWithoutNullStreams } from 'child_process'
 import Path from 'path'
 import { DeferredPromise } from '@open-draft/deferred-promise'
 import { toString as uint8ArrayToString } from 'uint8arrays'
-import projectPath from './project-path.js'
+import { modulesPath, testPath } from './paths.js'
 
 export default async (name: string, path: string, group: string): Promise<{ start(): Promise<void>, stop(): Promise<void> }> => {
   const args = [
-    Path.join(projectPath, 'node_modules/@organicdesign/db-fuse/dist/src/index.js'),
+    Path.join(modulesPath, '@organicdesign/db-fuse/dist/src/index.js'),
     '--group', group,
     '--path', path,
-    '-s', Path.join(projectPath, `e2e-tests/${name}.socket`)
+    '-s', Path.join(testPath, `${name}.socket`)
   ]
 
   let proc: ChildProcessWithoutNullStreams
@@ -21,7 +21,7 @@ export default async (name: string, path: string, group: string): Promise<{ star
       const promise = new DeferredPromise<void>()
 
       const listener = (chunk: Uint8Array): void => {
-        if (uint8ArrayToString(chunk).includes('INIT') === true) {
+        if (uint8ArrayToString(chunk).includes('INIT')) {
           promise.resolve()
         }
       }
