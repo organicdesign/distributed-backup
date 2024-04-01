@@ -1,8 +1,7 @@
 import Path from 'path'
-import { getDagWalker } from '@organicdesign/db-utils'
+import { walkDag } from '@organicdesign/db-utils'
 import { CID } from 'multiformats/cid'
 import { DATA_KEY, EncodedEntry, type Entry } from './interface.js'
-import type { AbortOptions } from '@libp2p/interface'
 import type { Blockstore } from 'interface-blockstore'
 
 export const encodeEntry = (entry: Entry): NonNullable<EncodedEntry> => {
@@ -19,51 +18,6 @@ export const decodeEntry = (entry: NonNullable<EncodedEntry>): Entry => ({
   ...entry,
   cid: CID.decode(entry.cid)
 })
-
-export const walkDag = async function * (blockstore: Blockstore, cid: CID, maxDepth?: number, options?: AbortOptions): AsyncGenerator<() => Promise<{ cid: CID, depth: number, block: Uint8Array }>> {
-  const queue: Array<() => Promise<{ cid: CID, depth: number, block: Uint8Array }>> = []
-  const promises: Array<Promise<{ cid: CID, depth: number, block: Uint8Array }>> = []
-
-  const enqueue = (cid: CID, depth: number): void => {
-    queue.push(async () => {
-      const promise = Promise.resolve().then(async () => {
-        const dagWalker = getDagWalker(cid)
-
-        if (dagWalker == null) {
-          throw new Error(`No dag walker found for cid codec ${cid.code}`)
-        }
-
-        const block = await blockstore.get(cid, options)
-
-        if (maxDepth == null || depth < maxDepth) {
-          for await (const cid of dagWalker.walk(block)) {
-            enqueue(cid, depth + 1)
-          }
-        }
-
-        return { cid, depth, block }
-      })
-
-      promises.push(promise)
-
-      return promise
-    })
-  }
-
-  enqueue(cid, 0)
-
-  while (queue.length + promises.length !== 0) {
-    const func = queue.shift()
-
-    if (func == null) {
-      await promises.shift()
-
-      continue
-    }
-
-    yield func
-  }
-}
 
 export const getDagSize = async (blockstore: Blockstore, cid: CID): Promise<{ blocks: number, size: number }> => {
   let size = 0
