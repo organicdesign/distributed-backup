@@ -1,3 +1,4 @@
+import { zCID } from '@organicdesign/db-rpc-interfaces/zod'
 import { z } from 'zod'
 import type { Downloader } from './downloader/index.js'
 import type { EntryTracker } from './entry-tracker.js'
@@ -27,7 +28,8 @@ export const Config = z.object({
   addresses: z.array(z.string()).default([
     '/ip4/127.0.0.1/tcp/0',
     '/ip4/127.0.0.1/tcp/0/ws'
-  ])
+  ]),
+  groups: z.array(zCID()).default([])
 })
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare

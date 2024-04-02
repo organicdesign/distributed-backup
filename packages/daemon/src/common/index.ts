@@ -10,7 +10,8 @@ import { FsBlockstore } from 'blockstore-fs'
 import { MemoryDatastore } from 'datastore-core'
 import { FsDatastore } from 'datastore-fs'
 import { createHelia } from 'helia'
-import { createWelo, pubsubReplicator, bootstrapReplicator } from 'welo'
+import { CID } from 'multiformats/cid'
+import { Address, createWelo, pubsubReplicator, bootstrapReplicator } from 'welo'
 import { type z } from 'zod'
 import { createDownloader } from './downloader/index.js'
 import { EntryTracker } from './entry-tracker.js'
@@ -83,6 +84,16 @@ export default async (settings: Partial<Setup> = {}): Promise<Components> => {
     datastore: extendDatastore(datastore, 'groups'),
     welo
   })
+
+  await Promise.all(config.groups.map(async group => {
+    if (groups.get(CID.parse(group)) != null) {
+      return
+    }
+
+    const manifest = await welo.fetch(Address.fromString(`/hldb/${group}`))
+
+    await groups.add(manifest)
+  }))
 
   const sneakernet = new Sneakernet({
     welo,
