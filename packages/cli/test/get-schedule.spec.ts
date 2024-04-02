@@ -1,4 +1,5 @@
 import assert from 'assert/strict'
+import all from 'it-all'
 import { handler } from '../src/commands/get-schedule.js'
 import { mockParams } from './utils.js'
 
@@ -21,9 +22,9 @@ describe('get-schedule', () => {
       types: ['workflow']
     })
 
-    const response = await handler(params)
+    const response = await all(handler(params))
 
-    assert.equal(response, items.map(d => {
+    assert.equal(response.join('\n'), items.map(d => {
       const from = `${d.from}`.padEnd(15)
       const to = `${d.to}`.padEnd(15)
 
@@ -54,8 +55,8 @@ describe('get-schedule', () => {
       json: true
     })
 
-    const response = await handler(params)
+    const response = await all(handler(params))
 
-    assert.equal(response, JSON.stringify(items))
+    assert.equal(response.join('\n'), JSON.stringify(items))
   })
 })

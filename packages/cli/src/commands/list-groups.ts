@@ -6,7 +6,7 @@ export const desc = 'List joined groups.'
 
 export const builder = createBuilder({})
 
-export const handler = createHandler<typeof builder>(async argv => {
+export const handler = createHandler<typeof builder>(async function * (argv) {
   if (argv.client == null) {
     throw new Error('Failed to connect to daemon.')
   }
@@ -14,7 +14,8 @@ export const handler = createHandler<typeof builder>(async argv => {
   const groups = await argv.client.listGroups()
 
   if (argv.json === true) {
-    return JSON.stringify(groups)
+    yield JSON.stringify(groups)
+    return
   }
 
   const peers = await argv.client.countPeers(groups.map(g => g.group))
@@ -40,5 +41,5 @@ export const handler = createHandler<typeof builder>(async argv => {
     return str
   }).join('\n')
 
-  return out
+  yield out
 })

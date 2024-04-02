@@ -57,7 +57,7 @@ const formatPercent = (decimal: number): string => {
   return `${isNaN(percent) ? 0 : percent}%`
 }
 
-export const handler = createHandler<typeof builder>(async argv => {
+export const handler = createHandler<typeof builder>(async function * (argv) {
   if (argv.client == null) {
     throw new Error('Failed to connect to daemon.')
   }
@@ -74,10 +74,12 @@ export const handler = createHandler<typeof builder>(async argv => {
   }
 
   if (argv.json === true) {
-    return JSON.stringify({
+    yield JSON.stringify({
       items,
       total
     })
+
+    return
   }
 
   const statuses = await argv.client.getStatus(items.map(i => i.cid))
@@ -171,5 +173,5 @@ export const handler = createHandler<typeof builder>(async argv => {
 
   response += `${footer}`
 
-  return response
+  yield response
 })

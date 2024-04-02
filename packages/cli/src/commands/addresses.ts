@@ -6,7 +6,7 @@ export const desc = 'Get the address of the peer.'
 
 export const builder = createBuilder({})
 
-export const handler = createHandler<typeof builder>(async argv => {
+export const handler = createHandler<typeof builder>(async function * (argv): AsyncIterable<string> {
   if (argv.client == null) {
     throw new Error('Failed to connect to daemon.')
   }
@@ -14,8 +14,9 @@ export const handler = createHandler<typeof builder>(async argv => {
   const addresses = await argv.client.addresses()
 
   if (argv.json === true) {
-    return JSON.stringify(addresses)
+    yield JSON.stringify(addresses)
+    return
   }
 
-  return addresses.join('\n')
+  yield * addresses
 })

@@ -45,15 +45,17 @@ const commands = [
   desc: string
   command: string
   builder: Record<string, Options>
-  handler(argc: Record<string, unknown>): string | Promise<string>
+  handler(argc: Record<string, unknown>): AsyncIterable<string>
 }>
 
 export default commands.map(c => ({
   ...c,
   handler: async (argc: Record<string, unknown>) => {
     try {
-      // eslint-disable-next-line no-console
-      console.log(await c.handler(argc))
+      for await (const output of c.handler(argc)) {
+        // eslint-disable-next-line no-console
+        console.log(output)
+      }
     } catch (error: any) {
       if (!(error?.code === 0)) {
         throw error

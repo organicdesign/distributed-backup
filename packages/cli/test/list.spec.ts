@@ -1,4 +1,5 @@
 import assert from 'assert/strict'
+import all from 'it-all'
 import { handler } from '../src/commands/list.js'
 import { mockParams } from './utils.js'
 
@@ -24,7 +25,7 @@ describe('list', () => {
   it('text', async () => {
     const params = mockParams({ list: items, countPeers: [{ cid, peers: 1 }], getStatus: [{ cid, state: 'COMPLETED', size: 50, blocks: 5 }], getSpeeds: [{ cid, speed: 1000 }] }, { group: 'group-abc' })
 
-    const response = await handler(params)
+    const response = await all(handler(params))
 
     let expected = 'Name'.padEnd(20)
 
@@ -61,7 +62,7 @@ describe('list', () => {
     expected += '         5/50 (10%)'
     expected += '          1000 KBs            '
 
-    assert.equal(response, expected)
+    assert.equal(response.join('\n'), expected)
   })
 
   it('json', async () => {
@@ -75,9 +76,9 @@ describe('list', () => {
       json: true
     })
 
-    const response = await handler(params)
+    const response = await all(handler(params))
 
-    assert.equal(response, JSON.stringify({
+    assert.equal(response.join('\n'), JSON.stringify({
       items,
       total: {
         blocks: 50,

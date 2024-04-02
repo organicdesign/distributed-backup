@@ -30,7 +30,7 @@ export const builder = createBuilder({
   }
 })
 
-export const handler = createHandler<typeof builder>(async argv => {
+export const handler = createHandler<typeof builder>(async function * (argv) {
   if (argv.client == null) {
     throw new Error('Failed to connect to daemon.')
   }
@@ -41,11 +41,13 @@ export const handler = createHandler<typeof builder>(async argv => {
   })
 
   if (argv.json === true) {
-    return JSON.stringify({
+    yield JSON.stringify({
       success: true,
       length
     })
+
+    return
   }
 
-  return `Wrote ${length} bytes.`
+  yield `Wrote ${length} bytes.`
 })

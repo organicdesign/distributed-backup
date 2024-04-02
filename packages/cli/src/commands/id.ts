@@ -6,7 +6,7 @@ export const desc = 'Get the identity of the instance.'
 
 export const builder = createBuilder({})
 
-export const handler = createHandler<typeof builder>(async argv => {
+export const handler = createHandler<typeof builder>(async function * (argv) {
   if (argv.client == null) {
     throw new Error('Failed to connect to daemon.')
   }
@@ -14,8 +14,9 @@ export const handler = createHandler<typeof builder>(async argv => {
   const id = await argv.client.id()
 
   if (argv.json === true) {
-    return JSON.stringify({ success: true, id })
+    yield JSON.stringify({ success: true, id })
+    return
   }
 
-  return id
+  yield id
 })

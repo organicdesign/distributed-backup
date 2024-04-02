@@ -24,7 +24,7 @@ export const builder = createBuilder({
   }
 })
 
-export const handler = createHandler<typeof builder>(async argv => {
+export const handler = createHandler<typeof builder>(async function * (argv) {
   if (argv.client == null) {
     throw new Error('Failed to connect to daemon.')
   }
@@ -36,10 +36,11 @@ export const handler = createHandler<typeof builder>(async argv => {
   })
 
   if (argv.json === true) {
-    return JSON.stringify(data)
+    yield JSON.stringify(data)
+    return
   }
 
-  return data.map(d => {
+  yield * data.map(d => {
     const from = `${d.from}`.padEnd(15)
     const to = `${d.to}`.padEnd(15)
 
@@ -48,5 +49,5 @@ export const handler = createHandler<typeof builder>(async argv => {
       .join(', ')
 
     return `${from}${to}{${context}}`
-  }).join('\n')
+  })
 })

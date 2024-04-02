@@ -16,7 +16,7 @@ export const builder = createBuilder({
   }
 })
 
-export const handler = createHandler<typeof builder>(async argv => {
+export const handler = createHandler<typeof builder>(async function * (argv) {
   if (argv.client == null) {
     throw new Error('Failed to connect to daemon.')
   }
@@ -24,8 +24,9 @@ export const handler = createHandler<typeof builder>(async argv => {
   const result = await argv.client.listRevisions(argv.group, argv.path)
 
   if (argv.json === true) {
-    return JSON.stringify(result)
+    yield JSON.stringify(result)
+    return
   }
 
-  return result.map(r => `${r.sequence}: ${r.cid}`).join('\n')
+  yield * result.map(r => `${r.sequence}: ${r.cid}`)
 })
