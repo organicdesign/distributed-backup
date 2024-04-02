@@ -7,7 +7,7 @@ import { Bench } from 'tinybench'
 import generateFile from '../utils/generate-file.js'
 import { packagePath } from '../utils/paths.js'
 import { createTransferBench } from './create-transfer-bench.js'
-import type { TransferBenchmark } from './interface.js'
+import type { TransferImplementation } from './interface.js'
 
 const log = debug('bench:transfer')
 
@@ -18,25 +18,20 @@ const RESULT_PRECISION = 2
 const zeros = [
   0, // 1b
   3, // 1kb
-  6  // 1mb
+  6, // 1mb
+  7, // 10mb
+  8 // 100mb
 ]
 
 const sizes = zeros.map(z => 10 ** z)
 
-const impls: Array<{
-  name: string
-  create(): Promise<TransferBenchmark & { size: number }>
-  results: number[]
-  size: number
-}> = sizes.map(size => ({
+const impls: TransferImplementation[] = sizes.map(size => ({
   name: `${prettyBytes(size)}`,
-  create: async () => {
-    const bench = await createTransferBench(size)
-
-    return { ...bench, size }
-  },
+  create: async () => createTransferBench(size),
   results: [],
-  size
+  fileSize: size,
+  size: 0,
+  blocks: 0
 }))
 
 const dataPath = Path.join(packagePath, 'test-out')
@@ -45,6 +40,7 @@ async function main (): Promise<void> {
   const suite = new Bench({
     iterations: ITERATIONS,
     time: MIN_TIME,
+
     async setup (task) {
       const impl = impls.find(({ name }) => task.name.includes(name))
 
@@ -52,8 +48,8 @@ async function main (): Promise<void> {
         return
       }
 
-      const dataFile = Path.join(dataPath, `${impl.size}.data`)
-      await generateFile(dataFile, impl.size)
+      const dataFile = Path.join(dataPath, `${impl.fileSize}.data`)
+      await generateFile(dataFile, impl.fileSize)
     },
 
     async teardown (task) {
@@ -63,7 +59,7 @@ async function main (): Promise<void> {
         return
       }
 
-      const dataFile = Path.join(dataPath, `${impl.size}.data`)
+      const dataFile = Path.join(dataPath, `${impl.fileSize}.data`)
       await fs.rm(dataFile)
     }
   })
@@ -77,6 +73,9 @@ async function main (): Promise<void> {
       await subject.warmup()
       const start = performance.now()
       await subject.run()
+
+      impl.size = subject.size
+      impl.blocks = subject.blocks
       impl.results.push(performance.now() - start)
 
       log('Start: teardown')
@@ -99,11 +98,23 @@ async function main (): Promise<void> {
   await suite.run()
 
   console.table(suite.tasks.map(({ name, result }) => {
+    const impl = impls.find(impl => impl.name === name)
+
+    if (impl == null) {
+      throw new Error('got result without implementation')
+    }
+
+    const speed = impl.size / (result?.period ?? 0 / 1000)
+    const bps = impl.blocks / (result?.period ?? 0 / 1000)
+
     return {
       'File Size': name,
-      'runs/s': result?.hz.toFixed(RESULT_PRECISION),
-      'ms/run': result?.period.toFixed(RESULT_PRECISION),
-      runs: result?.samples.length,
+      Size: prettyBytes(impl.size),
+      Blocks: impl.blocks,
+      'Speed (Size)': `${prettyBytes(speed)}/s`,
+      'Speed (Blocks)': `${(bps).toFixed(RESULT_PRECISION)} blocks/s`,
+      'Run Time': result?.period.toFixed(RESULT_PRECISION),
+      Runs: result?.samples.length,
       p99: result?.p99.toFixed(RESULT_PRECISION)
     }
   }))
