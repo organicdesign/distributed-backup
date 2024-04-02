@@ -23,9 +23,9 @@ describe('groups', () => {
     await fs.rm(testPath, { recursive: true })
   })
 
-  const create = async (): Promise<{ components: Components, socket: string }> => {
+  const create = async (config: Record<string, unknown> = {}): Promise<{ components: Components, socket: string }> => {
     const socket = Path.join(testPath, `${Math.random()}.socket`)
-    const components = await setup({ socket })
+    const components = await setup({ socket, config })
 
     return { components, socket }
   }
@@ -37,6 +37,26 @@ describe('groups', () => {
     assert(group)
 
     await components.stop()
+  })
+
+  it('bootstraps a group from config', async () => {
+    const { components: components1 } = await create()
+
+    const group = await createGroup(components1, 'test')
+
+    const { components: components2 } = await create({
+      groups: [group.toString()],
+      bootstrap: components1.libp2p.getMultiaddrs().map(a => a.toString())
+    })
+
+    const foundGroup = components2.groups.get(group)
+
+    assert.notEqual(foundGroup, null)
+
+    await Promise.all([
+      components1.stop(),
+      components2.stop()
+    ])
   })
 
   it('tracker puts and checks a group\'s content', async () => {
