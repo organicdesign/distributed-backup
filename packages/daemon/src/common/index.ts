@@ -11,7 +11,7 @@ import { MemoryDatastore } from 'datastore-core'
 import { FsDatastore } from 'datastore-fs'
 import { createHelia } from 'helia'
 import { CID } from 'multiformats/cid'
-import { Address, createWelo, pubsubReplicator, bootstrapReplicator } from 'welo'
+import { type Manifest, Address, createWelo, pubsubReplicator, bootstrapReplicator } from 'welo'
 import { type z } from 'zod'
 import { createDownloader } from './downloader/index.js'
 import { EntryTracker } from './entry-tracker.js'
@@ -85,15 +85,31 @@ export default async (settings: Partial<Settings> = {}): Promise<Components> => 
     welo
   })
 
-  await Promise.all(config.groups.map(async group => {
+  // The following bootstraps groups but if the welo.fetch cannot get the
+	// manifest it will hang the program due to welo.fetch not being abortable.
+  // This means that it will hang the program for a long time after it is
+  // shutdown.
+  Promise.allSettled(config.groups.map(async group => {
     if (groups.get(CID.parse(group)) != null) {
       return
     }
 
-    const manifest = await welo.fetch(Address.fromString(`/hldb/${group}`))
+    try {
+      const manifest = await new Promise<Manifest>((resolve, reject) => {
+        setTimeout(() => {
+          reject(new Error('timeout'))
+        }, 10000)
 
-    await groups.add(manifest)
-  }))
+        welo.fetch(Address.fromString(`/hldb/${group}`)).then(resolve).catch(reject)
+      })
+
+      await groups.add(manifest)
+    } catch (error) {
+      logger.warn(`Failed to bootstrap group '${group}'`)
+    }
+  })).catch(() => {
+    // Ignore
+  })
 
   const sneakernet = new Sneakernet({
     welo,

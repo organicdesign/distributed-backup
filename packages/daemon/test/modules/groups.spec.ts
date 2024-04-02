@@ -49,14 +49,32 @@ describe('groups', () => {
       bootstrap: components1.libp2p.getMultiaddrs().map(a => a.toString())
     })
 
+    // Wait until it actually downloads the group block.
+    await components2.helia.blockstore.get(group)
+
+    // Give it a second to be added to the groups
+    await new Promise(resolve => setTimeout(resolve, 100))
+
     const foundGroup = components2.groups.get(group)
 
-    assert.notEqual(foundGroup, null)
+    assert(foundGroup != null)
 
     await Promise.all([
       components1.stop(),
       components2.stop()
     ])
+  })
+
+  it.skip('bootstrapping a group from config does not hang startup', async () => {
+    const { components } = await new Promise<{ components: Components }>((resolve, reject) => {
+      setTimeout(() => { reject(new Error('timeout')) }, 5000)
+
+      create({
+        groups: ['QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN']
+      }).then(resolve).catch(reject)
+    })
+
+    await components.stop()
   })
 
   it('tracker puts and checks a group\'s content', async () => {
