@@ -26,15 +26,15 @@ import { createTick } from './tick.js'
 import type { KeyvalueDB } from '@/interface.js'
 import { createLogger } from '@/logger.js'
 
-interface Setup {
+export interface Settings {
   socket: string
   config: Record<string, unknown>
   key?: string
   keyManager: KeyManager
 }
 
-export default async (settings: Partial<Setup> = {}): Promise<Components> => {
-  const setup: Pick<Setup, 'socket' | 'config'> = {
+export default async (settings: Partial<Settings> = {}): Promise<Components> => {
+  const setup: Pick<Settings, 'socket' | 'config'> = {
     socket: settings.socket ?? '/tmp/server.socket',
     config: settings.config ?? {}
   }
