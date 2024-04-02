@@ -86,7 +86,7 @@ export default async (settings: Partial<Settings> = {}): Promise<Components> => 
   })
 
   // The following bootstraps groups but if the welo.fetch cannot get the
-	// manifest it will hang the program due to welo.fetch not being abortable.
+  // manifest it will hang the program due to welo.fetch not being abortable.
   // This means that it will hang the program for a long time after it is
   // shutdown.
   Promise.allSettled(config.groups.map(async group => {
