@@ -20,7 +20,8 @@ const zeros = [
   3, // 1kb
   6, // 1mb
   7, // 10mb
-  8 // 100mb
+  8, // 100mb
+  9 //  1gb
 ]
 
 const sizes = zeros.map(z => 10 ** z)

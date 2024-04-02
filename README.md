@@ -27,7 +27,7 @@ You can enable fuse by adding it to the `workspaces` value in `package.json`:
 
 ```json
 "workspaces": [
-	"packages/!(fuse)",
+	"packages/!(fuse|benchmarks)",
 	"packages/fuse"
 ]
 ```
@@ -190,4 +190,30 @@ node packages/cli/dist/src/index.js list-groups
 
 ```
 node packages/cli/dist/src/index.js join-group $GROUP
+```
+
+## Benchmarks
+
+You can enable benchmarks by adding it to the `workspaces` value in `package.json`:
+
+```json
+"workspaces": [
+	"packages/!(fuse|benchmarks)",
+	"packages/benchmarks"
+]
+```
+
+Then you can build the benchmarks package as usual:
+
+```
+npm ci
+npm run build
+```
+
+### Transfer
+
+To run the transfer benchmark:
+
+```
+node packages/benchmarks/dist/src/transfer/index.js
 ```
