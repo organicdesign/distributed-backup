@@ -40,14 +40,11 @@ export const handler = createHandler<typeof builder>(async function * (argv) {
     return
   }
 
-  yield * data.map(d => {
-    const from = `${d.from}`.padEnd(15)
-    const to = `${d.to}`.padEnd(15)
-
-    const context = Object.entries(d.context)
-      .map(([key, value]) => `${key}: ${value}`)
-      .join(', ')
-
-    return `${from}${to}{${context}}`
-  })
+  for (const item of data) {
+    yield [
+      `${item.from}`.padEnd(15),
+      `${item.to}`.padEnd(15),
+      `{${Object.entries(item.context).map(([key, value]) => `${key}: ${value}`).join(', ')}}`
+    ].join('')
+  }
 })

@@ -24,7 +24,7 @@ describe('get-schedule', () => {
 
     const response = await all(handler(params))
 
-    assert.equal(response.join('\n'), items.map(d => {
+    const expected = items.map(d => {
       const from = `${d.from}`.padEnd(15)
       const to = `${d.to}`.padEnd(15)
 
@@ -33,7 +33,9 @@ describe('get-schedule', () => {
         .join(', ')
 
       return `${from}${to}{${context}}`
-    }).join('\n'))
+    })
+
+    assert.deepEqual(response, expected)
   })
 
   it('json', async () => {

@@ -10,7 +10,7 @@ describe('connections', () => {
     const params = mockParams({ connections })
     const response = await all(handler(params))
 
-    assert.equal(response.join('\n'), connections.join('\n'))
+    assert.deepEqual(response, connections)
   })
 
   it('json', async () => {

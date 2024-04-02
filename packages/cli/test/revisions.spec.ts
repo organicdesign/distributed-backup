@@ -19,7 +19,7 @@ describe('revisions', () => {
     const params = mockParams({ listRevisions: items }, { path: 'name-abc', group: 'group-abc' })
     const response = await all(handler(params))
 
-    assert.equal(response.join('\n'), items.map(i => `${i.sequence}: ${i.cid}`).join('\n'))
+    assert.deepEqual(response, items.map(i => `${i.sequence}: ${i.cid}`))
   })
 
   it('json', async () => {

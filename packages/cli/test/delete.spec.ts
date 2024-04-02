@@ -13,7 +13,7 @@ describe('delete', () => {
     const params = mockParams({ delete: items }, { path: 'name-abc', group: 'group-abc' })
     const response = await all(handler(params))
 
-    assert.equal(response.join('\n'), items.map(i => i.path).join('\n'))
+    assert.deepEqual(response, items.map(i => i.path))
   })
 
   it('json', async () => {

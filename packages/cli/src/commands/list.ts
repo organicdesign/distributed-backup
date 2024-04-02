@@ -117,12 +117,12 @@ export const handler = createHandler<typeof builder>(async function * (argv) {
   header += 'R-Strategy'.padEnd(12)
   header += 'CID'.padEnd(62)
 
-  let response = `${header}\n`
+  yield header
 
-  const printTree = (tree: JStruct, depth: number = 0): void => {
+  const printTree = function * (tree: JStruct, depth: number = 0): Generator<string> {
     if (depth === 0) {
-      response += '/\n'
-      printTree(tree, 1)
+      yield '/'
+      yield * printTree(tree, 1)
       return
     }
 
@@ -130,48 +130,45 @@ export const handler = createHandler<typeof builder>(async function * (argv) {
       try {
         const [item] = List.Return.parse([subtree])
         const timeRemaining = Math.ceil((item.size - getStatus(item).size) / (getSpeed(item) * 1000))
-        let str = ''
 
-        str += `${'  '.repeat(depth)}${key}`.slice(0, 18).padEnd(20)
-        str += `${formatSize(getStatus(item).size)}/${formatSize(item.size)} (${formatPercent(getStatus(item).size / item.size)})`.slice(0, 25).padEnd(27)
-        str += `${formatSize(getSpeed(item) * 1000)}/s ${isNaN(timeRemaining) ? '' : `(${timeRemaining} s)`}`.slice(0, 25).padEnd(27)
-        str += `${getStatus(item).blocks}/${item.blocks} (${formatPercent(getStatus(item).blocks / item.blocks)})`.slice(0, 18).padEnd(20)
-        str += getStatus(item).state.slice(0, 13).padEnd(15)
-        str += `${item.priority}`.slice(0, 8).padEnd(10)
-        str += `${revisionCounter[item.path] ?? 0}`.slice(0, 8).padEnd(10)
-        str += `${getPeers(item)}`.slice(0, 8).padEnd(10)
-        str += `${item.group}`.slice(0, 8).padEnd(10)
-        str += `${item.encrypted}`.slice(0, 8).padEnd(10)
-        str += `${item.revisionStrategy}`.slice(0, 8).padEnd(12)
-        str += item.cid.padEnd(62)
+        yield [
+          `${'  '.repeat(depth)}${key}`.slice(0, 18).padEnd(20),
+          `${formatSize(getStatus(item).size)}/${formatSize(item.size)} (${formatPercent(getStatus(item).size / item.size)})`.slice(0, 25).padEnd(27),
+          `${formatSize(getSpeed(item) * 1000)}/s ${isNaN(timeRemaining) ? '' : `(${timeRemaining} s)`}`.slice(0, 25).padEnd(27),
+          `${getStatus(item).blocks}/${item.blocks} (${formatPercent(getStatus(item).blocks / item.blocks)})`.slice(0, 18).padEnd(20),
+          getStatus(item).state.slice(0, 13).padEnd(15),
+          `${item.priority}`.slice(0, 8).padEnd(10),
+          `${revisionCounter[item.path] ?? 0}`.slice(0, 8).padEnd(10),
+          `${getPeers(item)}`.slice(0, 8).padEnd(10),
+          `${item.group}`.slice(0, 8).padEnd(10),
+          `${item.encrypted}`.slice(0, 8).padEnd(10),
+          `${item.revisionStrategy}`.slice(0, 8).padEnd(12),
+          item.cid.padEnd(62)
+        ].join('')
 
-        response += `${str}\n`
         continue
       } catch (error) {
         // Ignore
       }
 
-      response += `${'  '.repeat(depth)}${key}/\n`
-
-      printTree(subtree as JStruct, depth + 1)
+      yield `${'  '.repeat(depth)}${key}/`
+      yield * printTree(subtree as JStruct, depth + 1)
     }
   }
 
-  printTree(createJSON(items))
+  yield * printTree(createJSON(items))
+  yield ''
+  yield [
+    'Total'.padEnd(15),
+    'Size'.padEnd(25),
+    'Blocks'.padEnd(20),
+    'Speed'.padEnd(20)
+  ].join('')
 
-  let footer = '\n'
-
-  footer += 'Total'.padEnd(15)
-  footer += 'Size'.padEnd(25)
-  footer += 'Blocks'.padEnd(20)
-  footer += 'Speed'.padEnd(20)
-  footer += '\n'
-  footer += `${completed.count}/${total.count} (${formatPercent(completed.count / total.count)})`.slice(0, 13).padEnd(15)
-  footer += `${formatSize(completed.size)}/${formatSize(total.size)} (${formatPercent(completed.size / total.size)})`.slice(0, 23).padEnd(25)
-  footer += `${completed.blocks}/${total.blocks} (${formatPercent(completed.blocks / total.blocks)})`.slice(0, 18).padEnd(20)
-  footer += `${formatSize(speeds.reduce((a, c) => a + c.speed, 0) * 1000)}s`.slice(0, 18).padEnd(20)
-
-  response += `${footer}`
-
-  yield response
+  yield [
+    `${completed.count}/${total.count} (${formatPercent(completed.count / total.count)})`.slice(0, 13).padEnd(15),
+    `${formatSize(completed.size)}/${formatSize(total.size)} (${formatPercent(completed.size / total.size)})`.slice(0, 23).padEnd(25),
+    `${completed.blocks}/${total.blocks} (${formatPercent(completed.blocks / total.blocks)})`.slice(0, 18).padEnd(20),
+    `${formatSize(speeds.reduce((a, c) => a + c.speed, 0) * 1000)}s`.slice(0, 18).padEnd(20)
+  ].join('')
 })

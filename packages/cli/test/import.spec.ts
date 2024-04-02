@@ -23,7 +23,7 @@ describe('import', () => {
 
     const response = await all(handler(params))
 
-    assert.equal(response.join('\n'), imports.map(i => `${i.path} ${i.cid}`).join('\n'))
+    assert.deepEqual(response, imports.map(i => `${i.path} ${i.cid}`))
   })
 
   it('json', async () => {
