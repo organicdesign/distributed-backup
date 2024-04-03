@@ -8,6 +8,7 @@ import type { Sneakernet } from './sneakernet/index.js'
 import type { Tick } from './tick.js'
 import type { KeyvalueDB } from '@/interface.js'
 import type { Helia } from '@helia/interface'
+import type { UnixFS } from '@helia/unixfs'
 import type { Libp2p } from '@libp2p/interface'
 import type HeliaPinManager from '@organicdesign/db-helia-pin-manager'
 import type { KeyManager } from '@organicdesign/db-key-manager'
@@ -53,4 +54,5 @@ export interface Components {
   heliaPinManager: HeliaPinManager
   events: EventTarget
   keyManager: KeyManager
+  unixfs: UnixFS
 }

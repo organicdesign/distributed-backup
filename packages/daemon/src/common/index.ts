@@ -1,5 +1,6 @@
 import Path from 'path'
 import { bitswap } from '@helia/block-brokers'
+import { unixfs as createUnixfs } from '@helia/unixfs'
 import HeliaPinManager from '@organicdesign/db-helia-pin-manager'
 import { createKeyManager, type KeyManager } from '@organicdesign/db-key-manager'
 import { ManualBlockBroker } from '@organicdesign/db-manual-block-broker'
@@ -72,6 +73,8 @@ export default async (settings: Partial<Settings> = {}): Promise<Components> => 
     blockstore,
     blockBrokers: [bitswap(), () => manualBlockBroker]
   })
+
+  const unixfs = createUnixfs(helia)
 
   const welo = await createWelo({
     // @ts-expect-error Helia version mismatch here.
@@ -163,7 +166,8 @@ export default async (settings: Partial<Settings> = {}): Promise<Components> => 
     welo,
     heliaPinManager,
     events,
-    keyManager
+    keyManager,
+    unixfs
   }
 
   handleCommands(components)

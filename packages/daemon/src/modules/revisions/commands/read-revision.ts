@@ -1,4 +1,3 @@
-import { unixfs } from '@helia/unixfs'
 import { ReadRevision } from '@organicdesign/db-rpc-interfaces'
 import { CID } from 'multiformats/cid'
 import { collect } from 'streaming-iterables'
@@ -8,7 +7,7 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { Context } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 
-const command: ModuleMethod<Context> = ({ net, helia }, context) => {
+const command: ModuleMethod<Context> = ({ net, unixfs }, context) => {
   net.rpc.addMethod(ReadRevision.name, async (raw: unknown): Promise<ReadRevision.Return> => {
     const params = ReadRevision.Params.parse(raw)
     const group = CID.parse(params.group)
@@ -26,9 +25,7 @@ const command: ModuleMethod<Context> = ({ net, helia }, context) => {
       throw new Error(`no such revision: ${params.path}, ${author}, ${params.sequence}`)
     }
 
-    const ufs = unixfs(helia)
-
-    return uint8ArrayToString(uint8ArrayConcat(await collect(ufs.cat(entry.cid, { offset: params.position, length: params.length }))))
+    return uint8ArrayToString(uint8ArrayConcat(await collect(unixfs.cat(entry.cid, { offset: params.position, length: params.length }))))
   })
 }
 
