@@ -65,7 +65,7 @@ describe('groups', () => {
     ])
   })
 
-  it.skip('bootstrapping a group from config does not hang startup', async () => {
+  it('bootstrapping a group from config does not hang startup', async () => {
     const { components } = await new Promise<{ components: Components }>((resolve, reject) => {
       setTimeout(() => { reject(new Error('timeout')) }, 5000)
 
