@@ -15,16 +15,14 @@ const ITERATIONS = parseInt(process.env.ITERATIONS ?? '3')
 const MIN_TIME = parseInt(process.env.MIN_TIME ?? '1')
 const RESULT_PRECISION = 2
 
-const zeros = [
+const sizes = [
   0, // 1b
   3, // 1kb
   6, // 1mb
   7, // 10mb
   8, // 100mb
   9 //  1gb
-]
-
-const sizes = zeros.map(z => 10 ** z)
+].map(z => 10 ** z)
 
 const impls: TransferImplementation[] = sizes.map(size => ({
   name: `${prettyBytes(size)}`,
@@ -105,18 +103,19 @@ async function main (): Promise<void> {
       throw new Error('got result without implementation')
     }
 
-    const speed = impl.size / (result?.period ?? 0 / 1000)
-    const bps = impl.blocks / (result?.period ?? 0 / 1000)
+    const seconds = (result?.period ?? 0) / 1000
+    const speed = impl.size / seconds
+    const bps = impl.blocks / seconds
 
     return {
       'File Size': name,
       Size: prettyBytes(impl.size),
       Blocks: impl.blocks,
       'Speed (Size)': `${prettyBytes(speed)}/s`,
-      'Speed (Blocks)': `${(bps).toFixed(RESULT_PRECISION)} blocks/s`,
-      'Run Time': result?.period.toFixed(RESULT_PRECISION),
+      'Speed (Blocks)': `${bps.toFixed(RESULT_PRECISION)} blocks/s`,
+      'Run Time': `${result?.period.toFixed(RESULT_PRECISION)}ms`,
       Runs: result?.samples.length,
-      p99: result?.p99.toFixed(RESULT_PRECISION)
+      p99: `${result?.p99.toFixed(RESULT_PRECISION)}ms`
     }
   }))
 }
