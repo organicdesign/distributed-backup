@@ -9,7 +9,15 @@ export default async (path: string, size: number, options?: { chunkSize: number 
     const thisSize = (i + 1) * chunkSize < size ? chunkSize : size - i * chunkSize
     const data = crypto.randomBytes(thisSize)
 
-    stream.write(data)
+    await new Promise((resolve, reject) => {
+      stream.write(data, (error) => {
+        if (error != null) {
+          reject(error)
+        } else {
+          resolve(error)
+        }
+      })
+    })
   }
 
   await new Promise(resolve => stream.end(resolve))
