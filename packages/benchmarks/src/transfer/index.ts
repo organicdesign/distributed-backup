@@ -47,6 +47,7 @@ async function main (): Promise<void> {
         return
       }
 
+      await fs.mkdir(dataPath, { recursive: true })
       const dataFile = Path.join(dataPath, `${impl.fileSize}.data`)
       await generateFile(dataFile, impl.fileSize)
     },
@@ -118,6 +119,8 @@ async function main (): Promise<void> {
       p99: `${result?.p99.toFixed(RESULT_PRECISION)}ms`
     }
   }))
+
+	await fs.rm(dataPath, { recursive: true })
 }
 
 main().catch(err => {

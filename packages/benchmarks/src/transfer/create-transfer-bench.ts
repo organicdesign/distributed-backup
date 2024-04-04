@@ -1,4 +1,3 @@
-import fs from 'fs/promises'
 import Path from 'path'
 import { Client } from '@organicdesign/db-client'
 import { packagePath } from '../utils/paths.js'
@@ -14,7 +13,7 @@ export const createTransferBench = async (size: number): Promise<TransferBenchma
 
   await Promise.all(procs.map(async p => p.start()))
 
-  const clients = names.map(n => new Client(Path.join(packagePath, `${n}.socket`)))
+  const clients = names.map(n => new Client(Path.join(dataPath, n, `socket`)))
 
   const addresses = await clients[0].addresses()
 
@@ -22,10 +21,7 @@ export const createTransferBench = async (size: number): Promise<TransferBenchma
 
   const group = await clients[0].createGroup('test')
 
-  await fs.mkdir(dataPath, { recursive: true })
-
   const dataFile = Path.join(dataPath, `${size}.data`)
-
   const [{ cid }] = await clients[0].import(group, dataFile)
   const [item] = await clients[0].getStatus([cid])
 
