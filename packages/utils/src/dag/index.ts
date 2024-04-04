@@ -70,10 +70,14 @@ export const getSize = async (blockstore: Blockstore, cid: CID): Promise<{ block
   let blocks = 0
 
   for await (const getBlock of walk(blockstore, cid)) {
-    const { block } = await getBlock()
+    const data = await getBlock()
 
     blocks++
-    size += block.length
+    size += data.block.length
+
+    // This is needed to signal to NodeJS to free up the memory imediately,
+    // otherwise the memory can hang around for a while and can be massive.
+    delete (data as { block?: Uint8Array }).block
   }
 
   return { size, blocks }
