@@ -20,7 +20,7 @@ export const getWalker = (cid: CID): DAGWalker => {
   return dagWalker
 }
 
-export const walk = async function * (blockstore: Blockstore, cid: CID, maxDepth?: number, options?: AbortOptions): AsyncGenerator<() => Promise<DagWalkResult>> {
+export const walk = async function * (blockstore: Blockstore, cid: CID, options: AbortOptions & { local?: boolean, maxDepth?: number } = {}): AsyncGenerator<() => Promise<DagWalkResult>> {
   const queue: Array<() => Promise<DagWalkResult>> = []
   const promises: Array<Promise<DagWalkResult>> = []
 
@@ -33,9 +33,17 @@ export const walk = async function * (blockstore: Blockstore, cid: CID, maxDepth
           throw new Error(`No dag walker found for cid codec ${cid.code}`)
         }
 
+        if (options.local === true) {
+          const has = await blockstore.has(cid, options)
+
+          if (!has) {
+            throw new Error(`missing block ${cid.toString()}`)
+          }
+        }
+
         const block = await blockstore.get(cid, options)
 
-        if (maxDepth == null || depth < maxDepth) {
+        if (options.maxDepth == null || depth < options.maxDepth) {
           for await (const cid of dagWalker.walk(block)) {
             enqueue(cid, depth + 1)
           }
