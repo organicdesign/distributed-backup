@@ -6,7 +6,7 @@ import prettyBytes from 'pretty-bytes'
 import { Bench } from 'tinybench'
 import generateFile from '../utils/generate-file.js'
 import { packagePath } from '../utils/paths.js'
-import { createTransferBench } from './create-transfer-bench.js'
+import { createTransferBench } from './transfer-bench.js'
 import type { TransferImplementation } from './interface.js'
 
 const log = debug('bench:transfer')
