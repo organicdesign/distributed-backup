@@ -29,10 +29,12 @@
   "private": true,
   "sideEffects": false,
   "dependencies": {
+    "@open-draft/deferred-promise": "^2.2.0",
     "@organicdesign/db-client": "^0.1.0",
     "debug": "^4.3.4",
     "pretty-bytes": "^6.1.1",
-    "tinybench": "^2.6.0"
+    "tinybench": "^2.6.0",
+    "uint8arrays": "^5.0.3"
   },
   "peerDependencies": {
     "@organicdesign/db-daemon": "^0.1.0"
