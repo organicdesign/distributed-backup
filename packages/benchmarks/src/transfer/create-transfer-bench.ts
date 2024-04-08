@@ -13,7 +13,7 @@ export const createTransferBench = async (size: number): Promise<TransferBenchma
 
   await Promise.all(procs.map(async p => p.start()))
 
-  const clients = names.map(n => new Client(Path.join(dataPath, n, `socket`)))
+  const clients = names.map(n => new Client(Path.join(dataPath, n, 'socket')))
 
   const addresses = await clients[0].addresses()
 
