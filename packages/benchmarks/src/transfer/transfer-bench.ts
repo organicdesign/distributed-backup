@@ -4,12 +4,12 @@ import { packagePath } from '../utils/paths.js'
 import runNode from '../utils/run-node.js'
 import type { TransferBenchmark } from './interface.js'
 
-export const createTransferBench = async (size: number): Promise<TransferBenchmark> => {
+export const createTransferBench = async (size: number, persistent: boolean): Promise<TransferBenchmark> => {
   const dataPath = Path.join(packagePath, 'test-out')
 
   const names = [...Array(2).keys()].map(i => `transfer-${size}-${i}`)
 
-  const procs = await Promise.all(names.map(async n => runNode(n)))
+  const procs = await Promise.all(names.map(async n => runNode(n, { persistent })))
 
   await Promise.all(procs.map(async p => p.start()))
 

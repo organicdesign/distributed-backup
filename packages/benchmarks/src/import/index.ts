@@ -4,16 +4,43 @@ import Path from 'path'
 import debug from 'debug'
 import prettyBytes from 'pretty-bytes'
 import { Bench } from 'tinybench'
+import { hideBin } from 'yargs/helpers'
+import yargs from 'yargs/yargs'
 import generateFile from '../utils/generate-file.js'
 import { packagePath } from '../utils/paths.js'
 import { createImportBench } from './import-bench.js'
 import type { ImportImplementation } from './interface.js'
 
-const log = debug('bench:transfer')
+const argv = await yargs(hideBin(process.argv))
+  .option({
+    iterations: {
+      alias: 'i',
+      type: 'number',
+      default: 3
+    }
+  })
+  .option({
+    minTime: {
+      type: 'number',
+      default: 1
+    }
+  })
+  .option({
+    precision: {
+      type: 'number',
+      default: 2
+    }
+  })
+  .option({
+    persistent: {
+      alias: 'p',
+      type: 'boolean',
+      default: false
+    }
+  })
+  .parse()
 
-const ITERATIONS = parseInt(process.env.ITERATIONS ?? '3')
-const MIN_TIME = parseInt(process.env.MIN_TIME ?? '1')
-const RESULT_PRECISION = 2
+const log = debug('bench:import')
 
 const sizes = [
   0, // 1b
@@ -26,7 +53,7 @@ const sizes = [
 
 const impls: ImportImplementation[] = sizes.map(size => ({
   name: `${prettyBytes(size)}`,
-  create: async () => createImportBench(size),
+  create: async () => createImportBench(size, argv.persistent),
   results: [],
   fileSize: size,
   size: 0,
@@ -37,8 +64,8 @@ const dataPath = Path.join(packagePath, 'test-out')
 
 async function main (): Promise<void> {
   const suite = new Bench({
-    iterations: ITERATIONS,
-    time: MIN_TIME,
+    iterations: argv.iterations,
+    time: argv.minTime,
 
     async setup (task) {
       const impl = impls.find(({ name }) => task.name.includes(name))
@@ -112,10 +139,10 @@ async function main (): Promise<void> {
       Size: prettyBytes(impl.size),
       Blocks: impl.blocks,
       'Speed (Size)': `${prettyBytes(speed)}/s`,
-      'Speed (Blocks)': `${bps.toFixed(RESULT_PRECISION)} blocks/s`,
-      'Run Time': `${result?.period.toFixed(RESULT_PRECISION)}ms`,
+      'Speed (Blocks)': `${bps.toFixed(argv.precision)} blocks/s`,
+      'Run Time': `${result?.period.toFixed(argv.precision)}ms`,
       Runs: result?.samples.length,
-      p99: `${result?.p99.toFixed(RESULT_PRECISION)}ms`
+      p99: `${result?.p99.toFixed(argv.precision)}ms`
     }
   }))
 
