@@ -6,8 +6,8 @@ import prettyBytes from 'pretty-bytes'
 import { Bench } from 'tinybench'
 import generateFile from '../utils/generate-file.js'
 import { packagePath } from '../utils/paths.js'
-import { createTransferBench } from './transfer-bench.js'
-import type { TransferImplementation } from './interface.js'
+import { createImportBench } from './import-bench.js'
+import type { ImportImplementation } from './interface.js'
 
 const log = debug('bench:transfer')
 
@@ -24,9 +24,9 @@ const sizes = [
   9 //  1gb
 ].map(z => 10 ** z)
 
-const impls: TransferImplementation[] = sizes.map(size => ({
+const impls: ImportImplementation[] = sizes.map(size => ({
   name: `${prettyBytes(size)}`,
-  create: async () => createTransferBench(size),
+  create: async () => createImportBench(size),
   results: [],
   fileSize: size,
   size: 0,
@@ -70,12 +70,11 @@ async function main (): Promise<void> {
       const subject = await impl.create()
       log('End: setup')
 
-      await subject.warmup()
       const start = performance.now()
-      await subject.run()
+      const { size, blocks } = await subject.run()
 
-      impl.size = subject.size
-      impl.blocks = subject.blocks
+      impl.size = size
+      impl.blocks = blocks
       impl.results.push(performance.now() - start)
 
       log('Start: teardown')
