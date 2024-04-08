@@ -1,5 +1,5 @@
 import { DeferredPromise } from '@open-draft/deferred-promise'
-import { getWalker } from '@organicdesign/db-utils/dag'
+import { walk, getWalker } from '@organicdesign/db-utils/dag'
 import { NamespaceDatastore } from 'datastore-core'
 import { Key, type Datastore } from 'interface-datastore'
 import all from 'it-all'
@@ -17,7 +17,6 @@ export interface Components {
 }
 
 export interface BlockInfo {
-  block: Uint8Array
   cid: CID
   links: CID[]
 }
@@ -36,7 +35,7 @@ class CIDEvent extends Event<EventTypes> {
 export class PinManager {
   readonly events = new EventTarget<[CIDEvent]>()
   private readonly helia: Helia
-  private readonly activeDownloads = new Map<string, Promise<{ block: Uint8Array, cid: CID, links: CID[] }>>()
+  private readonly activeDownloads = new Map<string, Promise<BlockInfo>>()
   private readonly pins: Pins
   private readonly blocks: Blocks
   private readonly downloads: Downloads
@@ -96,29 +95,19 @@ export class PinManager {
       throw new Error('pin find or create failed')
     }
 
-    const walk = async (subCid: CID, depth: number): Promise<void> => {
-      const dagWalker = getWalker(subCid)
+    for await (const getBlock of walk(this.helia.blockstore, cid, { local: true })) {
+      const data = await getBlock()
 
-      if (!await this.helia.blockstore.has(subCid)) {
-        throw new Error('pin does not exist locally')
-      }
+      await addBlockRef(this.helia, data.cid, cid)
 
-      await addBlockRef(this.helia, subCid, cid)
-
-      const block = await this.helia.blockstore.get(subCid)
-
-      await this.blocks.getOrPut(cid, subCid, {
-        size: block.length,
-        depth,
+      await this.blocks.getOrPut(cid, data.cid, {
+        size: data.block.length,
+        depth: data.depth,
         timestamp: Date.now()
       })
 
-      for await (const cid of dagWalker.walk(block)) {
-        await walk(cid, depth + 1)
-      }
+      delete (data as { block?: Uint8Array }).block
     }
-
-    await walk(cid, 0)
 
     await addPinRef(this.helia, cid)
 
@@ -285,7 +274,7 @@ export class PinManager {
 
     const enqueue = (cid: CID, depth: number): void => {
       queue.push(async () => {
-        const { links, block } = await this.download(cid)
+        const { links } = await this.download(cid)
 
         if (pinData.depth == null || depth < pinData.depth) {
           for (const cid of links) {
@@ -293,7 +282,7 @@ export class PinManager {
           }
         }
 
-        return { cid, block, links }
+        return { cid, links }
       })
     }
 
@@ -303,7 +292,7 @@ export class PinManager {
       enqueue(head.cid, head.depth)
     }
 
-    const promises: Array<Promise<{ cid: CID, block: Uint8Array }>> = []
+    const promises: Array<Promise<{ cid: CID }>> = []
 
     while (queue.length + promises.length !== 0) {
       const func = queue.shift()
@@ -314,7 +303,7 @@ export class PinManager {
         continue
       }
 
-      const promise = new DeferredPromise<{ cid: CID, block: Uint8Array }>()
+      const promise = new DeferredPromise<{ cid: CID }>()
 
       promises.push(promise)
 
@@ -393,7 +382,7 @@ export class PinManager {
 
       this.events.dispatchEvent(new CIDEvent('downloads:added', cid))
 
-      return { block, cid, links }
+      return { cid, links }
     })()
 
     this.activeDownloads.set(cid.toString(), promise)

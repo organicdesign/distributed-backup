@@ -20,7 +20,7 @@ export const getWalker = (cid: CID): DAGWalker => {
   return dagWalker
 }
 
-export const walk = async function * (blockstore: Blockstore, cid: CID, maxDepth?: number, options?: AbortOptions): AsyncGenerator<() => Promise<DagWalkResult>> {
+export const walk = async function * (blockstore: Blockstore, cid: CID, options: AbortOptions & { local?: boolean, maxDepth?: number } = {}): AsyncGenerator<() => Promise<DagWalkResult>> {
   const queue: Array<() => Promise<DagWalkResult>> = []
   const promises: Array<Promise<DagWalkResult>> = []
 
@@ -33,9 +33,17 @@ export const walk = async function * (blockstore: Blockstore, cid: CID, maxDepth
           throw new Error(`No dag walker found for cid codec ${cid.code}`)
         }
 
+        if (options.local === true) {
+          const has = await blockstore.has(cid, options)
+
+          if (!has) {
+            throw new Error(`missing block ${cid.toString()}`)
+          }
+        }
+
         const block = await blockstore.get(cid, options)
 
-        if (maxDepth == null || depth < maxDepth) {
+        if (options.maxDepth == null || depth < options.maxDepth) {
           for await (const cid of dagWalker.walk(block)) {
             enqueue(cid, depth + 1)
           }
@@ -70,10 +78,14 @@ export const getSize = async (blockstore: Blockstore, cid: CID): Promise<{ block
   let blocks = 0
 
   for await (const getBlock of walk(blockstore, cid)) {
-    const { block } = await getBlock()
+    const data = await getBlock()
 
     blocks++
-    size += block.length
+    size += data.block.length
+
+    // This is needed to signal to NodeJS to free up the memory imediately,
+    // otherwise the memory can hang around for a while and can be massive.
+    delete (data as { block?: Uint8Array }).block
   }
 
   return { size, blocks }

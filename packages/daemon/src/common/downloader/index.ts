@@ -59,7 +59,7 @@ export class Downloader implements Startable {
     }
   }
 
-  private async * batchDownload (itr: AsyncIterable<[CID, number]>): AsyncGenerator<() => Promise<{ cid: CID, block: Uint8Array }>, void, undefined> {
+  private async * batchDownload (itr: AsyncIterable<[CID, number]>): AsyncGenerator<() => Promise<{ cid: CID }>, void, undefined> {
     for await (const [cid, priority] of itr) {
       if (this.isAborted) {
         return

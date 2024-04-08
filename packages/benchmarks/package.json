@@ -1,8 +1,8 @@
 {
   "type": "module",
-  "name": "@organicdesign/db-test-utils",
+  "name": "@organicdesign/db-benchamrks",
   "version": "0.1.0",
-  "description": "Test data and helpers to assist with testing.",
+  "description": "Benchmarks for the distributed backup.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "files": [
@@ -12,10 +12,6 @@
     ".": {
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
-    },
-    "./data": {
-      "types": "./dist/src/data/index.d.ts",
-      "import": "./dist/src/data/index.js"
     }
   },
   "scripts": {
@@ -33,13 +29,15 @@
   "private": true,
   "sideEffects": false,
   "dependencies": {
-    "@helia/interface": "^4.1.0",
-    "@helia/unixfs": "^3.0.2",
-    "@ipld/dag-pb": "^4.1.0",
-    "blockstore-core": "^4.4.0",
-    "interface-blockstore": "^5.2.10",
-    "it-all": "^3.0.4",
-    "multiformats": "^13.1.0",
-    "uint8arrays": "^5.0.3"
+    "@open-draft/deferred-promise": "^2.2.0",
+    "@organicdesign/db-client": "^0.1.0",
+    "debug": "^4.3.4",
+    "pretty-bytes": "^6.1.1",
+    "tinybench": "^2.6.0",
+    "uint8arrays": "^5.0.3",
+    "yargs": "^17.7.2"
+  },
+  "peerDependencies": {
+    "@organicdesign/db-daemon": "^0.1.0"
   }
 }
