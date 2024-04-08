@@ -1,5 +1,4 @@
 import Path from 'path'
-import { unixfs } from '@helia/unixfs'
 import { CustomEvent } from '@libp2p/interface'
 import { type RevisionStrategies } from '@organicdesign/db-rpc-interfaces/zod'
 import all from 'it-all'
@@ -12,7 +11,7 @@ import type { Pair } from '@/interface.js'
 import type { Datastore } from 'interface-datastore'
 import { OperationManager } from '@/operation-manager.js'
 
-export default async (context: Pick<Context, 'getFileSystem'>, { events, pinManager, helia }: Components, datastore: Datastore): Promise<OperationManager<{
+export default async (context: Pick<Context, 'getFileSystem'>, { events, pinManager, unixfs }: Components, datastore: Datastore): Promise<OperationManager<{
   put(groupData: Uint8Array, path: string, encodedEntry: { cid: Uint8Array, encrypted: boolean, revisionStrategy: RevisionStrategies, priority: number }): Promise<void>
   delete(groupData: Uint8Array, path: string): Promise<Array<Pair<string, Entry>>>
 }>> => {
@@ -42,8 +41,7 @@ export default async (context: Pick<Context, 'getFileSystem'>, { events, pinMana
       }
 
       const parentPath = path.split('/').slice(0, -2).join('/')
-      const ufs = unixfs(helia)
-      const cid = await ufs.addBytes(new Uint8Array([]))
+      const cid = await unixfs.addBytes(new Uint8Array([]))
       const pairs = await all(fs.getDir(path))
 
       for await (const p of pairs) {

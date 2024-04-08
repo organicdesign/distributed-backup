@@ -1,4 +1,5 @@
 import assert from 'assert/strict'
+import all from 'it-all'
 import { handler } from '../src/commands/import.js'
 import { mockParams } from './utils.js'
 
@@ -20,9 +21,9 @@ describe('import', () => {
       priority: 1
     })
 
-    const response = await handler(params)
+    const response = await all(handler(params))
 
-    assert.equal(response, imports.map(i => `${i.path} ${i.cid}`).join('\n'))
+    assert.deepEqual(response, imports.map(i => `${i.path} ${i.cid}`))
   })
 
   it('json', async () => {
@@ -37,8 +38,8 @@ describe('import', () => {
       json: true
     })
 
-    const response = await handler(params)
+    const response = await all(handler(params))
 
-    assert.equal(response, JSON.stringify({ success: true, imports }))
+    assert.equal(response.join('\n'), JSON.stringify({ success: true, imports }))
   })
 })

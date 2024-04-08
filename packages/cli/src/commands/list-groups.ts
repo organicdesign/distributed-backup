@@ -6,7 +6,7 @@ export const desc = 'List joined groups.'
 
 export const builder = createBuilder({})
 
-export const handler = createHandler<typeof builder>(async argv => {
+export const handler = createHandler<typeof builder>(async function * (argv) {
   if (argv.client == null) {
     throw new Error('Failed to connect to daemon.')
   }
@@ -14,7 +14,8 @@ export const handler = createHandler<typeof builder>(async argv => {
   const groups = await argv.client.listGroups()
 
   if (argv.json === true) {
-    return JSON.stringify(groups)
+    yield JSON.stringify(groups)
+    return
   }
 
   const peers = await argv.client.countPeers(groups.map(g => g.group))
@@ -27,18 +28,14 @@ export const handler = createHandler<typeof builder>(async argv => {
 
   const getItemCount = (group: string): number => items.find(i => i.group === group)?.items?.length ?? 0
 
-  let out = `${'Name'.padEnd(34)}${'Items'.padEnd(10)}${'Peers'.padEnd(10)}${'CID'.padEnd(62)}\n`
+  yield `${'Name'.padEnd(34)}${'Items'.padEnd(10)}${'Peers'.padEnd(10)}${'CID'.padEnd(62)}`
 
-  out += groups.map(({ group, name }) => {
-    let str = ''
-
-    str += name.slice(0, 32).padEnd(34)
-    str += `${getItemCount(group)}`.slice(0, 8).padEnd(10)
-    str += `${getPeerCount(group)}`.padEnd(10)
-    str += group.padEnd(62)
-
-    return str
-  }).join('\n')
-
-  return out
+  for (const { group, name } of groups) {
+    yield [
+      name.slice(0, 32).padEnd(34),
+      `${getItemCount(group)}`.slice(0, 8).padEnd(10),
+      `${getPeerCount(group)}`.padEnd(10),
+      group.padEnd(62)
+    ].join('')
+  }
 })

@@ -1,5 +1,6 @@
 import Path from 'path'
 import { bitswap } from '@helia/block-brokers'
+import { unixfs as createUnixfs } from '@helia/unixfs'
 import HeliaPinManager from '@organicdesign/db-helia-pin-manager'
 import { createKeyManager, type KeyManager } from '@organicdesign/db-key-manager'
 import { ManualBlockBroker } from '@organicdesign/db-manual-block-broker'
@@ -12,6 +13,7 @@ import { FsDatastore } from 'datastore-fs'
 import { createHelia } from 'helia'
 import { createWelo, pubsubReplicator, bootstrapReplicator } from 'welo'
 import { type z } from 'zod'
+import bootstrapGroups from './bootstrap-groups.js'
 import { createDownloader } from './downloader/index.js'
 import { EntryTracker } from './entry-tracker.js'
 import { createGroups } from './groups.js'
@@ -25,15 +27,15 @@ import { createTick } from './tick.js'
 import type { KeyvalueDB } from '@/interface.js'
 import { createLogger } from '@/logger.js'
 
-interface Setup {
+export interface Settings {
   socket: string
   config: Record<string, unknown>
   key?: string
   keyManager: KeyManager
 }
 
-export default async (settings: Partial<Setup> = {}): Promise<Components> => {
-  const setup: Pick<Setup, 'socket' | 'config'> = {
+export default async (settings: Partial<Settings> = {}): Promise<Components> => {
+  const setup: Pick<Settings, 'socket' | 'config'> = {
     socket: settings.socket ?? '/tmp/server.socket',
     config: settings.config ?? {}
   }
@@ -72,6 +74,8 @@ export default async (settings: Partial<Setup> = {}): Promise<Components> => {
     blockBrokers: [bitswap(), () => manualBlockBroker]
   })
 
+  const unixfs = createUnixfs(helia)
+
   const welo = await createWelo({
     // @ts-expect-error Helia version mismatch here.
     ipfs: helia,
@@ -83,6 +87,8 @@ export default async (settings: Partial<Setup> = {}): Promise<Components> => {
     datastore: extendDatastore(datastore, 'groups'),
     welo
   })
+
+  const bootstrappingGroups = await bootstrapGroups({ welo, groups, parseConfig, logger })
 
   const sneakernet = new Sneakernet({
     welo,
@@ -110,6 +116,8 @@ export default async (settings: Partial<Setup> = {}): Promise<Components> => {
 
   const stop = async (): Promise<void> => {
     logger.info('cleaning up...')
+
+    bootstrappingGroups.stop()
 
     const closeDatastore = async (): Promise<void> => {
       if (datastore instanceof FsDatastore) {
@@ -158,7 +166,8 @@ export default async (settings: Partial<Setup> = {}): Promise<Components> => {
     welo,
     heliaPinManager,
     events,
-    keyManager
+    keyManager,
+    unixfs
   }
 
   handleCommands(components)

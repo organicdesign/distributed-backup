@@ -1,4 +1,3 @@
-import { unixfs } from '@helia/unixfs'
 import { CustomEvent } from '@libp2p/interface'
 import { Write } from '@organicdesign/db-rpc-interfaces'
 import all from 'it-all'
@@ -9,7 +8,7 @@ import type { Context } from '../index.js'
 import type { Entry } from '../interface.js'
 import type { ModuleMethod } from '@/interface.js'
 
-const command: ModuleMethod<Context> = ({ net, helia, events }, context) => {
+const command: ModuleMethod<Context> = ({ net, unixfs, events }, context) => {
   net.rpc.addMethod(Write.name, async (raw: unknown): Promise<Write.Return> => {
     const params = Write.Params.parse(raw)
     const group = CID.parse(params.group)
@@ -20,9 +19,8 @@ const command: ModuleMethod<Context> = ({ net, helia, events }, context) => {
     }
 
     const entry: Partial<Entry> = await fs.get(params.path) ?? {}
-    const ufs = unixfs(helia)
 
-    const existingData = (entry.cid != null) ? uint8ArrayConcat(await all(ufs.cat(entry.cid))) : new Uint8Array()
+    const existingData = (entry.cid != null) ? uint8ArrayConcat(await all(unixfs.cat(entry.cid))) : new Uint8Array()
 
     const dataToWrite = uint8ArrayConcat([
       existingData.slice(0, params.position),
@@ -30,7 +28,7 @@ const command: ModuleMethod<Context> = ({ net, helia, events }, context) => {
       existingData.slice(params.position + params.length)
     ])
 
-    const cid = await ufs.addBytes(dataToWrite)
+    const cid = await unixfs.addBytes(dataToWrite)
 
     const newEntryParams = {
       cid,

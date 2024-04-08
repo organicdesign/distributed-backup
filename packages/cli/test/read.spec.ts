@@ -1,4 +1,5 @@
 import assert from 'assert/strict'
+import all from 'it-all'
 import { handler } from '../src/commands/read.js'
 import { mockParams } from './utils.js'
 
@@ -15,9 +16,9 @@ describe('read', () => {
       sequence: undefined
     })
 
-    const response = await handler(params)
+    const response = await all(handler(params))
 
-    assert.equal(response, read)
+    assert.equal(response.join('\n'), read)
   })
 
   it('json', async () => {
@@ -31,9 +32,9 @@ describe('read', () => {
       json: true
     })
 
-    const response = await handler(params)
+    const response = await all(handler(params))
 
-    assert.equal(response, JSON.stringify({ data: read }))
+    assert.equal(response.join('\n'), JSON.stringify({ data: read }))
   })
 })
 
@@ -48,9 +49,9 @@ describe('read (Revisions)', () => {
       sequence: 0
     })
 
-    const response = await handler(params)
+    const response = await all(handler(params))
 
-    assert.equal(response, read)
+    assert.equal(response.join('\n'), read)
   })
 
   it('json', async () => {
@@ -64,8 +65,8 @@ describe('read (Revisions)', () => {
       json: true
     })
 
-    const response = await handler(params)
+    const response = await all(handler(params))
 
-    assert.equal(response, JSON.stringify({ data: read }))
+    assert.equal(response.join('\n'), JSON.stringify({ data: read }))
   })
 })

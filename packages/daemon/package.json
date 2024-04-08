@@ -80,7 +80,7 @@
     "streaming-iterables": "^8.0.1",
     "ts-event-target": "^0.1.5",
     "uint8arrays": "^5.0.2",
-    "welo": "^4.1.1",
+    "welo": "^4.2.0",
     "yargs": "^17.7.2",
     "zod": "^3.22.4"
   }

@@ -17,7 +17,7 @@ export const builder = createBuilder({
   }
 })
 
-export const handler = createHandler<typeof builder>(async argv => {
+export const handler = createHandler<typeof builder>(async function * (argv) {
   if (argv.client == null) {
     throw new Error('Failed to connect to daemon.')
   }
@@ -25,8 +25,9 @@ export const handler = createHandler<typeof builder>(async argv => {
   const group = await argv.client.createGroup(argv.name, z.array(z.string()).parse(argv.peers))
 
   if (argv.json === true) {
-    return JSON.stringify({ group })
+    yield JSON.stringify({ group })
+    return
   }
 
-  return group
+  yield group
 })

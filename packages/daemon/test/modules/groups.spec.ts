@@ -23,9 +23,9 @@ describe('groups', () => {
     await fs.rm(testPath, { recursive: true })
   })
 
-  const create = async (): Promise<{ components: Components, socket: string }> => {
+  const create = async (config: Record<string, unknown> = {}): Promise<{ components: Components, socket: string }> => {
     const socket = Path.join(testPath, `${Math.random()}.socket`)
-    const components = await setup({ socket })
+    const components = await setup({ socket, config })
 
     return { components, socket }
   }
@@ -35,6 +35,44 @@ describe('groups', () => {
     const group = await createGroup(components, 'test')
 
     assert(group)
+
+    await components.stop()
+  })
+
+  it('bootstraps a group from config', async () => {
+    const { components: components1 } = await create()
+
+    const group = await createGroup(components1, 'test')
+
+    const { components: components2 } = await create({
+      groups: [group.toString()],
+      bootstrap: components1.libp2p.getMultiaddrs().map(a => a.toString())
+    })
+
+    // Wait until it actually downloads the group block.
+    await components2.helia.blockstore.get(group)
+
+    // Give it a second to be added to the groups
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    const foundGroup = components2.groups.get(group)
+
+    assert(foundGroup != null)
+
+    await Promise.all([
+      components1.stop(),
+      components2.stop()
+    ])
+  })
+
+  it('bootstrapping a group from config does not hang startup', async () => {
+    const { components } = await new Promise<{ components: Components }>((resolve, reject) => {
+      setTimeout(() => { reject(new Error('timeout')) }, 5000)
+
+      create({
+        groups: ['QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN']
+      }).then(resolve).catch(reject)
+    })
 
     await components.stop()
   })
