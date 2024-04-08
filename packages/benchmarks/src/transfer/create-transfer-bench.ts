@@ -22,7 +22,7 @@ export const createTransferBench = async (size: number): Promise<TransferBenchma
   const group = await clients[0].createGroup('test')
 
   const dataFile = Path.join(dataPath, `${size}.data`)
-  const [{ cid }] = await clients[0].import(group, dataFile)
+  const [{ cid }] = await clients[0].import(group, dataFile, { path: '/test' })
   const [item] = await clients[0].getStatus([cid])
 
   return {
