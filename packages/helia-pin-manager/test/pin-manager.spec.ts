@@ -383,9 +383,9 @@ describe('pin manager', () => {
     })
   })
 
-  describe('downloadSync', () => {
+  describe('downloadHeads', () => {
     it("throws an error if the pin doesn't exist", async () => {
-      await assert.rejects(pm.downloadSync(dag[0]))
+      await assert.rejects(pm.downloadHeads(dag[0]))
     })
 
     it('returns an empty array if it is in the COMPLETED state', async () => {
@@ -395,7 +395,7 @@ describe('pin manager', () => {
         depth: DAG_DEPTH
       }])
 
-      const downloaders = await pm.downloadSync(dag[0])
+      const downloaders = await pm.downloadHeads(dag[0])
 
       assert.equal(downloaders.length, 0)
     })
@@ -414,7 +414,7 @@ describe('pin manager', () => {
         depth: 1
       })))
 
-      const downloaders = await pm.downloadSync(dag[0])
+      const downloaders = await pm.downloadHeads(dag[0])
 
       assert.equal(downloaders.length, dag.length)
 
@@ -426,9 +426,9 @@ describe('pin manager', () => {
     })
   })
 
-  describe('downloadPin', () => {
+  describe('download', () => {
     it("throws an error if the pin doesn't exist", async () => {
-      await assert.rejects(all(pm.downloadPin(dag[0])))
+      await assert.rejects(all(pm.download(dag[0])))
     })
 
     it('returns an empty array if it is in the COMPLETED state', async () => {
@@ -438,7 +438,7 @@ describe('pin manager', () => {
         depth: DAG_DEPTH
       }])
 
-      const downloaders = await all(pm.downloadPin(dag[0]))
+      const downloaders = await all(pm.download(dag[0]))
 
       assert.equal(downloaders.length, 0)
     })
@@ -456,7 +456,7 @@ describe('pin manager', () => {
         depth: 1
       }])
 
-      const itr = pm.downloadPin(dag[0])
+      const itr = pm.download(dag[0])
       const downloader = await itr.next()
 
       assert(downloader.done == null || !downloader.done)

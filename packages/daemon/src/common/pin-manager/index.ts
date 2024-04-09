@@ -66,7 +66,7 @@ export class PinManager {
   }
 
   async download (pin: CID, options?: { limit: number }): Promise<Array<() => Promise<BlockInfo>>> {
-    return this.pinManager.downloadSync(pin, options)
+    return this.pinManager.downloadHeads(pin, options)
   }
 
   async getStatus (cid: CID): Promise<'COMPLETED' | 'DOWNLOADING' | 'DESTROYED' | 'UPLOADING' | 'NOTFOUND'> {

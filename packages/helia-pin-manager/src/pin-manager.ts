@@ -1,4 +1,3 @@
-import { DeferredPromise } from '@open-draft/deferred-promise'
 import { walk, getWalker } from '@organicdesign/db-utils/dag'
 import { NamespaceDatastore } from 'datastore-core'
 import { Key, type Datastore } from 'interface-datastore'
@@ -214,9 +213,9 @@ export class PinManager {
   }
 
   /**
-   * Similar to `downloadPin` but only returns pins that are availible now.
+   * Similar to `download` but only returns downloads that are availible now.
    */
-  async downloadSync (pin: CID, options?: Partial<{ limit: number }>): Promise<Array<() => Promise<BlockInfo>>> {
+  async downloadHeads (pin: CID, options?: Partial<{ limit: number }>): Promise<Array<() => Promise<BlockInfo>>> {
     const pinData = await this.pins.get(pin)
 
     if (pinData == null) {
@@ -233,7 +232,7 @@ export class PinManager {
     return heads
       .filter(head => !this.activeDownloads.has(head.cid.toString()))
       .map(head => async () => {
-        const downloadResult = await this.download(head.cid)
+        const downloadResult = await this.downloadSingle(head.cid)
         const heads = await this.getHeads(pin, { limit: 1 })
 
         if (heads.length === 0) {
@@ -256,7 +255,7 @@ export class PinManager {
   }
 
   // Download an entire pin.
-  async * downloadPin (pin: CID): AsyncGenerator<() => Promise<BlockInfo>> {
+  async * download (pin: CID): AsyncGenerator<() => Promise<BlockInfo>, void, undefined> {
     const pinData = await this.pins.get(pin)
 
     if (pinData == null) {
@@ -267,63 +266,19 @@ export class PinManager {
       return
     }
 
-    const queue: Array<() => Promise<BlockInfo>> = []
+    for (;;) {
+      const downloaders = await this.downloadHeads(pin)
 
-    const enqueue = (cid: CID, depth: number): void => {
-      queue.push(async () => {
-        const { links } = await this.download(cid)
-
-        if (pinData.depth == null || depth < pinData.depth) {
-          for (const cid of links) {
-            enqueue(cid, depth + 1)
-          }
-        }
-
-        return { cid, links }
-      })
-    }
-
-    const heads = await this.getHeads(pin)
-
-    for (const head of heads) {
-      enqueue(head.cid, head.depth)
-    }
-
-    const promises: Array<Promise<{ cid: CID }>> = []
-
-    while (queue.length + promises.length !== 0) {
-      const func = queue.shift()
-
-      if (func == null) {
-        await promises.shift()
-
-        continue
+      if (downloaders.length === 0) {
+        break
       }
 
-      const promise = new DeferredPromise<{ cid: CID }>()
-
-      promises.push(promise)
-
-      yield async () => {
-        const value = await func()
-        promise.resolve(value)
-
-        return value
-      }
+      yield * downloaders
     }
-
-    await addPinRef(this.helia, pin)
-
-    await this.pins.put(pin, {
-      ...pinData,
-      status: 'COMPLETED'
-    })
-
-    this.events.dispatchEvent(new CIDEvent('pins:added', pin))
   }
 
   // Download an individial block.
-  private async download (cid: CID): Promise<BlockInfo> {
+  private async downloadSingle (cid: CID): Promise<BlockInfo> {
     // Check if we are already downloading this.
     const activePromise = this.activeDownloads.get(cid.toString())
 
