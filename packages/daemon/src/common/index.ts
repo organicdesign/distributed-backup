@@ -26,6 +26,17 @@ import { Sneakernet } from './sneakernet/index.js'
 import { createTick } from './tick.js'
 import type { KeyvalueDB } from '@/interface.js'
 import { createLogger } from '@/logger.js'
+import { sha256 } from 'multiformats/hashes/sha2'
+import { fileURLToPath } from 'url'
+import { Piscina } from 'piscina'
+
+const piscina = new Piscina({
+  filename: Path.join(Path.dirname(fileURLToPath(import.meta.url)), './sha256-worker.js'),
+	concurrentTasksPerWorker: 1,
+	minThreads: 4,
+	maxThreads: 16,
+	idleTimeout: 30000
+});
 
 export interface Settings {
   socket: string
@@ -71,6 +82,14 @@ export default async (settings: Partial<Settings> = {}): Promise<Components> => 
     datastore: extendDatastore(datastore, 'helia/datastore'),
     libp2p,
     blockstore,
+		hashers: [
+			{
+				...sha256,
+				async digest (input) {
+					return await piscina.run(input, { name: 'sha256' })
+				}
+			}
+		],
     blockBrokers: [bitswap(), () => manualBlockBroker]
   })
 

@@ -77,6 +77,7 @@
     "libp2p": "^1.2.3",
     "multiformats": "^13.1.0",
     "p-queue": "^8.0.1",
+    "piscina": "^4.4.0",
     "streaming-iterables": "^8.0.1",
     "ts-event-target": "^0.1.5",
     "uint8arrays": "^5.0.2",
