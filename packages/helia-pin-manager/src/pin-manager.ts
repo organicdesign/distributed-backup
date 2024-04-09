@@ -286,54 +286,7 @@ export class PinManager {
       return activePromise
     }
 
-    const promise = (async () => {
-      // Download the block and fetch the downloads referencing it.
-      const [downloads, block] = await Promise.all([
-        all(this.downloads.allByCid(cid)),
-        this.helia.blockstore.get(cid, { signal: AbortSignal.timeout(10000) })
-      ])
-
-      await addBlockRefs(this.helia, cid, downloads.map(d => d.pinnedBy))
-
-      // Save the blocks to the database.
-      await Promise.all(downloads.map(async d => this.blocks.getOrPut(d.pinnedBy, cid, {
-        depth: d.depth,
-        size: block.length,
-        timestamp: Date.now()
-      })))
-
-      // Add the next blocks to download.
-      const dagWalker = getWalker(cid)
-      const promises: Array<Promise<unknown>> = []
-      const links: CID[] = []
-
-      for await (const cid of dagWalker.walk(block)) {
-        for (const d of downloads) {
-          promises.push((async () => {
-            const pin = await this.pins.get(d.pinnedBy)
-
-            if (pin?.depth != null && pin.depth <= d.depth) {
-              return
-            }
-
-            links.push(cid)
-
-            await this.downloads.getOrPut(d.pinnedBy, cid, {
-              depth: d.depth + 1
-            })
-          })())
-        }
-      }
-
-      await Promise.all(promises)
-
-      // Delete the download references
-      await Promise.all(downloads.map(async d => this.downloads.delete(d.pinnedBy, d.cid)))
-
-      this.events.dispatchEvent(new CIDEvent('downloads:added', cid))
-
-      return { cid, links }
-    })()
+    const promise = this.downloadSingleWithoutCache(cid)
 
     this.activeDownloads.set(cid.toString(), promise)
 
@@ -347,5 +300,51 @@ export class PinManager {
       this.activeDownloads.delete(cid.toString())
       throw error
     }
+  }
+
+  private async downloadSingleWithoutCache (cid: CID): Promise<BlockInfo> {
+    // Download the block and fetch the downloads referencing it.
+    const [downloads, block] = await Promise.all([
+      all(this.downloads.allByCid(cid)),
+      this.helia.blockstore.get(cid, { signal: AbortSignal.timeout(10000) })
+    ])
+
+    await addBlockRefs(this.helia, cid, downloads.map(d => d.pinnedBy))
+
+    // Save the blocks to the database.
+    await Promise.all(downloads.map(async d => this.blocks.getOrPut(d.pinnedBy, cid, {
+      depth: d.depth,
+      size: block.length,
+      timestamp: Date.now()
+    })))
+
+    // Add the next blocks to downloads.
+    const dagWalker = getWalker(cid)
+    const links: CID[] = [...dagWalker.walk(block)]
+
+    await this.addToDownloads(links, downloads)
+
+    // Delete the download references
+    await Promise.all(downloads.map(async d => this.downloads.delete(d.pinnedBy, d.cid)))
+
+    this.events.dispatchEvent(new CIDEvent('downloads:added', cid))
+
+    return { cid, links }
+  }
+
+  private async addToDownloads (cids: CID[], downloads: Array<{ depth: number, pinnedBy: CID }>): Promise<void> {
+    const promises: Array<Promise<unknown>> = []
+
+    await Promise.all(cids.map(cid => downloads.map(async d => {
+      const pin = await this.pins.get(d.pinnedBy)
+
+      if (pin?.depth != null && pin.depth <= d.depth) {
+        return
+      }
+
+      await this.downloads.getOrPut(d.pinnedBy, cid, { depth: d.depth + 1 })
+    })).reduce((a, c) => [...a, ...c], []))
+
+    await Promise.all(promises)
   }
 }
