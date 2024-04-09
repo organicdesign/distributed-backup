@@ -1,7 +1,8 @@
 export default {
   build: {
     config: {
-      platform: 'node'
+      platform: 'node',
+      format: 'esm'
     }
   }
 }

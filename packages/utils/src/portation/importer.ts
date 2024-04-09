@@ -5,6 +5,7 @@ import { unixfs, globSource, type AddOptions } from '@helia/unixfs'
 import all from 'it-all'
 import type { Blockstore } from 'interface-blockstore'
 import type { ImportResult } from 'ipfs-unixfs-importer'
+import { defaultBufferImporter } from './buffer-importer.js'
 
 export const importer = async function * (blockstore: Blockstore, path: string, options: AddOptions = {}): AsyncIterable<ImportResult & { path: string }> {
   const ufs = unixfs({ blockstore })
@@ -25,7 +26,12 @@ export const importer = async function * (blockstore: Blockstore, path: string, 
       continue
     }
 
-    const [result] = await all(ufs.addAll([src], options))
+    const [result] = await all(ufs.addAll([src], {...options, bufferImporter: defaultBufferImporter({
+      cidVersion: 1,
+      rawLeaves: true,
+      leafType: 'raw',
+      onProgress: options.onProgress
+    })}))
 
     yield { ...result, path: rPath }
   }
