@@ -1,7 +1,7 @@
 import assert from 'assert/strict'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
-import { addPinRef, addBlockRef } from '../src/utils.js'
+import { addPinRef, addBlockRefs } from '../src/utils.js'
 import createHelia from './utils/helia.js'
 import type { Helia } from 'helia'
 
@@ -32,7 +32,7 @@ describe('addPinRef', () => {
 
 describe('addBlockRef', () => {
   it('it shows as pinned in helia', async () => {
-    await addBlockRef(helia, cid, cid)
+    await addBlockRefs(helia, cid, cid)
 
     const isPinned = await helia.pins.isPinned(cid)
 

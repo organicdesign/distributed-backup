@@ -36,15 +36,12 @@ export const addPinRef = async ({ datastore }: { datastore: Datastore }, cid: CI
   await datastore.put(pinKey, cborg.encode(pin))
 }
 
-export const addBlockRef = async ({ datastore }: { datastore: Datastore }, cid: CID, by: CID): Promise<void> => {
+export const addBlockRefs = async ({ datastore }: { datastore: Datastore }, cid: CID, by: CID | CID[]): Promise<void> => {
   if (cid.version === 0) {
     cid = cid.toV1()
   }
 
-  if (by.version === 0) {
-    by = by.toV1()
-  }
-
+  const pinnedBy = (Array.isArray(by) ? by : [by]).map(c => c.toV1().bytes)
   const blockKey = new Key(`/pinned-block/${base36.encode(cid.multihash.bytes)}`)
 
   let pinnedBlock: DatastorePinnedBlock = { pinCount: 0, pinnedBy: [] }
@@ -57,12 +54,12 @@ export const addBlockRef = async ({ datastore }: { datastore: Datastore }, cid: 
     }
   }
 
-  if (pinnedBlock.pinnedBy.find(c => uint8ArrayEquals(c, by.bytes)) != null) {
-    return
-  }
+  const newReferences = pinnedBy.filter(by => {
+    return pinnedBlock.pinnedBy.find(c => uint8ArrayEquals(c, by)) == null
+  })
 
-  pinnedBlock.pinCount++
-  pinnedBlock.pinnedBy.push(by.bytes)
+  pinnedBlock.pinCount += newReferences.length
+  pinnedBlock.pinnedBy = [...pinnedBlock.pinnedBy, ...newReferences]
 
   await datastore.put(blockKey, cborg.encode(pinnedBlock))
 }

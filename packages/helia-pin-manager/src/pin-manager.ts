@@ -6,7 +6,7 @@ import { Event, EventTarget } from 'ts-event-target'
 import Blocks from './blocks.js'
 import Downloads, { type Download } from './downloads.js'
 import Pins, { type Pin } from './pins.js'
-import { addBlockRef, addPinRef } from './utils.js'
+import { addBlockRefs, addPinRef } from './utils.js'
 import type { Helia } from '@helia/interface'
 import type { CID } from 'multiformats/cid'
 
@@ -97,7 +97,7 @@ export class PinManager {
     for await (const getBlock of walk(this.helia.blockstore, cid, { local: true })) {
       const data = await getBlock()
 
-      await addBlockRef(this.helia, data.cid, cid)
+      await addBlockRefs(this.helia, data.cid, cid)
 
       await this.blocks.getOrPut(cid, data.cid, {
         size: data.block.length,
@@ -293,9 +293,7 @@ export class PinManager {
         this.helia.blockstore.get(cid, { signal: AbortSignal.timeout(10000) })
       ])
 
-      for (const d of downloads) {
-        await addBlockRef(this.helia, cid, d.pinnedBy)
-      }
+      await addBlockRefs(this.helia, cid, downloads.map(d => d.pinnedBy))
 
       // Save the blocks to the database.
       await Promise.all(downloads.map(async d => this.blocks.getOrPut(d.pinnedBy, cid, {
