@@ -69,8 +69,8 @@ export class PinManager {
     return this.pinManager.downloadSync(pin, options)
   }
 
-  async getState (cid: CID): Promise<'COMPLETED' | 'DOWNLOADING' | 'DESTROYED' | 'UPLOADING' | 'NOTFOUND'> {
-    return this.pinManager.getState(cid)
+  async getStatus (cid: CID): Promise<'COMPLETED' | 'DOWNLOADING' | 'DESTROYED' | 'UPLOADING' | 'NOTFOUND'> {
+    return this.pinManager.getStatus(cid)
   }
 
   async getSpeed (cid: CID, range?: number): Promise<number> {

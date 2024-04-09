@@ -23,7 +23,7 @@ describe('list', () => {
   ]
 
   it('text', async () => {
-    const params = mockParams({ list: items, countPeers: [{ cid, peers: 1 }], getStatus: [{ cid, state: 'COMPLETED', size: 50, blocks: 5 }], getSpeeds: [{ cid, speed: 1000 }] }, { group: 'group-abc' })
+    const params = mockParams({ list: items, countPeers: [{ cid, peers: 1 }], getState: [{ cid, status: 'COMPLETED', size: 50, blocks: 5 }], getSpeeds: [{ cid, speed: 1000 }] }, { group: 'group-abc' })
 
     const response = await all(handler(params))
 
@@ -76,7 +76,7 @@ describe('list', () => {
     const params = mockParams({
       list: items,
       countPeers: [{ cid, peers: 1 }],
-      getStatus: [{ cid, state: 'COMPLETED', size: 50, blocks: 5 }],
+      getState: [{ cid, status: 'COMPLETED', size: 50, blocks: 5 }],
       getSpeeds: [{ cid, speed: 1000 }]
     }, {
       group: 'group-abc',

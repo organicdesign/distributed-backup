@@ -23,7 +23,7 @@ export const createTransferBench = async (size: number, persistent: boolean): Pr
 
   const dataFile = Path.join(dataPath, `${size}.data`)
   const [{ cid }] = await clients[0].import(group, dataFile, { path: '/test' })
-  const [item] = await clients[0].getStatus([cid])
+  const [item] = await clients[0].getState([cid])
 
   return {
     blocks: item.blocks,
@@ -44,9 +44,9 @@ export const createTransferBench = async (size: number, persistent: boolean): Pr
 
     async run () {
       for (;;) {
-        const [{ state }] = await clients[1].getStatus([cid])
+        const [{ status }] = await clients[1].getState([cid])
 
-        if (state === 'COMPLETED') {
+        if (status === 'COMPLETED') {
           break
         }
 

@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { zCID } from '../zod.js'
 
-export const name = 'get-status'
+export const name = 'get-state'
 
 export const Params = z.object({
   cids: z.array(zCID())
@@ -12,7 +12,7 @@ export type Params = z.input<typeof Params>
 
 export const Return = z.array(z.object({
   cid: zCID(),
-  state: z.enum(['COMPLETED', 'DOWNLOADING', 'NOTFOUND', 'UPLOADING', 'DESTROYED']),
+  status: z.enum(['COMPLETED', 'DOWNLOADING', 'NOTFOUND', 'UPLOADING', 'DESTROYED']),
   blocks: z.number().int().min(0),
   size: z.number().int().min(0)
 }))

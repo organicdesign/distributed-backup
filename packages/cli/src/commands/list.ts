@@ -82,10 +82,10 @@ export const handler = createHandler<typeof builder>(async function * (argv) {
     return
   }
 
-  const statuses = await argv.client.getStatus(items.map(i => i.cid))
+  const states = await argv.client.getState(items.map(i => i.cid))
 
-  const getStatus = ({ cid }: { cid: string }): (typeof statuses)[number] =>
-    statuses.find(s => s.cid === cid) ?? { state: 'NOTFOUND', blocks: 0, size: 0, cid }
+  const getState = ({ cid }: { cid: string }): (typeof states)[number] =>
+    states.find(s => s.cid === cid) ?? { status: 'NOTFOUND', blocks: 0, size: 0, cid }
 
   const peers = await argv.client.countPeers(items.map(i => i.cid))
 
@@ -93,9 +93,9 @@ export const handler = createHandler<typeof builder>(async function * (argv) {
     peers.find(p => p.cid === cid)?.peers ?? 0
 
   const completed = {
-    blocks: items.map(getStatus).reduce((a, b) => a + b.blocks, 0),
-    size: items.map(getStatus).reduce((a, b) => a + b.size, 0),
-    count: items.map(getStatus).filter(i => i.state === 'COMPLETED').length
+    blocks: items.map(getState).reduce((a, b) => a + b.blocks, 0),
+    size: items.map(getState).reduce((a, b) => a + b.size, 0),
+    count: items.map(getState).filter(i => i.status === 'COMPLETED').length
   }
 
   const speeds = await argv.client.getSpeeds(items.map(i => i.cid), 5000)
@@ -129,14 +129,14 @@ export const handler = createHandler<typeof builder>(async function * (argv) {
     for (const [key, subtree] of Object.entries(tree)) {
       try {
         const [item] = List.Return.parse([subtree])
-        const timeRemaining = Math.ceil((item.size - getStatus(item).size) / (getSpeed(item) * 1000))
+        const timeRemaining = Math.ceil((item.size - getState(item).size) / (getSpeed(item) * 1000))
 
         yield [
           `${'  '.repeat(depth)}${key}`.slice(0, 18).padEnd(20),
-          `${formatSize(getStatus(item).size)}/${formatSize(item.size)} (${formatPercent(getStatus(item).size / item.size)})`.slice(0, 25).padEnd(27),
+          `${formatSize(getState(item).size)}/${formatSize(item.size)} (${formatPercent(getState(item).size / item.size)})`.slice(0, 25).padEnd(27),
           `${formatSize(getSpeed(item) * 1000)}/s ${isNaN(timeRemaining) ? '' : `(${timeRemaining} s)`}`.slice(0, 25).padEnd(27),
-          `${getStatus(item).blocks}/${item.blocks} (${formatPercent(getStatus(item).blocks / item.blocks)})`.slice(0, 18).padEnd(20),
-          getStatus(item).state.slice(0, 13).padEnd(15),
+          `${getState(item).blocks}/${item.blocks} (${formatPercent(getState(item).blocks / item.blocks)})`.slice(0, 18).padEnd(20),
+          getState(item).status.slice(0, 13).padEnd(15),
           `${item.priority}`.slice(0, 8).padEnd(10),
           `${revisionCounter[item.path] ?? 0}`.slice(0, 8).padEnd(10),
           `${getPeers(item)}`.slice(0, 8).padEnd(10),

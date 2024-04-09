@@ -55,7 +55,7 @@ export class PinManager {
     const pin = await this.pins.get(cid)
 
     if (pin != null) {
-      await this.pins.put(cid, { state: 'DESTROYED', depth: pin.depth })
+      await this.pins.put(cid, { status: 'DESTROYED', depth: pin.depth })
     }
 
     try {
@@ -87,7 +87,7 @@ export class PinManager {
     this.events.dispatchEvent(new CIDEvent('pins:adding', cid))
 
     const pin = await this.pins.getOrPut(cid, {
-      state: 'UPLOADING',
+      status: 'UPLOADING',
       depth: Number.MAX_SAFE_INTEGER
     })
 
@@ -113,7 +113,7 @@ export class PinManager {
 
     await this.pins.put(cid, {
       ...pin,
-      state: 'COMPLETED'
+      status: 'COMPLETED'
     })
 
     this.events.dispatchEvent(new CIDEvent('pins:added', cid))
@@ -129,7 +129,7 @@ export class PinManager {
 
     const depth = Number.MAX_SAFE_INTEGER
 
-    await this.pins.put(cid, { depth, state: 'DOWNLOADING' })
+    await this.pins.put(cid, { depth, status: 'DOWNLOADING' })
     await this.downloads.getOrPut(cid, cid, { depth: 0 })
 
     this.events.dispatchEvent(new CIDEvent('pins:adding', cid))
@@ -138,10 +138,10 @@ export class PinManager {
   /**
    * Get the current state of the pin.
    */
-  async getState (cid: CID): Promise<Pin['state'] | 'NOTFOUND'> {
+  async getStatus (cid: CID): Promise<Pin['status'] | 'NOTFOUND'> {
     const pin = await this.pins.get(cid)
 
-    return pin == null ? 'NOTFOUND' : pin.state
+    return pin == null ? 'NOTFOUND' : pin.status
   }
 
   /**
@@ -174,7 +174,7 @@ export class PinManager {
     const cids: CID[] = []
 
     for await (const pin of this.pins.all()) {
-      if (pin.state === 'DOWNLOADING') {
+      if (pin.status === 'DOWNLOADING') {
         cids.push(pin.cid)
       }
     }
@@ -226,7 +226,7 @@ export class PinManager {
       throw new Error('no such pin')
     }
 
-    if (pinData.state === 'COMPLETED') {
+    if (pinData.status === 'COMPLETED') {
       return []
     }
 
@@ -242,12 +242,12 @@ export class PinManager {
         if (heads.length === 0) {
           await addPinRef(this.helia, pin)
 
-          const isCompleted = pinData.state === 'COMPLETED'
+          const isCompleted = pinData.status === 'COMPLETED'
 
           if (!isCompleted) {
             await this.pins.put(pin, {
               ...pinData,
-              state: 'COMPLETED'
+              status: 'COMPLETED'
             })
 
             this.events.dispatchEvent(new CIDEvent('pins:added', pin))
@@ -266,7 +266,7 @@ export class PinManager {
       throw new Error('no such pin')
     }
 
-    if (pinData.state === 'COMPLETED') {
+    if (pinData.status === 'COMPLETED') {
       return
     }
 
@@ -319,7 +319,7 @@ export class PinManager {
 
     await this.pins.put(pin, {
       ...pinData,
-      state: 'COMPLETED'
+      status: 'COMPLETED'
     })
 
     this.events.dispatchEvent(new CIDEvent('pins:added', pin))

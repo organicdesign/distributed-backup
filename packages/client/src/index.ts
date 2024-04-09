@@ -10,7 +10,7 @@ import {
   Export,
   GetSchedule,
   GetSpeeds,
-  GetStatus,
+  GetState,
   ID,
   Import,
   JoinGroup,
@@ -122,11 +122,11 @@ export class Client {
     return GetSpeeds.Return.parse(raw)
   }
 
-  async getStatus (cids: GetStatus.Params['cids']): Promise<GetStatus.Return> {
-    const params: GetStatus.Params = { cids }
-    const raw = await this.client.rpc.request(GetStatus.name, params)
+  async getState (cids: GetState.Params['cids']): Promise<GetState.Return> {
+    const params: GetState.Params = { cids }
+    const raw = await this.client.rpc.request(GetState.name, params)
 
-    return GetStatus.Return.parse(raw)
+    return GetState.Return.parse(raw)
   }
 
   async id (): Promise<ID.Return> {

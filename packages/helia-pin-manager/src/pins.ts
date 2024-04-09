@@ -6,7 +6,7 @@ import type { Datastore } from 'interface-datastore'
 
 export const Pin = z.object({
   depth: z.number().int().min(0),
-  state: z.enum(['COMPLETED', 'DOWNLOADING', 'DESTROYED', 'UPLOADING'])
+  status: z.enum(['COMPLETED', 'DOWNLOADING', 'DESTROYED', 'UPLOADING'])
 })
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare

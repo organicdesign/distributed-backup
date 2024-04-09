@@ -118,7 +118,7 @@ describe('downloader', () => {
     const client = createNetClient(socket)
     const key = Path.join('/', group, path)
 
-    const status1 = await client.rpc.request('get-status', {
+    const status1 = await client.rpc.request('get-state', {
       cids: [dag[0].toString()]
     })
 
@@ -126,12 +126,12 @@ describe('downloader', () => {
       cid: dag[0].toString(),
       blocks: 0,
       size: 0,
-      state: 'NOTFOUND'
+      status: 'NOTFOUND'
     }])
 
     await components.pinManager.put(key, { priority: 1, cid: dag[0] })
 
-    const status2 = await client.rpc.request('get-status', {
+    const status2 = await client.rpc.request('get-state', {
       cids: [dag[0].toString()]
     })
 
@@ -139,7 +139,7 @@ describe('downloader', () => {
       cid: dag[0].toString(),
       blocks: 0,
       size: 0,
-      state: 'DOWNLOADING'
+      status: 'DOWNLOADING'
     }])
 
     const value = await blockstore.get(dag[0])
@@ -147,7 +147,7 @@ describe('downloader', () => {
     await components.helia.blockstore.put(dag[0], value)
     await new Promise(resolve => setTimeout(resolve, 100))
 
-    const status3 = await client.rpc.request('get-status', {
+    const status3 = await client.rpc.request('get-state', {
       cids: [dag[0].toString()]
     })
 
@@ -155,7 +155,7 @@ describe('downloader', () => {
       cid: dag[0].toString(),
       blocks: 1,
       size: value.length,
-      state: 'DOWNLOADING'
+      status: 'DOWNLOADING'
     }])
 
     const values = await Promise.all(dag.map(async cid => {
@@ -168,7 +168,7 @@ describe('downloader', () => {
 
     await new Promise(resolve => setTimeout(resolve, 500))
 
-    const status4 = await client.rpc.request('get-status', {
+    const status4 = await client.rpc.request('get-state', {
       cids: [dag[0].toString()]
     })
 
@@ -176,7 +176,7 @@ describe('downloader', () => {
       cid: dag[0].toString(),
       blocks: dag.length,
       size: values.reduce((a, c) => a + c, 0),
-      state: 'COMPLETED'
+      status: 'COMPLETED'
     }])
 
     client.close()

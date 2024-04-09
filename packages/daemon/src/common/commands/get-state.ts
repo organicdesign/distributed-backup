@@ -1,23 +1,23 @@
-import { GetStatus } from '@organicdesign/db-rpc-interfaces'
+import { GetState } from '@organicdesign/db-rpc-interfaces'
 import { CID } from 'multiformats/cid'
 import type { ModuleMethod } from '@/interface.js'
 
 const command: ModuleMethod = ({ pinManager, net }) => {
-  net.rpc.addMethod(GetStatus.name, async (raw: unknown): Promise<GetStatus.Return> => {
-    const params = GetStatus.Params.parse(raw)
+  net.rpc.addMethod(GetState.name, async (raw: unknown): Promise<GetState.Return> => {
+    const params = GetState.Params.parse(raw)
 
     return Promise.all(params.cids.map(async str => {
       const cid = CID.parse(str)
 
-      const [state, blocks, size] = await Promise.all([
-        pinManager.getState(cid),
+      const [status, blocks, size] = await Promise.all([
+        pinManager.getStatus(cid),
         pinManager.getBlockCount(cid),
         pinManager.getSize(cid)
       ])
 
       return {
         cid: str,
-        state,
+        status,
         blocks,
         size
       }

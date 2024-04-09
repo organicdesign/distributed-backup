@@ -28,7 +28,7 @@ export const createImportBench = async (size: number, persistent: boolean): Prom
 
     async run () {
       const [{ cid }] = await client.import(group, dataFile, { path: '/test' })
-      const [item] = await client.getStatus([cid])
+      const [item] = await client.getState([cid])
 
       return item
     }
