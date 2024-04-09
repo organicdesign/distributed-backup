@@ -353,7 +353,7 @@ describe('pin manager', () => {
     })
   })
 
-  describe('getSize', () => {
+  describe('getState', () => {
     it('returns the sum of the size of all the blocks under a pin', async () => {
       const sizePerBlock = 10
 
@@ -364,13 +364,11 @@ describe('pin manager', () => {
         depth: 1
       })))
 
-      const size = await pm.getSize(dag[0])
+      const { size } = await pm.getState(dag[0])
 
       assert.equal(size, dag.length * sizePerBlock)
     })
-  })
 
-  describe('getBlockCount', () => {
     it('returns the number of blocks under a pin', async () => {
       await createBlocks(dag.map(c => ({
         cid: c,
@@ -379,9 +377,9 @@ describe('pin manager', () => {
         depth: 1
       })))
 
-      const size = await pm.getBlockCount(dag[0])
+      const { blocks } = await pm.getState(dag[0])
 
-      assert.equal(size, dag.length)
+      assert.equal(blocks, dag.length)
     })
   })
 

@@ -204,16 +204,13 @@ export class PinManager {
   /**
    * Get the size on disk for a given pin.
    */
-  async getSize (pin: CID): Promise<number> {
+  async getState (pin: CID): Promise<{ size: number, blocks: number }> {
     const blocks = await all(this.blocks.all(pin))
 
-    return blocks.reduce((c, b) => b.size + c, 0)
-  }
-
-  async getBlockCount (pin: CID): Promise<number> {
-    const { length } = await all(this.blocks.all(pin))
-
-    return length
+    return {
+      size: blocks.reduce((c, b) => b.size + c, 0),
+      blocks: blocks.length
+    }
   }
 
   /**

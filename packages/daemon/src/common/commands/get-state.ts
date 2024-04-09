@@ -9,10 +9,9 @@ const command: ModuleMethod = ({ pinManager, net }) => {
     return Promise.all(params.cids.map(async str => {
       const cid = CID.parse(str)
 
-      const [status, blocks, size] = await Promise.all([
+      const [status, { blocks, size }] = await Promise.all([
         pinManager.getStatus(cid),
-        pinManager.getBlockCount(cid),
-        pinManager.getSize(cid)
+        pinManager.getState(cid)
       ])
 
       return {

@@ -77,12 +77,8 @@ export class PinManager {
     return this.pinManager.getSpeed(cid, range)
   }
 
-  async getSize (cid: CID): Promise<number> {
-    return this.pinManager.getSize(cid)
-  }
-
-  async getBlockCount (cid: CID): Promise<number> {
-    return this.pinManager.getBlockCount(cid)
+  async getState (cid: CID): Promise<{ size: number, blocks: number }> {
+    return this.pinManager.getState(cid)
   }
 
   async remove (key: string): Promise<void> {
