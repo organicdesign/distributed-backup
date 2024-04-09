@@ -1,4 +1,2 @@
-import { PinManager } from './pin-manager.js'
-export type { BlockInfo, EventTypes } from './pin-manager.js'
-
-export default PinManager
+export type { Pin, Components, BlockInfo } from './interface.js'
+export { PinManager } from './pin-manager.js'

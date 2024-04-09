@@ -1,15 +1,8 @@
 import * as cborg from 'cborg'
 import { Key } from 'interface-datastore'
 import { CID } from 'multiformats/cid'
-import { z } from 'zod'
+import { Download } from './interface.js'
 import type { Datastore } from 'interface-datastore'
-
-export const Download = z.object({
-  depth: z.number().int().min(0)
-})
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export type Download = z.infer<typeof Download>
 
 export default class {
   private readonly datastore: Datastore

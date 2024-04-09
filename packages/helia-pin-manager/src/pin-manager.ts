@@ -1,26 +1,15 @@
 import { walk, getWalker } from '@organicdesign/db-utils/dag'
 import { NamespaceDatastore } from 'datastore-core'
-import { Key, type Datastore } from 'interface-datastore'
+import { Key } from 'interface-datastore'
 import all from 'it-all'
 import { Event, EventTarget } from 'ts-event-target'
 import Blocks from './blocks.js'
-import Downloads, { type Download } from './downloads.js'
-import Pins, { type Pin } from './pins.js'
+import Downloads from './downloads.js'
+import Pins from './pins.js'
 import { addBlockRefs, addPinRef } from './utils.js'
+import type { Pin, Download, EventTypes, BlockInfo, Components } from './interface.js'
 import type { Helia } from '@helia/interface'
 import type { CID } from 'multiformats/cid'
-
-export interface Components {
-  helia: Helia
-  datastore: Datastore
-}
-
-export interface BlockInfo {
-  cid: CID
-  links: CID[]
-}
-
-export type EventTypes = 'pins:removed' | 'pins:added' | 'pins:adding' | 'downloads:added' | 'downloads:removed' | 'blocks:added' | 'blocks:removed'
 
 class CIDEvent extends Event<EventTypes> {
   cid: CID

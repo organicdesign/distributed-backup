@@ -1,16 +1,8 @@
 import * as cborg from 'cborg'
 import { Key } from 'interface-datastore'
 import { CID } from 'multiformats/cid'
-import { z } from 'zod'
+import { Pin } from './interface.js'
 import type { Datastore } from 'interface-datastore'
-
-export const Pin = z.object({
-  depth: z.number().int().min(0),
-  status: z.enum(['COMPLETED', 'DOWNLOADING', 'DESTROYED', 'UPLOADING'])
-})
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export type Pin = z.infer<typeof Pin>
 
 export default class {
   private readonly datastore: Datastore

@@ -1,18 +1,9 @@
 import * as cborg from 'cborg'
 import { type Datastore, Key } from 'interface-datastore'
 import { base36 } from 'multiformats/bases/base36'
-import { type CID } from 'multiformats/cid'
 import { equals as uint8ArrayEquals } from 'uint8arrays'
-
-interface DatastorePin {
-  depth: number
-  metadata: Record<string, string | number | boolean>
-}
-
-interface DatastorePinnedBlock {
-  pinCount: number
-  pinnedBy: Uint8Array[]
-}
+import type { DatastorePin, DatastorePinnedBlock } from './interface.js'
+import type { CID } from 'multiformats/cid'
 
 export const addPinRef = async ({ datastore }: { datastore: Datastore }, cid: CID, options?: { depth?: number }): Promise<void> => {
   if (cid.version === 0) {

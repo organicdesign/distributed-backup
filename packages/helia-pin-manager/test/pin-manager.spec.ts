@@ -6,8 +6,9 @@ import { MemoryDatastore, NamespaceDatastore } from 'datastore-core'
 import { Key, type Datastore } from 'interface-datastore'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
-import { PinManager, type Components } from '../src/pin-manager.js'
+import { PinManager } from '../src/pin-manager.js'
 import createHelia from './utils/helia.js'
+import type { Components } from '../src/interface.js'
 
 const DAG_WIDTH = 2
 const DAG_DEPTH = 3

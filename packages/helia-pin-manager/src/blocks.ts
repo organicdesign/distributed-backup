@@ -1,17 +1,8 @@
 import * as cborg from 'cborg'
 import { Key } from 'interface-datastore'
 import { CID } from 'multiformats/cid'
-import { z } from 'zod'
+import { Block } from './interface.js'
 import type { Datastore } from 'interface-datastore'
-
-export const Block = z.object({
-  size: z.number().int().min(0),
-  depth: z.number().int().min(0),
-  timestamp: z.number().int().min(0)
-})
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export type Block = z.infer<typeof Block>
 
 export default class {
   private readonly datastore: Datastore

@@ -1,7 +1,7 @@
 import Path from 'path'
 import { bitswap } from '@helia/block-brokers'
 import { unixfs as createUnixfs } from '@helia/unixfs'
-import HeliaPinManager from '@organicdesign/db-helia-pin-manager'
+import { PinManager as HeliaPinManager } from '@organicdesign/db-helia-pin-manager'
 import { createKeyManager, type KeyManager } from '@organicdesign/db-key-manager'
 import { ManualBlockBroker } from '@organicdesign/db-manual-block-broker'
 import { extendDatastore } from '@organicdesign/db-utils'
