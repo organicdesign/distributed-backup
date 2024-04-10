@@ -25,11 +25,18 @@ export interface DatastorePinnedBlock {
   pinnedBy: Uint8Array[]
 }
 
+export interface PinState {
+  size: number
+  blocks: number
+}
+
 export const Block = z.object({
   size: z.number().int().min(0),
   depth: z.number().int().min(0),
   timestamp: z.number().int().min(0)
 })
+
+export interface BlockRef { cid: CID, pinnedBy: CID }
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type Block = z.infer<typeof Block>

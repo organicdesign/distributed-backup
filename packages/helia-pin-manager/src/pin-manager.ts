@@ -7,7 +7,7 @@ import Blocks from './blocks.js'
 import Downloads from './downloads.js'
 import Pins from './pins.js'
 import { addBlockRefs, addPinRef } from './utils.js'
-import type { Pin, Download, EventTypes, BlockInfo, Components } from './interface.js'
+import type { Pin, Download, EventTypes, BlockInfo, Components, BlockRef, PinState } from './interface.js'
 import type { Helia } from '@helia/interface'
 import type { CID } from 'multiformats/cid'
 
@@ -173,8 +173,8 @@ export class PinManager {
   /**
    * Get all the download heads for a given pin.
    */
-  async getHeads (pin: CID, options?: Partial<{ limit: number }>): Promise<Array<Download & { cid: CID, pinnedBy: CID }>> {
-    const downloads: Array<Download & { cid: CID, pinnedBy: CID }> = []
+  async getHeads (pin: CID, options?: Partial<{ limit: number }>): Promise<Array<Download & BlockRef>> {
+    const downloads: Array<Download & BlockRef> = []
     let count = 0
 
     for await (const download of this.downloads.all(pin)) {
@@ -192,7 +192,7 @@ export class PinManager {
   /**
    * Get the size on disk for a given pin.
    */
-  async getState (pin: CID): Promise<{ size: number, blocks: number }> {
+  async getState (pin: CID): Promise<PinState> {
     const blocks = await all(this.blocks.all(pin))
 
     return {
@@ -321,7 +321,7 @@ export class PinManager {
     return { cid, links }
   }
 
-  private async addToDownloads (cids: CID[], downloads: Array<{ depth: number, pinnedBy: CID }>): Promise<void> {
+  private async addToDownloads (cids: CID[], downloads: Array<Download & BlockRef>): Promise<void> {
     const promises: Array<Promise<unknown>> = []
 
     await Promise.all(cids.map(cid => downloads.map(async d => {

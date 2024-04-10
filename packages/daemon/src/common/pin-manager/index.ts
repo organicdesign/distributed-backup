@@ -4,7 +4,7 @@ import { Event, EventTarget } from 'ts-event-target'
 import { encodePinInfo, decodePinInfo } from './utils.js'
 import type { PinInfo } from './interface.js'
 import type { Pair } from '@/interface.js'
-import type { BlockInfo, PinManager as HeliaPinManager } from '@organicdesign/db-helia-pin-manager'
+import type { BlockInfo, PinManager as HeliaPinManager, PinState } from '@organicdesign/db-helia-pin-manager'
 import type { CID } from 'multiformats/cid'
 
 type EventTypes = 'reference:removed'
@@ -76,7 +76,7 @@ export class PinManager {
     return this.pinManager.getSpeed(cid, range)
   }
 
-  async getState (cid: CID): Promise<{ size: number, blocks: number }> {
+  async getState (cid: CID): Promise<PinState> {
     return this.pinManager.getState(cid)
   }
 

@@ -1,7 +1,7 @@
 import * as cborg from 'cborg'
 import { Key } from 'interface-datastore'
 import { CID } from 'multiformats/cid'
-import { Download } from './interface.js'
+import { Download, type BlockRef } from './interface.js'
 import type { Datastore } from 'interface-datastore'
 
 export default class {
@@ -47,7 +47,7 @@ export default class {
     return download
   }
 
-  async * all (pinnedBy: CID): AsyncGenerator<Download & { cid: CID, pinnedBy: CID }> {
+  async * all (pinnedBy: CID): AsyncGenerator<Download & BlockRef> {
     const prefix = `/${pinnedBy.toString()}`
 
     for await (const { key, value } of this.datastore.query({ prefix })) {
@@ -64,7 +64,7 @@ export default class {
     }
   }
 
-  async * allByCid (cid: CID): AsyncGenerator<Download & { cid: CID, pinnedBy: CID }> {
+  async * allByCid (cid: CID): AsyncGenerator<Download & BlockRef> {
     for await (const { key, value } of this.datastore.query({})) {
       const parts = key.toString().split('/')
       const thisCid = CID.parse(parts[2])
