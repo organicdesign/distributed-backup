@@ -89,13 +89,17 @@ export class RPCServer {
         map((i: Uint8Array) => cborg.decode(i) as JSONRPCRequest)
       )
 
-      for await (const data of itr) {
-        const response = await this.rpc.receive(data)
+      const promises: Array<PromiseLike<void>> = []
 
-        if (response != null) {
-          stream.push(response)
-        }
+      for await (const data of itr) {
+        promises.push(this.rpc.receive(data).then(response => {
+          if (response != null) {
+            stream.push(response)
+          }
+        }))
       }
+
+      await Promise.all(promises)
     })().catch(error => {
       // Ignore errors because we will close immediately after.
       const code = (error as Record<string, string> | null)?.code
