@@ -1,12 +1,11 @@
 import * as net from 'net'
-// import * as cborg from 'cborg'
+import * as cborg from 'cborg'
 import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
 import { type Pushable, pushable } from 'it-pushable'
 import { JSONRPCServer, type JSONRPCResponse, type JSONRPCRequest } from 'json-rpc-2.0'
 import { map, writeToStream } from 'streaming-iterables'
 import { Event, EventTarget } from 'ts-event-target'
-import { toString as uint8ArrayToString, fromString as uint8ArrayFromString } from 'uint8arrays'
 import type { Socket } from 'net'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -70,8 +69,7 @@ export class RPCServer {
     // Send responses to the client
     pipe(
       stream,
-      // map(i => cborg.encode(i)),
-      map(i => uint8ArrayFromString(JSON.stringify(i))),
+      map(i => cborg.encode(i)),
       lp.encode,
       writeToStream(socket)
     ).catch(error => {
@@ -88,8 +86,7 @@ export class RPCServer {
         socket as AsyncIterable<Uint8Array>,
         i => lp.decode(i),
         map((value: Uint8Array | Uint8ArrayList) => value.subarray()),
-        map((i: Uint8Array) => JSON.parse(uint8ArrayToString(i)) as JSONRPCRequest)
-        // map map((i: Uint8Array) => cborg.decode(i) as JSONRPCRequest)
+        map((i: Uint8Array) => cborg.decode(i) as JSONRPCRequest)
       )
 
       for await (const data of itr) {
