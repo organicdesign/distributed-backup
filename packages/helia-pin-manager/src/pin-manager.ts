@@ -138,7 +138,7 @@ export class PinManager {
    */
   async getSpeed (cid: CID, options: { range?: number } & AbortOptions = {}): Promise<number> {
     const pin = await this.pins.get(cid, options)
-		const range = options.range ?? 5000
+    const range = options.range ?? 5000
 
     if (pin == null || range <= 0) {
       return 0
