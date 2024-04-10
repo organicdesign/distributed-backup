@@ -205,7 +205,7 @@ export class PinManager {
   /**
    * Similar to `download` but only returns downloads that are availible now.
    */
-  async downloadHeads (pin: CID, options: { limit?: number } & AbortOptions = {}): Promise<Array<() => Promise<BlockInfo>>> {
+  async downloadHeads (pin: CID, options: { limit?: number } & AbortOptions = {}): Promise<Array<(options?: AbortOptions) => Promise<BlockInfo>>> {
     const pinData = await this.pins.get(pin, options)
 
     if (pinData == null) {
@@ -221,7 +221,7 @@ export class PinManager {
     // Filter the heads that are already downloading.
     return heads
       .filter(head => !this.activeDownloads.has(head.cid.toString()))
-      .map(head => async () => {
+      .map(head => async (options) => {
         const downloadResult = await this.downloadSingle(head.cid, options)
         const heads = await this.getHeads(pin, { limit: 1 })
 
@@ -245,7 +245,7 @@ export class PinManager {
   }
 
   // Download an entire pin.
-  async * download (pin: CID, options: AbortOptions = {}): AsyncGenerator<() => Promise<BlockInfo>, void, undefined> {
+  async * download (pin: CID, options: AbortOptions = {}): AsyncGenerator<(options?: AbortOptions) => Promise<BlockInfo>, void, undefined> {
     const pinData = await this.pins.get(pin, options)
 
     if (pinData == null) {
