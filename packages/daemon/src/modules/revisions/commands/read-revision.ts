@@ -7,8 +7,8 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { Context } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 
-const command: ModuleMethod<Context> = ({ net, unixfs }, context) => {
-  net.rpc.addMethod(ReadRevision.name, async (raw: unknown): Promise<ReadRevision.Return> => {
+const command: ModuleMethod<Context> = ({ rpcServer, unixfs }, context) => {
+  rpcServer.rpc.addMethod(ReadRevision.name, async (raw: unknown): Promise<ReadRevision.Return> => {
     const params = ReadRevision.Params.parse(raw)
     const group = CID.parse(params.group)
     const revisions = context.getRevisions(group)

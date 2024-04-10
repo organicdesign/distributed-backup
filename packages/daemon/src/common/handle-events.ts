@@ -1,7 +1,7 @@
 import type { Components } from './interface.js'
 import type { Loggers } from '@/logger.js'
 
-export default ({ downloader, heliaPinManager, tick, pinManager, groups }: Components, logger: Loggers): void => {
+export default ({ downloader, heliaPinManager, tick, pinManager, groups, rpcServer }: Components, logger: Loggers): void => {
   groups.events.addEventListener('groups:joined', ({ cid }) => {
     logger.info(`[groups] [join] ${cid.toString()}`)
   })
@@ -32,5 +32,9 @@ export default ({ downloader, heliaPinManager, tick, pinManager, groups }: Compo
 
   downloader.events.addEventListener('download:error', ({ error }) => {
     logger.error('downloader: ', error)
+  })
+
+  rpcServer.events.addEventListener('error', (error) => {
+    logger.error('rpc: ', error)
   })
 }

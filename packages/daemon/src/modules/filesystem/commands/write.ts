@@ -8,8 +8,8 @@ import type { Context } from '../index.js'
 import type { Entry } from '../interface.js'
 import type { ModuleMethod } from '@/interface.js'
 
-const command: ModuleMethod<Context> = ({ net, unixfs, events }, context) => {
-  net.rpc.addMethod(Write.name, async (raw: unknown): Promise<Write.Return> => {
+const command: ModuleMethod<Context> = ({ rpcServer, unixfs, events }, context) => {
+  rpcServer.rpc.addMethod(Write.name, async (raw: unknown): Promise<Write.Return> => {
     const params = Write.Params.parse(raw)
     const group = CID.parse(params.group)
     const fs = context.getFileSystem(CID.parse(params.group))

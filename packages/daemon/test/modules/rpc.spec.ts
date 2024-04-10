@@ -28,7 +28,7 @@ describe('rpc', () => {
     const methodPromise = new Promise((resolve, reject) => {
       setTimeout(() => { reject(new Error()) }, 50)
 
-      components.net.rpc.addMethod('test', async params => {
+      components.rpcServer.rpc.addMethod('test', async params => {
         resolve(params)
         return returnData
       })

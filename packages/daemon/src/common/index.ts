@@ -5,7 +5,6 @@ import { PinManager as HeliaPinManager } from '@organicdesign/db-helia-pin-manag
 import { createKeyManager, type KeyManager } from '@organicdesign/db-key-manager'
 import { ManualBlockBroker } from '@organicdesign/db-manual-block-broker'
 import { extendDatastore } from '@organicdesign/db-utils'
-import { createNetServer } from '@organicdesign/net-rpc'
 import { MemoryBlockstore } from 'blockstore-core'
 import { FsBlockstore } from 'blockstore-fs'
 import { MemoryDatastore } from 'datastore-core'
@@ -22,6 +21,7 @@ import handleEvents from './handle-events.js'
 import { Config, MEMORY_MAGIC, type Components } from './interface.js'
 import createLibp2p from './libp2p.js'
 import { PinManager } from './pin-manager/index.js'
+import { createRPCServer } from './rpc.js'
 import { Sneakernet } from './sneakernet/index.js'
 import { createTick } from './tick.js'
 import type { KeyvalueDB } from '@/interface.js'
@@ -43,7 +43,7 @@ export default async (settings: Partial<Settings> = {}): Promise<Components> => 
   const logger = createLogger('common')
   const parseConfig = <T extends z.AnyZodObject>(shape: T): z.infer<T> => shape.parse(setup.config)
   const keyManager = settings.keyManager ?? await createKeyManager(settings.key)
-  const net = await createNetServer(setup.socket)
+  const rpcServer = await createRPCServer(setup.socket)
   const config = parseConfig(Config)
   const events = new EventTarget()
 
@@ -132,7 +132,7 @@ export default async (settings: Partial<Settings> = {}): Promise<Components> => 
     }
 
     await Promise.all([
-      net.close(),
+      rpcServer.stop(),
       tick.stop(),
       downloader.stop(),
       groups.stop(),
@@ -150,13 +150,13 @@ export default async (settings: Partial<Settings> = {}): Promise<Components> => 
   }
 
   const components: Components = {
+    rpcServer,
     sneakernet,
     getTracker,
     helia,
     libp2p,
     blockstore,
     datastore,
-    net,
     tick,
     downloader,
     parseConfig,

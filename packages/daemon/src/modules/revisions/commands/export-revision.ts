@@ -6,8 +6,8 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import type { Context } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 
-const command: ModuleMethod<Context> = ({ net, blockstore }, context) => {
-  net.rpc.addMethod(ExportRevision.name, async (raw: unknown): Promise<ExportRevision.Return> => {
+const command: ModuleMethod<Context> = ({ rpcServer, blockstore }, context) => {
+  rpcServer.rpc.addMethod(ExportRevision.name, async (raw: unknown): Promise<ExportRevision.Return> => {
     const params = ExportRevision.Params.parse(raw)
     const group = CID.parse(params.group)
     const revisions = context.getRevisions(group)

@@ -2,8 +2,8 @@ import { CountPeers } from '@organicdesign/db-rpc-interfaces'
 import { CID } from 'multiformats/cid'
 import type { ModuleMethod } from '@/interface.js'
 
-const command: ModuleMethod = ({ net, libp2p }) => {
-  net.rpc.addMethod(CountPeers.name, async (raw: unknown): Promise<CountPeers.Return> => {
+const command: ModuleMethod = ({ rpcServer, libp2p }) => {
+  rpcServer.rpc.addMethod(CountPeers.name, async (raw: unknown): Promise<CountPeers.Return> => {
     const countPeers = async (cid: CID, options?: { timeout: number }): Promise<number> => {
       let count = 0
 

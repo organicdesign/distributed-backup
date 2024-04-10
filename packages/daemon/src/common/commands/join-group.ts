@@ -2,8 +2,8 @@ import { JoinGroup } from '@organicdesign/db-rpc-interfaces'
 import { Address } from 'welo'
 import type { ModuleMethod } from '@/interface.js'
 
-const command: ModuleMethod = ({ net, welo, groups }) => {
-  net.rpc.addMethod(JoinGroup.name, async (raw: unknown): Promise<JoinGroup.Return> => {
+const command: ModuleMethod = ({ rpcServer, welo, groups }) => {
+  rpcServer.rpc.addMethod(JoinGroup.name, async (raw: unknown): Promise<JoinGroup.Return> => {
     const params = JoinGroup.Params.parse(raw)
     const manifest = await welo.fetch(Address.fromString(`/hldb/${params.group}`))
 

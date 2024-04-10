@@ -2,8 +2,8 @@ import { CreateGroup } from '@organicdesign/db-rpc-interfaces'
 import { fromString as uint8ArrayFromString } from 'uint8arrays'
 import type { ModuleMethod } from '@/interface.js'
 
-const command: ModuleMethod = ({ net, welo, groups }) => {
-  net.rpc.addMethod(CreateGroup.name, async (raw: unknown): Promise<CreateGroup.Return> => {
+const command: ModuleMethod = ({ rpcServer, welo, groups }) => {
+  rpcServer.rpc.addMethod(CreateGroup.name, async (raw: unknown): Promise<CreateGroup.Return> => {
     const params = CreateGroup.Params.parse(raw)
     const peerValues = params.peers.map(p => uint8ArrayFromString(p, 'base58btc'))
 

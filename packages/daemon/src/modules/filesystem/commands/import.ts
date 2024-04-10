@@ -6,8 +6,8 @@ import { CID } from 'multiformats/cid'
 import { type Context, logger } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 
-const command: ModuleMethod<Context> = ({ net, blockstore, heliaPinManager }, context) => {
-  net.rpc.addMethod(Import.name, async (raw: unknown): Promise<Import.Return> => {
+const command: ModuleMethod<Context> = ({ rpcServer, blockstore, heliaPinManager }, context) => {
+  rpcServer.rpc.addMethod(Import.name, async (raw: unknown): Promise<Import.Return> => {
     const params = Import.Params.parse(raw)
     const encrypt = Boolean(params.encrypt)
 

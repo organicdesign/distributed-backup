@@ -3,8 +3,8 @@ import { CID } from 'multiformats/cid'
 import { type Context, logger } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 
-const command: ModuleMethod<Context> = ({ net }, context) => {
-  net.rpc.addMethod(Edit.name, async (raw: unknown): Promise<Edit.Return> => {
+const command: ModuleMethod<Context> = ({ rpcServer }, context) => {
+  rpcServer.rpc.addMethod(Edit.name, async (raw: unknown): Promise<Edit.Return> => {
     const params = Edit.Params.parse(raw)
 
     if (params.revisionStrategy !== null) {

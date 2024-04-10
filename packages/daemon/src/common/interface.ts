@@ -4,6 +4,7 @@ import type { Downloader } from './downloader/index.js'
 import type { EntryTracker } from './entry-tracker.js'
 import type { Groups } from './groups.js'
 import type { PinManager } from './pin-manager/index.js'
+import type { RPCServer } from './rpc.js'
 import type { Sneakernet } from './sneakernet/index.js'
 import type { Tick } from './tick.js'
 import type { KeyvalueDB } from '@/interface.js'
@@ -12,7 +13,6 @@ import type { UnixFS } from '@helia/unixfs'
 import type { Libp2p } from '@libp2p/interface'
 import type { PinManager as HeliaPinManager } from '@organicdesign/db-helia-pin-manager'
 import type { KeyManager } from '@organicdesign/db-key-manager'
-import type { NetServer } from '@organicdesign/net-rpc'
 import type { Blockstore } from 'interface-blockstore'
 import type { Datastore } from 'interface-datastore'
 import type { Welo } from 'welo'
@@ -43,7 +43,7 @@ export interface Components {
   datastore: Datastore
   blockstore: Blockstore
   stop(): Promise<void>
-  net: NetServer
+  rpcServer: RPCServer
   tick: Tick
   sneakernet: Sneakernet
   getTracker(keyvalueDB: KeyvalueDB): EntryTracker

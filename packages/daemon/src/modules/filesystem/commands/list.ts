@@ -4,8 +4,8 @@ import { toString as uint8arrayToString } from 'uint8arrays'
 import type { Context } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 
-const command: ModuleMethod<Context> = ({ net, groups }, context) => {
-  net.rpc.addMethod(List.name, async (raw: unknown): Promise<List.Return> => {
+const command: ModuleMethod<Context> = ({ rpcServer, groups }, context) => {
+  rpcServer.rpc.addMethod(List.name, async (raw: unknown): Promise<List.Return> => {
     const params = List.Params.parse(raw)
     const list: List.Return = []
 

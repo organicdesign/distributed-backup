@@ -58,8 +58,8 @@ const sync = async (libp2p: Libp2p, peer: Peer, database: Database, options: Par
   await stream.close()
 }
 
-const command: ModuleMethod = ({ libp2p, welo, net }) => {
-  net.rpc.addMethod(Sync.name, async (): Promise<Sync.Return> => {
+const command: ModuleMethod = ({ libp2p, welo, rpcServer }) => {
+  rpcServer.rpc.addMethod(Sync.name, async (): Promise<Sync.Return> => {
     const peers = libp2p.getPeers()
     const databases = welo.opened.values()
 

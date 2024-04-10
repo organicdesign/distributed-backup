@@ -2,8 +2,8 @@ import Path from 'path'
 import { SetPriority } from '@organicdesign/db-rpc-interfaces'
 import type { ModuleMethod } from '@/interface.js'
 
-const command: ModuleMethod = ({ net, pinManager }) => {
-  net.rpc.addMethod(SetPriority.name, async (raw: unknown): Promise<SetPriority.Return> => {
+const command: ModuleMethod = ({ rpcServer, pinManager }) => {
+  rpcServer.rpc.addMethod(SetPriority.name, async (raw: unknown): Promise<SetPriority.Return> => {
     const params = SetPriority.Params.parse(raw)
     const key = Path.join('/', params.group, params.path)
     const pinInfo = await pinManager.get(key)

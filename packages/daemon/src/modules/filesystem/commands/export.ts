@@ -5,8 +5,8 @@ import { CID } from 'multiformats/cid'
 import type { Context } from '../index.js'
 import type { ModuleMethod } from '@/interface.js'
 
-const command: ModuleMethod<Context> = ({ net, blockstore }, context) => {
-  net.rpc.addMethod(Export.name, async (raw: unknown): Promise<Export.Return> => {
+const command: ModuleMethod<Context> = ({ rpcServer, blockstore }, context) => {
+  rpcServer.rpc.addMethod(Export.name, async (raw: unknown): Promise<Export.Return> => {
     const params = Export.Params.parse(raw)
     const fs = context.getFileSystem(CID.parse(params.group))
 
