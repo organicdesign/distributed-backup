@@ -136,10 +136,11 @@ export class PinManager {
   /**
    * Get the download speed in bytes / millisecond.
    */
-  async getSpeed (cid: CID, options: { range: number } & AbortOptions = { range: 5000 }): Promise<number> {
+  async getSpeed (cid: CID, options: { range?: number } & AbortOptions = {}): Promise<number> {
     const pin = await this.pins.get(cid, options)
+		const range = options.range ?? 5000
 
-    if (pin == null || options.range <= 0) {
+    if (pin == null || range <= 0) {
       return 0
     }
 
@@ -148,12 +149,12 @@ export class PinManager {
     let size = 0
 
     for await (const block of this.blocks.all(cid, options)) {
-      if (block.timestamp >= now - options.range && block.timestamp <= now) {
+      if (block.timestamp >= now - range && block.timestamp <= now) {
         size += block.size
       }
     }
 
-    const speed = size / options.range
+    const speed = size / range
 
     return isNaN(speed) ? 0 : speed
   }
