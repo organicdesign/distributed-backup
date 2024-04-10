@@ -3,20 +3,21 @@ import { type Datastore, Key } from 'interface-datastore'
 import { base36 } from 'multiformats/bases/base36'
 import { equals as uint8ArrayEquals } from 'uint8arrays'
 import type { DatastorePin, DatastorePinnedBlock } from './interface.js'
+import type { AbortOptions } from 'interface-store'
 import type { CID } from 'multiformats/cid'
 
-export const addPinRef = async ({ datastore }: { datastore: Datastore }, cid: CID, options?: { depth?: number }): Promise<void> => {
+export const addPinRef = async ({ datastore }: { datastore: Datastore }, cid: CID, options: { depth?: number } & AbortOptions = {}): Promise<void> => {
   if (cid.version === 0) {
     cid = cid.toV1()
   }
 
   const pinKey = new Key(`/pin/${cid.toString(base36)}`)
 
-  if (await datastore.has(pinKey)) {
+  if (await datastore.has(pinKey, options)) {
     return
   }
 
-  const depth = Math.round(options?.depth ?? Infinity)
+  const depth = Math.round(options.depth ?? Infinity)
 
   if (depth < 0) {
     throw new Error('Depth must be greater than or equal to 0')
@@ -24,10 +25,10 @@ export const addPinRef = async ({ datastore }: { datastore: Datastore }, cid: CI
 
   const pin: DatastorePin = { depth, metadata: {} }
 
-  await datastore.put(pinKey, cborg.encode(pin))
+  await datastore.put(pinKey, cborg.encode(pin), options)
 }
 
-export const addBlockRefs = async ({ datastore }: { datastore: Datastore }, cid: CID, by: CID | CID[]): Promise<void> => {
+export const addBlockRefs = async ({ datastore }: { datastore: Datastore }, cid: CID, by: CID | CID[], options: AbortOptions = {}): Promise<void> => {
   if (cid.version === 0) {
     cid = cid.toV1()
   }
@@ -38,7 +39,7 @@ export const addBlockRefs = async ({ datastore }: { datastore: Datastore }, cid:
   let pinnedBlock: DatastorePinnedBlock = { pinCount: 0, pinnedBy: [] }
 
   try {
-    pinnedBlock = cborg.decode(await datastore.get(blockKey))
+    pinnedBlock = cborg.decode(await datastore.get(blockKey, options))
   } catch (err: any) {
     if (err.code !== 'ERR_NOT_FOUND') {
       throw err
@@ -52,5 +53,5 @@ export const addBlockRefs = async ({ datastore }: { datastore: Datastore }, cid:
   pinnedBlock.pinCount += newReferences.length
   pinnedBlock.pinnedBy = [...pinnedBlock.pinnedBy, ...newReferences]
 
-  await datastore.put(blockKey, cborg.encode(pinnedBlock))
+  await datastore.put(blockKey, cborg.encode(pinnedBlock), options)
 }
