@@ -67,9 +67,9 @@ describe('downloader', () => {
       age
     })
 
-		assert.equal(state1.length, 1)
-		assert.equal(state1[0].size, 0)
-		assert.equal(state1[0].blocks, 0)
+    assert.equal(state1.length, 1)
+    assert.equal(state1[0].size, 0)
+    assert.equal(state1[0].blocks, 0)
 
     const value = await blockstore.get(dag[0])
 
@@ -81,9 +81,9 @@ describe('downloader', () => {
       age
     })
 
-		assert.equal(state2.length, 1)
-		assert.equal(state2[0].size, value.length)
-		assert.equal(state2[0].blocks, 1)
+    assert.equal(state2.length, 1)
+    assert.equal(state2[0].size, value.length)
+    assert.equal(state2[0].blocks, 1)
 
     await new Promise(resolve => setTimeout(resolve, age / 2))
 
@@ -104,9 +104,9 @@ describe('downloader', () => {
       age
     })
 
-		assert.equal(state3.length, 1)
-		assert.equal(state3[0].size, values.reduce((a, c) => c.length + a, 0))
-		assert.equal(state3[0].blocks, values.length)
+    assert.equal(state3.length, 1)
+    assert.equal(state3[0].size, values.reduce((a, c) => c.length + a, 0))
+    assert.equal(state3[0].blocks, values.length)
 
     client.close()
     await components.stop()
