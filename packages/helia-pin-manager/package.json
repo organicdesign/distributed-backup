@@ -38,6 +38,7 @@
     "cborg": "^4.0.9",
     "datastore-core": "^9.2.9",
     "interface-datastore": "^8.2.11",
+    "interface-store": "^5.1.8",
     "it-all": "^3.0.4",
     "multiformats": "^13.1.0",
     "ts-event-target": "^0.1.5",
