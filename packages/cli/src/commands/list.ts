@@ -98,7 +98,9 @@ export const handler = createHandler<typeof builder>(async function * (argv) {
     count: items.map(getState).filter(i => i.status === 'COMPLETED').length
   }
 
-  const speeds = await argv.client.getSpeeds(items.map(i => i.cid), 5000)
+  const age = 5000
+  const ageState = await argv.client.getState(items.map(i => i.cid), { age })
+  const speeds = ageState.map(s => ({ cid: s.cid, speed: s.size / (age / 1000) }))
 
   const getSpeed = ({ cid }: { cid: string }): number =>
     speeds.find(s => s.cid === cid)?.speed ?? 0
@@ -129,12 +131,12 @@ export const handler = createHandler<typeof builder>(async function * (argv) {
     for (const [key, subtree] of Object.entries(tree)) {
       try {
         const [item] = List.Return.parse([subtree])
-        const timeRemaining = Math.ceil((item.size - getState(item).size) / (getSpeed(item) * 1000))
+        const timeRemaining = Math.ceil((item.size - getState(item).size) / getSpeed(item))
 
         yield [
           `${'  '.repeat(depth)}${key}`.slice(0, 18).padEnd(20),
           `${formatSize(getState(item).size)}/${formatSize(item.size)} (${formatPercent(getState(item).size / item.size)})`.slice(0, 25).padEnd(27),
-          `${formatSize(getSpeed(item) * 1000)}/s ${isNaN(timeRemaining) ? '' : `(${timeRemaining} s)`}`.slice(0, 25).padEnd(27),
+          `${formatSize(getSpeed(item))}/s ${isNaN(timeRemaining) ? '' : `(${timeRemaining} s)`}`.slice(0, 25).padEnd(27),
           `${getState(item).blocks}/${item.blocks} (${formatPercent(getState(item).blocks / item.blocks)})`.slice(0, 18).padEnd(20),
           getState(item).status.slice(0, 13).padEnd(15),
           `${item.priority}`.slice(0, 8).padEnd(10),
@@ -169,6 +171,6 @@ export const handler = createHandler<typeof builder>(async function * (argv) {
     `${completed.count}/${total.count} (${formatPercent(completed.count / total.count)})`.slice(0, 13).padEnd(15),
     `${formatSize(completed.size)}/${formatSize(total.size)} (${formatPercent(completed.size / total.size)})`.slice(0, 23).padEnd(25),
     `${completed.blocks}/${total.blocks} (${formatPercent(completed.blocks / total.blocks)})`.slice(0, 18).padEnd(20),
-    `${formatSize(speeds.reduce((a, c) => a + c.speed, 0) * 1000)}s`.slice(0, 18).padEnd(20)
+    `${formatSize(speeds.reduce((a, c) => a + c.speed, 0))}s`.slice(0, 18).padEnd(20)
   ].join('')
 })

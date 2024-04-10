@@ -73,11 +73,7 @@ export class PinManager {
     return this.pinManager.getStatus(cid, options)
   }
 
-  async getSpeed (cid: CID, options: { range?: number } & AbortOptions = {}): Promise<number> {
-    return this.pinManager.getSpeed(cid, options)
-  }
-
-  async getState (cid: CID, options: AbortOptions = {}): Promise<PinState> {
+  async getState (cid: CID, options: AbortOptions & { age?: number } = {}): Promise<PinState> {
     return this.pinManager.getState(cid, options)
   }
 

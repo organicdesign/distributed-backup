@@ -50,38 +50,42 @@ describe('downloader', () => {
     await components.stop()
   })
 
-  it('rpc - get speed', async () => {
+  it('rpc - get age limited state', async () => {
     const { components, socket } = await create()
     const blockstore = new MemoryBlockstore()
     const dag = await createDag({ blockstore }, 2, 2)
     const group = 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'
     const path = '/test.txt'
-    const range = 500
+    const age = 500
     const client = createNetClient(socket)
     const key = Path.join('/', group, path)
 
     await components.pinManager.put(key, { priority: 1, cid: dag[0] })
 
-    const speed1 = await client.rpc.request('get-speeds', {
+    const state1 = await client.rpc.request('get-state', {
       cids: [dag[0].toString()],
-      range
+      age
     })
 
-    assert.deepEqual(speed1, [{ cid: dag[0].toString(), speed: 0 }])
+		assert.equal(state1.length, 1)
+		assert.equal(state1[0].size, 0)
+		assert.equal(state1[0].blocks, 0)
 
     const value = await blockstore.get(dag[0])
 
     await components.helia.blockstore.put(dag[0], value)
-    await new Promise(resolve => setTimeout(resolve, range / 2))
+    await new Promise(resolve => setTimeout(resolve, age / 2))
 
-    const speed2 = await client.rpc.request('get-speeds', {
+    const state2 = await client.rpc.request('get-state', {
       cids: [dag[0].toString()],
-      range
+      age
     })
 
-    assert.deepEqual(speed2, [{ cid: dag[0].toString(), speed: value.length / range }])
+		assert.equal(state2.length, 1)
+		assert.equal(state2[0].size, value.length)
+		assert.equal(state2[0].blocks, 1)
 
-    await new Promise(resolve => setTimeout(resolve, range / 2))
+    await new Promise(resolve => setTimeout(resolve, age / 2))
 
     const values = await Promise.all([
       blockstore.get(dag[1]),
@@ -93,17 +97,16 @@ describe('downloader', () => {
       components.helia.blockstore.put(dag[4], values[1])
     ])
 
-    await new Promise(resolve => setTimeout(resolve, range / 2))
+    await new Promise(resolve => setTimeout(resolve, age / 2))
 
-    const speed3 = await client.rpc.request('get-speeds', {
+    const state3 = await client.rpc.request('get-state', {
       cids: [dag[0].toString()],
-      range
+      age
     })
 
-    assert.deepEqual(speed3, [{
-      cid: dag[0].toString(),
-      speed: values.reduce((a, c) => c.length + a, 0) / range
-    }])
+		assert.equal(state3.length, 1)
+		assert.equal(state3[0].size, values.reduce((a, c) => c.length + a, 0))
+		assert.equal(state3[0].blocks, values.length)
 
     client.close()
     await components.stop()

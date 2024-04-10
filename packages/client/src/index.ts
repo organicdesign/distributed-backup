@@ -9,7 +9,6 @@ import {
   ExportRevision,
   Export,
   GetSchedule,
-  GetSpeeds,
   GetState,
   ID,
   Import,
@@ -115,15 +114,8 @@ export class Client {
     return GetSchedule.Return.parse(raw)
   }
 
-  async getSpeeds (cids: GetSpeeds.Params['cids'], range?: number): Promise<GetSpeeds.Return> {
-    const params: GetSpeeds.Params = { cids, range }
-    const raw = await this.client.rpc.request(GetSpeeds.name, params)
-
-    return GetSpeeds.Return.parse(raw)
-  }
-
-  async getState (cids: GetState.Params['cids']): Promise<GetState.Return> {
-    const params: GetState.Params = { cids }
+  async getState (cids: GetState.Params['cids'], options: Omit<GetState.Params, 'cids'> = {}): Promise<GetState.Return> {
+    const params: GetState.Params = { cids, ...options }
     const raw = await this.client.rpc.request(GetState.name, params)
 
     return GetState.Return.parse(raw)

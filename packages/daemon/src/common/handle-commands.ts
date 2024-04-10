@@ -3,7 +3,6 @@ import connect from './commands/connect.js'
 import connections from './commands/connections.js'
 import countPeers from './commands/count-peers.js'
 import createGroup from './commands/create-group.js'
-import getSpeeds from './commands/get-speeds.js'
 import getState from './commands/get-state.js'
 import id from './commands/id.js'
 import joinGroup from './commands/join-group.js'
@@ -21,7 +20,6 @@ export default (components: Components): void => {
     connections,
     countPeers,
     createGroup,
-    getSpeeds,
     getState,
     id,
     joinGroup,

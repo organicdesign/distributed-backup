@@ -133,32 +133,6 @@ export class PinManager {
     return pin == null ? 'NOTFOUND' : pin.status
   }
 
-  /**
-   * Get the download speed in bytes / millisecond.
-   */
-  async getSpeed (cid: CID, options: { range?: number } & AbortOptions = {}): Promise<number> {
-    const pin = await this.pins.get(cid, options)
-    const range = options.range ?? 5000
-
-    if (pin == null || range <= 0) {
-      return 0
-    }
-
-    const now = Date.now()
-
-    let size = 0
-
-    for await (const block of this.blocks.all(cid, options)) {
-      if (block.timestamp >= now - range && block.timestamp <= now) {
-        size += block.size
-      }
-    }
-
-    const speed = size / range
-
-    return isNaN(speed) ? 0 : speed
-  }
-
   // Get all the pins that are actively downloading.
   async getActiveDownloads (options: AbortOptions = {}): Promise<CID[]> {
     const cids: CID[] = []
@@ -194,8 +168,9 @@ export class PinManager {
   /**
    * Get the size on disk for a given pin.
    */
-  async getState (pin: CID, options: AbortOptions = {}): Promise<PinState> {
-    const blocks = await all(this.blocks.all(pin, options))
+  async getState (pin: CID, options: { age?: number } & AbortOptions = {}): Promise<PinState> {
+    const allBlocks = await all(this.blocks.all(pin, options))
+    const blocks = allBlocks.filter(b => options.age == null || b.timestamp >= Date.now() - options.age)
 
     return {
       size: blocks.reduce((c, b) => b.size + c, 0),

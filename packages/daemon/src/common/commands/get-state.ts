@@ -11,7 +11,7 @@ const command: ModuleMethod = ({ pinManager, net }) => {
 
       const [status, { blocks, size }] = await Promise.all([
         pinManager.getStatus(cid),
-        pinManager.getState(cid)
+        pinManager.getState(cid, { age: params.age })
       ])
 
       return {

@@ -471,58 +471,6 @@ describe('client', () => {
     }
   })
 
-  it('handles getSpeeds requests/responses', async () => {
-    const requests = [
-      {
-        params: {
-          cids: ['QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN']
-        },
-        response: [
-          {
-            cid: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
-            speed: 1000000
-          }
-        ]
-      },
-      {
-        params: {
-          cids: ['QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ'],
-          range: 1000
-        },
-        response: []
-      },
-      {
-        params: {
-          cids: [
-            'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
-            'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa'
-          ],
-          range: 10000
-        },
-        response: [
-          {
-            cid: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
-            speed: 0
-          },
-          {
-            cid: 'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
-            speed: 1234567
-          }
-        ]
-      }
-    ]
-
-    for (const { params, response } of requests) {
-      const [req, res] = await Promise.all([
-        getRequest(interfaces.GetSpeeds.name, async () => response),
-        client.getSpeeds(params.cids, params.range)
-      ])
-
-      assert.deepEqual(req, { ...params })
-      assert.deepEqual(res, response)
-    }
-  })
-
   it('handles getStatus requests/responses', async () => {
     const requests = [
       {

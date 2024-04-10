@@ -4,7 +4,8 @@ import { zCID } from '../zod.js'
 export const name = 'get-state'
 
 export const Params = z.object({
-  cids: z.array(zCID())
+  cids: z.array(zCID()),
+  age: z.number().optional()
 })
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare

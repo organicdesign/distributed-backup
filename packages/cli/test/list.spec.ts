@@ -23,7 +23,7 @@ describe('list', () => {
   ]
 
   it('text', async () => {
-    const params = mockParams({ list: items, countPeers: [{ cid, peers: 1 }], getState: [{ cid, status: 'COMPLETED', size: 50, blocks: 5 }], getSpeeds: [{ cid, speed: 1000 }] }, { group: 'group-abc' })
+    const params = mockParams({ list: items, countPeers: [{ cid, peers: 1 }], getState: [{ cid, status: 'COMPLETED', size: 50, blocks: 5 }] }, { group: 'group-abc' })
 
     const response = await all(handler(params))
 
@@ -47,7 +47,7 @@ describe('list', () => {
       [
         '    file            ',
         '50 B/500 B (10%)           ',
-        '1000 KB/s (1 s)            ',
+        '10 B/s (45 s)              ',
         '5/50 (10%)          ',
         'COMPLETED      ',
         '1         0         1         ',
@@ -65,7 +65,7 @@ describe('list', () => {
         '1/1 (100%)     ',
         '50 B/500 B (10%)         ',
         '5/50 (10%)          ',
-        '1000 KBs            '
+        '10 Bs               '
       ].join('')
     ]
 
@@ -76,8 +76,7 @@ describe('list', () => {
     const params = mockParams({
       list: items,
       countPeers: [{ cid, peers: 1 }],
-      getState: [{ cid, status: 'COMPLETED', size: 50, blocks: 5 }],
-      getSpeeds: [{ cid, speed: 1000 }]
+      getState: [{ cid, status: 'COMPLETED', size: 50, blocks: 5 }]
     }, {
       group: 'group-abc',
       json: true
