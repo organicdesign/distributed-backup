@@ -8,7 +8,7 @@ const command: ModuleMethod = ({ net, pinManager }) => {
 
     return Promise.all(params.cids.map(async str => {
       const cid = CID.parse(str)
-      const speed = await pinManager.getSpeed(cid, params.range)
+      const speed = await pinManager.getSpeed(cid, { range: params.range })
 
       return {
         cid: str,

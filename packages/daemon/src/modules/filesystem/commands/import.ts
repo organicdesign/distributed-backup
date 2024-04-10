@@ -12,7 +12,7 @@ const command: ModuleMethod<Context> = ({ net, blockstore, heliaPinManager }, co
     const encrypt = Boolean(params.encrypt)
 
     const config = {
-      chunker: selectChunker(),
+      chunker: selectChunker('size-4100000'),
       cidVersion: 1
     } as const
 

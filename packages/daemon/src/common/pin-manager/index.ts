@@ -5,6 +5,7 @@ import { encodePinInfo, decodePinInfo } from './utils.js'
 import type { PinInfo } from './interface.js'
 import type { Pair } from '@/interface.js'
 import type { BlockInfo, PinManager as HeliaPinManager, PinState } from '@organicdesign/db-helia-pin-manager'
+import type { AbortOptions } from 'interface-store'
 import type { CID } from 'multiformats/cid'
 
 type EventTypes = 'reference:removed'
@@ -33,19 +34,19 @@ export class PinManager {
     this.pinManager = components.pinManager
   }
 
-  async put (key: string, pinInfo: PinInfo): Promise<void> {
+  async put (key: string, pinInfo: PinInfo, options: AbortOptions = {}): Promise<void> {
     const data = encodePinInfo(pinInfo)
 
     // Need to ensure that the references get updated.
-    await this.remove(key)
+    await this.remove(key, options)
 
-    await this.pinManager.pin(pinInfo.cid)
+    await this.pinManager.pin(pinInfo.cid, options)
 
-    await this.datastore.put(new Key(key), data)
+    await this.datastore.put(new Key(key), data, options)
   }
 
-  async has (key: string, cid?: CID): Promise<boolean> {
-    const pinInfo = await this.get(key)
+  async has (key: string, cid?: CID, options: AbortOptions = {}): Promise<boolean> {
+    const pinInfo = await this.get(key, options)
 
     if (pinInfo == null) {
       return false
@@ -58,50 +59,50 @@ export class PinManager {
     return pinInfo.cid.equals(cid)
   }
 
-  async * getActive (): AsyncGenerator<Pair<string, PinInfo>> {
-    for (const pin of await this.pinManager.getActiveDownloads()) {
-      yield * this.getByPin(pin)
+  async * getActive (options: AbortOptions = {}): AsyncGenerator<Pair<string, PinInfo>> {
+    for (const pin of await this.pinManager.getActiveDownloads(options)) {
+      yield * this.getByPin(pin, options)
     }
   }
 
-  async download (pin: CID, options?: { limit: number }): Promise<Array<() => Promise<BlockInfo>>> {
+  async download (pin: CID, options: { limit?: number } & AbortOptions = {}): Promise<Array<(options?: AbortOptions) => Promise<BlockInfo>>> {
     return this.pinManager.downloadHeads(pin, options)
   }
 
-  async getStatus (cid: CID): Promise<'COMPLETED' | 'DOWNLOADING' | 'DESTROYED' | 'UPLOADING' | 'NOTFOUND'> {
-    return this.pinManager.getStatus(cid)
+  async getStatus (cid: CID, options: AbortOptions = {}): Promise<'COMPLETED' | 'DOWNLOADING' | 'DESTROYED' | 'UPLOADING' | 'NOTFOUND'> {
+    return this.pinManager.getStatus(cid, options)
   }
 
-  async getSpeed (cid: CID, range?: number): Promise<number> {
-    return this.pinManager.getSpeed(cid, range)
+  async getSpeed (cid: CID, options: { range?: number } & AbortOptions = {}): Promise<number> {
+    return this.pinManager.getSpeed(cid, options)
   }
 
-  async getState (cid: CID): Promise<PinState> {
-    return this.pinManager.getState(cid)
+  async getState (cid: CID, options: AbortOptions = {}): Promise<PinState> {
+    return this.pinManager.getState(cid, options)
   }
 
-  async remove (key: string): Promise<void> {
-    const pinInfo = await this.get(key)
+  async remove (key: string, options: AbortOptions = {}): Promise<void> {
+    const pinInfo = await this.get(key, options)
 
     if (pinInfo == null) {
       return
     }
 
-    const keys = await all(this.getByPin(pinInfo.cid))
+    const keys = await all(this.getByPin(pinInfo.cid, options))
 
     // If we only have 1 reference be sure to unpin it.
     if (keys.length <= 1) {
-      await this.pinManager.unpin(pinInfo.cid)
+      await this.pinManager.unpin(pinInfo.cid, options)
     }
 
     this.events.dispatchEvent(new PinManagerEvent('reference:removed', { key, ...pinInfo }))
 
-    await this.datastore.delete(new Key(key))
+    await this.datastore.delete(new Key(key), options)
   }
 
-  async get (key: string): Promise<PinInfo | null> {
+  async get (key: string, options: AbortOptions = {}): Promise<PinInfo | null> {
     try {
-      const data = await this.datastore.get(new Key(key))
+      const data = await this.datastore.get(new Key(key), options)
 
       return decodePinInfo(data)
     } catch (error) {
@@ -109,7 +110,7 @@ export class PinManager {
     }
   }
 
-  private async * getByPin (pin: CID): AsyncGenerator<Pair<string, PinInfo>> {
+  private async * getByPin (pin: CID, options: AbortOptions = {}): AsyncGenerator<Pair<string, PinInfo>> {
     const itr = this.datastore.query({
       filters: [({ value }) => {
         const pinInfo = decodePinInfo(value)
@@ -120,13 +121,13 @@ export class PinManager {
 
         return pinInfo.cid.equals(pin)
       }]
-    })
+    }, options)
 
     for await (const pair of itr) {
       const pinInfo = decodePinInfo(pair.value)
 
       if (pinInfo == null) {
-        await this.datastore.delete(pair.key)
+        await this.datastore.delete(pair.key, options)
         continue
       }
 

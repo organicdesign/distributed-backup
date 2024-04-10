@@ -1,3 +1,4 @@
+import { anySignal } from 'any-signal'
 import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
 import { collect } from 'streaming-iterables'
@@ -66,9 +67,12 @@ export class Downloader implements Startable {
       }
 
       const weight = Math.floor(linearWeightTranslation(priority / 100) * this.slots) + 1
-      const downloaders = await this.pinManager.download(cid, { limit: weight })
 
-      yield * downloaders
+      const downloaders = await this.pinManager.download(cid, { limit: weight, signal: this.controller.signal })
+
+      yield * downloaders.map(d => async () => d({
+        signal: anySignal([this.controller.signal, AbortSignal.timeout(10000)])
+      }))
     }
   }
 
@@ -98,7 +102,7 @@ export class Downloader implements Startable {
   async * getPins (loop: AsyncIterable<void>): AsyncGenerator<[CID, number]> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     for await (const _ of loop) {
-      for await (const { value } of this.pinManager.getActive()) {
+      for await (const { value } of this.pinManager.getActive(this.controller)) {
         if (this.isAborted) {
           return
         }
@@ -113,8 +117,8 @@ export class Downloader implements Startable {
   }
 }
 
-export const createDownloader = async (pinManage: PinManager, slots: number): Promise<Downloader> => {
-  const downloader = new Downloader(pinManage, slots)
+export const createDownloader = async (pinManager: PinManager, slots: number): Promise<Downloader> => {
+  const downloader = new Downloader(pinManager, slots)
 
   await downloader.start()
 
