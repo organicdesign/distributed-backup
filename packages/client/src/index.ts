@@ -25,17 +25,17 @@ import {
   Sync,
   Write
 } from '@organicdesign/db-rpc-interfaces'
-import { createNetClient, type NetClient } from '@organicdesign/net-rpc'
+import { createRPCClient, type RPCClient } from './rpc-client.js'
 
 export class Client {
-  private readonly client: NetClient
+  private readonly client: RPCClient
 
   constructor (socket: string) {
-    this.client = createNetClient(socket)
+    this.client = createRPCClient(socket)
   }
 
   stop (): void {
-    this.client.close()
+    this.client.stop()
   }
 
   async addresses (): Promise<Addresses.Return> {
