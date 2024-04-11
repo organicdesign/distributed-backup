@@ -67,21 +67,32 @@ export class Client {
     return CountPeers.Return.parse(raw)
   }
 
-  async createGroup (name: CreateGroup.Params['name'], options: AbortOptions & { peers?: CreateGroup.Params['peers'] } = {}): Promise<CreateGroup.Return> {
+  async createGroup (
+		name: CreateGroup.Params['name'],
+		options: AbortOptions & { peers?: CreateGroup.Params['peers'] } = {}
+	): Promise<CreateGroup.Return> {
     const params: CreateGroup.Params = { name, peers: options.peers ?? [] }
     const raw = await this.client.rpc.request(CreateGroup.name, params)
 
     return CreateGroup.Return.parse(raw)
   }
 
-  async delete (group: Delete.Params['group'], path: Delete.Params['path'], options: AbortOptions = {}): Promise<Delete.Return> {
+  async delete (
+		group: Delete.Params['group'],
+		path: Delete.Params['path'],
+		options: AbortOptions = {}
+	): Promise<Delete.Return> {
     const params: Delete.Params = { group, path }
     const raw = await this.client.rpc.request(Delete.name, params, options)
 
     return Delete.Return.parse(raw)
   }
 
-  async edit (group: Edit.Params['group'], path: Edit.Params['path'], options: AbortOptions & Omit<Edit.Params, 'group' | 'path'> = {}): Promise<Edit.Return> {
+  async edit (
+		group: Edit.Params['group'],
+		path: Edit.Params['path'],
+		options: AbortOptions & Omit<Edit.Params, 'group' | 'path'> = {}
+	): Promise<Edit.Return> {
     const signal = options.signal
 
     delete options.signal
@@ -106,14 +117,22 @@ export class Client {
     return ExportRevision.Return.parse(raw)
   }
 
-  async export (group: Export.Params['group'], path: Export.Params['path'], outPath: Export.Params['outPath'], options: AbortOptions = {}): Promise<Export.Return> {
+  async export (
+		group: Export.Params['group'],
+		path: Export.Params['path'],
+		outPath: Export.Params['outPath'],
+		options: AbortOptions = {}
+	): Promise<Export.Return> {
     const params: Export.Params = { group, path, outPath }
     const raw = await this.client.rpc.request(Export.name, params, options)
 
     return Export.Return.parse(raw)
   }
 
-  async getSchedule (group: GetSchedule.Params['group'], options: AbortOptions & Omit<GetSchedule.Params, 'group'> = {}): Promise<GetSchedule.Return> {
+  async getSchedule (
+		group: GetSchedule.Params['group'],
+		options: AbortOptions & Omit<GetSchedule.Params, 'group'> = {}
+	): Promise<GetSchedule.Return> {
     const signal = options.signal
 
     delete options.signal
@@ -124,7 +143,10 @@ export class Client {
     return GetSchedule.Return.parse(raw)
   }
 
-  async getState (cids: GetState.Params['cids'], options: AbortOptions & Omit<GetState.Params, 'cids'> = {}): Promise<GetState.Return> {
+  async getState (
+		cids: GetState.Params['cids'],
+		options: AbortOptions & Omit<GetState.Params, 'cids'> = {}
+	): Promise<GetState.Return> {
     const signal = options.signal
 
     delete options.signal
@@ -142,7 +164,11 @@ export class Client {
     return ID.Return.parse(raw)
   }
 
-  async import (group: Import.Params['group'], inPath: Import.Params['inPath'], options: AbortOptions & Omit<Import.Params, 'group' | 'inPath'> = {}): Promise<Import.Return> {
+  async import (
+		group: Import.Params['group'],
+		inPath: Import.Params['inPath'],
+		options: AbortOptions & Omit<Import.Params, 'group' | 'inPath'> = {}
+	): Promise<Import.Return> {
     const signal = options.signal
 
     delete options.signal
@@ -167,7 +193,11 @@ export class Client {
     return ListGroups.Return.parse(raw)
   }
 
-  async listRevisions (group: ListRevisions.Params['group'], path: ListRevisions.Params['path'], options: AbortOptions = {}): Promise<ListRevisions.Return> {
+  async listRevisions (
+		group: ListRevisions.Params['group'],
+		path: ListRevisions.Params['path'],
+		options: AbortOptions = {}
+	): Promise<ListRevisions.Return> {
     const params: ListRevisions.Params = { group, path }
     const raw = await this.client.rpc.request(ListRevisions.name, params, options)
 
@@ -216,7 +246,11 @@ export class Client {
     return ReadRevision.Return.parse(raw)
   }
 
-  async read (group: Read.Params['group'], path: Read.Params['path'], options: AbortOptions & Omit<Read.Params, 'group' | 'path'> = {}): Promise<Read.Return> {
+  async read (
+		group: Read.Params['group'],
+		path: Read.Params['path'],
+		options: AbortOptions & Omit<Read.Params, 'group' | 'path'> = {}
+	): Promise<Read.Return> {
     const signal = options.signal
 
     delete options.signal
@@ -227,7 +261,12 @@ export class Client {
     return Read.Return.parse(raw)
   }
 
-  async setPriority (group: SetPriority.Params['group'], path: SetPriority.Params['path'], priority: SetPriority.Params['priority'], options: AbortOptions = {}): Promise<SetPriority.Return> {
+  async setPriority (
+		group: SetPriority.Params['group'],
+		path: SetPriority.Params['path'],
+		priority: SetPriority.Params['priority'],
+		options: AbortOptions = {}
+	): Promise<SetPriority.Return> {
     const params: SetPriority.Params = { group, path, priority }
     const raw = await this.client.rpc.request(SetPriority.name, params, options)
 
@@ -241,14 +280,20 @@ export class Client {
     return Sync.Return.parse(raw)
   }
 
-  async sneakernetReveive (path: SneakernetReveive.Params['path'], options: AbortOptions = {}): Promise<SneakernetReveive.Return> {
+  async sneakernetReveive (
+		path: SneakernetReveive.Params['path'],
+		options: AbortOptions = {}
+	): Promise<SneakernetReveive.Return> {
     const params: SneakernetReveive.Params = { path }
     const raw = await this.client.rpc.request(SneakernetReveive.name, params, options)
 
     return SneakernetReveive.Return.parse(raw)
   }
 
-  async sneakernetSend (path: SneakernetSend.Params['path'], options: AbortOptions & Omit<SneakernetSend.Params, 'path'> = {}): Promise<SneakernetSend.Return> {
+  async sneakernetSend (
+		path: SneakernetSend.Params['path'],
+		options: AbortOptions & Omit<SneakernetSend.Params, 'path'> = {}
+	): Promise<SneakernetSend.Return> {
     const signal = options.signal
 
     delete options.signal
@@ -259,7 +304,12 @@ export class Client {
     return SneakernetSend.Return.parse(raw)
   }
 
-  async write (group: Write.Params['group'], path: Write.Params['path'], data: Write.Params['data'], options: AbortOptions & Omit<Write.Params, 'group' | 'path' | 'data'>): Promise<Write.Return> {
+  async write (
+		group: Write.Params['group'],
+		path: Write.Params['path'],
+		data: Write.Params['data'],
+		options: AbortOptions & Omit<Write.Params, 'group' | 'path' | 'data'>
+	): Promise<Write.Return> {
     const signal = options.signal
 
     delete options.signal
