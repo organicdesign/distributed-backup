@@ -7,6 +7,7 @@ export interface TransferBenchmark {
 }
 
 export interface TransferImplementation {
+  label: string
   name: string
   create(): Promise<TransferBenchmark>
   results: number[]
@@ -14,3 +15,5 @@ export interface TransferImplementation {
   size: number
   blocks: number
 }
+
+export interface ImplementationCreator { (path: string, data: string, persistent: boolean): Promise<TransferBenchmark> }

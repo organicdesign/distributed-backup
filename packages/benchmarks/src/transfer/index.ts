@@ -11,7 +11,7 @@ import yargs from 'yargs/yargs'
 import { generateFiles } from '../utils/generate-files.js'
 import { outPath } from '../utils/paths.js'
 import { createBackupBench } from './backup-bench.js'
-import type { TransferImplementation } from './interface.js'
+import type { TransferImplementation, ImplementationCreator } from './interface.js'
 
 const argv = await yargs(hideBin(process.argv))
   .option({
@@ -49,9 +49,13 @@ const sizes = [
   3, // 1kb
   6, // 1mb
   7, // 10mb
-  8, // 100mb
-  9 //  1gb
+  8 // 100mb
+//  9 //  1gb
 ].map(z => 10 ** z)
+
+const benchmarks: Array<[string, ImplementationCreator]> = [
+  ['backup', createBackupBench]
+]
 
 log('Pre-Start: Generating data files...')
 
@@ -59,14 +63,21 @@ const files = await all(parallel(generateFiles(outPath, sizes), { ordered: true,
 
 log('Pre-Start: Complete')
 
-const impls: TransferImplementation[] = files.map(({ path, size }) => ({
-  name: `${prettyBytes(size)}`,
-  create: async () => createBackupBench(Path.join(outPath, `transfer-backup-${prettyBytes(size)}`), path, argv.persistent),
-  results: [],
-  fileSize: size,
-  size: 0,
-  blocks: 0
-}))
+const impls: TransferImplementation[] = []
+
+for (const [name, method] of benchmarks) {
+  for (const { path, size } of files) {
+    impls.push({
+      label: name,
+      name: `${name}-${prettyBytes(size)}`,
+      create: async () => method(Path.join(outPath, `transfer-${name}-${prettyBytes(size)}`), path, argv.persistent),
+      results: [],
+      fileSize: size,
+      size: 0,
+      blocks: 0
+    })
+  }
+}
 
 async function main (): Promise<void> {
   const suite = new Bench({
@@ -119,7 +130,7 @@ async function main (): Promise<void> {
     const bps = impl.blocks / seconds
 
     return {
-      'File Size': name,
+			Label: impl.label,
       Size: prettyBytes(impl.size),
       Blocks: impl.blocks,
       'Speed (Size)': `${prettyBytes(speed)}/s`,

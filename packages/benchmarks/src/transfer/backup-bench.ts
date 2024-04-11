@@ -1,9 +1,9 @@
 import Path from 'path'
 import { Client } from '@organicdesign/db-client'
 import runNode from '../utils/run-node.js'
-import type { TransferBenchmark } from './interface.js'
+import type { ImplementationCreator } from './interface.js'
 
-export const createBackupBench = async (path: string, data: string, persistent: boolean): Promise<TransferBenchmark> => {
+export const createBackupBench: ImplementationCreator = async (path, data, persistent) => {
   const nodePaths = [...Array(2).keys()].map(i => Path.join(path, `node-${i}`))
   const procs = await Promise.all(nodePaths.map(async p => runNode(p, { persistent })))
 
