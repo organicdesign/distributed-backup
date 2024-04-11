@@ -3,7 +3,7 @@ export interface TransferBenchmark {
   size: number
   teardown(): Promise<void>
   run(): Promise<void>
-  warmup(): Promise<void>
+  warmup?(): Promise<void>
 }
 
 export interface TransferImplementation {

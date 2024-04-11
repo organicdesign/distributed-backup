@@ -11,6 +11,7 @@ import yargs from 'yargs/yargs'
 import { generateFiles } from '../utils/generate-files.js'
 import { outPath } from '../utils/paths.js'
 import { createBackupBench } from './backup-bench.js'
+import { createHeliaBench } from './helia-bench.js'
 import type { TransferImplementation, ImplementationCreator } from './interface.js'
 
 const argv = await yargs(hideBin(process.argv))
@@ -49,12 +50,13 @@ const sizes = [
   3, // 1kb
   6, // 1mb
   7, // 10mb
-  8 // 100mb
-//  9 //  1gb
+  8, // 100mb
+  9 //  1gb
 ].map(z => 10 ** z)
 
 const benchmarks: Array<[string, ImplementationCreator]> = [
-  ['backup', createBackupBench]
+  ['backup', createBackupBench],
+  ['helia', createHeliaBench]
 ]
 
 log('Pre-Start: Generating data files...')
@@ -91,7 +93,7 @@ async function main (): Promise<void> {
       const subject = await impl.create()
       log('End: setup')
 
-      await subject.warmup()
+      await subject.warmup?.()
       const start = performance.now()
       await subject.run()
 
@@ -130,7 +132,7 @@ async function main (): Promise<void> {
     const bps = impl.blocks / seconds
 
     return {
-			Label: impl.label,
+      Label: impl.label,
       Size: prettyBytes(impl.size),
       Blocks: impl.blocks,
       'Speed (Size)': `${prettyBytes(speed)}/s`,
