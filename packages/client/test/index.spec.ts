@@ -1,13 +1,13 @@
 import assert from 'assert/strict'
 import Path from 'path'
 import { fileURLToPath } from 'url'
+import { createRPCServer, type RPCServer } from '@organicdesign/db-rpc'
 import * as interfaces from '@organicdesign/db-rpc-interfaces'
-import { createNetServer, type NetServer } from '@organicdesign/net-rpc'
 import { Client } from '../src/index.js'
 
 const socketPath = Path.join(Path.dirname(fileURLToPath(import.meta.url)), '../../server.socket')
 
-let server: NetServer
+let server: RPCServer
 
 const getRequest = async (name: string, method: (params: Record<string, unknown>) => Promise<unknown>, timeout = 100): Promise<Record<string, unknown>> => {
   return new Promise((resolve, reject) => {
@@ -25,11 +25,11 @@ const getRequest = async (name: string, method: (params: Record<string, unknown>
 }
 
 before(async () => {
-  server = await createNetServer(socketPath)
+  server = await createRPCServer(socketPath)
 })
 
 after(async () => {
-  await server.close()
+  await server.stop()
 })
 
 describe('client', () => {

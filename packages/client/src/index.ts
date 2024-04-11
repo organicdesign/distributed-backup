@@ -1,3 +1,4 @@
+import { createRPCClient, type RPCClient } from '@organicdesign/db-rpc'
 import {
   Addresses,
   Connect,
@@ -25,7 +26,6 @@ import {
   Sync,
   Write
 } from '@organicdesign/db-rpc-interfaces'
-import { createRPCClient, type RPCClient } from './rpc-client.js'
 
 export class Client {
   private readonly client: RPCClient
