@@ -2,6 +2,7 @@ import fs from 'fs'
 import Path from 'path'
 import { unixfs } from '@helia/unixfs'
 import { getSize } from '@organicdesign/db-utils/dag'
+import { selectChunker } from '@organicdesign/db-utils/portation'
 import { FsBlockstore } from 'blockstore-fs'
 import { FsDatastore } from 'datastore-fs'
 import { createHelia, type HeliaInit } from 'helia'
@@ -24,7 +25,7 @@ export const createHeliaBench: ImplementationCreator = async (path, data, persis
     },
 
     async run () {
-      const cid = await ufs.addFile({ content: fs.createReadStream(data) })
+      const cid = await ufs.addFile({ content: fs.createReadStream(data) }, { chunker: selectChunker('size-1048576') })
       const { blocks, size } = await getSize(helia.blockstore, cid)
 
       return { cid: cid.toString(), blocks, size }

@@ -18,7 +18,7 @@ export const createBackupBench: ImplementationCreator = async (path, data, persi
     },
 
     async run () {
-      const [{ cid }] = await client.import(group, data, { path: '/test' })
+      const [{ cid }] = await client.import(group, data, { path: '/test', chunker: 'size-1048576' })
       const [item] = await client.getState([cid])
 
       return item
