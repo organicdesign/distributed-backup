@@ -66,6 +66,12 @@ export class RPCServer {
 
     this.clients.set(id, { socket, stream, controllers })
 
+    socket.on('close', () => {
+      for (const controller of controllers.values()) {
+        controller.abort()
+      }
+    })
+
     // Send responses to the client
     pipe(
       stream,
