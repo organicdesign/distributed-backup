@@ -12,7 +12,7 @@ const command: ModuleMethod<Context> = ({ rpcServer, blockstore, heliaPinManager
     const encrypt = Boolean(params.encrypt)
 
     const config = {
-      chunker: selectChunker('size-4100000'),
+      chunker: selectChunker(params.chunker),
       cidVersion: 1
     } as const
 

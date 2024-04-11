@@ -18,7 +18,8 @@ describe('import', () => {
       onlyHash: false,
       encrypt: false,
       revisionStrategy: 'all',
-      priority: 1
+      priority: 1,
+      chunker: 'size-262144'
     })
 
     const response = await all(handler(params))
@@ -35,6 +36,7 @@ describe('import', () => {
       encrypt: false,
       revisionStrategy: 'all',
       priority: 1,
+      chunker: 'size-262144',
       json: true
     })
 

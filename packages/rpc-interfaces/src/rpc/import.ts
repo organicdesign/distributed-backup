@@ -9,7 +9,7 @@ export const Params = z.object({
   path: z.string().optional().default('/'),
   hash: z.string().optional().default('sha2-256'),
   cidVersion: z.union([z.literal(0), z.literal(1)]).optional().default(1),
-  chunker: z.string().optional().default('size-262144'),
+  chunker: z.string().optional().default('rabin-2000000-3000000-4100000'),
   rawLeaves: z.boolean().optional().default(true),
   encrypt: z.boolean().optional().default(false),
   onlyHash: z.boolean().optional().default(false),

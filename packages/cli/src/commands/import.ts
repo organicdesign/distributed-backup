@@ -42,6 +42,11 @@ export const builder = createBuilder({
   revisionStrategy: {
     type: 'string',
     default: 'all'
+  },
+
+  chunker: {
+    type: 'string',
+    default: 'rabin-2000000-3000000-4100000'
   }
 })
 
@@ -64,7 +69,8 @@ export const handler = createHandler<typeof builder>(async function * (argv) {
     onlyHash: argv.onlyHash,
     encrypt: argv.encrypt,
     priority: argv.priority ?? 1,
-    revisionStrategy: RevisionStrategies.parse(argv.revisionStrategy)
+    revisionStrategy: RevisionStrategies.parse(argv.revisionStrategy),
+    chunker: argv.chunker
   })
 
   if (argv.json === true) {
