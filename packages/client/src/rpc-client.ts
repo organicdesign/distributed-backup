@@ -6,6 +6,7 @@ import { pushable } from 'it-pushable'
 import { JSONRPCClient, type JSONRPCResponse, type JSONRPCRequest } from 'json-rpc-2.0'
 import { map, writeToStream } from 'streaming-iterables'
 import { Event, EventTarget } from 'ts-event-target'
+import type { AbortOptions } from 'interface-store'
 import type { Socket } from 'net'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -23,15 +24,21 @@ export const createEventTarget = (): EventTarget<[RPCEvent]> => new EventTarget<
 
 export class RPCClient {
   readonly events = createEventTarget()
-  readonly rpc: JSONRPCClient
+  readonly rpc: JSONRPCClient<ReturnType<() => void> | AbortOptions>
   private readonly socket: Socket
   private readonly stream = pushable<JSONRPCRequest>({ objectMode: true })
 
   constructor (path: string) {
     this.socket = net.connect({ path })
 
-    this.rpc = new JSONRPCClient(async request => {
+    this.rpc = new JSONRPCClient((request: JSONRPCRequest, options) => {
       this.stream.push(request)
+
+      if (request.id != null && options?.signal != null) {
+        options.signal.onabort = () => {
+          this.rpc.notify('rpc-abort', { id: request.id })
+        }
+      }
     })
   }
 
@@ -75,6 +82,7 @@ export class RPCClient {
   stop (): void {
     this.stream.end()
     this.socket.destroy()
+    this.rpc.rejectAllPendingRequests('stopped')
   }
 }
 

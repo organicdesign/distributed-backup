@@ -6,6 +6,8 @@ import { type Pushable, pushable } from 'it-pushable'
 import { JSONRPCServer, type JSONRPCResponse, type JSONRPCRequest } from 'json-rpc-2.0'
 import { map, writeToStream } from 'streaming-iterables'
 import { Event, EventTarget } from 'ts-event-target'
+import { z } from 'zod'
+import type { AbortOptions } from 'interface-store'
 import type { Socket } from 'net'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -24,11 +26,12 @@ export const createEventTarget = (): EventTarget<[RPCEvent]> => new EventTarget<
 interface Client {
   socket: Socket
   stream: Pushable<JSONRPCResponse>
+  controllers: Map<number | string, AbortController>
 }
 
 export class RPCServer {
   readonly events = createEventTarget()
-  readonly rpc = new JSONRPCServer()
+  readonly rpc = new JSONRPCServer<AbortOptions & { id: number }>()
   private readonly path: string
   private readonly clients = new Map<number, Client>()
   private readonly server = net.createServer(socket => { this.handleClient(socket) })
@@ -46,6 +49,14 @@ export class RPCServer {
 
   async start (): Promise<void> {
     await new Promise<void>(resolve => this.server.listen(this.path, resolve))
+
+    this.rpc.addMethod('rpc-abort', (raw, { id }) => {
+      const params = z.object({ id: z.number() }).parse(raw)
+      const client = this.clients.get(id)
+      const controller = client?.controllers.get(params.id)
+
+      controller?.abort()
+    })
   }
 
   async stop (): Promise<void> {
@@ -63,8 +74,9 @@ export class RPCServer {
   private handleClient (socket: Socket): void {
     const id = this.genId()
     const stream = pushable<JSONRPCResponse>({ objectMode: true })
+    const controllers = new Map<string | number, AbortController>()
 
-    this.clients.set(id, { socket, stream })
+    this.clients.set(id, { socket, stream, controllers })
 
     // Send responses to the client
     pipe(
@@ -92,7 +104,17 @@ export class RPCServer {
       const promises: Array<PromiseLike<void>> = []
 
       for await (const data of itr) {
-        promises.push(this.rpc.receive(data).then(response => {
+        if (data.id != null) {
+          controllers.set(data.id, new AbortController())
+        }
+
+        const signal = data.id == null ? undefined : controllers.get(data.id)?.signal
+
+        promises.push(this.rpc.receive(data, { id, signal }).then(response => {
+          if (data.id != null) {
+            controllers.delete(data.id)
+          }
+
           if (response != null) {
             stream.push(response)
           }
