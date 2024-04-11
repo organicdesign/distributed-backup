@@ -1,4 +1,5 @@
-import { List } from '@organicdesign/db-rpc-interfaces'
+import parallel from 'it-parallel'
+import { pipe } from 'it-pipe'
 import { createBuilder, createHandler } from '../utils.js'
 
 export const command = 'list'
@@ -25,30 +26,6 @@ const formatSize = (size: number): string => {
   }
 
   return `${size} B`
-}
-
-type JStruct = { [k in string]: JStruct | List.Return[number] }
-
-const createJSON = (items: List.Return): JStruct => {
-  const struct: JStruct = {}
-
-  for (const item of items) {
-    const parts = item.path.split('/').filter(p => p.length !== 0)
-    const last = parts.pop()
-    let itr = struct
-
-    for (const part of parts) {
-      if (itr[part] == null) {
-        itr[part] = {}
-      }
-
-      itr = itr[part] as JStruct
-    }
-
-    itr[last ?? ''] = item
-  }
-
-  return struct
 }
 
 const formatPercent = (decimal: number): string => {
@@ -82,83 +59,90 @@ export const handler = createHandler<typeof builder>(async function * (argv) {
     return
   }
 
-  const states = await argv.client.getState(items.map(i => i.cid))
-
-  const getState = ({ cid }: { cid: string }): (typeof states)[number] =>
-    states.find(s => s.cid === cid) ?? { status: 'NOTFOUND', blocks: 0, size: 0, cid }
-
-  const peers = await argv.client.countPeers(items.map(i => i.cid))
-
-  const getPeers = ({ cid }: { cid: string }): number =>
-    peers.find(p => p.cid === cid)?.peers ?? 0
-
   const completed = {
-    blocks: items.map(getState).reduce((a, b) => a + b.blocks, 0),
-    size: items.map(getState).reduce((a, b) => a + b.size, 0),
-    count: items.map(getState).filter(i => i.status === 'COMPLETED').length
+    blocks: 0,
+    size: 0,
+    count: 0,
+    speed: 0
   }
 
-  const age = 5000
-  const ageState = await argv.client.getState(items.map(i => i.cid), { age })
-  const speeds = ageState.map(s => ({ cid: s.cid, speed: s.size / (age / 1000) }))
+  const getItemData = async (cid: string): Promise<{
+    speed: number
+    peers: number
+    status: string
+    blocks: number
+    size: number
+  }> => {
+    const age = 60000
 
-  const getSpeed = ({ cid }: { cid: string }): number =>
-    speeds.find(s => s.cid === cid)?.speed ?? 0
-
-  let header = 'Name'.padEnd(20)
-
-  header += 'Size'.padEnd(27)
-  header += 'Speed'.padEnd(27)
-  header += 'Blocks'.padEnd(20)
-  header += 'State'.padEnd(15)
-  header += 'Priority'.padEnd(10)
-  header += 'Revisions'.padEnd(10)
-  header += 'Peers'.padEnd(10)
-  header += 'Group'.padEnd(10)
-  header += 'Encrypted'.padEnd(10)
-  header += 'R-Strategy'.padEnd(12)
-  header += 'CID'.padEnd(62)
-
-  yield header
-
-  const printTree = function * (tree: JStruct, depth: number = 0): Generator<string> {
-    if (depth === 0) {
-      yield '/'
-      yield * printTree(tree, 1)
-      return
+    if (argv.client == null) {
+      throw new Error('Failed to connect to daemon.')
     }
 
-    for (const [key, subtree] of Object.entries(tree)) {
-      try {
-        const [item] = List.Return.parse([subtree])
-        const timeRemaining = Math.ceil((item.size - getState(item).size) / getSpeed(item))
+    const [[{ status, blocks, size }], [agedStateData], [{ peers }]] = await Promise.all([
+      argv.client.getState([cid]),
+      argv.client.getState([cid], { age }),
+      argv.client.countPeers([cid])
+    ])
+
+    const speed = agedStateData.size / (age / 1000)
+
+    if (status === 'COMPLETED') {
+      completed.count++
+    }
+
+    completed.blocks += blocks
+    completed.size += size
+    completed.speed += speed
+
+    return { speed, peers, status, blocks, size }
+  }
+
+  const getDataFuncs = items.map(item => async () => ({
+    item,
+    state: await getItemData(item.cid)
+  }))
+
+  yield [
+    'Name'.padEnd(50),
+    'Size'.padEnd(27),
+    'Speed'.padEnd(27),
+    'Blocks'.padEnd(20),
+    'State'.padEnd(15),
+    'Priority'.padEnd(10),
+    'Revisions'.padEnd(10),
+    'Peers'.padEnd(10),
+    'Group'.padEnd(10),
+    'Encrypted'.padEnd(10),
+    'R-Strategy'.padEnd(12),
+    'CID'.padEnd(62)
+  ].join('')
+
+  yield * pipe(
+    getDataFuncs,
+    i => parallel(i, { ordered: false, concurrency: 5 }),
+    async function * (items) {
+      for await (const { item, state } of items) {
+        const timeRemaining = Math.ceil((item.size - state.size) / state.speed)
 
         yield [
-          `${'  '.repeat(depth)}${key}`.slice(0, 18).padEnd(20),
-          `${formatSize(getState(item).size)}/${formatSize(item.size)} (${formatPercent(getState(item).size / item.size)})`.slice(0, 25).padEnd(27),
-          `${formatSize(getSpeed(item))}/s ${isNaN(timeRemaining) ? '' : `(${timeRemaining} s)`}`.slice(0, 25).padEnd(27),
-          `${getState(item).blocks}/${item.blocks} (${formatPercent(getState(item).blocks / item.blocks)})`.slice(0, 18).padEnd(20),
-          getState(item).status.slice(0, 13).padEnd(15),
+          `${item.path}`.slice(0, 48).padEnd(50),
+          `${formatSize(state.size)}/${formatSize(item.size)} (${formatPercent(state.size / item.size)})`.slice(0, 25).padEnd(27),
+          `${formatSize(state.speed)}/s ${isNaN(timeRemaining) ? '' : `(${timeRemaining} s)`}`.slice(0, 25).padEnd(27),
+          `${state.blocks}/${item.blocks} (${formatPercent(state.blocks / item.blocks)})`.slice(0, 18).padEnd(20),
+          state.status.slice(0, 13).padEnd(15),
           `${item.priority}`.slice(0, 8).padEnd(10),
           `${revisionCounter[item.path] ?? 0}`.slice(0, 8).padEnd(10),
-          `${getPeers(item)}`.slice(0, 8).padEnd(10),
+          `${state.peers}`.slice(0, 8).padEnd(10),
           `${item.group}`.slice(0, 8).padEnd(10),
           `${item.encrypted}`.slice(0, 8).padEnd(10),
           `${item.revisionStrategy}`.slice(0, 8).padEnd(12),
           item.cid.padEnd(62)
         ].join('')
-
-        continue
-      } catch (error) {
-        // Ignore
       }
-
-      yield `${'  '.repeat(depth)}${key}/`
-      yield * printTree(subtree as JStruct, depth + 1)
     }
-  }
+  )
 
-  yield * printTree(createJSON(items))
   yield ''
   yield [
     'Total'.padEnd(15),
@@ -171,6 +155,6 @@ export const handler = createHandler<typeof builder>(async function * (argv) {
     `${completed.count}/${total.count} (${formatPercent(completed.count / total.count)})`.slice(0, 13).padEnd(15),
     `${formatSize(completed.size)}/${formatSize(total.size)} (${formatPercent(completed.size / total.size)})`.slice(0, 23).padEnd(25),
     `${completed.blocks}/${total.blocks} (${formatPercent(completed.blocks / total.blocks)})`.slice(0, 18).padEnd(20),
-    `${formatSize(speeds.reduce((a, c) => a + c.speed, 0))}s`.slice(0, 18).padEnd(20)
+    `${formatSize(completed.speed)}s`.slice(0, 18).padEnd(20)
   ].join('')
 })
