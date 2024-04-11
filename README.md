@@ -210,10 +210,20 @@ npm ci
 npm run build
 ```
 
+For all benchmarks you can pass `--help` to the command to get a list of CLI arguments.
+
 ### Transfer
 
 To run the transfer benchmark:
 
 ```
 node packages/benchmarks/dist/src/transfer/index.js
+```
+
+### Import
+
+To run the import benchmark:
+
+```
+node packages/benchmarks/dist/src/import/index.js
 ```
