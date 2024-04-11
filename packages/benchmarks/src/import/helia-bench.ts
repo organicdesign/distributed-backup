@@ -6,12 +6,17 @@ import { selectChunker } from '@organicdesign/db-utils/portation'
 import { FsBlockstore } from 'blockstore-fs'
 import { FsDatastore } from 'datastore-fs'
 import { createHelia, type HeliaInit } from 'helia'
+import createLibp2p from '../utils/libp2p.js'
 import type { ImplementationCreator } from './interface.js'
 
-export const createHeliaBench: ImplementationCreator = async (path, data, persistent) => {
-  const heliaInit: HeliaInit = {}
+export const createHeliaBench: ImplementationCreator = async (path, data, options = {}) => {
+  const libp2p = await createLibp2p(
+    options.persistent === true ? new FsDatastore(Path.join(path, 'libp2p-datastore')) : undefined
+  )
 
-  if (persistent) {
+  const heliaInit: HeliaInit = { blockBrokers: [], libp2p }
+
+  if (options.persistent === true) {
     heliaInit.blockstore = new FsBlockstore(Path.join(path, 'blockstore'))
     heliaInit.datastore = new FsDatastore(Path.join(path, 'datastore'))
   }
@@ -25,7 +30,11 @@ export const createHeliaBench: ImplementationCreator = async (path, data, persis
     },
 
     async run () {
-      const cid = await ufs.addFile({ content: fs.createReadStream(data) }, { chunker: selectChunker('size-1048576') })
+      const cid = await ufs.addFile(
+        { content: fs.createReadStream(data) },
+        { chunker: selectChunker(options.chunker) }
+      )
+
       const { blocks, size } = await getSize(helia.blockstore, cid)
 
       return { cid: cid.toString(), blocks, size }

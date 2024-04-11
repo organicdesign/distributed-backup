@@ -2,8 +2,8 @@ import { Client } from '@organicdesign/db-client'
 import runNode from '../utils/run-node.js'
 import type { ImplementationCreator } from './interface.js'
 
-export const createBackupBench: ImplementationCreator = async (path, data, persistent) => {
-  const proc = await runNode(path, { persistent })
+export const createBackupBench: ImplementationCreator = async (path, data, options = {}) => {
+  const proc = await runNode(path, options)
 
   await proc.start()
 
@@ -18,7 +18,7 @@ export const createBackupBench: ImplementationCreator = async (path, data, persi
     },
 
     async run () {
-      const [{ cid }] = await client.import(group, data, { path: '/test', chunker: 'size-1048576' })
+      const [{ cid }] = await client.import(group, data, { path: '/test', chunker: options.chunker })
       const [item] = await client.getState([cid])
 
       return item

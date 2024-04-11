@@ -17,4 +17,10 @@ export interface ImportImplementation {
   blocks: number
 }
 
-export interface ImplementationCreator { (path: string, data: string, persistent: boolean): Promise<ImportBenchmark> }
+export interface ImplementationCreator {
+  (
+    path: string,
+    data: string,
+    options: Partial<{ persistent: boolean, chunker: string }>
+  ): Promise<ImportBenchmark>
+}

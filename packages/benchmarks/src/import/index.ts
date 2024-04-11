@@ -41,6 +41,13 @@ const argv = await yargs(hideBin(process.argv))
       default: false
     }
   })
+  .option({
+    chunker: {
+      alias: 'c',
+      type: 'string',
+      default: 'rabin-1000000-2000000-3000000'
+    }
+  })
   .parse()
 
 const log = debug('bench:import')
@@ -51,7 +58,7 @@ const sizes = [
   6, // 1mb
   7, // 10mb
   8, // 100mb
-  9 //  1gb
+  9 // 1gb
 ].map(z => 10 ** z)
 
 const benchmarks: Array<[string, ImplementationCreator]> = [
@@ -72,7 +79,11 @@ for (const [name, method] of benchmarks) {
     impls.push({
       label: name,
       name: `${name}-${prettyBytes(size)}`,
-      create: async () => method(Path.join(outPath, `import-${name}-${prettyBytes(size)}`), path, argv.persistent),
+      create: async () => method(
+        Path.join(outPath, `import-${name}-${prettyBytes(size)}`),
+        path,
+        { persistent: argv.persistent, chunker: argv.chunker }
+      ),
       results: [],
       fileSize: size,
       size: 0,

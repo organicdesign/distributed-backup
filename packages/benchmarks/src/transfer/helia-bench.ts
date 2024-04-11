@@ -7,15 +7,20 @@ import { FsBlockstore } from 'blockstore-fs'
 import { FsDatastore } from 'datastore-fs'
 import { createHelia, type HeliaInit } from 'helia'
 import all from 'it-all'
+import createLibp2p from '../utils/libp2p.js'
 import type { ImplementationCreator } from './interface.js'
 
-export const createHeliaBench: ImplementationCreator = async (path, data, persistent) => {
+export const createHeliaBench: ImplementationCreator = async (path, data, options = {}) => {
   const paths = [...Array(2).keys()].map(i => Path.join(path, `helia-${i}`))
 
   const helias = await Promise.all(paths.map(async path => {
-    const heliaInit: HeliaInit = {}
+    const libp2p = await createLibp2p(
+      options.persistent === true ? new FsDatastore(Path.join(path, 'libp2p-datastore')) : undefined
+    )
 
-    if (persistent) {
+    const heliaInit: HeliaInit = { libp2p }
+
+    if (options.persistent === true) {
       heliaInit.blockstore = new FsBlockstore(Path.join(path, 'blockstore'))
       heliaInit.datastore = new FsDatastore(Path.join(path, 'datastore'))
     }
@@ -29,7 +34,11 @@ export const createHeliaBench: ImplementationCreator = async (path, data, persis
 
   await helias[1].libp2p.dial(addresses)
 
-  const cid = await ufss[0].addFile({ content: fs.createReadStream(data) }, { chunker: selectChunker('size-1048576') })
+  const cid = await ufss[0].addFile(
+    { content: fs.createReadStream(data) },
+    { chunker: selectChunker(options.chunker) }
+  )
+
   const item = await getSize(helias[0].blockstore, cid)
 
   return {

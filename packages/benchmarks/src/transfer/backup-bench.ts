@@ -3,9 +3,9 @@ import { Client } from '@organicdesign/db-client'
 import runNode from '../utils/run-node.js'
 import type { ImplementationCreator } from './interface.js'
 
-export const createBackupBench: ImplementationCreator = async (path, data, persistent) => {
+export const createBackupBench: ImplementationCreator = async (path, data, options = {}) => {
   const nodePaths = [...Array(2).keys()].map(i => Path.join(path, `node-${i}`))
-  const procs = await Promise.all(nodePaths.map(async p => runNode(p, { persistent })))
+  const procs = await Promise.all(nodePaths.map(async p => runNode(p, options)))
 
   await Promise.all(procs.map(async p => p.start()))
 
@@ -15,7 +15,7 @@ export const createBackupBench: ImplementationCreator = async (path, data, persi
   await clients[1].connect(addresses[0])
 
   const group = await clients[0].createGroup('test')
-  const [{ cid }] = await clients[0].import(group, data, { path: '/test', chunker: 'size-1048576' })
+  const [{ cid }] = await clients[0].import(group, data, { path: '/test', chunker: options.chunker })
   const [item] = await clients[0].getState([cid])
 
   return {

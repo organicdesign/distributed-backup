@@ -16,4 +16,10 @@ export interface TransferImplementation {
   blocks: number
 }
 
-export interface ImplementationCreator { (path: string, data: string, persistent: boolean): Promise<TransferBenchmark> }
+export interface ImplementationCreator {
+  (
+    path: string,
+    data: string,
+    options: Partial<{ persistent: boolean, chunker: string }>
+  ): Promise<TransferBenchmark>
+}
