@@ -1,0 +1,15 @@
+{
+  "extends": "aegir/src/config/tsconfig.aegir.json",
+  "compilerOptions": {
+    "moduleResolution": "nodenext",
+    "esModuleInterop": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+    "module": "nodenext",
+    "target": "ES2022"
+  },
+  "include": [
+    "src",
+    "test"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "type": "module",
+  "name": "@organicdesign/db-rpc",
+  "version": "0.1.0",
+  "description": "An RPC package that uses net.",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "files": [
+    "dist/src"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "prepublishOnly": "npm run build",
+    "build": "aegir build"
+  },
+  "author": "Saul Boyd",
+  "license": "GPL-3.0-or-later",
+  "devDependencies": {
+    "aegir": "^42.2.4"
+  },
+  "private": true,
+  "sideEffects": false,
+  "dependencies": {
+    "cborg": "^4.2.0",
+    "interface-store": "^5.1.8",
+    "it-length-prefixed": "^9.0.4",
+    "it-pipe": "^3.0.1",
+    "it-pushable": "^3.2.3",
+    "json-rpc-2.0": "^1.7.0",
+    "streaming-iterables": "^8.0.1",
+    "ts-event-target": "^0.1.5",
+    "uint8arraylist": "^2.4.8",
+    "zod": "^3.22.4"
+  }
+}
