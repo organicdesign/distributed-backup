@@ -2,13 +2,15 @@
 import fs from 'fs/promises'
 import Path from 'path'
 import debug from 'debug'
+import all from 'it-all'
+import parallel from 'it-parallel'
 import prettyBytes from 'pretty-bytes'
 import { Bench } from 'tinybench'
 import { hideBin } from 'yargs/helpers'
 import yargs from 'yargs/yargs'
-import generateFile from '../utils/generate-file.js'
-import { packagePath } from '../utils/paths.js'
-import { createImportBench } from './import-bench.js'
+import { generateFiles } from '../utils/generate-files.js'
+import { outPath } from '../utils/paths.js'
+import { createBackupBench } from './backup-bench.js'
 import type { ImportImplementation } from './interface.js'
 
 const argv = await yargs(hideBin(process.argv))
@@ -51,44 +53,25 @@ const sizes = [
   9 //  1gb
 ].map(z => 10 ** z)
 
-const impls: ImportImplementation[] = sizes.map(size => ({
+log('Pre-Start: Generating data files...')
+
+const files = await all(parallel(generateFiles(outPath, sizes), { ordered: true, concurrency: 2 }))
+
+log('Pre-Start: Complete')
+
+const impls: ImportImplementation[] = files.map(({ path, size }) => ({
   name: `${prettyBytes(size)}`,
-  create: async () => createImportBench(size, argv.persistent),
+  create: async () => createBackupBench(Path.join(outPath, `import-backup-${prettyBytes(size)}`), path, argv.persistent),
   results: [],
   fileSize: size,
   size: 0,
   blocks: 0
 }))
 
-const dataPath = Path.join(packagePath, 'test-out')
-
 async function main (): Promise<void> {
   const suite = new Bench({
     iterations: argv.iterations,
-    time: argv.minTime,
-
-    async setup (task) {
-      const impl = impls.find(({ name }) => task.name.includes(name))
-
-      if (impl == null) {
-        return
-      }
-
-      await fs.mkdir(dataPath, { recursive: true })
-      const dataFile = Path.join(dataPath, `${impl.fileSize}.data`)
-      await generateFile(dataFile, impl.fileSize)
-    },
-
-    async teardown (task) {
-      const impl = impls.find(({ name }) => task.name.includes(name))
-
-      if (impl == null) {
-        return
-      }
-
-      const dataFile = Path.join(dataPath, `${impl.fileSize}.data`)
-      await fs.rm(dataFile)
-    }
+    time: argv.minTime
   })
 
   for (const impl of impls) {
@@ -130,7 +113,9 @@ async function main (): Promise<void> {
       throw new Error('got result without implementation')
     }
 
-    const seconds = (result?.period ?? 0) / 1000
+    console.log(result, impl)
+
+    const seconds = (result?.period ?? 1) / 1000
     const speed = impl.size / seconds
     const bps = impl.blocks / seconds
 
@@ -146,7 +131,7 @@ async function main (): Promise<void> {
     }
   }))
 
-  await fs.rm(dataPath, { recursive: true })
+  await fs.rm(outPath, { recursive: true })
 }
 
 main().catch(err => {

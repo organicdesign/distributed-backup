@@ -1,28 +1,21 @@
 import Path from 'path'
 import { Client } from '@organicdesign/db-client'
-import { packagePath } from '../utils/paths.js'
 import runNode from '../utils/run-node.js'
 import type { TransferBenchmark } from './interface.js'
 
-export const createTransferBench = async (size: number, persistent: boolean): Promise<TransferBenchmark> => {
-  const dataPath = Path.join(packagePath, 'test-out')
-
-  const names = [...Array(2).keys()].map(i => `transfer-${size}-${i}`)
-
-  const procs = await Promise.all(names.map(async n => runNode(n, { persistent })))
+export const createBackupBench = async (path: string, data: string, persistent: boolean): Promise<TransferBenchmark> => {
+  const nodePaths = [...Array(2).keys()].map(i => Path.join(path, `node-${i}`))
+  const procs = await Promise.all(nodePaths.map(async p => runNode(p, { persistent })))
 
   await Promise.all(procs.map(async p => p.start()))
 
-  const clients = names.map(n => new Client(Path.join(dataPath, n, 'socket')))
-
+  const clients = procs.map(p => new Client(p.socket))
   const addresses = await clients[0].addresses()
 
   await clients[1].connect(addresses[0])
 
   const group = await clients[0].createGroup('test')
-
-  const dataFile = Path.join(dataPath, `${size}.data`)
-  const [{ cid }] = await clients[0].import(group, dataFile, { path: '/test' })
+  const [{ cid }] = await clients[0].import(group, data, { path: '/test' })
   const [item] = await clients[0].getState([cid])
 
   return {

@@ -3,16 +3,14 @@ import fs from 'fs/promises'
 import Path from 'path'
 import { DeferredPromise } from '@open-draft/deferred-promise'
 import { toString as uint8ArrayToString } from 'uint8arrays'
-import { packagePath, modulesPath } from './paths.js'
+import { modulesPath } from './paths.js'
 
-export default async (name: string, options: { persistent?: boolean } = {}): Promise<{ start(): Promise<void>, stop(): Promise<void> }> => {
-  const rootPath = Path.join(packagePath, 'test-out', name)
-  const socket = Path.join(rootPath, 'socket')
-  const config = Path.join(rootPath, 'config.json')
-  const isReceiver = name[name.length - 1] === '1'
-  const storagePath = Path.join(rootPath, 'storage')
+export default async (path: string, options: { persistent?: boolean } = {}): Promise<{ start(): Promise<void>, stop(): Promise<void>, socket: string }> => {
+  const socket = Path.join(path, 'socket')
+  const config = Path.join(path, 'config.json')
+  const storagePath = Path.join(path, 'storage')
 
-  await fs.mkdir(rootPath, { recursive: true })
+  await fs.mkdir(path, { recursive: true })
 
   await fs.writeFile(config, JSON.stringify({
     storage: options.persistent === true ? storagePath : ':memory:'
@@ -23,11 +21,6 @@ export default async (name: string, options: { persistent?: boolean } = {}): Pro
     '-s', socket,
     '-c', config
   ]
-
-  if (isReceiver) {
-    // args.unshift('--trace-gc')
-    // args.unshift('--inspect')
-  }
 
   let proc: ChildProcessWithoutNullStreams
 
@@ -41,6 +34,8 @@ export default async (name: string, options: { persistent?: boolean } = {}): Pro
   }
 
   return {
+    socket,
+
     async start () {
       proc = spawn('node', args, { env: { ...process.env, DEBUG: 'backup:*' } })
 
