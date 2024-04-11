@@ -23,13 +23,13 @@ describe('list', () => {
   ]
 
   it('text', async () => {
-    const params = mockParams({ list: items, countPeers: [{ cid, peers: 1 }], getState: [{ cid, status: 'COMPLETED', size: 50, blocks: 5 }] }, { group: 'group-abc' })
+    const params = mockParams({ list: items, countPeers: [{ cid, peers: 1 }], getState: [{ cid, status: 'COMPLETED', size: 50, blocks: 5 }] }, { group: 'group-abc', age: 5000 })
 
     const response = await all(handler(params))
 
     const expected = [
       [
-        'Name'.padEnd(20),
+        'Name'.padEnd(50),
         'Size'.padEnd(27),
         'Speed'.padEnd(27),
         'Blocks'.padEnd(20),
@@ -42,14 +42,13 @@ describe('list', () => {
         'R-Strategy'.padEnd(12),
         'CID'.padEnd(62)
       ].join(''),
-      '/',
-      '  my-dir/',
+      '',
       [
-        '    file            ',
-        '50 B/500 B (10%)           ',
-        '10 B/s (45 s)              ',
-        '5/50 (10%)          ',
-        'COMPLETED      ',
+        '/my-dir/file'.padEnd(50),
+        '50 B/500 B (10%)'.padEnd(27),
+        '10 B/s (45 s)'.padEnd(27),
+        '5/50 (10%)'.padEnd(20),
+        'COMPLETED'.padEnd(15),
         '1         0         1         ',
         'QmaCpDMG  false     all         ',
         'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN                '
@@ -79,6 +78,7 @@ describe('list', () => {
       getState: [{ cid, status: 'COMPLETED', size: 50, blocks: 5 }]
     }, {
       group: 'group-abc',
+      age: 5000,
       json: true
     })
 

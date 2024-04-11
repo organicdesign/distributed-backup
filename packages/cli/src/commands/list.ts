@@ -6,7 +6,12 @@ export const command = 'list'
 
 export const desc = 'List all items.'
 
-export const builder = createBuilder({})
+export const builder = createBuilder({
+  age: {
+    type: 'number',
+    default: 60000
+  }
+})
 
 const formatSize = (size: number): string => {
   if (size > Math.pow(1000, 3)) {
@@ -73,19 +78,17 @@ export const handler = createHandler<typeof builder>(async function * (argv) {
     blocks: number
     size: number
   }> => {
-    const age = 60000
-
     if (argv.client == null) {
       throw new Error('Failed to connect to daemon.')
     }
 
     const [[{ status, blocks, size }], [agedStateData], [{ peers }]] = await Promise.all([
       argv.client.getState([cid]),
-      argv.client.getState([cid], { age }),
+      argv.client.getState([cid], { age: argv.age }),
       argv.client.countPeers([cid])
     ])
 
-    const speed = agedStateData.size / (age / 1000)
+    const speed = agedStateData.size / (argv.age / 1000)
 
     if (status === 'COMPLETED') {
       completed.count++
@@ -117,6 +120,8 @@ export const handler = createHandler<typeof builder>(async function * (argv) {
     'R-Strategy'.padEnd(12),
     'CID'.padEnd(62)
   ].join('')
+
+  yield ''
 
   yield * pipe(
     getDataFuncs,
