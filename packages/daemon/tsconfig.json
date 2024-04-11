@@ -30,6 +30,9 @@
       "path": "../rpc-interfaces"
     },
     {
+      "path": "../rpc"
+    },
+    {
       "path": "../manual-block-broker"
     },
     {

@@ -3,7 +3,7 @@ import fs from 'fs/promises'
 import Path from 'path'
 import { unixfs } from '@helia/unixfs'
 import { createKeyManager } from '@organicdesign/db-key-manager'
-import { createNetClient } from '@organicdesign/net-rpc'
+import { createRPCClient } from '@organicdesign/db-rpc'
 import { createHelia } from 'helia'
 import { Key } from 'interface-datastore'
 import all from 'it-all'
@@ -208,19 +208,19 @@ describe('network', () => {
 
   it('rpc - addresses returns the peers addresses', async () => {
     const components = await setup({ socket, config: { private: false } })
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
     const addresses = await client.rpc.request('addresses', {})
 
     assert.deepEqual(addresses, components.libp2p.getMultiaddrs().map(a => a.toString()))
 
-    client.close()
+    client.stop()
     await components.stop()
   })
 
   it('rpc - connections returns the peers connections', async () => {
     const libp2p = await createLibp2p({})
     const components = await setup({ socket, config: { private: false } })
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
 
     assert.deepEqual(await client.rpc.request('connections', {}), [])
 
@@ -236,16 +236,16 @@ describe('network', () => {
     )
 
     await libp2p.stop()
-    client.close()
+    client.stop()
     await components.stop()
   })
 
   it('rpc - connection connects to another peer', async () => {
     const libp2p = await createLibp2p({})
     const components = await setup({ socket, config: { private: false } })
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
 
-    await client.rpc.request('connect', { address: libp2p.getMultiaddrs()[0] })
+    await client.rpc.request('connect', { address: libp2p.getMultiaddrs()[0].toString() })
 
     const connections = components.libp2p.getConnections()
 
@@ -254,7 +254,7 @@ describe('network', () => {
 
     await libp2p.stop()
     await components.stop()
-    client.close()
+    client.stop()
   })
 
   // This should pass but sometimes github workflows can be a bit flakey in terms of peer discovery.
@@ -264,7 +264,7 @@ describe('network', () => {
     const helia = await createHelia({ libp2p })
     const ufs = unixfs(helia)
     const components = await setup({ socket, config: { private: false } })
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
 
     await components.libp2p.dial(helia.libp2p.getMultiaddrs())
 
@@ -278,6 +278,6 @@ describe('network', () => {
     await helia.stop()
     await libp2p.stop()
     await components.stop()
-    client.close()
+    client.stop()
   })
 })

@@ -1,7 +1,7 @@
 import assert from 'assert/strict'
 import fs from 'fs/promises'
 import Path from 'path'
-import { createNetClient } from '@organicdesign/net-rpc'
+import { createRPCClient } from '@organicdesign/db-rpc'
 import { mkTestPath } from '../utils/paths.js'
 import setup from '@/common/index.js'
 
@@ -23,7 +23,7 @@ describe('rpc', () => {
     const testData = { key: 'value' }
     const returnData = { return: 'return-value' }
 
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
 
     const methodPromise = new Promise((resolve, reject) => {
       setTimeout(() => { reject(new Error()) }, 50)
@@ -39,7 +39,7 @@ describe('rpc', () => {
     assert.deepEqual(returnResult, returnData)
     assert.deepEqual(await methodPromise, testData)
 
-    client.close()
+    client.stop()
     await components.stop()
   })
 })

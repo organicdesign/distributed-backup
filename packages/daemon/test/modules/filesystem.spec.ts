@@ -2,10 +2,10 @@ import assert from 'assert/strict'
 import fs from 'fs/promises'
 import Path from 'path'
 import { unixfs } from '@helia/unixfs'
+import { createRPCClient } from '@organicdesign/db-rpc'
 import { createDag } from '@organicdesign/db-test-utils'
 import * as testData from '@organicdesign/db-test-utils/data'
 import { importer } from '@organicdesign/db-utils/portation'
-import { createNetClient } from '@organicdesign/net-rpc'
 import { MemoryBlockstore } from 'blockstore-core'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
@@ -159,7 +159,7 @@ describe('filesystem', () => {
 
   it('rpc - delete (file)', async () => {
     const { filesystem, components, socket } = await create()
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
     const group = await createGroup(components, 'test')
     const fs = filesystem.getFileSystem(group)
     const dag = await createDag(components.helia, 2, 2)
@@ -182,13 +182,13 @@ describe('filesystem', () => {
 
     assert.equal(entry, null)
 
-    client.close()
+    client.stop()
     await components.stop()
   })
 
   it('rpc - delete (directory)', async () => {
     const { filesystem, components, socket } = await create()
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
     const group = await createGroup(components, 'test')
     const fs = filesystem.getFileSystem(group)
     const dag = await createDag(components.helia, 2, 2)
@@ -214,13 +214,13 @@ describe('filesystem', () => {
 
     assert.deepEqual(entries, [])
 
-    client.close()
+    client.stop()
     await components.stop()
   })
 
   it('rpc - edit priority', async () => {
     const { filesystem, components, socket } = await create()
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
     const group = await createGroup(components, 'test')
     const fs = filesystem.getFileSystem(group)
     const path = '/test'
@@ -236,13 +236,13 @@ describe('filesystem', () => {
 
     assert.equal(localSettings.priority, priority)
 
-    client.close()
+    client.stop()
     await components.stop()
   })
 
   it('rpc - export (file)', async () => {
     const { filesystem, components, socket } = await create()
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
     const group = await createGroup(components, 'test')
     const fs = filesystem.getFileSystem(group)
     const rootPath = '/test'
@@ -276,13 +276,13 @@ describe('filesystem', () => {
       assert.equal(valid, true)
     }
 
-    client.close()
+    client.stop()
     await components.stop()
   })
 
   it('rpc - export (directory)', async () => {
     const { filesystem, components, socket } = await create()
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
     const group = await createGroup(components, 'test')
     const fs = filesystem.getFileSystem(group)
     const rootPath = '/test'
@@ -316,13 +316,13 @@ describe('filesystem', () => {
       assert.equal(valid, true)
     }
 
-    client.close()
+    client.stop()
     await components.stop()
   })
 
   it('rpc - import (file)', async () => {
     const { filesystem, components, socket } = await create()
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
     const group = await createGroup(components, 'test')
     const fs = filesystem.getFileSystem(group)
     const rootPath = '/test'
@@ -350,13 +350,13 @@ describe('filesystem', () => {
       assert.deepEqual(result.cid, data.cid)
     }))
 
-    client.close()
+    client.stop()
     await components.stop()
   })
 
   it('rpc - import (directory)', async () => {
     const { filesystem, components, socket } = await create()
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
     const group = await createGroup(components, 'test')
     const fs = filesystem.getFileSystem(group)
     const rootPath = '/test'
@@ -393,13 +393,13 @@ describe('filesystem', () => {
       assert.deepEqual(r.value.cid, dataFile.cid)
     }
 
-    client.close()
+    client.stop()
     await components.stop()
   })
 
   it('rpc - list', async () => {
     const { filesystem, components, socket } = await create()
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
     const group = await createGroup(components, 'test')
     const fs = filesystem.getFileSystem(group)
     const dag = await createDag(components.helia, 2, 2)
@@ -439,13 +439,13 @@ describe('filesystem', () => {
       assert(entry.timestamp <= Date.now())
     }
 
-    client.close()
+    client.stop()
     await components.stop()
   })
 
   it('rpc - read', async () => {
     const { filesystem, components, socket } = await create()
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
     const group = await createGroup(components, 'test')
     const ufs = unixfs(components.helia)
     const path = '/test'
@@ -476,13 +476,13 @@ describe('filesystem', () => {
 
     assert.deepEqual(read4, data.slice(1, 3 + 1))
 
-    client.close()
+    client.stop()
     await components.stop()
   })
 
   it('rpc - write', async () => {
     const { filesystem, components, socket } = await create()
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
     const group = await createGroup(components, 'test')
     const fs = filesystem.getFileSystem(group)
     const ufs = unixfs({ blockstore: new MemoryBlockstore() })
@@ -550,7 +550,7 @@ describe('filesystem', () => {
 
     assert.deepEqual(value4, uint8ArrayFromString('test-long-long'))
 
-    client.close()
+    client.stop()
     await components.stop()
   })
 })

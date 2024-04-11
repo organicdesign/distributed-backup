@@ -2,10 +2,10 @@ import assert from 'assert'
 import fs from 'fs/promises'
 import Path from 'path'
 import { unixfs } from '@helia/unixfs'
+import { createRPCClient } from '@organicdesign/db-rpc'
 import { createDag } from '@organicdesign/db-test-utils'
 import * as testData from '@organicdesign/db-test-utils/data'
 import { importer } from '@organicdesign/db-utils/portation'
-import { createNetClient } from '@organicdesign/net-rpc'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -120,7 +120,7 @@ describe('revisions', () => {
     const group = await createGroup(components, 'test')
     const fs = filesystem.getFileSystem(group)
     const path = '/test'
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
     const sequence = 0
     const dataFile = testData.files[0]
     const exportPath = dataFile.generatePath(testPath)
@@ -168,7 +168,7 @@ describe('revisions', () => {
     const group = await createGroup(components, 'test')
     const fs = filesystem.getFileSystem(group)
     const rootPath = '/test'
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
     const sequence = 0
     const outPath = Path.join(testPath, 'export-directory')
 
@@ -222,7 +222,7 @@ describe('revisions', () => {
     const group = await createGroup(components, 'test')
     const fs = filesystem.getFileSystem(group)
     const path = '/test'
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
     const dataFile = testData.files[0]
 
     assert(fs != null)
@@ -274,7 +274,7 @@ describe('revisions', () => {
     const group = await createGroup(components, 'test')
     const fs = filesystem.getFileSystem(group)
     const rootPath = '/test'
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
 
     assert(fs != null)
 
@@ -335,7 +335,7 @@ describe('revisions', () => {
 
   it('rpc - read revision', async () => {
     const { filesystem, components, socket } = await create()
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
     const group = await createGroup(components, 'test')
     const ufs = unixfs(components.helia)
     const path = '/test'
@@ -383,7 +383,7 @@ describe('revisions', () => {
 
     assert.deepEqual(read4, data.slice(1, 3 + 1))
 
-    client.close()
+    client.stop()
     await components.stop()
   })
 })

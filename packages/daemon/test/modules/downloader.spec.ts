@@ -1,8 +1,8 @@
 import assert from 'assert/strict'
 import fs from 'fs/promises'
 import Path from 'path'
+import { createRPCClient } from '@organicdesign/db-rpc'
 import { createDag } from '@organicdesign/db-test-utils'
-import { createNetClient } from '@organicdesign/net-rpc'
 import { MemoryBlockstore } from 'blockstore-core'
 import { CID } from 'multiformats/cid'
 import { mkTestPath } from '../utils/paths.js'
@@ -32,7 +32,7 @@ describe('downloader', () => {
     const path = '/test.txt'
     const priority = 50
     const { components, socket } = await create()
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
     const key = Path.join('/', group, path)
 
     await components.pinManager.put(key, { priority: 1, cid: CID.parse(group) })
@@ -46,7 +46,7 @@ describe('downloader', () => {
     assert(pinData != null)
     assert.equal(pinData.priority, priority)
 
-    client.close()
+    client.stop()
     await components.stop()
   })
 
@@ -57,7 +57,7 @@ describe('downloader', () => {
     const group = 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'
     const path = '/test.txt'
     const age = 500
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
     const key = Path.join('/', group, path)
 
     await components.pinManager.put(key, { priority: 1, cid: dag[0] })
@@ -108,7 +108,7 @@ describe('downloader', () => {
     assert.equal(state3[0].size, values.reduce((a, c) => c.length + a, 0))
     assert.equal(state3[0].blocks, values.length)
 
-    client.close()
+    client.stop()
     await components.stop()
   })
 
@@ -118,7 +118,7 @@ describe('downloader', () => {
     const dag = await createDag({ blockstore }, 2, 2)
     const group = 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'
     const path = '/test.txt'
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
     const key = Path.join('/', group, path)
 
     const status1 = await client.rpc.request('get-state', {
@@ -182,7 +182,7 @@ describe('downloader', () => {
       status: 'COMPLETED'
     }])
 
-    client.close()
+    client.stop()
     await components.stop()
   })
 })

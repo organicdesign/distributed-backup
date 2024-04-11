@@ -1,7 +1,7 @@
 import assert from 'assert/strict'
 import fs from 'fs/promises'
 import Path from 'path'
-import { createNetClient } from '@organicdesign/net-rpc'
+import { createRPCClient } from '@organicdesign/db-rpc'
 import * as cborg from 'cborg'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
@@ -164,19 +164,19 @@ describe('groups', () => {
 
   it('rpc - id returns the base58btc formatted welo id', async () => {
     const { components, socket } = await create()
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
 
     const id = await client.rpc.request('id', {})
 
     assert.equal(uint8ArrayToString(components.welo.identity.id, 'base58btc'), id)
 
-    client.close()
+    client.stop()
     await components.stop()
   })
 
   it('rpc - create groups creates a group without other peers', async () => {
     const { components, socket } = await create()
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
     const name = 'test'
 
     const cid = await client.rpc.request('create-group', { name, peers: [] })
@@ -187,13 +187,13 @@ describe('groups', () => {
     assert.equal(database.manifest.name, name)
     assert.deepEqual(database.manifest.access.config?.write, [components.welo.identity.id])
 
-    client.close()
+    client.stop()
     await components.stop()
   })
 
   it('rpc - create groups creates a group with other peers', async () => {
     const { components, socket } = await create()
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
     const name = 'test'
     const otherPeer = 'GZsJqUjmbVqZCUMbJoe5ye4xfdKZVPVwBoFFQiyCZYesq6Us5b'
 
@@ -208,13 +208,13 @@ describe('groups', () => {
       uint8ArrayFromString(otherPeer, 'base58btc')
     ])
 
-    client.close()
+    client.stop()
     await components.stop()
   })
 
   it('rpc - joins an external group', async () => {
     const components = await Promise.all([create(), create()])
-    const client = createNetClient(components[0].socket)
+    const client = createRPCClient(components[0].socket)
     const name = 'test'
     const group = await createGroup(components[1].components, name)
 
@@ -228,13 +228,13 @@ describe('groups', () => {
     assert(database)
     assert.equal(database.manifest.name, name)
 
-    client.close()
+    client.stop()
     await Promise.all(components.map(async c => c.components.stop()))
   })
 
   it('rpc - list groups', async () => {
     const { components, socket } = await create()
-    const client = createNetClient(socket)
+    const client = createRPCClient(socket)
     const name = 'test'
 
     let groups = await client.rpc.request('list-groups', {})
@@ -247,14 +247,14 @@ describe('groups', () => {
 
     assert.deepEqual(groups, [{ group: group.toString(), name }])
 
-    client.close()
+    client.stop()
     await components.stop()
   })
 
   // This fails it github too - seems to think the `server-sync-groups` socket is in use?
   it.skip('rpc - sync groups', async () => {
     const components = await Promise.all([create(), create()])
-    const client = createNetClient(components[0].socket)
+    const client = createRPCClient(components[0].socket)
     const key = '/test'
     const value = 'test-value'
 
@@ -282,7 +282,7 @@ describe('groups', () => {
 
     assert.deepEqual(result, value)
 
-    client.close()
+    client.stop()
     await Promise.all(components.map(async c => c.components.stop()))
   })
 })
