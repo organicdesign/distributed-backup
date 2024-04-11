@@ -120,6 +120,10 @@ export class RPCServer {
       stream.end()
       socket.destroy()
 
+      for (const controller of controllers.values()) {
+        controller.abort()
+      }
+
       this.clients.delete(id)
     })
   }
