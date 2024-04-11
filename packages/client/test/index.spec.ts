@@ -221,7 +221,7 @@ describe('client', () => {
     for (const { params, response } of requests) {
       const [req, res] = await Promise.all([
         getRequest(interfaces.CreateGroup.name, async () => response),
-        client.createGroup(params.name, params.peers)
+        client.createGroup(params.name, (params.peers != null) ? { peers: params.peers } : {})
       ])
 
       assert.deepEqual(req, { name: params.name, peers: params.peers ?? [] })

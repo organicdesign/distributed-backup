@@ -26,6 +26,7 @@ import {
   Sync,
   Write
 } from '@organicdesign/db-rpc-interfaces'
+import type { AbortOptions } from 'interface-store'
 
 export class Client {
   private readonly client: RPCClient
@@ -38,51 +39,55 @@ export class Client {
     this.client.stop()
   }
 
-  async addresses (): Promise<Addresses.Return> {
+  async addresses (options: AbortOptions = {}): Promise<Addresses.Return> {
     const params: Addresses.Params = {}
-    const raw = await this.client.rpc.request(Addresses.name, params)
+    const raw = await this.client.rpc.request(Addresses.name, params, options)
 
     return Addresses.Return.parse(raw)
   }
 
-  async connect (address: Connect.Params['address']): Promise<Connect.Return> {
+  async connect (address: Connect.Params['address'], options: AbortOptions = {}): Promise<Connect.Return> {
     const params: Connect.Params = { address }
-    const raw = await this.client.rpc.request(Connect.name, params)
+    const raw = await this.client.rpc.request(Connect.name, params, options)
 
     return Connect.Return.parse(raw)
   }
 
-  async connections (): Promise<Connections.Return> {
+  async connections (options: AbortOptions = {}): Promise<Connections.Return> {
     const params: Connections.Params = {}
-    const raw = await this.client.rpc.request(Connections.name, params)
+    const raw = await this.client.rpc.request(Connections.name, params, options)
 
     return Connections.Return.parse(raw)
   }
 
-  async countPeers (cids: CountPeers.Params['cids']): Promise<CountPeers.Return> {
+  async countPeers (cids: CountPeers.Params['cids'], options: AbortOptions = {}): Promise<CountPeers.Return> {
     const params: CountPeers.Params = { cids }
-    const raw = await this.client.rpc.request(CountPeers.name, params)
+    const raw = await this.client.rpc.request(CountPeers.name, params, options)
 
     return CountPeers.Return.parse(raw)
   }
 
-  async createGroup (name: CreateGroup.Params['name'], peers: CreateGroup.Params['peers'] = []): Promise<CreateGroup.Return> {
-    const params: CreateGroup.Params = { name, peers }
+  async createGroup (name: CreateGroup.Params['name'], options: AbortOptions & { peers?: CreateGroup.Params['peers'] } = {}): Promise<CreateGroup.Return> {
+    const params: CreateGroup.Params = { name, peers: options.peers ?? [] }
     const raw = await this.client.rpc.request(CreateGroup.name, params)
 
     return CreateGroup.Return.parse(raw)
   }
 
-  async delete (group: Delete.Params['group'], path: Delete.Params['path']): Promise<Delete.Return> {
+  async delete (group: Delete.Params['group'], path: Delete.Params['path'], options: AbortOptions = {}): Promise<Delete.Return> {
     const params: Delete.Params = { group, path }
-    const raw = await this.client.rpc.request(Delete.name, params)
+    const raw = await this.client.rpc.request(Delete.name, params, options)
 
     return Delete.Return.parse(raw)
   }
 
-  async edit (group: Edit.Params['group'], path: Edit.Params['path'], options: Omit<Edit.Params, 'group' | 'path'> = {}): Promise<Edit.Return> {
+  async edit (group: Edit.Params['group'], path: Edit.Params['path'], options: AbortOptions & Omit<Edit.Params, 'group' | 'path'> = {}): Promise<Edit.Return> {
+    const signal = options.signal
+
+    delete options.signal
+
     const params: Edit.Params = { group, path, ...options }
-    const raw = await this.client.rpc.request(Edit.name, params)
+    const raw = await this.client.rpc.request(Edit.name, params, { signal })
 
     return Edit.Return.parse(raw)
   }
@@ -92,73 +97,90 @@ export class Client {
     path: ExportRevision.Params['path'],
     author: ExportRevision.Params['author'],
     sequence: ExportRevision.Params['sequence'],
-    outPath: ExportRevision.Params['outPath']
+    outPath: ExportRevision.Params['outPath'],
+    options: AbortOptions = {}
   ): Promise<ExportRevision.Return> {
     const params: ExportRevision.Params = { group, path, outPath, author, sequence }
-    const raw = await this.client.rpc.request(ExportRevision.name, params)
+    const raw = await this.client.rpc.request(ExportRevision.name, params, options)
 
     return ExportRevision.Return.parse(raw)
   }
 
-  async export (group: Export.Params['group'], path: Export.Params['path'], outPath: Export.Params['outPath']): Promise<Export.Return> {
+  async export (group: Export.Params['group'], path: Export.Params['path'], outPath: Export.Params['outPath'], options: AbortOptions = {}): Promise<Export.Return> {
     const params: Export.Params = { group, path, outPath }
-    const raw = await this.client.rpc.request(Export.name, params)
+    const raw = await this.client.rpc.request(Export.name, params, options)
 
     return Export.Return.parse(raw)
   }
 
-  async getSchedule (group: GetSchedule.Params['group'], options?: Omit<GetSchedule.Params, 'group'>): Promise<GetSchedule.Return> {
+  async getSchedule (group: GetSchedule.Params['group'], options: AbortOptions & Omit<GetSchedule.Params, 'group'> = {}): Promise<GetSchedule.Return> {
+    const signal = options.signal
+
+    delete options.signal
+
     const params: GetSchedule.Params = { group, ...options }
-    const raw = await this.client.rpc.request(GetSchedule.name, params)
+    const raw = await this.client.rpc.request(GetSchedule.name, params, { signal })
 
     return GetSchedule.Return.parse(raw)
   }
 
-  async getState (cids: GetState.Params['cids'], options: Omit<GetState.Params, 'cids'> = {}): Promise<GetState.Return> {
+  async getState (cids: GetState.Params['cids'], options: AbortOptions & Omit<GetState.Params, 'cids'> = {}): Promise<GetState.Return> {
+    const signal = options.signal
+
+    delete options.signal
+
     const params: GetState.Params = { cids, ...options }
-    const raw = await this.client.rpc.request(GetState.name, params)
+    const raw = await this.client.rpc.request(GetState.name, params, { signal })
 
     return GetState.Return.parse(raw)
   }
 
-  async id (): Promise<ID.Return> {
+  async id (options: AbortOptions = {}): Promise<ID.Return> {
     const params: ID.Params = {}
-    const raw = await this.client.rpc.request(ID.name, params)
+    const raw = await this.client.rpc.request(ID.name, params, options)
 
     return ID.Return.parse(raw)
   }
 
-  async import (group: Import.Params['group'], inPath: Import.Params['inPath'], options: Omit<Import.Params, 'group' | 'inPath'> = {}): Promise<Import.Return> {
+  async import (group: Import.Params['group'], inPath: Import.Params['inPath'], options: AbortOptions & Omit<Import.Params, 'group' | 'inPath'> = {}): Promise<Import.Return> {
+    const signal = options.signal
+
+    delete options.signal
+
     const params: Import.Params = { group, inPath, ...options }
-    const raw = await this.client.rpc.request(Import.name, params)
+    const raw = await this.client.rpc.request(Import.name, params, { signal })
 
     return Import.Return.parse(raw)
   }
 
-  async joinGroup (group: JoinGroup.Params['group']): Promise<JoinGroup.Return> {
+  async joinGroup (group: JoinGroup.Params['group'], options: AbortOptions = {}): Promise<JoinGroup.Return> {
     const params: JoinGroup.Params = { group }
-    const raw = await this.client.rpc.request(JoinGroup.name, params)
+    const raw = await this.client.rpc.request(JoinGroup.name, params, options)
 
     return JoinGroup.Return.parse(raw)
   }
 
-  async listGroups (): Promise<ListGroups.Return> {
+  async listGroups (options: AbortOptions = {}): Promise<ListGroups.Return> {
     const params: ListGroups.Params = {}
-    const raw = await this.client.rpc.request(ListGroups.name, params)
+    const raw = await this.client.rpc.request(ListGroups.name, params, options)
 
     return ListGroups.Return.parse(raw)
   }
 
-  async listRevisions (group: ListRevisions.Params['group'], path: ListRevisions.Params['path']): Promise<ListRevisions.Return> {
+  async listRevisions (group: ListRevisions.Params['group'], path: ListRevisions.Params['path'], options: AbortOptions = {}): Promise<ListRevisions.Return> {
     const params: ListRevisions.Params = { group, path }
-    const raw = await this.client.rpc.request(ListRevisions.name, params)
+    const raw = await this.client.rpc.request(ListRevisions.name, params, options)
 
     return ListRevisions.Return.parse(raw)
   }
 
-  async list (options: List.Params = {}): Promise<List.Return> {
+  async list (options: AbortOptions & List.Params = {}): Promise<List.Return> {
+    const signal = options.signal
+
+    delete options.signal
+
     const params: List.Params = { ...options }
-    const raw = await this.client.rpc.request(List.name, params)
+    const raw = await this.client.rpc.request(List.name, params, { signal })
 
     return List.Return.parse(raw)
   }
@@ -168,10 +190,11 @@ export class Client {
     type: PutSchedule.Params['type'],
     from: PutSchedule.Params['from'],
     to: PutSchedule.Params['to'],
-    context: PutSchedule.Params['context']
+    context: PutSchedule.Params['context'],
+    options: AbortOptions = {}
   ): Promise<PutSchedule.Return> {
     const params: PutSchedule.Params = { group, type, from, to, context }
-    const raw = await this.client.rpc.request(PutSchedule.name, params)
+    const raw = await this.client.rpc.request(PutSchedule.name, params, options)
 
     return PutSchedule.Return.parse(raw)
   }
@@ -181,52 +204,69 @@ export class Client {
     path: ReadRevision.Params['path'],
     author: ReadRevision.Params['author'],
     sequence: ReadRevision.Params['sequence'],
-    options: Omit<ReadRevision.Params, 'group' | 'path' | 'author' | 'sequence'>
+    options: AbortOptions & Omit<ReadRevision.Params, 'group' | 'path' | 'author' | 'sequence'> = {}
   ): Promise<ReadRevision.Return> {
+    const signal = options.signal
+
+    delete options.signal
+
     const params: ReadRevision.Params = { group, path, author, sequence, ...options }
-    const raw = await this.client.rpc.request(ReadRevision.name, params)
+    const raw = await this.client.rpc.request(ReadRevision.name, params, { signal })
 
     return ReadRevision.Return.parse(raw)
   }
 
-  async read (group: Read.Params['group'], path: Read.Params['path'], options: Omit<Read.Params, 'group' | 'path'>): Promise<Read.Return> {
+  async read (group: Read.Params['group'], path: Read.Params['path'], options: AbortOptions & Omit<Read.Params, 'group' | 'path'> = {}): Promise<Read.Return> {
+    const signal = options.signal
+
+    delete options.signal
+
     const params: Read.Params = { group, path, ...options }
-    const raw = await this.client.rpc.request(Read.name, params)
+    const raw = await this.client.rpc.request(Read.name, params, { signal })
 
     return Read.Return.parse(raw)
   }
 
-  async setPriority (group: SetPriority.Params['group'], path: SetPriority.Params['path'], priority: SetPriority.Params['priority']): Promise<SetPriority.Return> {
+  async setPriority (group: SetPriority.Params['group'], path: SetPriority.Params['path'], priority: SetPriority.Params['priority'], options: AbortOptions = {}): Promise<SetPriority.Return> {
     const params: SetPriority.Params = { group, path, priority }
-    const raw = await this.client.rpc.request(SetPriority.name, params)
+    const raw = await this.client.rpc.request(SetPriority.name, params, options)
 
     return SetPriority.Return.parse(raw)
   }
 
-  async sync (): Promise<Sync.Return> {
+  async sync (options: AbortOptions = {}): Promise<Sync.Return> {
     const params: Sync.Params = {}
-    const raw = await this.client.rpc.request(Sync.name, params)
+    const raw = await this.client.rpc.request(Sync.name, params, options)
 
     return Sync.Return.parse(raw)
   }
 
-  async sneakernetReveive (path: SneakernetReveive.Params['path']): Promise<SneakernetReveive.Return> {
+  async sneakernetReveive (path: SneakernetReveive.Params['path'], options: AbortOptions = {}): Promise<SneakernetReveive.Return> {
     const params: SneakernetReveive.Params = { path }
-    const raw = await this.client.rpc.request(SneakernetReveive.name, params)
+    const raw = await this.client.rpc.request(SneakernetReveive.name, params, options)
 
     return SneakernetReveive.Return.parse(raw)
   }
 
-  async sneakernetSend (path: SneakernetSend.Params['path'], options?: Omit<SneakernetSend.Params, 'path'>): Promise<SneakernetSend.Return> {
+  async sneakernetSend (path: SneakernetSend.Params['path'], options: AbortOptions & Omit<SneakernetSend.Params, 'path'> = {}): Promise<SneakernetSend.Return> {
+    const signal = options.signal
+
+    delete options.signal
+
     const params: SneakernetSend.Params = { path, ...options }
-    const raw = await this.client.rpc.request(SneakernetSend.name, params)
+    const raw = await this.client.rpc.request(SneakernetSend.name, params, { signal })
 
     return SneakernetSend.Return.parse(raw)
   }
 
-  async write (group: Write.Params['group'], path: Write.Params['path'], data: Write.Params['data'], options: Omit<Write.Params, 'group' | 'path' | 'data'>): Promise<Write.Return> {
+  async write (group: Write.Params['group'], path: Write.Params['path'], data: Write.Params['data'], options: AbortOptions & Omit<Write.Params, 'group' | 'path' | 'data'>): Promise<Write.Return> {
+    const signal = options.signal
+
+    delete options.signal
+
     const params: Write.Params = { group, path, data, ...options }
-    const raw = await this.client.rpc.request(Write.name, params)
+
+    const raw = await this.client.rpc.request(Write.name, params, { signal })
 
     return Write.Return.parse(raw)
   }
