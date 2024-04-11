@@ -8,6 +8,7 @@ export interface ImportBenchmark {
 }
 
 export interface ImportImplementation {
+  label: string
   name: string
   create(): Promise<ImportBenchmark>
   results: number[]
@@ -15,3 +16,5 @@ export interface ImportImplementation {
   size: number
   blocks: number
 }
+
+export interface ImplementationCreator { (path: string, data: string, persistent: boolean): Promise<ImportBenchmark> }

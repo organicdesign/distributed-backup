@@ -1,8 +1,8 @@
 import { Client } from '@organicdesign/db-client'
 import runNode from '../utils/run-node.js'
-import type { ImportBenchmark } from './interface.js'
+import type { ImplementationCreator } from './interface.js'
 
-export const createBackupBench = async (path: string, data: string, persistent: boolean): Promise<ImportBenchmark> => {
+export const createBackupBench: ImplementationCreator = async (path, data, persistent) => {
   const proc = await runNode(path, { persistent })
 
   await proc.start()

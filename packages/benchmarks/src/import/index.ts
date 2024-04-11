@@ -11,7 +11,8 @@ import yargs from 'yargs/yargs'
 import { generateFiles } from '../utils/generate-files.js'
 import { outPath } from '../utils/paths.js'
 import { createBackupBench } from './backup-bench.js'
-import type { ImportImplementation } from './interface.js'
+import { createHeliaBench } from './helia-bench.js'
+import type { ImportImplementation, ImplementationCreator } from './interface.js'
 
 const argv = await yargs(hideBin(process.argv))
   .option({
@@ -53,20 +54,32 @@ const sizes = [
   9 //  1gb
 ].map(z => 10 ** z)
 
+const benchmarks: Array<[string, ImplementationCreator]> = [
+  ['helia', createHeliaBench],
+  ['backup', createBackupBench]
+]
+
 log('Pre-Start: Generating data files...')
 
 const files = await all(parallel(generateFiles(outPath, sizes), { ordered: true, concurrency: 2 }))
 
 log('Pre-Start: Complete')
 
-const impls: ImportImplementation[] = files.map(({ path, size }) => ({
-  name: `${prettyBytes(size)}`,
-  create: async () => createBackupBench(Path.join(outPath, `import-backup-${prettyBytes(size)}`), path, argv.persistent),
-  results: [],
-  fileSize: size,
-  size: 0,
-  blocks: 0
-}))
+const impls: ImportImplementation[] = []
+
+for (const [name, method] of benchmarks) {
+  for (const { path, size } of files) {
+    impls.push({
+      label: name,
+      name: `${name}-${prettyBytes(size)}`,
+      create: async () => method(Path.join(outPath, `import-${name}-${prettyBytes(size)}`), path, argv.persistent),
+      results: [],
+      fileSize: size,
+      size: 0,
+      blocks: 0
+    })
+  }
+}
 
 async function main (): Promise<void> {
   const suite = new Bench({
@@ -113,14 +126,12 @@ async function main (): Promise<void> {
       throw new Error('got result without implementation')
     }
 
-    console.log(result, impl)
-
     const seconds = (result?.period ?? 1) / 1000
     const speed = impl.size / seconds
     const bps = impl.blocks / seconds
 
     return {
-      'File Size': name,
+      Label: impl.label,
       Size: prettyBytes(impl.size),
       Blocks: impl.blocks,
       'Speed (Size)': `${prettyBytes(speed)}/s`,
