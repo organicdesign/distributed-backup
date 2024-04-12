@@ -17,6 +17,11 @@ interface Client {
   controllers: Map<number | string, AbortController>
 }
 
+export interface RPCServerOptions {
+  retryDelay?: number
+  retryCount?: number
+}
+
 export class RPCServer {
   readonly events = createEventTarget()
   readonly rpc = new JSONRPCServer<AbortOptions & { id: number }>()
@@ -24,9 +29,15 @@ export class RPCServer {
   private readonly clients = new Map<number, Client>()
   private readonly server = net.createServer(socket => { this.handleClient(socket) })
   private readonly genId: () => number
+  private readonly options: Required<RPCServerOptions>
 
-  constructor (path: string) {
+  constructor (path: string, options: RPCServerOptions = {}) {
     this.path = path
+
+    this.options = {
+      retryCount: options.retryCount ?? 3,
+      retryDelay: options.retryDelay ?? 1000
+    }
 
     this.genId = ((): () => number => {
       let id = 0
@@ -36,6 +47,24 @@ export class RPCServer {
   }
 
   async start (): Promise<void> {
+    let retryCount = 0
+
+    this.server.on('error', (e: Error & { code?: string }) => {
+      if (e.code === 'EADDRINUSE') {
+        if (retryCount > this.options.retryCount) {
+          throw e
+        }
+
+        this.events.dispatchEvent(new RPCEvent(e.code))
+
+        setTimeout(() => {
+          retryCount++
+          this.server.close()
+          this.server.listen(this.path)
+        }, this.options.retryDelay)
+      }
+    })
+
     await new Promise<void>(resolve => this.server.listen(this.path, resolve))
 
     this.rpc.addMethod('rpc-abort', (raw, { id }) => {
