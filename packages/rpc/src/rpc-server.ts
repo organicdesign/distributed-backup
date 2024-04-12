@@ -1,4 +1,6 @@
 import * as net from 'net'
+import { platform } from 'os'
+import Path from 'path'
 import * as cborg from 'cborg'
 import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
@@ -32,6 +34,10 @@ export class RPCServer {
   private readonly options: Required<RPCServerOptions>
 
   constructor (path: string, options: RPCServerOptions = {}) {
+    if (platform() === 'win32') {
+      path = Path.join('\\\\.\\pipe', path)
+    }
+
     this.path = path
 
     this.options = {
