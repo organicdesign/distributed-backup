@@ -12,7 +12,7 @@ describe('list-groups', () => {
   ]
 
   it('text', async () => {
-    const params = mockParams({ listGroups: groups, countPeers: [], list: [] }, { group: 'group-abc' })
+    const params = mockParams({ listGroups: groups, countPeers: 0, list: [] }, { group: 'group-abc' })
 
     const [header, ...response] = await all(handler(params))
 
@@ -28,7 +28,7 @@ describe('list-groups', () => {
   })
 
   it('json', async () => {
-    const params = mockParams({ listGroups: groups, countPeers: [], list: [] }, { group: 'group-abc', json: true })
+    const params = mockParams({ listGroups: groups, countPeers: 0, list: [] }, { group: 'group-abc', json: true })
 
     const response = await all(handler(params))
 

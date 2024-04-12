@@ -121,72 +121,26 @@ describe('client', () => {
   it('handles countPeers requests/responses', async () => {
     const requests = [
       {
-        params: [
-          'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'
-        ],
-        response: [
-          {
-            cid: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
-            peers: 0
-          }
-        ]
+        cid: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+        response: 0
       },
       {
-        params: [
-          'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
-          'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa'
-        ],
-        response: [
-          {
-            cid: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
-            peers: 0
-          },
-          {
-            cid: 'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
-            peers: 1
-          }
-        ]
+        cid: 'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
+        response: 1
       },
       {
-        params: [
-          'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
-          'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
-          'QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb',
-          'QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt',
-          'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ'
-        ],
-        response: [
-          {
-            cid: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
-            peers: 0
-          },
-          {
-            cid: 'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
-            peers: 1
-          },
-          {
-            cid: 'QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt',
-            peers: 3
-          },
-          {
-            cid: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
-            peers: 50
-          },
-          {
-            cid: 'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
-            peers: 999
-          }
-        ]
+        cid: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+        response: 999
       }
     ]
 
-    for (const { params, response } of requests) {
+    for (const { cid, response } of requests) {
       const [req, res] = await Promise.all([
         getRequest(interfaces.CountPeers.name, async () => response),
-        client.countPeers(params)
+        client.countPeers(cid)
       ])
 
-      assert.deepEqual(req, { cids: params })
+      assert.deepEqual(req, { cid })
       assert.deepEqual(res, response)
     }
   })
@@ -474,55 +428,30 @@ describe('client', () => {
   it('handles getStatus requests/responses', async () => {
     const requests = [
       {
-        params: {
-          cids: ['QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN']
-        },
-        response: [
-          {
-            cid: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
-            status: 'DOWNLOADING',
-            blocks: 12,
-            size: 1234
-          }
-        ]
+        cid: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+        response: {
+          status: 'DOWNLOADING',
+          blocks: 12,
+          size: 1234
+        }
       },
       {
-        params: {
-          cids: ['QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ']
-        },
-        response: []
-      },
-      {
-        params: {
-          cids: [
-            'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
-            'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa'
-          ]
-        },
-        response: [
-          {
-            cid: 'QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
-            status: 'COMPLETED',
-            blocks: 1,
-            size: 0
-          },
-          {
-            cid: 'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
-            status: 'NOTFOUND',
-            blocks: 0,
-            size: 0
-          }
-        ]
+        cid: 'QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
+        response: {
+          status: 'NOTFOUND',
+          blocks: 0,
+          size: 0
+        }
       }
     ]
 
-    for (const { params, response } of requests) {
+    for (const { cid, response } of requests) {
       const [req, res] = await Promise.all([
         getRequest(interfaces.GetState.name, async () => response),
-        client.getState(params.cids)
+        client.getState(cid)
       ])
 
-      assert.deepEqual(req, { ...params })
+      assert.deepEqual(req, { cid })
       assert.deepEqual(res, response)
     }
   })

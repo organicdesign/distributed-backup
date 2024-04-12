@@ -63,13 +63,15 @@ describe('downloader', () => {
     await components.pinManager.put(key, { priority: 1, cid: dag[0] })
 
     const state1 = await client.rpc.request('get-state', {
-      cids: [dag[0].toString()],
+      cid: dag[0].toString(),
       age
     })
 
-    assert.equal(state1.length, 1)
-    assert.equal(state1[0].size, 0)
-    assert.equal(state1[0].blocks, 0)
+    assert.deepEqual(state1, {
+      status: 'DOWNLOADING',
+      size: 0,
+      blocks: 0
+    })
 
     const value = await blockstore.get(dag[0])
 
@@ -77,13 +79,15 @@ describe('downloader', () => {
     await new Promise(resolve => setTimeout(resolve, age / 2))
 
     const state2 = await client.rpc.request('get-state', {
-      cids: [dag[0].toString()],
+      cid: dag[0].toString(),
       age
     })
 
-    assert.equal(state2.length, 1)
-    assert.equal(state2[0].size, value.length)
-    assert.equal(state2[0].blocks, 1)
+    assert.deepEqual(state2, {
+      status: 'DOWNLOADING',
+      size: value.length,
+      blocks: 1
+    })
 
     await new Promise(resolve => setTimeout(resolve, age / 2))
 
@@ -100,19 +104,21 @@ describe('downloader', () => {
     await new Promise(resolve => setTimeout(resolve, age / 2))
 
     const state3 = await client.rpc.request('get-state', {
-      cids: [dag[0].toString()],
+      cid: dag[0].toString(),
       age
     })
 
-    assert.equal(state3.length, 1)
-    assert.equal(state3[0].size, values.reduce((a, c) => c.length + a, 0))
-    assert.equal(state3[0].blocks, values.length)
+    assert.deepEqual(state3, {
+      status: 'DOWNLOADING',
+      size: values.reduce((a, c) => c.length + a, 0),
+      blocks: values.length
+    })
 
     client.stop()
     await components.stop()
   })
 
-  it('rpc - get status', async () => {
+  it('rpc - get state', async () => {
     const { components, socket } = await create()
     const blockstore = new MemoryBlockstore()
     const dag = await createDag({ blockstore }, 2, 2)
@@ -121,45 +127,42 @@ describe('downloader', () => {
     const client = createRPCClient(socket)
     const key = Path.join('/', group, path)
 
-    const status1 = await client.rpc.request('get-state', {
-      cids: [dag[0].toString()]
+    const state1 = await client.rpc.request('get-state', {
+      cid: dag[0].toString()
     })
 
-    assert.deepEqual(status1, [{
-      cid: dag[0].toString(),
+    assert.deepEqual(state1, {
       blocks: 0,
       size: 0,
       status: 'NOTFOUND'
-    }])
+    })
 
     await components.pinManager.put(key, { priority: 1, cid: dag[0] })
 
-    const status2 = await client.rpc.request('get-state', {
-      cids: [dag[0].toString()]
+    const state2 = await client.rpc.request('get-state', {
+      cid: dag[0].toString()
     })
 
-    assert.deepEqual(status2, [{
-      cid: dag[0].toString(),
+    assert.deepEqual(state2, {
       blocks: 0,
       size: 0,
       status: 'DOWNLOADING'
-    }])
+    })
 
     const value = await blockstore.get(dag[0])
 
     await components.helia.blockstore.put(dag[0], value)
     await new Promise(resolve => setTimeout(resolve, 100))
 
-    const status3 = await client.rpc.request('get-state', {
-      cids: [dag[0].toString()]
+    const state3 = await client.rpc.request('get-state', {
+      cid: dag[0].toString()
     })
 
-    assert.deepEqual(status3, [{
-      cid: dag[0].toString(),
+    assert.deepEqual(state3, {
       blocks: 1,
       size: value.length,
       status: 'DOWNLOADING'
-    }])
+    })
 
     const values = await Promise.all(dag.map(async cid => {
       const value = await blockstore.get(cid)
@@ -171,16 +174,15 @@ describe('downloader', () => {
 
     await new Promise(resolve => setTimeout(resolve, 500))
 
-    const status4 = await client.rpc.request('get-state', {
-      cids: [dag[0].toString()]
+    const state4 = await client.rpc.request('get-state', {
+      cid: dag[0].toString()
     })
 
-    assert.deepEqual(status4, [{
-      cid: dag[0].toString(),
+    assert.deepEqual(state4, {
       blocks: dag.length,
       size: values.reduce((a, c) => a + c, 0),
       status: 'COMPLETED'
-    }])
+    })
 
     client.stop()
     await components.stop()

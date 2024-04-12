@@ -68,8 +68,8 @@ export class Client {
     return Connections.Return.parse(raw)
   }
 
-  async countPeers (cids: CountPeers.Params['cids'], options: AbortOptions = {}): Promise<CountPeers.Return> {
-    const params: CountPeers.Params = { cids }
+  async countPeers (cid: CountPeers.Params['cid'], options: AbortOptions = {}): Promise<CountPeers.Return> {
+    const params: CountPeers.Params = { cid }
     const raw = await this.client.rpc.request(CountPeers.name, params, options)
 
     return CountPeers.Return.parse(raw)
@@ -146,11 +146,11 @@ export class Client {
   }
 
   async getState (
-    cids: GetState.Params['cids'],
-    options: AbortOptions & Omit<GetState.Params, 'cids'> = {}
+    cid: GetState.Params['cid'],
+    options: AbortOptions & Omit<GetState.Params, 'cid'> = {}
   ): Promise<GetState.Return> {
     const abortOptions = stripAbortOptions(options)
-    const params: GetState.Params = { cids, ...options }
+    const params: GetState.Params = { cid, ...options }
     const raw = await this.client.rpc.request(GetState.name, params, abortOptions)
 
     return GetState.Return.parse(raw)

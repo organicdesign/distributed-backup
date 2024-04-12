@@ -82,10 +82,10 @@ export const handler = createHandler<typeof builder>(async function * (argv) {
       throw new Error('Failed to connect to daemon.')
     }
 
-    const [[{ status, blocks, size }], [agedStateData], [{ peers }]] = await Promise.all([
-      argv.client.getState([cid]),
-      argv.client.getState([cid], { age: argv.age }),
-      argv.client.countPeers([cid])
+    const [{ status, blocks, size }, agedStateData, peers] = await Promise.all([
+      argv.client.getState(cid),
+      argv.client.getState(cid, { age: argv.age }),
+      argv.client.countPeers(cid)
     ])
 
     const speed = agedStateData.size / (argv.age / 1000)

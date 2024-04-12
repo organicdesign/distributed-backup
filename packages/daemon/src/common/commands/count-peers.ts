@@ -24,12 +24,9 @@ const command: ModuleMethod = ({ rpcServer, libp2p }) => {
     }
 
     const params = CountPeers.Params.parse(raw)
-    const cids = params.cids.map(cid => CID.parse(cid))
+    const cid = CID.parse(params.cid)
 
-    return Promise.all(cids.map(async cid => ({
-      cid: cid.toString(),
-      peers: await countPeers(cid)
-    })))
+    return countPeers(cid)
   })
 }
 
