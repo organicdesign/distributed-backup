@@ -47,25 +47,29 @@ export class RPCServer {
   }
 
   async start (): Promise<void> {
-    let retryCount = 0
+    for (let i = 0; i <= this.options.retryCount; i++) {
+      try {
+        await new Promise<void>(resolve => this.server.listen(this.path, resolve))
+        break
+      } catch (e) {
+        const code = (e as { code?: string }).code
 
-    this.server.on('error', (e: Error & { code?: string }) => {
-      if (e.code === 'EADDRINUSE') {
-        if (retryCount > this.options.retryCount) {
-          throw e
-        }
+        if (code === 'EADDRINUSE') {
+          if (i >= this.options.retryCount) {
+            throw e
+          }
 
-        this.events.dispatchEvent(new RPCEvent(e.code))
+          this.events.dispatchEvent(new RPCEvent(code))
 
-        setTimeout(() => {
-          retryCount++
+          await new Promise(resolve => setTimeout(resolve, this.options.retryDelay))
+
           this.server.close()
           this.server.listen(this.path)
-        }, this.options.retryDelay)
+        } else {
+          throw e
+        }
       }
-    })
-
-    await new Promise<void>(resolve => this.server.listen(this.path, resolve))
+    }
 
     this.rpc.addMethod('rpc-abort', (raw, { id }) => {
       const params = z.object({ id: z.number() }).parse(raw)
