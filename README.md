@@ -15,7 +15,7 @@ This project is still in development and had very little testing - data backed u
 
 ## Environment
 
-nodejs will need to be installed to run this project, it has been tested on v18, v20 has typescript issues.
+Nodejs will need to be installed to run this project, it has been tested on all long term supported (LTS) versions.
 
 ## Setup
 
