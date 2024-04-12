@@ -1,3 +1,5 @@
+import parallel from 'it-parallel'
+import { pipe } from 'it-pipe'
 import { createBuilder, createHandler } from '../utils.js'
 
 export const command = 'list-groups'
@@ -18,28 +20,43 @@ export const handler = createHandler<typeof builder>(async function * (argv) {
     return
   }
 
-  const peers = await Promise.all(groups.map(async g => ({
-    cid: g.group,
-    peers: await argv.client?.countPeers(g.group)
-  })))
+  const getGroupData = async (group: string): Promise<{
+    peers: number
+    items: number
+  }> => {
+    if (argv.client == null) {
+      throw new Error('Failed to connect to daemon.')
+    }
 
-  const getPeerCount = (cid: string): number => peers.find(p => p.cid === cid)?.peers ?? 0
+    const [items, peers] = await Promise.all([
+      await argv.client?.list({ group }),
+      argv.client.countPeers(group)
+    ])
 
-  const items = await Promise.all(groups.map(async ({ group }) => ({
+    return { items: items.length, peers }
+  }
+
+  const getDataFuncs = groups.map(group => async () => ({
     group,
-    items: await argv.client?.list({ group })
-  })))
-
-  const getItemCount = (group: string): number => items.find(i => i.group === group)?.items?.length ?? 0
+    data: await getGroupData(group.group)
+  }))
 
   yield `${'Name'.padEnd(34)}${'Items'.padEnd(10)}${'Peers'.padEnd(10)}${'CID'.padEnd(62)}`
 
-  for (const { group, name } of groups) {
-    yield [
-      name.slice(0, 32).padEnd(34),
-      `${getItemCount(group)}`.slice(0, 8).padEnd(10),
-      `${getPeerCount(group)}`.padEnd(10),
-      group.padEnd(62)
-    ].join('')
-  }
+  yield ''
+
+  yield * pipe(
+    getDataFuncs,
+    i => parallel(i, { ordered: false, concurrency: 3 }),
+    async function * (items) {
+      for await (const { group, data } of items) {
+        yield [
+          group.name.slice(0, 32).padEnd(34),
+          `${data.items}`.slice(0, 8).padEnd(10),
+          `${data.peers}`.padEnd(10),
+          group.group.padEnd(62)
+        ].join('')
+      }
+    }
+  )
 })

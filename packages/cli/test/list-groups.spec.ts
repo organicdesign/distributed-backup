@@ -14,12 +14,14 @@ describe('list-groups', () => {
   it('text', async () => {
     const params = mockParams({ listGroups: groups, countPeers: 0, list: [] }, { group: 'group-abc' })
 
-    const [header, ...response] = await all(handler(params))
+    const [header, blankLine, ...response] = await all(handler(params))
 
     assert.equal(
       header,
       `${'Name'.padEnd(34)}${'Items'.padEnd(10)}${'Peers'.padEnd(10)}${'CID'.padEnd(62)}`
     )
+
+    assert.equal(blankLine, '')
 
     assert.deepEqual(
       response,
