@@ -692,6 +692,41 @@ describe('client', () => {
     }
   })
 
+  it('handles pause requests/responses', async () => {
+    const requests = [
+      {
+        params: {},
+        response: null
+      },
+      {
+        params: { group: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN' },
+        response: null
+      },
+      {
+        params: { path: '/test' },
+        response: null
+      },
+      {
+        params: {
+          group: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+          path: '/test'
+        },
+
+        response: null
+      }
+    ]
+
+    for (const { params, response } of requests) {
+      const [req, res] = await Promise.all([
+        getRequest(interfaces.Pause.name, async () => response),
+        client.pause(params)
+      ])
+
+      assert.deepEqual(req, params)
+      assert.deepEqual(res, response)
+    }
+  })
+
   it('handles putSchedule requests/responses', async () => {
     const requests = [
       {
@@ -787,6 +822,41 @@ describe('client', () => {
       const [req, res] = await Promise.all([
         getRequest(interfaces.Read.name, async () => response),
         client.read(params.group, params.path, params)
+      ])
+
+      assert.deepEqual(req, params)
+      assert.deepEqual(res, response)
+    }
+  })
+
+  it('handles resume requests/responses', async () => {
+    const requests = [
+      {
+        params: {},
+        response: null
+      },
+      {
+        params: { group: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN' },
+        response: null
+      },
+      {
+        params: { path: '/test' },
+        response: null
+      },
+      {
+        params: {
+          group: 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+          path: '/test'
+        },
+
+        response: null
+      }
+    ]
+
+    for (const { params, response } of requests) {
+      const [req, res] = await Promise.all([
+        getRequest(interfaces.Resume.name, async () => response),
+        client.resume(params)
       ])
 
       assert.deepEqual(req, params)

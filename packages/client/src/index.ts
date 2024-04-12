@@ -17,9 +17,11 @@ import {
   ListGroups,
   ListRevisions,
   List,
+  Pause,
   PutSchedule,
   ReadRevision,
   Read,
+  Resume,
   SetPriority,
   SneakernetReveive,
   SneakernetSend,
@@ -208,6 +210,14 @@ export class Client {
     return List.Return.parse(raw)
   }
 
+  async pause (options: AbortOptions & Pause.Params = {}): Promise<Pause.Return> {
+    const abortOptions = stripAbortOptions(options)
+    const params: Pause.Params = { ...options }
+    const raw = await this.client.rpc.request(Pause.name, params, abortOptions)
+
+    return Pause.Return.parse(raw)
+  }
+
   async putSchedule (
     group: PutSchedule.Params['group'],
     type: PutSchedule.Params['type'],
@@ -246,6 +256,14 @@ export class Client {
     const raw = await this.client.rpc.request(Read.name, params, abortOptions)
 
     return Read.Return.parse(raw)
+  }
+
+  async resume (options: AbortOptions & Resume.Params = {}): Promise<Resume.Return> {
+    const abortOptions = stripAbortOptions(options)
+    const params: Resume.Params = { ...options }
+    const raw = await this.client.rpc.request(Resume.name, params, abortOptions)
+
+    return Resume.Return.parse(raw)
   }
 
   async setPriority (
