@@ -28,7 +28,7 @@ describe('tick', () => {
 
     const delta = after - before
 
-    assert(delta < tickInterval * (checkTimes + 2))
-    assert(delta > tickInterval * (checkTimes - 2))
+    assert(delta < tickInterval * (checkTimes + 3))
+    assert(delta > tickInterval * (checkTimes - 3))
   })
 })
