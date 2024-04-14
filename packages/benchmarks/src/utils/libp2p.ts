@@ -21,7 +21,7 @@ export default async (datastore?: Datastore): Promise<Libp2p> => {
 
     services: {
       identify: identify(),
-      pubsub: gossipsub({ allowPublishToZeroPeers: true }),
+      pubsub: gossipsub({ allowPublishToZeroTopicPeers: true }),
 
       dht: kadDHT({
         protocol: '/ipfs/kad/1.0.0',

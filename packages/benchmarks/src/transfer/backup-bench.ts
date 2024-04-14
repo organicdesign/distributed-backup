@@ -16,7 +16,7 @@ export const createBackupBench: ImplementationCreator = async (path, data, optio
 
   const group = await clients[0].createGroup('test')
   const [{ cid }] = await clients[0].import(group, data, { path: '/test', chunker: options.chunker })
-  const [item] = await clients[0].getState([cid])
+  const item = await clients[0].getState(cid)
 
   return {
     blocks: item.blocks,
@@ -37,7 +37,7 @@ export const createBackupBench: ImplementationCreator = async (path, data, optio
 
     async run () {
       for (;;) {
-        const [{ status }] = await clients[1].getState([cid])
+        const { status } = await clients[1].getState(cid)
 
         if (status === 'COMPLETED') {
           break

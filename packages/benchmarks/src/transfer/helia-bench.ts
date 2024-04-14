@@ -18,7 +18,7 @@ export const createHeliaBench: ImplementationCreator = async (path, data, option
       options.persistent === true ? new FsDatastore(Path.join(path, 'libp2p-datastore')) : undefined
     )
 
-    const heliaInit: HeliaInit = { libp2p }
+    const heliaInit: Partial<HeliaInit> = { libp2p }
 
     if (options.persistent === true) {
       heliaInit.blockstore = new FsBlockstore(Path.join(path, 'blockstore'))
