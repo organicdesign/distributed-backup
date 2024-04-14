@@ -104,7 +104,6 @@ async function main (): Promise<void> {
       const subject = await impl.create()
       log('End: setup')
 
-      await subject.warmup?.()
       const start = performance.now()
       await subject.run()
 
