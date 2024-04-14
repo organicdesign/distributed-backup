@@ -229,17 +229,15 @@ describe('filesystem', () => {
     const fs = filesystem.getFileSystem(group)
     const path = '/test'
     const priority = 50
-    const dag = await createDag(components, 1, 1)
+    const key = Path.join('/', group.toString(), pathToKey(path))
+
+    await components.pinManager.put(key, { priority: 1, cid: group })
 
     assert(fs != null)
 
-    await fs.put(path, { cid: dag[0], encrypted: false, revisionStrategy: 'all', priority: 1 })
-
-    await filesystem.sync()
     const response = await client.rpc.request('edit', { group: group.toString(), path, priority })
     assert.equal(response, null)
 
-    const key = Path.join('/', group.toString(), pathToKey(path))
     const pinInfo = await components.pinManager.get(key)
 
     assert(pinInfo != null)

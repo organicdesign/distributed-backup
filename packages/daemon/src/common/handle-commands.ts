@@ -7,7 +7,6 @@ import getState from './commands/get-state.js'
 import id from './commands/id.js'
 import joinGroup from './commands/join-group.js'
 import listGroups from './commands/list-groups.js'
-import setPriority from './commands/set-priority.js'
 import sneakernetReveive from './commands/sneakernet-receive.js'
 import sneakernetSend from './commands/sneakernet-send.js'
 import sync from './commands/sync.js'
@@ -24,7 +23,6 @@ export default (components: Components): void => {
     id,
     joinGroup,
     listGroups,
-    setPriority,
     sneakernetReveive,
     sneakernetSend,
     sync

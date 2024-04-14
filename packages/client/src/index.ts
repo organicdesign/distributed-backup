@@ -23,7 +23,6 @@ import {
   ReadRevision,
   Read,
   Resume,
-  SetPriority,
   SneakernetReveive,
   SneakernetSend,
   Sync,
@@ -275,18 +274,6 @@ export class Client {
     const raw = await this.client.rpc.request(Resume.name, params, abortOptions)
 
     return Resume.Return.parse(raw)
-  }
-
-  async setPriority (
-    group: SetPriority.Params['group'],
-    path: SetPriority.Params['path'],
-    priority: SetPriority.Params['priority'],
-    options: AbortOptions = {}
-  ): Promise<SetPriority.Return> {
-    const params: SetPriority.Params = { group, path, priority }
-    const raw = await this.client.rpc.request(SetPriority.name, params, options)
-
-    return SetPriority.Return.parse(raw)
   }
 
   async sync (options: AbortOptions = {}): Promise<Sync.Return> {

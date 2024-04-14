@@ -21,6 +21,15 @@ const command: ModuleMethod<Context> = ({ rpcServer, pinManager }) => {
       }
     }
 
+    if (params.paused != null) {
+      const key = Path.join('/', params.group, pathToKey(params.path))
+      const pin = await pinManager.get(key)
+
+      if (pin != null) {
+        await pinManager.put(key, { ...pin, paused: params.paused })
+      }
+    }
+
     return null
   })
 }

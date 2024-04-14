@@ -4,7 +4,6 @@ import Path from 'path'
 import { createRPCClient } from '@organicdesign/db-rpc'
 import { createDag } from '@organicdesign/db-test-utils'
 import { MemoryBlockstore } from 'blockstore-core'
-import { CID } from 'multiformats/cid'
 import { mkTestPath } from '../utils/paths.js'
 import type { Components } from '@/common/interface.js'
 import setup from '@/common/index.js'
@@ -25,29 +24,6 @@ describe('downloader', () => {
 
   after(async () => {
     await fs.rm(testPath, { recursive: true })
-  })
-
-  it('rpc - set priority updates local priority', async () => {
-    const group = 'QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'
-    const path = '/test.txt'
-    const priority = 50
-    const { components, socket } = await create()
-    const client = createRPCClient(socket)
-    const key = Path.join('/', group, path)
-
-    await components.pinManager.put(key, { priority: 1, cid: CID.parse(group) })
-
-    const response = await client.rpc.request('set-priority', { group, path, priority })
-
-    assert.equal(response, null)
-
-    const pinData = await components.pinManager.get(key)
-
-    assert(pinData != null)
-    assert.equal(pinData.priority, priority)
-
-    client.stop()
-    await components.stop()
   })
 
   it('rpc - get age limited state', async () => {
