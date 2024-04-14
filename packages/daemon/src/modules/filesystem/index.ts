@@ -9,8 +9,6 @@ import read from './commands/read.js'
 import write from './commands/write.js'
 import { type FileSystem } from './file-system.js'
 import setup from './setup.js'
-import syncGroups from './sync-groups.js'
-import type { LocalSettings } from './local-settings.js'
 import type createUploadManager from './upload-operations.js'
 import type { Module } from '@/interface.js'
 import type { CID } from 'multiformats/cid'
@@ -27,8 +25,8 @@ export type Config = z.output<typeof Config>
 
 export interface Context extends Record<string, unknown> {
   uploads: Awaited<ReturnType<typeof createUploadManager>>
-  localSettings: LocalSettings
   config: Config
+  sync (): Promise<void>
   getFileSystem (group: CID): FileSystem | null
 }
 
@@ -47,8 +45,6 @@ const module: Module<Context> = async (components) => {
   ]) {
     setupCommand(components, context)
   }
-
-  components.tick.add(async () => syncGroups(components, context))
 
   return context
 }

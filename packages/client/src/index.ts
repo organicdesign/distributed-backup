@@ -6,6 +6,7 @@ import {
   CountPeers,
   CreateGroup,
   Delete,
+  Downloader,
   Edit,
   ExportRevision,
   Export,
@@ -96,6 +97,16 @@ export class Client {
     const raw = await this.client.rpc.request(Delete.name, params, options)
 
     return Delete.Return.parse(raw)
+  }
+
+  async downloader (
+    options: AbortOptions & Downloader.Params = {}
+  ): Promise<Downloader.Return> {
+    const abortOptions = stripAbortOptions(options)
+    const params: Downloader.Params = { ...options }
+    const raw = await this.client.rpc.request(Downloader.name, params, abortOptions)
+
+    return Downloader.Return.parse(raw)
   }
 
   async edit (

@@ -1,14 +1,9 @@
 import { z } from 'zod'
-import { zCID, RevisionStrategies } from '../zod.js'
 
-export const name = 'edit'
+export const name = 'downloader'
 
 export const Params = z.object({
-  path: z.string(),
-  group: zCID(),
-  priority: z.number().optional(),
-  revisionStrategy: RevisionStrategies.optional(),
-  paused: z.boolean().optional()
+  pause: z.boolean().optional()
 })
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare

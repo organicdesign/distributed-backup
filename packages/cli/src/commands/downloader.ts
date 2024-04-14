@@ -1,18 +1,13 @@
 import { createBuilder, createHandler } from '../utils.js'
 
-export const command = 'pause'
+export const command = 'downloader'
 
-export const desc = 'Pause the downloading of items, if no group or path is passed then all items will be paused.'
+export const desc = 'Pause or resume the downloading of all items.'
 
 export const builder = createBuilder({
-  group: {
+  pause: {
     required: false,
-    type: 'string'
-  },
-
-  path: {
-    required: false,
-    type: 'string'
+    type: 'boolean'
   }
 })
 
@@ -21,7 +16,7 @@ export const handler = createHandler<typeof builder>(async function * (argv) {
     throw new Error('Failed to connect to daemon.')
   }
 
-  await argv.client.pause({ group: argv.group, path: argv.path })
+  await argv.client.downloader({ pause: argv.pause })
 
   if (argv.json === true) {
     yield JSON.stringify({ success: true })

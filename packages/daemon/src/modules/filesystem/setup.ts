@@ -1,6 +1,6 @@
 import { extendDatastore } from '@organicdesign/db-utils'
 import { FileSystem } from './file-system.js'
-import { LocalSettings } from './local-settings.js'
+import syncGroups from './sync-groups.js'
 import createUploadManager from './upload-operations.js'
 import type { Context, Config } from './index.js'
 import type { Components } from '@/common/interface.js'
@@ -8,10 +8,6 @@ import type { CID } from 'multiformats/cid'
 
 export default async (components: Components, config: Config): Promise<Context> => {
   const { groups, datastore, blockstore, welo } = components
-
-  const localSettings = new LocalSettings({
-    datastore: extendDatastore(datastore, 'references')
-  })
 
   const getFileSystem = (group: CID): FileSystem | null => {
     const database = groups.get(group)
@@ -24,7 +20,7 @@ export default async (components: Components, config: Config): Promise<Context> 
       database,
       blockstore,
       id: welo.identity.id,
-      localSettings
+      pinManager: components.pinManager
     })
   }
 
@@ -34,10 +30,14 @@ export default async (components: Components, config: Config): Promise<Context> 
     extendDatastore(datastore, 'upload-operations')
   )
 
+  const sync = async (): Promise<void> => syncGroups(components, { uploads, config, sync, getFileSystem })
+
+  components.tick.add(async () => sync())
+
   return {
-    localSettings,
     uploads,
     config,
+    sync,
     getFileSystem
   }
 }

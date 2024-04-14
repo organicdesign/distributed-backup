@@ -5,6 +5,7 @@ import { collect } from 'streaming-iterables'
 import { Event, EventTarget } from 'ts-event-target'
 import { linearWeightTranslation } from './utils.js'
 import type { PinManager } from '../pin-manager/index.js'
+import type { PinInfo } from '../pin-manager/interface.js'
 import type { Startable } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
@@ -23,6 +24,7 @@ export class Downloader implements Startable {
   private readonly pinManager: PinManager
   private controller: AbortController = new AbortController()
   private loopPromise: Promise<void> | null = null
+  private isPaused = false
   readonly events = new EventTarget<[DownloadErrorEvent]>()
 
   constructor (pinManager: PinManager, slots: number) {
@@ -39,6 +41,18 @@ export class Downloader implements Startable {
   async stop (): Promise<void> {
     this.controller.abort()
     await this.loopPromise
+  }
+
+  get paused (): boolean {
+    return this.isPaused
+  }
+
+  pause (): void {
+    this.isPaused = true
+  }
+
+  resume (): void {
+    this.isPaused = false
   }
 
   private async loop (): Promise<void> {
@@ -60,9 +74,9 @@ export class Downloader implements Startable {
     }
   }
 
-  private async * batchDownload (itr: AsyncIterable<[CID, number]>): AsyncGenerator<() => Promise<{ cid: CID }>, void, undefined> {
-    for await (const [cid, priority] of itr) {
-      if (this.isAborted) {
+  private async * batchDownload (itr: AsyncIterable<PinInfo>): AsyncGenerator<() => Promise<{ cid: CID }>, void, undefined> {
+    for await (const { cid, priority } of itr) {
+      if (this.isAborted || this.paused) {
         return
       }
 
@@ -99,15 +113,15 @@ export class Downloader implements Startable {
     }
   }
 
-  async * getPins (loop: AsyncIterable<void>): AsyncGenerator<[CID, number]> {
+  async * getPins (loop: AsyncIterable<void>): AsyncGenerator<PinInfo> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     for await (const _ of loop) {
       for await (const { value } of this.pinManager.getActive(this.controller)) {
-        if (this.isAborted) {
+        if (this.isAborted || this.paused) {
           return
         }
 
-        yield [value.cid, value.priority]
+        yield value
       }
     }
   }

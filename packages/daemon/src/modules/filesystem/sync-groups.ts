@@ -27,7 +27,9 @@ export default async ({ getTracker, groups, pinManager }: Components, context: C
         continue
       }
 
-      await pinManager.put(fullKey, { cid: entry.cid, priority: entry.priority })
+      const pinInfo = (await pinManager.get(fullKey)) ?? {}
+
+      await pinManager.put(fullKey, { priority: entry.priority, ...pinInfo, cid: entry.cid })
     }
   }
 }

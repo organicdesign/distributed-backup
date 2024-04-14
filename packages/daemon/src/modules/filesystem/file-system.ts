@@ -5,7 +5,7 @@ import * as cborg from 'cborg'
 import { type Entry, EncodedEntry } from './interface.js'
 import { encodeEntry, decodeEntry, keyToPath, pathToKey } from './utils.js'
 import { logger } from './index.js'
-import type { LocalSettings } from './local-settings.js'
+import type { PinManager } from '@/common/pin-manager/index.js'
 import type { KeyvalueDB, Pair } from '@/interface.js'
 import type { Blockstore } from 'interface-blockstore'
 import type { CID } from 'multiformats/cid'
@@ -14,13 +14,13 @@ export class FileSystem {
   private readonly database: KeyvalueDB
   private readonly blockstore: Blockstore
   private readonly id: Uint8Array
-  private readonly localSettings: LocalSettings
+  private readonly pinManager: PinManager
 
-  constructor ({ database, blockstore, id, localSettings }: { database: KeyvalueDB, blockstore: Blockstore, id: Uint8Array, localSettings: LocalSettings }) {
+  constructor ({ database, blockstore, id, pinManager }: { database: KeyvalueDB, blockstore: Blockstore, id: Uint8Array, pinManager: PinManager }) {
     this.database = database
     this.blockstore = blockstore
     this.id = id
-    this.localSettings = localSettings
+    this.pinManager = pinManager
   }
 
   get group (): CID {
@@ -69,9 +69,9 @@ export class FileSystem {
     }
 
     const entry = decodeEntry(encodedEntry)
-    const localSettings = await this.localSettings.get(this.group, path)
+    const pinInfo = await this.pinManager.get(Path.join('/', this.group.toString(), key))
 
-    return { ...entry, ...localSettings }
+    return { ...entry, priority: pinInfo?.priority ?? entry.priority }
   }
 
   async delete (path: string): Promise<void> {
@@ -100,11 +100,11 @@ export class FileSystem {
       }
 
       const entry = decodeEntry(encodedEntry)
-      const localSettings = await this.localSettings.get(this.group, path)
+      const pinInfo = await this.pinManager.get(Path.join('/', this.group.toString(), key))
 
       yield {
         key: keyToPath(pair.key.toString()),
-        value: { ...entry, ...localSettings }
+        value: { ...entry, priority: pinInfo?.priority ?? entry.priority }
       }
     }
   }

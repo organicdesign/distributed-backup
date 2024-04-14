@@ -17,6 +17,7 @@ import { mkTestPath } from '../utils/paths.js'
 import type { Context as FilesystemContext } from '../../src/modules/filesystem/index.js'
 import type { Components } from '@/common/interface.js'
 import setup from '@/common/index.js'
+import { pathToKey } from '@/modules/filesystem/utils.js'
 
 describe('filesystem', () => {
   const testPath = mkTestPath('filesystem')
@@ -145,7 +146,10 @@ describe('filesystem', () => {
       priority: 1
     }])
 
-    await filesystem.localSettings.set(group, path, {
+    const key = Path.join('/', group.toString(), pathToKey(path))
+
+    await components.pinManager.put(key, {
+      cid: dag[0],
       priority: 100
     })
 
@@ -225,16 +229,21 @@ describe('filesystem', () => {
     const fs = filesystem.getFileSystem(group)
     const path = '/test'
     const priority = 50
+    const dag = await createDag(components, 1, 1)
 
     assert(fs != null)
 
-    const response = await client.rpc.request('edit', { group: group.toString(), path, priority })
+    await fs.put(path, { cid: dag[0], encrypted: false, revisionStrategy: 'all', priority: 1 })
 
+    await filesystem.sync()
+    const response = await client.rpc.request('edit', { group: group.toString(), path, priority })
     assert.equal(response, null)
 
-    const localSettings = await filesystem.localSettings.get(group, path)
+    const key = Path.join('/', group.toString(), pathToKey(path))
+    const pinInfo = await components.pinManager.get(key)
 
-    assert.equal(localSettings.priority, priority)
+    assert(pinInfo != null)
+    assert.equal(pinInfo.priority, priority)
 
     client.stop()
     await components.stop()

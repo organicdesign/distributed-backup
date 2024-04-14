@@ -20,7 +20,8 @@ export const decodePinInfo = (data: Uint8Array): PinInfo | null => {
 export const encodePinInfo = (pinInfo: PinInfo): Uint8Array => {
   const encodedPinInfo: EncodedPinInfo = {
     ...pinInfo,
-    cid: pinInfo.cid.bytes
+    cid: pinInfo.cid.bytes,
+    paused: pinInfo.paused ?? false
   }
 
   // This will strip foreign keys.

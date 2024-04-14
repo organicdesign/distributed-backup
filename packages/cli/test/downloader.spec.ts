@@ -1,13 +1,12 @@
 import assert from 'assert/strict'
 import all from 'it-all'
-import { handler } from '../src/commands/pause.js'
+import { handler } from '../src/commands/downloader.js'
 import { mockParams } from './utils.js'
 
 describe('pause', () => {
   it('text', async () => {
-    const params = mockParams({ pause: null }, {
-      group: 'group-abc',
-      path: '/my/file'
+    const params = mockParams({ downloader: null }, {
+      pause: true
     })
 
     const response = await all(handler(params))
@@ -16,9 +15,8 @@ describe('pause', () => {
   })
 
   it('json', async () => {
-    const params = mockParams({ pause: null }, {
-      group: 'group-abc',
-      path: '/my/file',
+    const params = mockParams({ downloader: null }, {
+      pause: true,
       json: true
     })
 

@@ -61,7 +61,13 @@ export class PinManager {
 
   async * getActive (options: AbortOptions = {}): AsyncGenerator<Pair<string, PinInfo>> {
     for (const pin of await this.pinManager.getActiveDownloads(options)) {
-      yield * this.getByPin(pin, options)
+      for await (const pinInfo of this.getByPin(pin, options)) {
+        if (pinInfo.value.paused === true) {
+          continue
+        }
+
+        yield pinInfo
+      }
     }
   }
 
