@@ -1,4 +1,6 @@
 import * as net from 'net'
+import { platform } from 'os'
+import Path from 'path'
 import * as cborg from 'cborg'
 import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
@@ -17,6 +19,10 @@ export class RPCClient {
   private readonly stream = pushable<JSONRPCRequest>({ objectMode: true })
 
   constructor (path: string) {
+    if (platform() === 'win32') {
+      path = Path.join('\\\\.\\pipe', path)
+    }
+
     this.socket = net.connect({ path })
 
     this.rpc = new JSONRPCClient((request: JSONRPCRequest, options) => {
