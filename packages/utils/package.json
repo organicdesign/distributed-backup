@@ -34,27 +34,27 @@
   "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@organicdesign/db-test-utils": "^0.1.0",
-    "aegir": "^42.2.4",
-    "blockstore-core": "^4.4.0",
-    "it-parallel": "^3.0.6",
+    "aegir": "^44.0.1",
+    "blockstore-core": "^4.4.1",
+    "it-parallel": "^3.0.8",
     "it-pipe": "^3.0.1"
   },
   "private": true,
   "sideEffects": false,
   "dependencies": {
-    "@helia/interface": "^4.1.0",
-    "@helia/unixfs": "^3.0.2",
-    "@ipld/dag-cbor": "^9.2.0",
-    "@ipld/dag-json": "^10.2.0",
-    "@ipld/dag-pb": "^4.1.0",
-    "@libp2p/interface": "^1.1.6",
-    "cborg": "^4.1.4",
+    "@helia/interface": "^4.3.0",
+    "@helia/unixfs": "^3.0.6",
+    "@ipld/dag-cbor": "^9.2.1",
+    "@ipld/dag-json": "^10.2.2",
+    "@ipld/dag-pb": "^4.1.2",
+    "@libp2p/interface": "^1.6.1",
+    "cborg": "^4.2.3",
     "datastore-core": "^9.2.9",
     "interface-blockstore": "^5.2.10",
     "interface-datastore": "^8.2.11",
     "ipfs-unixfs-exporter": "^13.5.0",
-    "ipfs-unixfs-importer": "^15.2.4",
-    "it-all": "^3.0.4",
-    "multiformats": "^13.1.0"
+    "ipfs-unixfs-importer": "^15.2.5",
+    "it-all": "^3.0.6",
+    "multiformats": "^13.2.0"
   }
 }

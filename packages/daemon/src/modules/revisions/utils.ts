@@ -11,7 +11,7 @@ export const encodeEntry = (entry: Entry): NonNullable<EncodedEntry> => {
   }
 
   // Parse will strip foreign keys...
-  return EncodedEntry.parse(ee) as NonNullable<EncodedEntry>
+  return EncodedEntry.parse(ee)!
 }
 
 export const decodeEntry = (entry: NonNullable<EncodedEntry>): Entry => ({

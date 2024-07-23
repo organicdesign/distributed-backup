@@ -24,14 +24,14 @@
   },
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
-  "devDependencies": {
-    "aegir": "^42.2.4"
-  },
   "private": true,
   "sideEffects": false,
   "dependencies": {
     "@organicdesign/db-rpc": "^0.1.0",
     "@organicdesign/db-rpc-interfaces": "^0.1.0",
     "interface-store": "^5.1.8"
+  },
+  "devDependencies": {
+    "aegir": "^44.0.1"
   }
 }

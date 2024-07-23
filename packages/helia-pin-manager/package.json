@@ -26,23 +26,23 @@
   "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@organicdesign/db-test-utils": "^0.1.0",
-    "aegir": "^42.2.4",
-    "helia": "^4.0.1",
-    "libp2p": "^1.2.3"
+    "aegir": "^44.0.1",
+    "helia": "^4.2.4",
+    "libp2p": "^1.8.1"
   },
   "private": true,
   "sideEffects": false,
   "dependencies": {
-    "@helia/interface": "^4.1.0",
+    "@helia/interface": "^4.3.0",
     "@organicdesign/db-utils": "^0.1.0",
-    "cborg": "^4.0.9",
+    "cborg": "^4.2.3",
     "datastore-core": "^9.2.9",
     "interface-datastore": "^8.2.11",
     "interface-store": "^5.1.8",
-    "it-all": "^3.0.4",
-    "multiformats": "^13.1.0",
+    "it-all": "^3.0.6",
+    "multiformats": "^13.2.0",
     "ts-event-target": "^0.1.5",
-    "uint8arrays": "^5.0.2",
-    "zod": "^3.22.4"
+    "uint8arrays": "^5.1.0",
+    "zod": "^3.23.8"
   }
 }

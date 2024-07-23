@@ -27,19 +27,19 @@
   },
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
-  "devDependencies": {
-    "aegir": "^42.2.4"
-  },
   "private": true,
   "sideEffects": false,
   "dependencies": {
-    "@helia/interface": "^4.1.0",
-    "@helia/unixfs": "^3.0.2",
-    "@ipld/dag-pb": "^4.1.0",
-    "blockstore-core": "^4.4.0",
+    "@helia/interface": "^4.3.0",
+    "@helia/unixfs": "^3.0.6",
+    "@ipld/dag-pb": "^4.1.2",
+    "blockstore-core": "^4.4.1",
     "interface-blockstore": "^5.2.10",
-    "it-all": "^3.0.4",
-    "multiformats": "^13.1.0",
-    "uint8arrays": "^5.0.3"
+    "it-all": "^3.0.6",
+    "multiformats": "^13.2.0",
+    "uint8arrays": "^5.1.0"
+  },
+  "devDependencies": {
+    "aegir": "^44.0.1"
   }
 }

@@ -24,22 +24,22 @@
   },
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
-  "devDependencies": {
-    "aegir": "^42.2.4"
-  },
   "private": true,
   "sideEffects": false,
+  "devDependencies": {
+    "aegir": "^44.0.1"
+  },
   "dependencies": {
-    "@ipld/dag-cbor": "^9.2.0",
-    "@libp2p/crypto": "^4.0.2",
-    "@libp2p/interface": "^1.1.6",
-    "@libp2p/peer-id": "^4.0.6",
+    "@ipld/dag-cbor": "^9.2.1",
+    "@libp2p/crypto": "^4.1.6",
+    "@libp2p/interface": "^1.6.1",
+    "@libp2p/peer-id": "^4.2.1",
     "bip32": "^4.0.0",
     "bip39": "^3.1.0",
-    "multiformats": "^13.1.0",
+    "multiformats": "^13.2.0",
     "tiny-secp256k1": "^2.2.3",
-    "uint8arrays": "^5.0.2",
-    "welo": "^4.1.1",
-    "zod": "^3.22.4"
+    "uint8arrays": "^5.1.0",
+    "welo": "^4.2.0",
+    "zod": "^3.23.8"
   }
 }

@@ -1,9 +1,9 @@
 import { DeferredPromise } from '@open-draft/deferred-promise'
 import { CID } from 'multiformats/cid'
-import type { BlockRetriever } from '@helia/interface'
+import type { BlockBroker } from '@helia/interface'
 import type { AbortOptions } from 'interface-store'
 
-export class ManualBlockBroker implements BlockRetriever {
+export class ManualBlockBroker implements BlockBroker {
   private readonly promises = new Map<string, DeferredPromise<Uint8Array>>()
 
   async retrieve (cid: CID, { signal }: AbortOptions): Promise<Uint8Array> {

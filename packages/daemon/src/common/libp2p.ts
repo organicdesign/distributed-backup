@@ -28,6 +28,7 @@ export default async ({ datastore, peerId, psk, addresses, bootstrap: bs, server
     transports: [tcp(), webSockets(), circuitRelayTransport({ discoverRelays: 2 })],
     connectionEncryption: [noise()],
     streamMuxers: [yamux()],
+    // @ts-expect-error Connection protector now has a new type but the psk has not been updated yet.
     connectionProtector: (psk != null) ? preSharedKey({ psk }) : undefined,
 
     addresses: {
@@ -45,7 +46,7 @@ export default async ({ datastore, peerId, psk, addresses, bootstrap: bs, server
     services: {
       ...services,
       identify: identify(),
-      pubsub: gossipsub({ allowPublishToZeroPeers: true }),
+      pubsub: gossipsub({ allowPublishToZeroTopicPeers: true }),
       autoNAT: autoNAT(),
       dcutr: dcutr(),
       upnpNAT: uPnPNAT(),

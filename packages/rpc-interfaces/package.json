@@ -27,15 +27,15 @@
   },
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
-  "devDependencies": {
-    "aegir": "^42.2.4"
-  },
   "private": true,
   "sideEffects": false,
   "dependencies": {
-    "@multiformats/multiaddr": "^12.1.14",
-    "multiformats": "^13.1.0",
-    "uint8arrays": "^5.0.2",
-    "zod": "^3.22.4"
+    "@multiformats/multiaddr": "^12.3.0",
+    "multiformats": "^13.2.0",
+    "uint8arrays": "^5.1.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "aegir": "^44.0.1"
   }
 }

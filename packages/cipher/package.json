@@ -25,10 +25,10 @@
   "author": "Saul Boyd",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "aegir": "^42.2.4",
-    "it-all": "^3.0.4",
     "@organicdesign/db-key-manager": "^0.1.0",
-    "uint8arrays": "^5.0.2"
+    "aegir": "^44.0.1",
+    "it-all": "^3.0.6",
+    "uint8arrays": "^5.1.0"
   },
   "private": true,
   "sideEffects": false
