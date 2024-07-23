@@ -17,7 +17,7 @@ export class ManualBlockBroker implements BlockBroker {
 
     signal?.addEventListener('abort', () => {
       this.promises.delete(cid.toString())
-      promise.reject('operation aborted')
+      promise.reject(new Error('operation aborted'))
     })
 
     this.promises.set(cid.toString(), promise)

@@ -34,7 +34,7 @@ describe('groups', () => {
     const { components } = await create()
     const group = await createGroup(components, 'test')
 
-    assert(group)
+    assert(group != null)
 
     await components.stop()
   })
@@ -225,7 +225,7 @@ describe('groups', () => {
 
     const database = components[0].components.groups.get(group)
 
-    assert(database)
+    assert(database != null)
     assert.equal(database.manifest.name, name)
 
     client.stop()

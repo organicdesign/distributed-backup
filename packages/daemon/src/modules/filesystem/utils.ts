@@ -1,3 +1,4 @@
+import assert from 'assert/strict'
 import Path from 'path'
 import { CID } from 'multiformats/cid'
 import { DATA_KEY, EncodedEntry, type Entry } from './interface.js'
@@ -9,7 +10,11 @@ export const encodeEntry = (entry: Entry): NonNullable<EncodedEntry> => {
   }
 
   // Parse will strip foreign keys...
-  return EncodedEntry.parse(ee)!
+  const stripped = EncodedEntry.parse(ee)
+
+  assert(stripped != null)
+
+  return stripped
 }
 
 export const decodeEntry = (entry: NonNullable<EncodedEntry>): Entry => ({

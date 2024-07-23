@@ -21,7 +21,7 @@ describe('connectivity', () => {
     const data: string[] = await runClient(nodes[0], 'addresses')
     const tcp = data.find(d => d.startsWith('/ip4/127.0.0.1/tcp'))
 
-    assert(tcp)
+    assert(tcp != null)
   })
 
   it('displays no connections on startup', async () => {
@@ -34,7 +34,7 @@ describe('connectivity', () => {
     const peerAData: string[] = await runClient(nodes[0], 'addresses')
     const tcp = peerAData.find(d => d.startsWith('/ip4/127.0.0.1/tcp'))
 
-    assert(tcp)
+    assert(tcp != null)
 
     const peerBData = await runClient(nodes[1], 'connect', tcp)
 

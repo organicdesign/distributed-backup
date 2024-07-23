@@ -70,6 +70,8 @@ export default async (path: string, options: { persistent?: boolean } = {}): Pro
       setTimeout(() => {
         forceQuit().finally(() => {
           promise.reject(new Error('process did not exit cleanly'))
+        }).catch(() => {
+          promise.reject(new Error('process did not exit cleanly'))
         })
       }, 3000)
 

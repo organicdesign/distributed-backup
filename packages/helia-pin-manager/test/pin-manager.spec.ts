@@ -99,7 +99,7 @@ describe('pin manager', () => {
   it('constructs', () => {
     const pinManager = new PinManager(components)
 
-    assert(pinManager)
+    assert(pinManager != null)
   })
 
   it('all returns all the pins', async () => {
@@ -108,7 +108,7 @@ describe('pin manager', () => {
     const pins = await pm.all()
 
     for (const pin of pins) {
-      assert(data.pins.find(p => p.cid.equals(pin.cid)))
+      assert(data.pins.find(p => p.cid.equals(pin.cid)) != null)
     }
   })
 
@@ -189,7 +189,7 @@ describe('pin manager', () => {
       const raw = await pinsDatastore.get(new Key(root.toString()))
       const data = cborg.decode(raw)
 
-      assert(data)
+      assert(data != null)
     })
 
     it('adds all the items in the dag as blocks', async () => {
@@ -202,7 +202,7 @@ describe('pin manager', () => {
       assert.equal(pairs.length, Object.values(dag).length)
 
       for (const { key } of pairs) {
-        assert(dag.find(b => b.equals(CID.parse(key.baseNamespace()))))
+        assert(dag.find(b => b.equals(CID.parse(key.baseNamespace()))) != null)
       }
     })
 
@@ -244,7 +244,7 @@ describe('pin manager', () => {
       const raw = await pinsDatastore.get(new Key(root.toString()))
       const data = cborg.decode(raw)
 
-      assert(data)
+      assert(data != null)
       assert.equal(data.status, 'DOWNLOADING')
     })
 
@@ -269,7 +269,7 @@ describe('pin manager', () => {
       const pin = await pinsDatastore.get(new Key(root.toString()))
 
       assert.equal(downloads.length, 0)
-      assert(pin)
+      assert(pin != null)
     })
 
     it('emits pins:adding event', async () => {

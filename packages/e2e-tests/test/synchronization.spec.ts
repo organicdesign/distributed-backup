@@ -19,12 +19,12 @@ describe('synchronization', () => {
 
     group = (await runClient(nodes[0], 'create-group', 'test')).group
 
-    assert(tcp)
+    assert(tcp != null)
 
     for (let i = 1; i < nodes.length; i++) {
       const response = await runClient(nodes[i], 'connect', tcp)
 
-      assert(response.success)
+      assert(response.success === true)
     }
   })
 
@@ -43,23 +43,23 @@ describe('synchronization', () => {
       virtualPath
     )
 
-    assert(addRes.success)
+    assert(addRes.success === true)
 
     const joinRes = await runClient(nodes[1], 'join-group', group)
 
-    assert(joinRes.success)
+    assert(joinRes.success === true)
 
     // Ensure it syncs...
     const sync = await runClient(nodes[1], 'sync')
 
-    assert(sync.success)
+    assert(sync.success === true)
 
     const listRes = await runClient(nodes[1], 'list')
 
-    assert(listRes)
+    assert(listRes != null)
     assert.equal(typeof listRes, 'object')
-    assert(listRes.items)
-    assert(listRes.total)
+    assert(listRes.items != null)
+    assert(listRes.total != null)
     assert(Array.isArray(listRes.items))
     assert.equal(listRes.items.length, 1)
     assert.equal(listRes.items[0].cid, addRes.imports[0].cid)
@@ -78,25 +78,25 @@ describe('synchronization', () => {
       virtualPath
     )
 
-    assert(addRes.success)
+    assert(addRes.success === true)
 
     // Ensure it syncs...
     const sync = await runClient(nodes[1], 'sync')
 
-    assert(sync.success)
+    assert(sync.success === true)
 
     const listRes = await runClient(nodes[1], 'list')
 
-    assert(listRes)
+    assert(listRes != null)
     assert.equal(typeof listRes, 'object')
-    assert(listRes.items)
-    assert(listRes.total)
+    assert(listRes.items != null)
+    assert(listRes.total != null)
     assert(Array.isArray(listRes.items))
     assert.equal(listRes.items.length, 2)
 
     const item = listRes.items.find((i: { cid: string }) => i.cid === addRes.imports[0].cid)
 
-    assert(item)
+    assert(item != null)
     assert.equal(item.group, group)
     assert.equal(item.path, virtualPath)
   })

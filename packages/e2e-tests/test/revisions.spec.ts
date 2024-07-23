@@ -20,7 +20,7 @@ describe('revisions', () => {
 
     const response = await runClient(node, 'import', group, dataFile.path, virtualDir)
 
-    assert(response.success)
+    assert(response.success === true)
   })
 
   after(async () => {
@@ -30,7 +30,7 @@ describe('revisions', () => {
   it('has 1 revision after importing a file', async () => {
     const response = await runClient(node, 'revisions', group, virtualDir)
 
-    assert(response)
+    assert(response != null)
     assert(Array.isArray(response))
     assert.equal(response.length, 1)
     assert.equal(response[0].sequence, 0)
@@ -39,13 +39,13 @@ describe('revisions', () => {
   it("has 0 revisions after overwrite with strategy 'none'", async () => {
     const add = await runClient(node, 'import', group, dataFile.path, virtualDir, '--revisionStrategy', 'none')
 
-    assert(add.success)
+    assert(add.success === true)
 
     const response = await runClient(node, 'revisions', group, virtualDir)
 
     await new Promise(resolve => setTimeout(resolve, 3000))
 
-    assert(response)
+    assert(response != null)
     assert(Array.isArray(response))
     assert.equal(response.length, 0)
     // assert.equal(response[0].sequence, 1)
@@ -54,11 +54,11 @@ describe('revisions', () => {
   it("has 1 revisions after overwrite with strategy 'log'", async () => {
     const add = await runClient(node, 'import', group, dataFile.path, virtualDir, '--revisionStrategy', 'log')
 
-    assert(add.success)
+    assert(add.success === true)
 
     const response = await runClient(node, 'revisions', group, virtualDir)
 
-    assert(response)
+    assert(response != null)
     assert(Array.isArray(response))
     assert.equal(response.length, 1)
     assert.equal(response[0].sequence, 2)
@@ -67,11 +67,11 @@ describe('revisions', () => {
   it("has 2 revisions after overwrite with strategy 'all'", async () => {
     const add = await runClient(node, 'import', group, dataFile.path, virtualDir, '--revisionStrategy', 'all')
 
-    assert(add.success)
+    assert(add.success === true)
 
     const response = await runClient(node, 'revisions', group, virtualDir)
 
-    assert(response)
+    assert(response != null)
     assert(Array.isArray(response))
     assert.equal(response.length, 2)
     assert.equal(response[0].sequence, 2)
@@ -81,11 +81,11 @@ describe('revisions', () => {
   it("reduces to 1 revision after overwrite with strategy 'log'", async () => {
     const add = await runClient(node, 'import', group, dataFile.path, virtualDir, '--revisionStrategy', 'log')
 
-    assert(add.success)
+    assert(add.success === true)
 
     const response = await runClient(node, 'revisions', group, virtualDir)
 
-    assert(response)
+    assert(response != null)
     assert(Array.isArray(response))
     assert.equal(response.length, 1)
     assert.equal(response[0].sequence, 2)
@@ -94,11 +94,11 @@ describe('revisions', () => {
   it("reduces to 0 revisions after overwrite with strategy 'none'", async () => {
     const add = await runClient(node, 'import', group, dataFile.path, virtualDir, '--revisionStrategy', 'none')
 
-    assert(add.success)
+    assert(add.success === true)
 
     const response = await runClient(node, 'revisions', group, virtualDir)
 
-    assert(response)
+    assert(response != null)
     assert(Array.isArray(response))
     assert.equal(response.length, 0)
   })

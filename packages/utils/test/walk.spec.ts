@@ -23,7 +23,7 @@ describe('walkDag', () => {
     for await (const getData of walk(blockstore, dag[0])) {
       const data = await getData()
 
-      assert(dag.find(cid => cid.equals(data.cid)))
+      assert(dag.find(cid => cid.equals(data.cid)) != null)
 
       count++
     }

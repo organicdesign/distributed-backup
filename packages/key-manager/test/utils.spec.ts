@@ -35,7 +35,7 @@ describe('nameToPath', () => {
     while (paths.length > 0) {
       const item = paths.pop()
 
-      assert(item)
+      assert(item != null)
       assert(!paths.includes(item))
     }
   })
@@ -51,7 +51,7 @@ describe('nameToPath', () => {
       const nums = path.slice(2).split('/').map(s => Number.parseInt(s))
 
       for (const num of nums) {
-        assert(num)
+        assert(num != null)
         assert(!Number.isNaN(num))
         assert(num > 0)
       }
@@ -82,7 +82,7 @@ describe('nameToPath', () => {
 describe('decodeKey', () => {
   it('decodes valid keys', () => {
     for (const { key } of data) {
-      assert(decodeKey(key))
+      assert(decodeKey(key) != null)
     }
   })
 })
@@ -126,7 +126,7 @@ describe('parseKeyData', () => {
     await Promise.all(data.map(async ({ key, psk }) => {
       const keyData = parseKeyData({ key, psk })
 
-      assert(keyData)
+      assert(keyData != null)
       assert.deepEqual(keyData.key, decodeKey(key))
       assert.deepEqual(keyData.psk, uint8ArrayFromString(psk))
     }))

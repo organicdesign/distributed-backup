@@ -68,6 +68,8 @@ export default async (name: string): Promise<{ start(): Promise<void>, stop(): P
       setTimeout(() => {
         forceQuit().finally(() => {
           promise.reject(new Error('process did not exit cleanly'))
+        }).catch(() => {
+          promise.reject(new Error('process did not exit cleanly'))
         })
       }, 3000)
 

@@ -42,7 +42,10 @@ describe('key manager', () => {
       const peerId = await d.keyManager.getPeerId()
       const key = d.keyData.key.deriveHardened(0)
 
-      assert.deepEqual(new Uint8Array(key.privateKey as Buffer), (peerId.privateKey as Uint8Array).slice(4))
+      assert(key.privateKey != null)
+      assert(peerId.privateKey != null)
+
+      assert.deepEqual(new Uint8Array(key.privateKey), (peerId.privateKey).slice(4))
     }))
   })
 
